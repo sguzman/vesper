@@ -505,7 +505,7 @@ fn trigger_save_load(
             if let Ok(mut messages) = queue.lock() {
                 messages.push(IoResult::Saved(result));
             }
-        });
+        })
     } else {
         let game = session.game.clone();
         std::thread::spawn(move || {
@@ -516,7 +516,7 @@ fn trigger_save_load(
             if let Ok(mut messages) = queue.lock() {
                 messages.push(IoResult::Loaded(result));
             }
-        });
+        })
     };
     active.push(worker);
 }
