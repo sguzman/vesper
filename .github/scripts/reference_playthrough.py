@@ -72,7 +72,7 @@ def play(choice: int, branch: str, steps: int, destination: Path) -> Path:
             # Save and exit immediately: the shutdown path must join the
             # background save worker, leaving a complete JSON snapshot.
             run("xdotool", "key", "--clearmodifiers", "F5")
-            run("xdotool", "windowclose", win)
+            run("xdotool", "key", "--clearmodifiers", "Escape")
             process.wait(timeout=12)
             assert process.returncode == 0, log.read_text(errors="replace")[-4000:]
             saved = save_dir / "vesper-demo.json"
