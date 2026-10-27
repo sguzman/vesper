@@ -1,6 +1,6 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
-use bevy::{asset::{AssetPlugin, LoadState}, prelude::*};
+use bevy::{asset::{AssetPlugin, LoadState}, prelude::*, window::PrimaryWindow};
 mod reload;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, save::{CharacterPose, PresentationState, SaveData}};
@@ -52,6 +52,70 @@ fn animate_fades(
             info!("Vesper fade complete: {}", name.as_str());
             commands.entity(entity).remove::<FadeIn>();
         }
+    }
+}
+
+#[derive(Component)]
+struct BackgroundVisual;
+
+#[derive(Component)]
+struct CharacterVisual {
+    /// Author-defined x coordinate in the 1280x720 design canvas.
+    anchor_x: f32,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct ViewportMetrics {
+    background_scale: f32,
+    character_scale: f32,
+    ui_scale: f32,
+}
+
+/// Background art uses aspect-preserving "cover" cropping, while characters
+/// and the interface fit the full design canvas. Never stretch raster pixels.
+fn viewport_metrics(size: Vec2, authored_ui_scale: f32) -> ViewportMetrics {
+    let viewport = size.max(Vec2::ONE);
+    let factors = viewport / Vec2::new(1280.0, 720.0);
+    let fit = factors.x.min(factors.y);
+    ViewportMetrics {
+        background_scale: factors.x.max(factors.y),
+        character_scale: fit,
+        ui_scale: authored_ui_scale * fit.clamp(0.6, 2.5),
+    }
+}
+
+/// Work in logical window dimensions: Wayland's per-monitor scale factor is
+/// already handled by Bevy. Recalculate every frame so spawned/reloaded
+/// sprites inherit the current size, even when the window did not just resize.
+fn fit_viewport(
+    windows: Query<&Window, With<PrimaryWindow>>,
+    session: Res<Session>,
+    mut ui_scale: ResMut<UiScale>,
+    mut backgrounds: Query<&mut Transform, (With<BackgroundVisual>, Without<CharacterVisual>)>,
+    mut characters: Query<(&CharacterVisual, &mut Transform), (With<CharacterVisual>, Without<BackgroundVisual>)>,
+    mut previous: Local<Vec2>,
+) {
+    let Ok(window) = windows.single() else { return; };
+    let size = Vec2::new(window.resolution.width(), window.resolution.height());
+    if size.x < 1.0 || size.y < 1.0 { return; }
+    let m = viewport_metrics(size, session.game.theme.ui_scale);
+    if (ui_scale.0 - m.ui_scale).abs() > 0.001 {
+        ui_scale.0 = m.ui_scale;
+    }
+    for mut transform in &mut backgrounds {
+        transform.scale = Vec3::splat(m.background_scale);
+    }
+    for (anchor, mut transform) in &mut characters {
+        transform.scale = Vec3::splat(m.character_scale);
+        transform.translation.x = anchor.anchor_x * m.character_scale;
+        transform.translation.y = -30.0 * m.character_scale;
+    }
+    if *previous != size {
+        *previous = size;
+        info!(
+            "Vesper viewport resized: {}x{}; scene scale {:.3}; background cover {:.3}",
+            size.x.round(), size.y.round(), m.character_scale, m.background_scale
+        );
     }
 }
 
@@ -196,7 +260,7 @@ fn main() {
             pending_audio: Vec::new(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades, monitor_audio_assets, escape_to_quit).chain());
+        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
     }
@@ -227,6 +291,7 @@ fn apply_visual(
             let fade = session.game.theme.fade_seconds;
             let entity = commands.spawn((
                 Name::new(format!("Background: {id}")),
+                BackgroundVisual,
                 Sprite {
                     image: assets.load(path),
                     color: if fade > 0.0 { Color::srgba(1.0, 1.0, 1.0, 0.0) } else { Color::WHITE },
@@ -255,6 +320,7 @@ fn apply_visual(
             let fade = session.game.theme.fade_seconds;
             let entity = commands.spawn((
                 Name::new(format!("Character: {character} ({expression})")),
+                CharacterVisual { anchor_x: x },
                 Sprite {
                     image: assets.load(path),
                     color: if fade > 0.0 { Color::srgba(1.0, 1.0, 1.0, 0.0) } else { Color::WHITE },
@@ -598,7 +664,32 @@ fn poll_completed_io(
 
 #[cfg(test)]
 mod tests {
-    use super::fade_fraction;
+    use super::{fade_fraction, viewport_metrics};
+    use bevy::prelude::Vec2;
+    #[test]
+    fn viewport_scales_equally_with_window_and_preserves_aspect() {
+        let baseline = viewport_metrics(Vec2::new(1280.0, 720.0), 1.0);
+        assert_eq!(baseline.background_scale, 1.0);
+        assert_eq!(baseline.character_scale, 1.0);
+        assert_eq!(baseline.ui_scale, 1.0);
+
+        let full = viewport_metrics(Vec2::new(1920.0, 1080.0), 1.0);
+        assert_eq!(full.background_scale, 1.5);
+        assert_eq!(full.character_scale, 1.5);
+        assert_eq!(full.ui_scale, 1.5);
+
+        // Wide monitor: fill scene with cropping, retain character proportions.
+        let wide = viewport_metrics(Vec2::new(2560.0, 1080.0), 1.0);
+        assert_eq!(wide.background_scale, 2.0);
+        assert_eq!(wide.character_scale, 1.5);
+        assert_eq!(wide.ui_scale, 1.5);
+
+        let narrow = viewport_metrics(Vec2::new(800.0, 700.0), 1.2);
+        assert!(narrow.background_scale > narrow.character_scale);
+        assert_eq!(narrow.character_scale, 0.625);
+        assert_eq!(narrow.ui_scale, 0.75);
+    }
+
     #[test]
     fn fade_progress_is_bounded_and_reaches_full_opacity() {
         assert_eq!(fade_fraction(0.0, 2.0), 0.0);
