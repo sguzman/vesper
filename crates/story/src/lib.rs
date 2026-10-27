@@ -184,6 +184,11 @@ fn command(line: &str) -> Result<Command, String> {
     Err("unrecognized command or dialogue".into())
 }
 
+fn same_commands(previous: &Scene, updated: &Scene) -> bool {
+    previous.instructions.iter().map(|i| &i.command)
+        .eq(updated.instructions.iter().map(|i| &i.command))
+}
+
 impl Story {
     pub fn scene_count(&self) -> usize { self.scenes.len() }
     pub fn entry_scene(&self) -> &str { &self.entry }
@@ -340,10 +345,15 @@ impl Story {
             }
         }
         if errors.is_empty() {
-            let fingerprint = source.as_bytes().iter().fold(
-                0xcbf29ce484222325_u64,
-                |hash, &byte| (hash ^ u64::from(byte)).wrapping_mul(0x100000001b3),
-            );
+            // Ignore comments, blank lines and indentation: they do not
+            // change execution and must not invalidate compatible saves.
+            let fingerprint = source.lines()
+                .map(str::trim)
+                .filter(|line| !line.is_empty() && !line.starts_with('#'))
+                .flat_map(|line| line.bytes().chain(std::iter::once(b'\n')))
+                .fold(0xcbf29ce484222325_u64, |hash, byte| {
+                    (hash ^ u64::from(byte)).wrapping_mul(0x100000001b3)
+                });
             Ok(Self { scenes, entry: entry.expect("non-empty story"), fingerprint })
         } else { Err(errors) }
     }
@@ -442,14 +452,17 @@ impl Machine {
             return Err("hot reload removed the current narrative position".into());
         }
         for (name, previous) in &self.story.scenes {
-            if name != &self.scene && updated.scenes.get(name) != Some(previous) {
+            if name != &self.scene && !updated.scenes.get(name)
+                .is_some_and(|replacement| same_commands(previous, replacement)) {
                 return Err(format!("hot reload changed previous or untracked scene '{name}'; restart required"));
             }
         }
         // Do not replay assignments, branches, sounds or any prior side effects.
-        // Instruction line numbers are part of compatibility for clear diagnostics.
+        // Compare executable commands rather than source line numbers.
         let completed = self.cursor.saturating_sub(1);
-        if old_scene.instructions.get(..completed) != new_scene.instructions.get(..completed) {
+        if old_scene.instructions.get(..completed).map(|items| items.iter().map(|i| &i.command))
+            .zip(new_scene.instructions.get(..completed).map(|items| items.iter().map(|i| &i.command)))
+            .is_none_or(|(a, b)| !a.eq(b)) {
             return Err("hot reload modified already executed narrative instructions".into());
         }
         let mut pending = self.pending.clone();
@@ -655,6 +668,22 @@ end
         assert!(Story::parse("@scene a\nif x == 1\n\"unfinished\"").is_err());
         assert!(Story::parse("@scene a\nelse").is_err());
         assert!(Story::parse("@scene a\nset x = garbage").is_err());
+    }
+
+    #[test]
+    fn cosmetic_story_edits_do_not_invalidate_saves_or_hot_reload() {
+        let original = Story::parse("@scene start\nset score = 2\n\"Hello\"\n@scene later\n\"End\"\n").unwrap();
+        let formatted = Story::parse("# Added explanation\n\n@scene start\n  set score = 2\n  \"Hello\"\n\n@scene later\n  \"End\"\n").unwrap();
+        assert_eq!(original.fingerprint(), formatted.fingerprint());
+        let mut session = Machine::new(&original, "start").unwrap();
+        session.advance().unwrap();
+        let rebound = session.rebind(&formatted).unwrap();
+        let restored = Machine::restore(&formatted, session.snapshot()).unwrap();
+        assert_eq!(rebound.variables()["score"], Value::Number(2));
+        assert_eq!(restored.variables()["score"], Value::Number(2));
+        let changed = Story::parse("@scene start\nset score = 3\n\"Hello\"\n@scene later\n\"End\"\n").unwrap();
+        assert_ne!(original.fingerprint(), changed.fingerprint());
+        assert!(Machine::restore(&changed, session.snapshot()).is_err());
     }
 
     #[test]
