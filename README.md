@@ -2,13 +2,13 @@
 
 Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will contain behavior; authored stories, characters, artwork, fonts, themes and audio will remain **external files**.
 
-**Status:** early implementation. The narrative core is CI-tested; the Bevy text player is implemented but graphical build/run verification is pending.
+**Status:** early implementation. The narrative core and external manifest validation pass CI. Bevy dialogue, sprite rendering, branching keyboard input and Linux startup passed automated screenshot tests; this is **not yet a complete VN engine**.
 
 ## Workspace
 
 - `crates/story`: graphics-independent `.vn` parser, validator and deterministic interpreter.
 - `crates/cli`: `vesper check <story.vn>` validates an external story file.
-- `crates/player`: Bevy 0.20 player reading external game manifests, stories, images and keyboard choices; runtime verification pending.
+- `crates/player`: Bevy 0.20 player reading external game manifests, stories, images and keyboard choices; CI-verified graphical player with external artwork and keyboard branching.
 - `game/scripts/demo.vn`: editable sample external story.
 - `docs/roadmap.json`: durable weighted roadmap and acceptance criteria.
 

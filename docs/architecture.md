@@ -14,4 +14,4 @@ Baseline: 2026-10-27. License: MIT.
 
 **1.0 definition.** A complete externally authored reference VN runs in an unchanged executable with backgrounds, characters, fonts, dialogue, choices, variables, conditions, audio, persistence, safe dev hot reload, accessible UI, validation, tests and Linux packaging. No arbitrary other-genre functionality, visual editor or remote backend.
 
-**Current state.** Headless parser and runtime have been authored but must pass CI. The Bevy player loads external game manifests, visual commands, text dialogue and keyboard choices. Linux build and initial startup smoke pass. Input interactions and rendered pixels remain to be verified. See `roadmap.json` for verified state.
+**Current state.** Headless parser and runtime have been authored but must pass CI. The Bevy player loads external game manifests, visual commands, text dialogue and keyboard choices. Linux build and initial startup smoke pass. Keyboard choice interactions and sample artwork pixels passed X11 screenshot verification (CI run 40558460155). Advanced typography, audio, saves, hot reload and release readiness remain incomplete. See `roadmap.json` for verified state.
