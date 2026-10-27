@@ -37,3 +37,7 @@ The `.vn` language is provisional. It currently supports `@scene`, named dialogu
 - No speculative implementation for other genres. Complete a working VN player first.
 
 See `docs/architecture.md` and `docs/roadmap.json` for technical and completion policies.
+
+## External typography
+
+Set `theme = "styles/dialogue.toml"` in `game.toml`. Themes configure `ui_scale`, panel dimensions, RGBA colors, and separate speaker/dialogue/choice/hint sizes and colors. Select `[font] family = "DejaVu Sans"` for system font discovery or `[font] file = "assets/fonts/YourFont.ttf"` to load an external TTF/OTF. Font paths stay inside the game directory and no game font is compiled into Vesper. Unicode wrapping uses native Bevy text layout. Authors must license their font files.
