@@ -2,7 +2,8 @@
 //! Saves never serialize transient ECS entity identifiers.
 use crate::Game;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, fs, io, path::Path};
+use std::{collections::BTreeMap, fs, io::{self, Write}, path::Path,
+    sync::atomic::{AtomicU64, Ordering}};
 use vesper_story::{Machine, MachineSnapshot};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -102,11 +103,22 @@ impl SaveData {
         let bytes = self.encode()?;
         let name = path.file_name().ok_or("save path has no file name")?;
         let mut temp = name.to_os_string();
-        temp.push(format!(".{}.tmp", std::process::id()));
+        static TEMP_ID: AtomicU64 = AtomicU64::new(0);
+        temp.push(format!(
+            ".{}.{}.tmp",
+            std::process::id(),
+            TEMP_ID.fetch_add(1, Ordering::Relaxed),
+        ));
         let tmp = parent.join(temp);
         let result: Result<(), io::Error> = (|| {
-            fs::write(&tmp, bytes)?;
+            let mut file = fs::OpenOptions::new()
+                .write(true).create_new(true).open(&tmp)?;
+            file.write_all(&bytes)?;
+            file.sync_all()?;
+            drop(file);
             fs::rename(&tmp, path)?;
+            #[cfg(unix)]
+            fs::File::open(parent)?.sync_all()?;
             Ok(())
         })();
         if result.is_err() {

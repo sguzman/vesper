@@ -22,6 +22,10 @@ struct Session {
 #[derive(Resource, Default)]
 struct CompletedIo(Arc<Mutex<Vec<IoResult>>>);
 
+/// Keep asynchronous save workers alive through application shutdown.
+#[derive(Resource, Default)]
+struct IoWorkers(Arc<Mutex<Vec<std::thread::JoinHandle<()>>>>);
+
 enum IoResult {
     Saved(Result<(), String>),
     Loaded(Result<(Machine, PresentationState), String>),
@@ -164,6 +168,8 @@ fn main() {
     let title = game.manifest.title.clone();
     let ui_scale = game.theme.ui_scale;
     let inbox = watch.then(|| reload::start(game.root.clone()));
+    let io_workers = IoWorkers::default();
+    let outstanding_workers = io_workers.0.clone();
     let mut app = App::new();
     app
         .add_plugins(DefaultPlugins
@@ -182,6 +188,7 @@ fn main() {
             }))
         .insert_resource(UiScale(ui_scale))
         .insert_resource(CompletedIo::default())
+        .insert_resource(io_workers)
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
             background: None, music: None, characters: BTreeMap::new(),
@@ -194,6 +201,15 @@ fn main() {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
     }
     app.run();
+    // This is after Bevy's UI/render loop has exited, so joining cannot
+    // block a live frame. F5 immediately followed by closing the window is safe.
+    if let Ok(mut jobs) = outstanding_workers.lock() {
+        for job in std::mem::take(&mut *jobs) {
+            if job.join().is_err() {
+                eprintln!("A Vesper save/load worker panicked during shutdown");
+            }
+        }
+    }
 }
 
 fn apply_visual(
@@ -302,6 +318,9 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
     for _ in 0..128 {
         match session.machine.advance() {
             Ok(Output::Dialogue { speaker, text }) => {
+                if env::var_os("VESPER_TRACE_SCENES").is_some() {
+                    info!("Vesper scene dialogue: {}", session.machine.scene());
+                }
                 return Screen::normal(speaker.unwrap_or_default(), text);
             }
             Ok(Output::Choices(options)) => {
@@ -316,6 +335,7 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
                 }
             }
             Ok(Output::End) => {
+                info!("Vesper story reached ending scene: {}", session.machine.scene());
                 session.finished = true;
                 return Screen::ending("The End".into());
             }
@@ -454,6 +474,7 @@ fn trigger_save_load(
     keyboard: Res<ButtonInput<KeyCode>>,
     session: Res<Session>,
     completed: Res<CompletedIo>,
+    workers: Res<IoWorkers>,
 ) {
     if !(keyboard.just_pressed(KeyCode::F5) || keyboard.just_pressed(KeyCode::F9)) {
         return;
@@ -465,8 +486,17 @@ fn trigger_save_load(
             return;
         }
     };
+    let mut active = match workers.0.lock() {
+        Ok(jobs) => jobs,
+        Err(_) => { error!("Vesper save worker lock is unavailable"); return; }
+    };
+    active.retain(|job| !job.is_finished());
+    if !active.is_empty() {
+        warn!("Vesper save/load operation already in progress");
+        return;
+    }
     let queue = completed.0.clone();
-    if keyboard.just_pressed(KeyCode::F5) {
+    let worker = if keyboard.just_pressed(KeyCode::F5) {
         let save = SaveData::new(
             &session.game, &session.machine, session.presentation.clone(),
         );
@@ -487,7 +517,8 @@ fn trigger_save_load(
                 messages.push(IoResult::Loaded(result));
             }
         });
-    }
+    };
+    active.push(worker);
 }
 
 fn poll_completed_io(
