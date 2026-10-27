@@ -17,6 +17,11 @@ tmp="$(mktemp -d)"
 trap 'rm -rf -- "$tmp"' EXIT
 mkdir -p -- "$tmp/vesper"
 cp -- "$binary" "$tmp/vesper/vesper-player"
+# Keep debug symbols in the original build, but do not ship them to players.
+# Vesper's development binary can otherwise make this small test bundle huge.
+if command -v strip >/dev/null 2>&1; then
+  strip --strip-debug -- "$tmp/vesper/vesper-player"
+fi
 cp -a -- "$root/game" "$tmp/vesper/game"
 if [[ -d "$root/examples" ]]; then
   cp -a -- "$root/examples" "$tmp/vesper/examples"
