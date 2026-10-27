@@ -251,8 +251,8 @@ fn setup(
     assets: Res<AssetServer>,
 ) {
     commands.spawn(Camera2d);
-    let theme = &session.game.theme;
-    let font = text_font(theme, &assets);
+    let theme = session.game.theme.clone();
+    let font = text_font(&theme, &assets);
     let initial = next_screen(&mut session, &mut commands, &assets);
     let panel = &session.game.theme.panel;
     let background = panel.background;
