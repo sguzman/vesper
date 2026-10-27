@@ -23,6 +23,10 @@ pub struct Manifest {
     #[serde(default)]
     pub backgrounds: BTreeMap<String, String>,
     #[serde(default)]
+    pub music: BTreeMap<String, String>,
+    #[serde(default)]
+    pub sounds: BTreeMap<String, String>,
+    #[serde(default)]
     pub characters: BTreeMap<String, Character>,
 }
 
@@ -37,6 +41,7 @@ pub struct Character {
 #[serde(default, deny_unknown_fields)]
 pub struct Theme {
     pub ui_scale: f32,
+    pub fade_seconds: f32,
     pub font: FontSelection,
     pub panel: PanelStyle,
     pub speaker: TextStyle,
@@ -93,6 +98,7 @@ impl Default for Theme {
     fn default() -> Self {
         Self {
             ui_scale: 1.0,
+            fade_seconds: 0.25,
             font: FontSelection::default(),
             panel: PanelStyle::default(),
             speaker: TextStyle { size: 25.0, color: [0.96, 0.75, 0.40, 1.0] },
@@ -111,6 +117,9 @@ impl Theme {
     pub fn validate(&self) -> Result<(), String> {
         if !self.ui_scale.is_finite() || !(0.5..=2.5).contains(&self.ui_scale) {
             return Err("theme.ui_scale must be between 0.5 and 2.5".into());
+        }
+        if !self.fade_seconds.is_finite() || !(0.0..=3.0).contains(&self.fade_seconds) {
+            return Err("theme.fade_seconds must be between 0 and 3".into());
         }
         let panel = &self.panel;
         if !color_valid(panel.background)
@@ -243,6 +252,18 @@ impl Game {
             }
             checked_file(&root, filename)?;
         }
+        for (kind, files) in [("music", &manifest.music), ("sound", &manifest.sounds)] {
+            for (name, filename) in files {
+                if !id_valid(name) {
+                    return Err(format!("invalid {kind} identifier '{name}'"));
+                }
+                let file = checked_file(&root, filename)?;
+                if !matches!(file.extension().and_then(|ext| ext.to_str())
+                    .map(str::to_ascii_lowercase).as_deref(), Some("wav" | "ogg")) {
+                    return Err(format!("{kind} '{name}' must be a .wav or .ogg file"));
+                }
+            }
+        }
         for (name, character) in &manifest.characters {
             if !id_valid(name) || character.expressions.is_empty() {
                 return Err(format!("invalid character '{name}' or missing expressions"));
@@ -266,6 +287,14 @@ impl Game {
                         None
                     } else { Some(format!("character expression '{character}.{expression}'")) }
                 }
+                vesper_story::Visual::Music(id) => {
+                    if manifest.music.contains_key(&id) { None }
+                    else { Some(format!("music '{id}'")) }
+                }
+                vesper_story::Visual::Sound(id) => {
+                    if manifest.sounds.contains_key(&id) { None }
+                    else { Some(format!("sound '{id}'")) }
+                }
                 _ => None,
             };
             if let Some(reference) = missing {
@@ -276,6 +305,16 @@ impl Game {
             }
         }
         Ok(Self { root, manifest, story, theme })
+    }
+
+    pub fn music(&self, id: &str) -> Result<&str, String> {
+        self.manifest.music.get(id).map(String::as_str)
+            .ok_or_else(|| format!("unknown music '{id}'"))
+    }
+
+    pub fn sound(&self, id: &str) -> Result<&str, String> {
+        self.manifest.sounds.get(id).map(String::as_str)
+            .ok_or_else(|| format!("unknown sound '{id}'"))
     }
 
     pub fn background(&self, id: &str) -> Result<&str, String> {
@@ -397,6 +436,19 @@ room = "assets/room.png"
         assert_eq!(loaded.theme.dialogue.size, 36.0);
         fs::write(fixture.root.join("styles/visual.toml"), "ui_scale = 0.1\n").unwrap();
         assert!(Game::load(&fixture.root).unwrap_err().contains("ui_scale"));
+    }
+
+    #[test]
+    fn rejects_undeclared_sound_and_invalid_transition() {
+        let sample = Fixture::new("sounds");
+        fs::write(sample.root.join("scripts/story.vn"), "@scene opening\nmusic night\n").unwrap();
+        let err = Game::load(&sample.root).unwrap_err();
+        assert!(err.contains("story.vn:2:") && err.contains("music 'night'"), "{err}");
+        fs::write(sample.root.join("scripts/story.vn"), "@scene opening\nsound hello\n").unwrap();
+        let err = Game::load(&sample.root).unwrap_err();
+        assert!(err.contains("sound 'hello'"), "{err}");
+        assert!(toml::from_str::<Theme>("fade_seconds = -1.0").unwrap().validate().is_err());
+        assert!(toml::from_str::<Theme>("fade_seconds = 0.0").unwrap().validate().is_ok());
     }
 
     #[cfg(unix)]
