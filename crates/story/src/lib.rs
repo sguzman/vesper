@@ -1,7 +1,7 @@
 //! Deterministic narrative parser and interpreter, independent of graphics and frame rate.
 //! The .vn format is preliminary and will be stabilized before Vesper 1.0.
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, sync::Arc};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Diagnostic {
@@ -328,21 +328,21 @@ impl Story {
 }
 
 /// Headless story machine. Blocking output is emitted once per player advancement.
-pub struct Machine<'a> {
-    story: &'a Story,
+pub struct Machine {
+    story: Arc<Story>,
     scene: String,
     cursor: usize,
     variables: BTreeMap<String, Value>,
     pending: Option<Vec<Choice>>,
 }
 
-impl<'a> Machine<'a> {
-    pub fn new(story: &'a Story, scene: &str) -> Result<Self, String> {
+impl Machine {
+    pub fn new(story: &Story, scene: &str) -> Result<Self, String> {
         if !story.scenes.contains_key(scene) {
             return Err(format!("unknown starting scene '{scene}'"));
         }
         Ok(Self {
-            story, scene: scene.into(), cursor: 0,
+            story: Arc::new(story.clone()), scene: scene.into(), cursor: 0,
             variables: BTreeMap::new(), pending: None,
         })
     }
