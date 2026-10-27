@@ -175,10 +175,10 @@ fn command(line: &str) -> Result<Command, String> {
     if line.starts_with('"') {
         return Ok(Command::Dialogue(None, quoted(line)?));
     }
-    if let Some((speaker, text)) = line.split_once(": ") {
-        if identifier(speaker) {
-            return Ok(Command::Dialogue(Some(speaker.into()), quoted(text)?));
-        }
+    if let Some((speaker, text)) = line.split_once(": ")
+        && identifier(speaker)
+    {
+        return Ok(Command::Dialogue(Some(speaker.into()), quoted(text)?));
     }
     Err("unrecognized command or dialogue".into())
 }
