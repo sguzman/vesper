@@ -50,8 +50,10 @@ def unique_in_strip(path: Path, x: int, y: int, width: int, height: int) -> int:
 
 
 def main() -> None:
+    out = Path("/tmp/vesper-responsive-qa")
+    out.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="vesper-resize-") as temp:
-        log = Path(temp) / "player.log"
+        log = out / "player.log"
         env = dict(os.environ, LIBGL_ALWAYS_SOFTWARE="1",
                    VESPER_SAVE_DIR=str(Path(temp) / "saves"))
         with log.open("w") as stdout:
@@ -66,13 +68,22 @@ def main() -> None:
                     call("xdotool", "windowsize", "--sync", win, str(width), str(height))
                     wait_for(log, f"Vesper viewport resized: {width}x{height}")
                     time.sleep(1.5)
-                    frame = Path(temp) / f"frame-{width}x{height}.png"
+                    frame = out / f"frame-{width}x{height}.png"
                     call("import", "-window", win, str(frame))
                     size = image_size(frame)
                     assert size == (width, height), f"unexpected screenshot size: {size}"
                     strip_height = min(height - 160, 440)
                     left = unique_in_strip(frame, 0, 100, 110, strip_height)
                     right = unique_in_strip(frame, width - 110, 100, 110, strip_height)
+                    left_pixel = call("convert", str(frame), "-format",
+                                      "%[pixel:p{30,300}]", "info:").stdout
+                    middle_pixel = call("convert", str(frame), "-format",
+                                        f"%[pixel:p{{{width // 2},300}}]", "info:").stdout
+                    right_pixel = call("convert", str(frame), "-format",
+                                       f"%[pixel:p{{{width - 30},300}}]", "info:").stdout
+                    print(f"Frame {width}x{height}: colors left={left}, right={right}; "
+                          f"pixel left={left_pixel}, center={middle_pixel}, right={right_pixel}",
+                          flush=True)
                     # Previously these strips were flat charcoal after resizing
                     # because the background remained hard-coded at 1280x720.
                     assert left >= 3 and right >= 3, (
