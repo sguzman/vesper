@@ -66,7 +66,7 @@ struct Instruction { line: usize, command: Command }
 struct Scene { instructions: Vec<Instruction> }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Story { scenes: BTreeMap<String, Scene> }
+pub struct Story { scenes: BTreeMap<String, Scene>, entry: String }
 
 fn identifier(input: &str) -> bool {
     let mut chars = input.chars();
@@ -185,10 +185,12 @@ fn command(line: &str) -> Result<Command, String> {
 
 impl Story {
     pub fn scene_count(&self) -> usize { self.scenes.len() }
+    pub fn entry_scene(&self) -> &str { &self.entry }
 
     pub fn parse(source: &str) -> Result<Self, Vec<Diagnostic>> {
         let mut scenes = BTreeMap::<String, Scene>::new();
         let mut current: Option<String> = None;
+        let mut entry: Option<String> = None;
         let mut blocks: Vec<(usize, Option<usize>)> = Vec::new();
         let mut errors = Vec::new();
 
@@ -215,6 +217,7 @@ impl Story {
                     current = None;
                 } else {
                     scenes.insert(name.into(), Scene::default());
+                    if entry.is_none() { entry = Some(name.into()); }
                     current = Some(name.into());
                 }
                 continue;
@@ -323,7 +326,7 @@ impl Story {
                 }
             }
         }
-        if errors.is_empty() { Ok(Self { scenes }) } else { Err(errors) }
+        if errors.is_empty() { Ok(Self { scenes, entry: entry.expect("non-empty story") }) } else { Err(errors) }
     }
 }
 
