@@ -253,6 +253,8 @@ jobs:
           grep -F "Creating new window Vesper Demonstration" /tmp/vesper-package.log
       - name: Hot reload story, UI and external artwork; reject invalid source
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/hot_reload_smoke.py
+      - name: Complete both reference branches and verify safe exit saves
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/reference_playthrough.py
       - name: Restore F5 save with F9 across process restart
         run: |
           mkdir -p /tmp/vesper-save-test
