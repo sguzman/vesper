@@ -32,6 +32,12 @@ jobs:
             echo 'invalid story unexpectedly passed'; exit 1
           fi
           grep -F '/tmp/vesper-invalid.vn:2:' /tmp/vesper-cli.log
+      - name: Upload resolved Cargo lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-lock
+          path: Cargo.lock
+          retention-days: 1
   bevy:
     runs-on: ubuntu-latest
     steps:
@@ -40,8 +46,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: System libraries
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
+          sudo timeout 150s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 150s apt-get install -y --no-install-recommends libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
       - name: Build Bevy 0.20 player
         run: cargo build -p vesper-player
       - name: Start player under virtual X11 display
