@@ -2,6 +2,8 @@
 @scene introduction
 background bedroom
 show elena happy at center
+music evening
+sound greeting
 elena: "You're finally awake."
 * "Good morning." -> friendly
 * "Where am I?" -> confused

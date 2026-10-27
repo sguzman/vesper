@@ -8,5 +8,11 @@ theme = "styles/dialogue.toml"
 [backgrounds]
 bedroom = "assets/backgrounds/bedroom.png"
 
+[music]
+evening = "assets/audio/evening.wav"
+
+[sounds]
+greeting = "assets/audio/greeting.wav"
+
 [characters.elena.expressions]
 happy = "assets/characters/elena-happy.png"

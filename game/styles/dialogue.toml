@@ -1,5 +1,6 @@
 # Game-specific Bevy typography/layout, editable without recompiling the engine.
 ui_scale = 1.0
+fade_seconds = 0.25
 
 [font]
 # Use a system family, or replace with: file = "assets/fonts/MyFont.ttf"
