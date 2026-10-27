@@ -187,6 +187,15 @@ impl Story {
     pub fn scene_count(&self) -> usize { self.scenes.len() }
     pub fn entry_scene(&self) -> &str { &self.entry }
     pub fn has_scene(&self, id: &str) -> bool { self.scenes.contains_key(id) }
+    pub fn visual_references(&self) -> Vec<(usize, Visual)> {
+        self.scenes.values()
+            .flat_map(|scene| scene.instructions.iter())
+            .filter_map(|instruction| match &instruction.command {
+                Command::Visual(visual) => Some((instruction.line, visual.clone())),
+                _ => None,
+            })
+            .collect()
+    }
 
     pub fn parse(source: &str) -> Result<Self, Vec<Diagnostic>> {
         let mut scenes = BTreeMap::<String, Scene>::new();

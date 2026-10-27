@@ -115,6 +115,27 @@ impl Game {
                 checked_file(&root, filename)?;
             }
         }
+        for (line, visual) in story.visual_references() {
+            let missing = match visual {
+                vesper_story::Visual::Background(id) => {
+                    if manifest.backgrounds.contains_key(&id) { None }
+                    else { Some(format!("background '{id}'")) }
+                }
+                vesper_story::Visual::Show { character, expression, .. } => {
+                    if manifest.characters.get(&character)
+                        .is_some_and(|entry| entry.expressions.contains_key(&expression)) {
+                        None
+                    } else { Some(format!("character expression '{character}.{expression}'")) }
+                }
+                _ => None,
+            };
+            if let Some(reference) = missing {
+                return Err(format!(
+                    "{}:{line}: unknown {reference} in game manifest",
+                    script_path.display()
+                ));
+            }
+        }
         Ok(Self { root, manifest, story })
     }
 
@@ -195,6 +216,24 @@ room = "assets/room.png"
         fs::write(sample.root.join("game.toml"), manifest.replace(
             "entry = \"opening\"", "entry = \"missing\"")).unwrap();
         assert!(Game::load(&sample.root).unwrap_err().contains("entry scene"));
+    }
+
+    #[test]
+    fn rejects_undeclared_visual_references() {
+        let sample = Fixture::new("visual-ref");
+        fs::write(
+            sample.root.join("scripts/story.vn"),
+            "@scene opening\nbackground missing\n",
+        ).unwrap();
+        let err = Game::load(&sample.root).unwrap_err();
+        assert!(err.contains("story.vn:2:"), "{err}");
+        assert!(err.contains("background 'missing'"), "{err}");
+        fs::write(
+            sample.root.join("scripts/story.vn"),
+            "@scene opening\nshow elena happy at center\n",
+        ).unwrap();
+        let err = Game::load(&sample.root).unwrap_err();
+        assert!(err.contains("character expression 'elena.happy'"), "{err}");
     }
 
     #[cfg(unix)]
