@@ -12,6 +12,7 @@ struct Session {
     choosing: bool,
     finished: bool,
     background: Option<Entity>,
+    music: Option<Entity>,
     characters: BTreeMap<String, Entity>,
     presentation: PresentationState,
 }
@@ -24,6 +25,24 @@ enum IoResult {
     Loaded(Result<(Machine, PresentationState), String>),
 }
 
+
+#[derive(Component)]
+struct FadeIn { elapsed: f32, duration: f32 }
+
+fn animate_fades(
+    time: Res<Time>,
+    mut commands: Commands,
+    mut sprites: Query<(Entity, &mut Sprite, &mut FadeIn)>,
+) {
+    for (entity, mut sprite, mut fade) in &mut sprites {
+        fade.elapsed = (fade.elapsed + time.delta_secs()).min(fade.duration);
+        let alpha = (fade.elapsed / fade.duration).clamp(0.0, 1.0);
+        sprite.color = Color::srgba(1.0, 1.0, 1.0, alpha);
+        if fade.elapsed >= fade.duration {
+            commands.entity(entity).remove::<FadeIn>();
+        }
+    }
+}
 
 #[derive(Component)]
 enum StoryText {
@@ -49,15 +68,18 @@ impl Screen {
         }
     }
 
-    fn choices(options: &[vesper_story::Choice]) -> Self {
+    fn choices(options: &[vesper_story::Choice], selected: usize) -> Self {
         let mut lines = String::new();
         for (index, option) in options.iter().enumerate() {
-            lines.push_str(&format!("{}. {}\n", index + 1, option.label));
+            lines.push_str(&format!("{} {}. {}\n",
+                if index == selected { "▶" } else { " " },
+                index + 1, option.label,
+            ));
         }
         Self {
             speaker: String::new(),
             body: lines,
-            hint: "Number: choose   F5: save   F9: load".into(),
+            hint: "Arrows: move   Enter: select   Number: choose   F5: save   F9: load".into(),
             choices: true,
         }
     }
@@ -143,11 +165,11 @@ fn main() {
         .insert_resource(CompletedIo::default())
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
-            background: None, characters: BTreeMap::new(),
+            background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io).chain())
+        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades).chain())
         .run();
 }
 
@@ -163,15 +185,20 @@ fn apply_visual(
             if let Some(previous) = session.background.take() {
                 commands.entity(previous).despawn();
             }
+            let fade = session.game.theme.fade_seconds;
             let entity = commands.spawn((
                 Name::new(format!("Background: {id}")),
                 Sprite {
                     image: assets.load(path),
+                    color: if fade > 0.0 { Color::srgba(1.0, 1.0, 1.0, 0.0) } else { Color::WHITE },
                     custom_size: Some(Vec2::new(1280., 720.)),
                     ..default()
                 },
                 Transform::from_xyz(0., 0., -10.),
             )).id();
+            if fade > 0.0 {
+                commands.entity(entity).insert(FadeIn { elapsed: 0.0, duration: fade });
+            }
             session.background = Some(entity);
             session.presentation.background = Some(id);
         }
@@ -186,15 +213,20 @@ fn apply_visual(
             if let Some(previous) = session.characters.remove(&character) {
                 commands.entity(previous).despawn();
             }
+            let fade = session.game.theme.fade_seconds;
             let entity = commands.spawn((
                 Name::new(format!("Character: {character} ({expression})")),
                 Sprite {
                     image: assets.load(path),
+                    color: if fade > 0.0 { Color::srgba(1.0, 1.0, 1.0, 0.0) } else { Color::WHITE },
                     custom_size: Some(Vec2::new(320., 500.)),
                     ..default()
                 },
                 Transform::from_xyz(x, -30., 0.),
             )).id();
+            if fade > 0.0 {
+                commands.entity(entity).insert(FadeIn { elapsed: 0.0, duration: fade });
+            }
             session.presentation.characters.insert(
                 character.clone(),
                 CharacterPose { expression, position },
@@ -207,8 +239,28 @@ fn apply_visual(
             }
             session.presentation.characters.remove(&character);
         }
-        Visual::Music(_) | Visual::Sound(_) => {
-            // Audio playback belongs to milestone P03.
+        Visual::Music(id) => {
+            let path = session.game.music(&id)?.to_owned();
+            if let Some(previous) = session.music.take() {
+                commands.entity(previous).despawn();
+            }
+            let entity = commands.spawn((
+                Name::new(format!("Music: {id}")),
+                AudioPlayer::new(assets.load::<AudioSource>(path)),
+                PlaybackSettings::LOOP,
+            )).id();
+            session.music = Some(entity);
+            session.presentation.music = Some(id.clone());
+            info!("Vesper queued music: {id}");
+        }
+        Visual::Sound(id) => {
+            let path = session.game.sound(&id)?.to_owned();
+            commands.spawn((
+                Name::new(format!("Sound: {id}")),
+                AudioPlayer::new(assets.load::<AudioSource>(path)),
+                PlaybackSettings::DESPAWN,
+            ));
+            info!("Vesper queued sound: {id}");
         }
     }
     Ok(())
@@ -223,7 +275,8 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
             }
             Ok(Output::Choices(options)) => {
                 session.choosing = true;
-                return Screen::choices(&options);
+                session.presentation.selected_choice = 0;
+                return Screen::choices(&options, 0);
             }
             Ok(Output::Visual(visual)) => {
                 if let Err(error) = apply_visual(session, commands, assets, visual) {
@@ -309,14 +362,37 @@ fn advance_from_keyboard(
 ) {
     if session.finished { return; }
     if session.choosing {
-        let number = [
+        let options = match session.machine.last_output() {
+            Some(Output::Choices(options)) => options.clone(),
+            _ => return,
+        };
+        if options.is_empty() { return; }
+        let current = session.presentation.selected_choice.min(options.len() - 1);
+        let selected = if input.just_pressed(KeyCode::ArrowDown) {
+            Some((current + 1) % options.len())
+        } else if input.just_pressed(KeyCode::ArrowUp) {
+            Some((current + options.len() - 1) % options.len())
+        } else {
+            None
+        };
+        if let Some(index) = selected {
+            session.presentation.selected_choice = index;
+            update_screen(Screen::choices(&options, index), &session.game.theme, &mut texts);
+            return;
+        }
+        let digit = [
             KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3,
             KeyCode::Digit4, KeyCode::Digit5, KeyCode::Digit6,
             KeyCode::Digit7, KeyCode::Digit8, KeyCode::Digit9,
         ].iter().position(|key| input.just_pressed(*key));
-        if let Some(number) = number {
-            if session.machine.choose(number).is_ok() {
+        let confirmed = digit.or_else(|| {
+            (input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space))
+                .then_some(current)
+        });
+        if let Some(index) = confirmed {
+            if session.machine.choose(index).is_ok() {
                 session.choosing = false;
+                session.presentation.selected_choice = 0;
                 let screen = next_screen(&mut session, &mut commands, &assets);
                 update_screen(screen, &session.game.theme, &mut texts);
             }
@@ -406,6 +482,17 @@ fn poll_completed_io(
                     commands.entity(entity).despawn();
                 }
                 session.presentation = PresentationState::default();
+                session.presentation.selected_choice = state.selected_choice;
+                if let Some(id) = state.music {
+                    if let Err(error) = apply_visual(
+                        &mut session, &mut commands, &assets, Visual::Music(id)
+                    ) {
+                        error!("Invalid saved music: {error}");
+                        continue;
+                    }
+                } else if let Some(previous) = session.music.take() {
+                    commands.entity(previous).despawn();
+                }
                 if let Some(id) = state.background {
                     if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Background(id)
@@ -434,7 +521,8 @@ fn poll_completed_io(
                 let screen = match last {
                     Some(Output::Dialogue { speaker, text }) =>
                         Screen::normal(speaker.unwrap_or_default(), text),
-                    Some(Output::Choices(choices)) => Screen::choices(&choices),
+                    Some(Output::Choices(choices)) =>
+                        Screen::choices(&choices, session.presentation.selected_choice),
                     Some(Output::End) => Screen::ending("The End".into()),
                     _ => Screen::ending("Story restored".into()),
                 };

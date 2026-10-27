@@ -16,6 +16,10 @@ pub struct CharacterPose {
 #[serde(deny_unknown_fields)]
 pub struct PresentationState {
     pub background: Option<String>,
+    #[serde(default)]
+    pub music: Option<String>,
+    #[serde(default)]
+    pub selected_choice: usize,
     pub characters: BTreeMap<String, CharacterPose>,
 }
 
@@ -45,6 +49,9 @@ impl SaveData {
         if self.game_id != game.manifest.id {
             return Err("save belongs to a different game".into());
         }
+        if let Some(music) = &self.presentation.music {
+            game.music(music)?;
+        }
         if let Some(background) = &self.presentation.background {
             game.background(background)?;
         }
@@ -54,7 +61,15 @@ impl SaveData {
                 return Err(format!("invalid saved character position: {}", pose.position));
             }
         }
-        Machine::restore(&game.story, self.machine.clone())
+        let machine = Machine::restore(&game.story, self.machine.clone())?;
+        if self.presentation.selected_choice != 0 {
+            match machine.last_output() {
+                Some(vesper_story::Output::Choices(choices))
+                    if self.presentation.selected_choice < choices.len() => {},
+                _ => return Err("saved choice selection is invalid".into()),
+            }
+        }
+        Ok(machine)
     }
 
     pub fn encode(&self) -> Result<Vec<u8>, String> {
