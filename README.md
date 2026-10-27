@@ -44,7 +44,7 @@ Set `theme = "styles/dialogue.toml"` in `game.toml`. Themes configure `ui_scale`
 
 ## Saving and resuming
 
-Press **F5** to save the current story, presentation state and pending choices; **F9** restores the slot. Save/load file I/O runs on background threads and never blocks Bevy's update loop. Versioned JSON saves are stored under `$XDG_DATA_HOME/vesper/saves/` or `~/.local/share/vesper/saves/` and are bound to the game id and exact story source fingerprint. `VESPER_SAVE_DIR` overrides the location for tests. Story changes safely invalidate incompatible old snapshots rather than restoring unsafe offsets. A save initiated immediately before process exit must finish writing before shutdown; a future release pass will ensure lifecycle-safe completion feedback.
+Press **F5** to save the current story, presentation state and pending choices; **F9** restores the slot. Save/load file I/O runs on background threads and never blocks Bevy's update loop. Versioned JSON saves are stored under `$XDG_DATA_HOME/vesper/saves/` or `~/.local/share/vesper/saves/` and are bound to the game id and exact story source fingerprint. `VESPER_SAVE_DIR` overrides the location for tests. Story changes safely invalidate incompatible old snapshots rather than restoring unsafe offsets. Clean exit with **Escape** completes outstanding save/load workers after the window stops updating, and atomic save writes are flushed to disk before replacement. Saves immediately before quitting are covered by the reference playthrough test.
 
 ## Audio and visual transitions
 
@@ -57,3 +57,7 @@ Build on Linux and run `bash packaging/linux.sh target/release/vesper-player dis
 ## Live game editing
 
 Launch `vesper-player game --watch` during development. Vesper reloads valid external `.vn` and `.toml` changes on a worker thread, applying compatible paused dialogue/choice and theme updates without recompiling. Invalid scripts or incompatible changes leave the last good state in place with a diagnostic. Bevy's file watcher independently refreshes modified images and fonts. Watching is disabled by default for published games.
+
+## Verification
+
+The test suite covers both endings of the external reference story, replaying the fully rendered game under Linux/Xvfb and asserting durable F5 saves on clean exit. `cargo test --locked --workspace` validates the Rust narrative and manifest code. GitHub Actions also runs screenshot checks for dialogue choices, transitions, font styling, hot reload, packaging, save/load and malformed input. **Escape** exits cleanly; live edits are opt-in with `--watch`.
