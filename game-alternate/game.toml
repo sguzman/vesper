@@ -1,0 +1,5 @@
+format_version = 1
+id = "vesper-alt-demo"
+title = "Vesper Second Game"
+story = "scripts/intro.vn"
+entry = "start"

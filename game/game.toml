@@ -1,0 +1,11 @@
+format_version = 1
+id = "vesper-demo"
+title = "Vesper Demonstration"
+story = "scripts/demo.vn"
+entry = "introduction"
+
+[backgrounds]
+bedroom = "assets/backgrounds/bedroom.png"
+
+[characters.elena.expressions]
+happy = "assets/characters/elena-happy.png"

@@ -7,3 +7,4 @@ license.workspace = true
 [dependencies]
 bevy = { version = "=0.20.0", default-features = false, features = ["2d", "ui", "audio"] }
 vesper-story.workspace = true
+vesper-game.workspace = true

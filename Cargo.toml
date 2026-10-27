@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/story", "crates/cli", "crates/player"]
+members = ["crates/story", "crates/cli", "crates/player", "crates/game"]
 
 [workspace.package]
 edition = "2024"
@@ -8,3 +8,4 @@ license = "MIT"
 
 [workspace.dependencies]
 vesper-story = { path = "crates/story" }
+vesper-game = { path = "crates/game" }
