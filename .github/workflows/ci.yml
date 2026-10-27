@@ -41,7 +41,7 @@ jobs:
       - name: System libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 xvfb libgl1-mesa-dri mesa-vulkan-drivers
+          sudo apt-get install -y libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
       - name: Build Bevy 0.20 player
         run: cargo build -p vesper-player
       - name: Start player under virtual X11 display
@@ -58,3 +58,47 @@ jobs:
           if grep -Ei 'panicked at|thread .* panicked|Unable to find a GPU' /tmp/vesper-start.log; then
             exit 1
           fi
+      - name: Verify keyboard dialogue and branching with screenshots
+        run: |
+          xvfb-run -a -s '-screen 0 1280x720x24' bash -euo pipefail -c '
+            export LIBGL_ALWAYS_SOFTWARE=1
+            target/debug/vesper-player game > /tmp/vesper-input.log 2>&1 &
+            pid=$!
+            trap "kill $pid 2>/dev/null || true" EXIT
+            win=""
+            for attempt in $(seq 1 30); do
+              win=$(xdotool search --name "Vesper Demonstration" | head -n 1 || true)
+              if [ -n "$win" ]; then break; fi
+              sleep 1
+            done
+            if [ -z "$win" ]; then
+              cat /tmp/vesper-input.log
+              echo "Player window was not found"
+              exit 1
+            fi
+            sleep 5
+            import -window "$win" /tmp/vesper-initial.png
+            xdotool key --clearmodifiers --window "$win" space
+            sleep 2
+            import -window "$win" /tmp/vesper-choices.png
+            xdotool key --clearmodifiers --window "$win" 1
+            sleep 2
+            import -window "$win" /tmp/vesper-after-choice.png
+            for pair in "initial choices" "choices after-choice"; do
+              read before after <<< "$pair"
+              changed=$(compare -metric AE "/tmp/vesper-$before.png" "/tmp/vesper-$after.png" null: 2>&1 || true)
+              echo "Changed pixels ($before -> $after): $changed"
+              if ! [[ "$changed" =~ ^[0-9]+$ ]] || [ "$changed" -lt 100 ]; then
+                cat /tmp/vesper-input.log
+                echo "Expected story input to change visible dialogue"
+                exit 1
+              fi
+            done
+            colors=$(identify -format "%k" /tmp/vesper-initial.png)
+            echo "Initial rendered unique colors: $colors"
+            if [ "$colors" -lt 12 ]; then
+              echo "Expected images and text, but screenshot is nearly flat"
+              exit 1
+            fi
+          '
+
