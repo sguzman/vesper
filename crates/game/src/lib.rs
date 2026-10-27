@@ -2,6 +2,7 @@
 //! as unrestricted paths outside the chosen game directory.
 
 use serde::Deserialize;
+pub mod save;
 use std::{
     collections::BTreeMap,
     fs,
