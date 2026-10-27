@@ -103,6 +103,10 @@ jobs:
             sleep 5
             grep -F "Vesper queued music: evening" /tmp/vesper-input.log
             grep -F "Vesper queued sound: greeting" /tmp/vesper-input.log
+            grep -F "Vesper decoded audio asset: music:evening" /tmp/vesper-input.log
+            grep -F "Vesper decoded audio asset: sound:greeting" /tmp/vesper-input.log
+            grep -F "Vesper fade complete: Background: bedroom" /tmp/vesper-input.log
+            grep -F "Vesper fade complete: Character: elena (happy)" /tmp/vesper-input.log
             import -window "$win" /tmp/vesper-initial.png
             xdotool windowfocus --sync "$win"
             xdotool key --clearmodifiers space
