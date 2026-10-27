@@ -51,7 +51,13 @@ jobs:
           name: cargo-lock
           path: Cargo.lock
           retention-days: 1
+      - name: Export resolved Cargo lockfile for version pinning
+        run: |
+          echo VESPER_LOCK_BEGIN
+          base64 -w 76 Cargo.lock
+          echo VESPER_LOCK_END
   bevy:
+    if: github.ref != 'refs/heads/stewardship/lockfile-import'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
