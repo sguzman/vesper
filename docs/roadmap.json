@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "project": "Vesper",
+  "objective": "Verified shippable data-driven visual novel runtime",
+  "scope_weight": 100,
+  "last_verified_commit": "50afbafa0aac7f9f05e34bae7028cd68bdfc51df",
+  "verified_weight": 0,
+  "note": "No task is verified until acceptance tests/checks pass; never count authored code as verified.",
+  "tasks": [
+    {
+      "id": "F01",
+      "emoji": "🦀",
+      "milestone": "Foundation",
+      "weight": 5,
+      "acceptance": "Working Bevy 0.20 startup, green Linux CI and workspace",
+      "depends_on": [],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "N01",
+      "emoji": "📜",
+      "milestone": "Narrative",
+      "weight": 8,
+      "acceptance": "Parser supports scenes/dialogue/choices/visuals with source-line validation and passing tests",
+      "depends_on": [],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "N02",
+      "emoji": "🔀",
+      "milestone": "Narrative",
+      "weight": 8,
+      "acceptance": "Deterministic variable/branching/choice interpreter with tests",
+      "depends_on": [
+        "N01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "N03",
+      "emoji": "🔍",
+      "milestone": "Narrative",
+      "weight": 5,
+      "acceptance": "CLI validates external scripts and gives useful file/line errors",
+      "depends_on": [
+        "N01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "A01",
+      "emoji": "📦",
+      "milestone": "Assets",
+      "weight": 10,
+      "acceptance": "Load two external game manifests and asset paths securely without rebuilding",
+      "depends_on": [
+        "F01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "A02",
+      "emoji": "🎭",
+      "milestone": "Assets",
+      "weight": 8,
+      "acceptance": "External character/expression and graphical asset definitions render",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P01",
+      "emoji": "🎮",
+      "milestone": "Player",
+      "weight": 8,
+      "acceptance": "Bevy ECS renders and advances external dialogue and choices",
+      "depends_on": [
+        "F01",
+        "N02"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P02",
+      "emoji": "🔤",
+      "milestone": "Player",
+      "weight": 10,
+      "acceptance": "External fonts/themes, wrapping, multilingual typography, UI scaling",
+      "depends_on": [
+        "P01",
+        "A01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P03",
+      "emoji": "🎵",
+      "milestone": "Player",
+      "weight": 6,
+      "acceptance": "Audio, sprite transitions and accessible controls tested",
+      "depends_on": [
+        "P01",
+        "A02"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "S01",
+      "emoji": "💾",
+      "milestone": "Persistence",
+      "weight": 9,
+      "acceptance": "Versioned save/reload restores state across restart",
+      "depends_on": [
+        "N02",
+        "P01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "H01",
+      "emoji": "♻️",
+      "milestone": "Persistence",
+      "weight": 7,
+      "acceptance": "Safe dev hot-reload applies valid edits and rejects invalid ones",
+      "depends_on": [
+        "A01",
+        "P01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "Q01",
+      "emoji": "🧪",
+      "milestone": "Release",
+      "weight": 6,
+      "acceptance": "Regression and integration suite passes with error recovery tests",
+      "depends_on": [
+        "P02",
+        "P03",
+        "S01",
+        "H01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "R01",
+      "emoji": "🐧",
+      "milestone": "Release",
+      "weight": 5,
+      "acceptance": "Linux package runs with no compiler and external assets",
+      "depends_on": [
+        "Q01"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "R02",
+      "emoji": "🏁",
+      "milestone": "Release",
+      "weight": 5,
+      "acceptance": "Complete example VN passes verified end-to-end playthrough",
+      "depends_on": [
+        "R01"
+      ],
+      "status": "pending",
+      "evidence": []
+    }
+  ]
+}

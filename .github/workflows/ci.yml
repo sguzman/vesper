@@ -1,0 +1,28 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  narrative:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Format working copy
+        run: cargo fmt --all
+      - name: Clippy
+        run: cargo clippy -p vesper-story -p vesper-cli --all-targets -- -D warnings
+      - name: Tests
+        run: cargo test -p vesper-story -p vesper-cli
+      - name: Validate example
+        run: cargo run -p vesper-cli -- check game/scripts/demo.vn
+  bevy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: System libraries
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev
+      - name: Check Bevy 0.20 player
+        run: cargo check -p vesper-player

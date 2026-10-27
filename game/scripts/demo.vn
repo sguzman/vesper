@@ -1,0 +1,24 @@
+# All story content lives outside the Rust executable.
+@scene introduction
+background bedroom
+show elena happy at center
+elena: "You're finally awake."
+* "Good morning." -> friendly
+* "Where am I?" -> confused
+
+@scene friendly
+set affection = 1
+elena: "I'm glad you're here."
+if affection >= 1
+    elena: "I was hoping you'd return."
+else
+    elena: "Perhaps another time."
+end
+jump ending
+
+@scene confused
+elena: "You're safe."
+jump ending
+
+@scene ending
+"The evening fades."
