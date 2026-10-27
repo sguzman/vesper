@@ -244,6 +244,10 @@ jobs:
           tar -xzf /tmp/vesper-linux-x86_64.tar.gz -C /tmp/vesper-install
           test -x /tmp/vesper-install/vesper/vesper
           test -f /tmp/vesper-install/vesper/game/game.toml
+          test -x /tmp/vesper-install/vesper/lantern
+          test -x /tmp/vesper-install/vesper/moon
+          test -f /tmp/vesper-install/vesper/examples/little-lantern/game.toml
+          test -f /tmp/vesper-install/vesper/examples/clockwork-moon/game.toml
           cd /tmp
           set +e
           PATH=/usr/bin:/bin LIBGL_ALWAYS_SOFTWARE=1 timeout --signal=TERM 16s \
@@ -253,6 +257,12 @@ jobs:
           cat /tmp/vesper-package.log
           test "$result" -eq 124
           grep -F "Creating new window Vesper Demonstration" /tmp/vesper-package.log
+      - name: Upload ready-to-play Linux fairytale showcase
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-linux-fairytale-showcase
+          path: /tmp/vesper-linux-x86_64.tar.gz
+          retention-days: 14
       - name: Hot reload story, UI and external artwork; reject invalid source
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/hot_reload_smoke.py
       - name: Complete both reference branches and verify safe exit saves
