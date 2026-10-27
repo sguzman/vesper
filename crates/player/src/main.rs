@@ -71,7 +71,7 @@ fn text_font(theme: &vesper_game::Theme, assets: &AssetServer) -> FontSource {
     } else if let Some(family) = &theme.font.family {
         FontSource::Family(family.clone().into())
     } else {
-        FontSource::SansSerif
+        FontSource::sans_serif()
     }
 }
 
@@ -270,14 +270,14 @@ fn setup(
 fn update_screen(
     screen: Screen,
     theme: &vesper_game::Theme,
-    texts: &mut Query<(&mut Text, &mut TextFont, &StoryText)>,
+    texts: &mut Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
 ) {
-    for (mut text, mut font, slot) in texts.iter_mut() {
+    for (mut text, mut font, mut color, slot) in texts.iter_mut() {
         text.0 = screen.part(slot).to_owned();
         if matches!(slot, StoryText::Body) {
-            font.font_size = FontSize::Px(
-                if screen.choices { theme.choices.size } else { theme.dialogue.size },
-            );
+            let style = if screen.choices { &theme.choices } else { &theme.dialogue };
+            font.font_size = FontSize::Px(style.size);
+            *color = text_color(style.color);
         }
     }
 }
@@ -287,7 +287,7 @@ fn advance_from_keyboard(
     mut session: ResMut<Session>,
     mut commands: Commands,
     assets: Res<AssetServer>,
-    mut texts: Query<(&mut Text, &mut TextFont, &StoryText)>,
+    mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
 ) {
     if session.finished { return; }
     if session.choosing {
