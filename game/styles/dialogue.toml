@@ -1,0 +1,29 @@
+# Game-specific Bevy typography/layout, editable without recompiling the engine.
+ui_scale = 1.0
+
+[font]
+# Use a system family, or replace with: file = "assets/fonts/MyFont.ttf"
+family = "DejaVu Sans"
+
+[panel]
+background = [0.045, 0.055, 0.09, 0.94]
+width_percent = 90.0
+min_height = 210.0
+padding = 22.0
+gap = 8.0
+
+[speaker]
+size = 25.0
+color = [1.0, 0.79, 0.48, 1.0]
+
+[dialogue]
+size = 30.0
+color = [0.99, 0.98, 0.96, 1.0]
+
+[choices]
+size = 28.0
+color = [0.82, 0.91, 1.0, 1.0]
+
+[hint]
+size = 17.0
+color = [0.76, 0.82, 0.88, 1.0]

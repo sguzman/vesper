@@ -18,6 +18,8 @@ pub struct Manifest {
     pub story: String,
     pub entry: String,
     #[serde(default)]
+    pub theme: Option<String>,
+    #[serde(default)]
     pub backgrounds: BTreeMap<String, String>,
     #[serde(default)]
     pub characters: BTreeMap<String, Character>,
@@ -29,11 +31,128 @@ pub struct Character {
     pub expressions: BTreeMap<String, String>,
 }
 
+/// An externally editable visual theme; values are CSS-like logical UI sizes.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct Theme {
+    pub ui_scale: f32,
+    pub font: FontSelection,
+    pub panel: PanelStyle,
+    pub speaker: TextStyle,
+    pub dialogue: TextStyle,
+    pub choices: TextStyle,
+    pub hint: TextStyle,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct FontSelection {
+    /// Optional game-relative .ttf or .otf path; do not embed font bytes in Rust.
+    pub file: Option<String>,
+    /// System font family alternative when no font file is specified.
+    pub family: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct PanelStyle {
+    pub background: [f32; 4],
+    pub width_percent: f32,
+    pub min_height: f32,
+    pub padding: f32,
+    pub gap: f32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct TextStyle {
+    pub size: f32,
+    pub color: [f32; 4],
+}
+
+impl Default for PanelStyle {
+    fn default() -> Self {
+        Self {
+            background: [0.04, 0.05, 0.09, 0.96],
+            width_percent: 90.0,
+            min_height: 180.0,
+            padding: 20.0,
+            gap: 8.0,
+        }
+    }
+}
+
+impl Default for TextStyle {
+    fn default() -> Self {
+        Self { size: 28.0, color: [1.0, 1.0, 1.0, 1.0] }
+    }
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Self {
+            ui_scale: 1.0,
+            font: FontSelection::default(),
+            panel: PanelStyle::default(),
+            speaker: TextStyle { size: 25.0, color: [0.96, 0.75, 0.40, 1.0] },
+            dialogue: TextStyle { size: 28.0, color: [1.0, 1.0, 1.0, 1.0] },
+            choices: TextStyle { size: 26.0, color: [0.88, 0.94, 1.0, 1.0] },
+            hint: TextStyle { size: 16.0, color: [0.75, 0.78, 0.83, 1.0] },
+        }
+    }
+}
+
+fn color_valid(color: [f32; 4]) -> bool {
+    color.iter().all(|v| v.is_finite() && (0.0..=1.0).contains(v))
+}
+
+impl Theme {
+    pub fn validate(&self) -> Result<(), String> {
+        if !self.ui_scale.is_finite() || !(0.5..=2.5).contains(&self.ui_scale) {
+            return Err("theme.ui_scale must be between 0.5 and 2.5".into());
+        }
+        let panel = &self.panel;
+        if !color_valid(panel.background)
+            || !panel.width_percent.is_finite()
+            || !(20.0..=100.0).contains(&panel.width_percent)
+            || !panel.min_height.is_finite()
+            || !(80.0..=600.0).contains(&panel.min_height)
+            || !panel.padding.is_finite()
+            || !(0.0..=80.0).contains(&panel.padding)
+            || !panel.gap.is_finite()
+            || !(0.0..=48.0).contains(&panel.gap)
+        {
+            return Err("theme.panel contains an invalid color or dimension".into());
+        }
+        for (name, style) in [
+            ("speaker", &self.speaker),
+            ("dialogue", &self.dialogue),
+            ("choices", &self.choices),
+            ("hint", &self.hint),
+        ] {
+            if !style.size.is_finite()
+                || !(8.0..=96.0).contains(&style.size)
+                || !color_valid(style.color)
+            {
+                return Err(format!("theme.{name} has invalid text size or color"));
+            }
+        }
+        if self.font.file.is_some() && self.font.family.is_some() {
+            return Err("theme.font specifies both file and family; select one".into());
+        }
+        if self.font.family.as_ref().is_some_and(|name| name.trim().is_empty()) {
+            return Err("theme.font.family cannot be empty".into());
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Game {
     pub root: PathBuf,
     pub manifest: Manifest,
     pub story: Story,
+    pub theme: Theme,
 }
 
 fn id_valid(id: &str) -> bool {
@@ -98,6 +217,25 @@ impl Game {
         if !story.has_scene(&manifest.entry) {
             return Err(format!("entry scene '{}' does not exist", manifest.entry));
         }
+        let theme = if let Some(path) = &manifest.theme {
+            let path = checked_file(&root, path)?;
+            let content = fs::read_to_string(&path)
+                .map_err(|error| format!("{}: {error}", path.display()))?;
+            toml::from_str::<Theme>(&content)
+                .map_err(|error| format!("{}: {error}", path.display()))?
+        } else {
+            Theme::default()
+        };
+        theme.validate()?;
+        if let Some(file) = &theme.font.file {
+            let path = checked_file(&root, file)?;
+            if !matches!(
+                path.extension().and_then(|ext| ext.to_str()).map(str::to_ascii_lowercase).as_deref(),
+                Some("ttf" | "otf")
+            ) {
+                return Err("theme.font.file must be a .ttf or .otf file".into());
+            }
+        }
         for (name, filename) in &manifest.backgrounds {
             if !id_valid(name) {
                 return Err(format!("invalid background id '{name}'"));
@@ -136,7 +274,7 @@ impl Game {
                 ));
             }
         }
-        Ok(Self { root, manifest, story })
+        Ok(Self { root, manifest, story, theme })
     }
 
     pub fn background(&self, id: &str) -> Result<&str, String> {
@@ -234,6 +372,41 @@ room = "assets/room.png"
         ).unwrap();
         let err = Game::load(&sample.root).unwrap_err();
         assert!(err.contains("character expression 'elena.happy'"), "{err}");
+    }
+
+    #[test]
+    fn external_theme_and_font_path_are_validated() {
+        let fixture = Fixture::new("theme");
+        fs::create_dir_all(fixture.root.join("styles")).unwrap();
+        let config = fixture.root.join("game.toml");
+        fs::write(&config, format!(
+            "{}\ntheme = \"styles/visual.toml\"\n",
+            fs::read_to_string(&config).unwrap()
+                .replace("[backgrounds]", "theme = \"styles/visual.toml\"\n[backgrounds]")
+                .replace("theme = \"styles/visual.toml\"\n\n", "")
+        )).unwrap();
+        // The manifest theme setting must live at its top level, not in [backgrounds].
+        let manifest = fs::read_to_string(&config).unwrap();
+        fs::write(&config, manifest.replacen(
+            "\ntheme = \"styles/visual.toml\"\n[backgrounds]",
+            "\n[backgrounds]", 1
+        )).unwrap();
+        let original = fs::read_to_string(&config).unwrap();
+        fs::write(&config, original.replacen(
+            "\n[backgrounds]", "\ntheme = \"styles/visual.toml\"\n[backgrounds]", 1
+        )).unwrap();
+        fs::write(fixture.root.join("styles/visual.toml"),
+            "ui_scale = 1.4\n[font]\nfile = \"../outside.ttf\"\n").unwrap();
+        let err = Game::load(&fixture.root).unwrap_err();
+        assert!(err.contains("unsafe") || err.contains("font"), "{err}");
+        fs::write(fixture.root.join("styles/visual.toml"),
+            "ui_scale = 1.4\n[dialogue]\nsize = 36.0\ncolor = [0.7, 0.8, 0.9, 1.0]\n"
+        ).unwrap();
+        let loaded = Game::load(&fixture.root).unwrap();
+        assert_eq!(loaded.theme.ui_scale, 1.4);
+        assert_eq!(loaded.theme.dialogue.size, 36.0);
+        fs::write(fixture.root.join("styles/visual.toml"), "ui_scale = 0.1\n").unwrap();
+        assert!(Game::load(&fixture.root).unwrap_err().contains("ui_scale"));
     }
 
     #[cfg(unix)]

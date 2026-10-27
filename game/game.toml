@@ -3,6 +3,7 @@ id = "vesper-demo"
 title = "Vesper Demonstration"
 story = "scripts/demo.vn"
 entry = "introduction"
+theme = "styles/dialogue.toml"
 
 [backgrounds]
 bedroom = "assets/backgrounds/bedroom.png"
