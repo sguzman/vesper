@@ -72,6 +72,14 @@ jobs:
         run: cargo test --locked -p vesper-player --bin vesper-player
       - name: Resize story across compact, widescreen and fullscreen windows
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/responsive_resize_smoke.py
+      - name: Capture responsive screenshots on success or failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-responsive-resize
+          path: /tmp/vesper-responsive-qa/*
+          retention-days: 5
+          if-no-files-found: ignore
       - name: Start player under virtual X11 display
         run: |
           set +e
