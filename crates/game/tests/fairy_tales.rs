@@ -96,7 +96,7 @@ fn the_little_lantern_is_a_complete_minimal_novel() {
         assert_eq!(trace.ending, "goodnight");
         assert_eq!(trace.backgrounds.len(), 1);
         assert!(trace.expressions.contains("pip.cheerful"));
-        assert_eq!(trace.dialogues.len(), 7);
+        assert_eq!(trace.dialogues.len(), 8);
     }
 }
 
