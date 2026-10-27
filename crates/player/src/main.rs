@@ -77,7 +77,7 @@ impl Screen {
         Self {
             speaker,
             body,
-            hint: "Enter / Space: continue   F5: save   F9: load".into(),
+            hint: "Enter / Space: continue   F5: save   F9: load   Esc: quit".into(),
             choices: false,
         }
     }
@@ -93,7 +93,7 @@ impl Screen {
         Self {
             speaker: String::new(),
             body: lines,
-            hint: "Arrows: move   Enter: select   Number: choose   F5: save   F9: load".into(),
+            hint: "Arrows: move   Enter: select   Number: choose   F5: save   F9: load   Esc: quit".into(),
             choices: true,
         }
     }
@@ -196,7 +196,7 @@ fn main() {
             pending_audio: Vec::new(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades, monitor_audio_assets).chain());
+        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades, monitor_audio_assets, escape_to_quit).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
     }
@@ -625,4 +625,12 @@ fn monitor_audio_assets(mut session: ResMut<Session>, server: Res<AssetServer>) 
             _ => true,
         }
     });
+}
+
+
+fn escape_to_quit(input: Res<ButtonInput<KeyCode>>, mut exit: MessageWriter<AppExit>) {
+    if input.just_pressed(KeyCode::Escape) {
+        info!("Vesper exiting by Escape");
+        exit.write(AppExit::Success);
+    }
 }
