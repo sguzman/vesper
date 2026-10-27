@@ -2,7 +2,7 @@
 
 Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will contain behavior; authored stories, characters, artwork, fonts, themes and audio will remain **external files**.
 
-**Status:** early implementation. The narrative core and external manifest validation pass CI. Bevy dialogue, sprite rendering, branching keyboard input and Linux startup passed automated screenshot tests; this is **not yet a complete VN engine**.
+**Status:** scoped Vesper MVP verified complete (100/100 weighted roadmap points; GitHub Actions run 40571573177). Both demonstration branches, presentation, hot reload, sound asset decoding, save/load and compiler-free Linux packaging passed automated tests. Hardware audio output and exhaustive coverage of every possible Linux configuration were not directly tested.
 
 ## Workspace
 
@@ -25,7 +25,7 @@ cargo run -p vesper-player -- game
 
 Independent `game/` and `game-alternate/` folders load without recompiling. The `vesper-game` crate verifies versioned manifests and rejects absolute, parent-traversal and external symlink paths. Small test PNGs are placeholders, not production artwork.
 
-The `.vn` language is provisional. It currently supports `@scene`, named dialogue, narration, adjacent `* "text" -> scene` choices, `jump`, `set`, `if/else/end`, `background`, `show`, `hide`, `music` and `sound`. Variables are signed integers, booleans or quoted strings. The interpreter yields presentation instructions to a future Bevy bridge. This is not a complete production authoring language yet.
+The current `.vn` language is intentionally minimal and remains extensible. It supports `@scene`, named dialogue, narration, adjacent `* "text" -> scene` choices, `jump`, `set`, `if/else/end`, `background`, `show`, `hide`, `music` and `sound`. Variables are signed integers, booleans or quoted strings. The Rust interpreter yields commands directly to the Bevy ECS presentation layer. Scripts, art, audio, themes and fonts all remain external runtime data.
 
 ## Architectural commitments
 
@@ -61,3 +61,7 @@ Launch `vesper-player game --watch` during development. Vesper reloads valid ext
 ## Verification
 
 The test suite covers both endings of the external reference story, replaying the fully rendered game under Linux/Xvfb and asserting durable F5 saves on clean exit. `cargo test --locked --workspace` validates the Rust narrative and manifest code. GitHub Actions also runs screenshot checks for dialogue choices, transitions, font styling, hot reload, packaging, save/load and malformed input. **Escape** exits cleanly; live edits are opt-in with `--watch`.
+
+## Verified MVP completion
+
+The agreed weighted roadmap is **100% verified** by [GitHub Actions run 40571573177](https://github.com/sguzman/vesper/actions/runs/40571573177), on source commit `e9a9a9c`. The two reference VN branches reached their authored endings in graphical CI; versioned saves survived both restart and immediate clean shutdown. Validation covers malicious paths, missing references and rejected live edits. The Linux archive launches from an unrelated directory without Rust/Cargo on `PATH`. CI is headless, so it verifies native audio decoding and playback entity integration, **not speaker output on physical hardware**. The available demo uses minimal placeholder art/sounds, not final commissioned content.

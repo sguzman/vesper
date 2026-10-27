@@ -3,9 +3,9 @@
   "project": "Vesper",
   "objective": "Verified shippable data-driven visual novel runtime",
   "scope_weight": 100,
-  "last_verified_commit": "376dac5ed6551a9b1f0a1356da7c448096e32cb5",
-  "verified_weight": 89,
-  "note": "89/100 verified: audio/fades/accessibility CI 40565981048, safe developer hot-reload CI 40566533674, relocatable Linux package CI 40566657220. Complete integrated regression CI and exhaustive demo playthrough still pending.",
+  "last_verified_commit": "e9a9a9c740510bebcba6e588174bda9dcc4ef619",
+  "verified_weight": 100,
+  "note": "100/100 original scoped MVP acceptance criteria verified on 2026-10-27 (CI main run 40571573177, commit e9a9a9c). Tested player, external assets, narrative, typography, audio decode, timed fades, save/load, safe hot reload, relocatable Linux packaging, both endings, and clean shutdown. Audio through a physical sound device was not tested in headless CI; requires optional platform-specific hardware QA.",
   "tasks": [
     {
       "id": "F01",
@@ -174,8 +174,10 @@
         "S01",
         "H01"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI run 40571573177 (main e9a9a9c): strict Clippy, Rust tests, negative validation, asset decode, image fade interpolation/render checks, keyboard branching, Unicode fonts, safe hot reload/error recovery, packaged runtime, save/load across restart, and reference playthrough all succeeded."
+      ]
     },
     {
       "id": "R01",
@@ -200,8 +202,10 @@
       "depends_on": [
         "R01"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI run 40571573177 (main e9a9a9c): both authored demo branches reached ending in real Bevy/Xvfb sessions, and clean-exit saves persisted valid JSON; integration suite and Linux build green."
+      ]
     }
   ]
 }
