@@ -429,6 +429,62 @@ impl Machine {
         })
     }
 
+    /// Rebind a paused narrative to new authored content without replaying any
+    /// state changes. Previously executed instructions must be unchanged.
+    /// The last displayed dialogue/choice may be edited in place; untouched
+    /// future instructions (and entirely new scenes) may also be edited.
+    pub fn rebind(&self, updated: &Story) -> Result<Self, String> {
+        let old_scene = self.story.scenes.get(&self.scene)
+            .ok_or("current scene is missing from the previous story")?;
+        let new_scene = updated.scenes.get(&self.scene)
+            .ok_or_else(|| format!("current scene '{}' was removed", self.scene))?;
+        if self.cursor > new_scene.instructions.len() {
+            return Err("hot reload removed the current narrative position".into());
+        }
+        for (name, previous) in &self.story.scenes {
+            if name != &self.scene && updated.scenes.get(name) != Some(previous) {
+                return Err(format!("hot reload changed previous or untracked scene '{name}'; restart required"));
+            }
+        }
+        // Do not replay assignments, branches, sounds or any prior side effects.
+        // Instruction line numbers are part of compatibility for clear diagnostics.
+        let completed = self.cursor.saturating_sub(1);
+        if old_scene.instructions.get(..completed) != new_scene.instructions.get(..completed) {
+            return Err("hot reload modified already executed narrative instructions".into());
+        }
+        let mut pending = self.pending.clone();
+        let mut last_output = self.last_output.clone();
+        if self.cursor > 0 {
+            let previous = old_scene.instructions.get(self.cursor - 1);
+            let replacement = new_scene.instructions.get(self.cursor - 1);
+            match (previous.map(|i| &i.command), replacement.map(|i| &i.command)) {
+                (Some(Command::Dialogue(_, _)), Some(Command::Dialogue(speaker, text)))
+                    if matches!(last_output, Some(Output::Dialogue { .. })) => {
+                    last_output = Some(Output::Dialogue {
+                        speaker: speaker.clone(), text: text.clone(),
+                    });
+                }
+                (Some(Command::Choices(old)), Some(Command::Choices(new)))
+                    if pending.is_some()
+                        && old.len() == new.len()
+                        && old.iter().zip(new).all(|(a,b)| a.destination == b.destination) => {
+                    pending = Some(new.clone());
+                    last_output = Some(Output::Choices(new.clone()));
+                }
+                (Some(a), Some(b)) if a == b => {}
+                _ => return Err("hot reload modified an incompatible current command".into()),
+            }
+        }
+        Ok(Self {
+            story: Arc::new(updated.clone()),
+            scene: self.scene.clone(),
+            cursor: self.cursor,
+            variables: self.variables.clone(),
+            pending,
+            last_output,
+        })
+    }
+
     pub fn last_output(&self) -> Option<&Output> { self.last_output.as_ref() }
 
     fn yield_output(&mut self, output: Output) -> Result<Output, String> {
@@ -599,6 +655,47 @@ end
         assert!(Story::parse("@scene a\nif x == 1\n\"unfinished\"").is_err());
         assert!(Story::parse("@scene a\nelse").is_err());
         assert!(Story::parse("@scene a\nset x = garbage").is_err());
+    }
+
+    #[test]
+    fn hot_reload_preserves_state_and_replaces_visible_dialogue() {
+        let original = Story::parse("@scene start\nset count = 4\nelena: \"Before\"\n\"Later\"\n").unwrap();
+        let mut machine = Machine::new(&original, "start").unwrap();
+        assert!(matches!(machine.advance().unwrap(), Output::Dialogue { .. }));
+        let changed = Story::parse("@scene start\nset count = 4\nelena: \"After\"\n\"Next\"\n").unwrap();
+        machine = machine.rebind(&changed).unwrap();
+        assert_eq!(machine.variables()["count"], Value::Number(4));
+        assert_eq!(machine.last_output(), Some(&Output::Dialogue {
+            speaker: Some("elena".into()), text: "After".into(),
+        }));
+        assert_eq!(machine.advance().unwrap(), Output::Dialogue {
+            speaker: None, text: "Next".into(),
+        });
+    }
+
+    #[test]
+    fn hot_reload_rejects_changed_state_and_keeps_previous_machine_usable() {
+        let original = Story::parse("@scene start\nset count = 4\n\"Original\"\n").unwrap();
+        let mut machine = Machine::new(&original, "start").unwrap();
+        machine.advance().unwrap();
+        let changed = Story::parse("@scene start\nset count = 5\n\"Edited\"\n").unwrap();
+        assert!(machine.rebind(&changed).unwrap_err().contains("already executed"));
+        assert_eq!(machine.last_output(), Some(&Output::Dialogue {
+            speaker: None, text: "Original".into(),
+        }));
+    }
+
+    #[test]
+    fn hot_reload_relabels_pending_choices_without_changing_destinations() {
+        let old = Story::parse("@scene a\n* \"Old\" -> b\n@scene b\n\"Next\"\n").unwrap();
+        let mut machine = Machine::new(&old, "a").unwrap();
+        machine.advance().unwrap();
+        let new = Story::parse("@scene a\n* \"New\" -> b\n@scene b\n\"Next\"\n").unwrap();
+        let mut bound = machine.rebind(&new).unwrap();
+        assert!(matches!(bound.advance().unwrap(), Output::Choices(options)
+            if options[0].label == "New"));
+        bound.choose(0).unwrap();
+        assert!(matches!(bound.advance().unwrap(), Output::Dialogue { .. }));
     }
 
     #[test]
