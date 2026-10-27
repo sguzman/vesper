@@ -1,6 +1,10 @@
 name: CI
 on: [push, pull_request]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   narrative:
     runs-on: ubuntu-latest
@@ -17,6 +21,13 @@ jobs:
         run: cargo test -p vesper-story -p vesper-cli
       - name: Validate example
         run: cargo run -p vesper-cli -- check game/scripts/demo.vn
+      - name: Reject malformed example with file and line
+        run: |
+          printf '@scene intro\nset x = invalid\n' > /tmp/vesper-invalid.vn
+          if cargo run -p vesper-cli -- check /tmp/vesper-invalid.vn > /tmp/vesper-cli.log 2>&1; then
+            echo 'invalid story unexpectedly passed'; exit 1
+          fi
+          grep -F '/tmp/vesper-invalid.vn:2:' /tmp/vesper-cli.log
   bevy:
     runs-on: ubuntu-latest
     steps:
