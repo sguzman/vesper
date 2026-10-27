@@ -1,0 +1,261 @@
+# THE CLOCKWORK MOON
+# A branching, three-act fairytale written entirely in external .vn files.
+# 3 trail choices x 4 trials x 3 final choices = 36 completed playthroughs.
+# Only built-in Vesper syntax is used; no Lua, Rust story code or new runtime APIs.
+
+@scene threshold
+set kindness = 0
+set courage = 0
+set starlight = 0
+set pledge = false
+set road = "unknown"
+background cottage
+music hearth
+show tess curious at center
+"Once upon a time, the moon above Bramblewick stopped turning. Its silver clockwork had caught on a thread of forgotten wishes."
+"The baker's daughter Tess noticed first: the shadows stood still, the owls forgot their bedtime, and every puddle reflected the very same star."
+tess: "If the moon cannot move, morning may never arrive. There must be something I can do."
+sound bell
+"On her windowsill lay a copper key, a fold of blue ribbon, and a note written in very small handwriting."
+"The note said: Every brave heart must choose where to begin. The moon needs more than a key."
+tess: "The lantern is ready. Which path shall I try?"
+* "Follow the wandering firefly into the forest." -> firefly_trail
+* "Listen for the singing river." -> river_trail
+* "Ask the old owl for directions." -> owl_trail
+
+@scene firefly_trail
+set road = "firefly"
+set starlight += 1
+background forest
+show wisp glowing at right
+"The forest was full of blue shadows, but a tiny firefly stitched golden dots through the dark."
+wisp: "Follow the light that does not hurry. A clock is not mended by chasing its hands."
+tess: "That sounds like advice from someone who has already been lost."
+if road == "firefly"
+"The firefly flashed once for yes and twice for a very polite maybe."
+end
+sound sparkle
+show tess determined at center
+"The firefly left one bright spark in Tess's lantern, then slipped under a fern."
+hide wisp
+jump clearing
+
+@scene river_trail
+set road = "river"
+set starlight += 2
+background river
+music wandering
+"The river carried the reflection of a motionless moon, broken into a thousand patient pieces."
+tess: "Do you know how to make the sky turn again?"
+"The current answered with a melody. Tess understood only its last three notes, but they were enough to teach her how to listen."
+if starlight >= 2
+"She caught two silver droplets in her lantern. They shone without making the glass wet."
+end
+sound ripple
+show tess curious at left
+"Across the stepping stones, an owl waited beside a tree shaped like a crooked question mark."
+jump clearing
+
+@scene owl_trail
+set road = "owl"
+set courage += 1
+background forest
+show owl calm at left
+owl: "The moon has forgotten a promise. The clock will not open until someone remembers it."
+tess: "Then I shall ask every star what it remembers!"
+owl: "A good plan, though stars tend to talk for a very long time."
+if courage < 2
+"Before leaving, the owl taught Tess a trick for being frightened: give fear a name, and it becomes a little easier to carry."
+end
+sound bell
+hide owl
+jump clearing
+
+@scene clearing
+background glade
+music wandering
+show owl calm at left
+show tess curious at right
+"In a clearing stood a wooden sign with four painted pictures: a bridge, a tower, a flower, and an ear."
+owl: "One task will teach you the part of the promise you have forgotten. Choose carefully, but do not fear a kind mistake."
+if starlight >= 2
+"The droplets from the river hummed together, eager to become part of something useful."
+else
+"The lantern held only a little glow. Tess tightened the ribbon around its handle."
+end
+if courage != 0
+"Tess remembered the owl's lesson and stood a little taller."
+end
+tess: "Very well. The moon shall have a story to tell when it wakes."
+* "Repair the broken bridge." -> bridge_trial
+* "Climb the clockkeeper's watchtower." -> tower_trial
+* "Collect the sleeping moonflowers." -> flower_trial
+* "Listen to what the owl has not yet said." -> listening_trial
+
+@scene bridge_trial
+background river
+show tess determined at center
+hide owl
+"The little bridge had lost three boards. Underneath it, the river sang a song about people who could not cross."
+tess: "I cannot fix the world tonight. But perhaps I can fix three boards."
+set kindness += 2
+sound knock
+"She fitted the boards together and tied them with her blue ribbon, making room for a hedgehog family to cross."
+if kindness > 1
+"The hedgehogs bowed so deeply that their noses brushed the planks."
+end
+tess: "A bridge is a promise that the other side is worth reaching."
+jump moon_gate
+
+@scene tower_trial
+background tower
+show tess determined at right
+hide owl
+"The watchtower spiraled so high that even its stairs appeared to be tired."
+set courage += 2
+tess: "One step, then another. A great journey is only many small journeys keeping each other company."
+sound knock
+"At the top she found a brass wheel. It would not turn until she spoke her fear aloud."
+tess: "I am afraid I will fail. I will help anyway."
+if courage >= 2
+"At once the wheel moved a single notch, and a faraway bell answered."
+end
+jump moon_gate
+
+@scene flower_trial
+background glade
+show tess curious at center
+"The moonflowers slept under a blanket of mist, their white petals curled like letters no one had opened."
+set starlight += 1
+set courage -= 1
+tess: "I shall borrow only the light they can spare."
+sound sparkle
+"She touched the ground beside each flower rather than plucking it. A few gentle sparks rose into her lantern."
+if starlight <= 1
+"The lantern glimmered faintly, and Tess realized that even a small beginning counted."
+else
+"The light spread across the glass in tiny constellations."
+end
+jump moon_gate
+
+@scene listening_trial
+background glade
+show owl calm at left
+set kindness += 1
+set pledge = true
+owl: "Listen: the moon did not stop because its gears were broken. It stopped because no one remembered to wish goodnight to the lonely stars."
+tess: "Then the promise is simple. We must remember even those we cannot see."
+"Buenas noches, estrellas. Goodnight, stars. おやすみ、月."
+if pledge == true
+"The owl blinked, which is how an owl applauds when it is trying to seem dignified."
+end
+sound bell
+jump moon_gate
+
+@scene moon_gate
+background gate
+music hearth
+show owl calm at right
+show tess determined at center
+"At the edge of the sleeping sky stood the Clockwork Gate. Its keyhole was shaped like a question, and its hinges were made of gentle thunder."
+"The gate asked what Tess had brought from the road. It did not seem interested in her shoes, her name, or whether she was important."
+if pledge == true
+"The blue ribbon stirred. Tess remembered that promises did not have to be grand to be kept."
+else
+"The copper key felt surprisingly heavy in Tess's hand."
+end
+if starlight >= 3
+"The lantern held more light than she could count, but it still weighed almost nothing."
+else
+"Only a little starlight remained. Tess held it carefully."
+end
+if road != "unknown"
+"The path behind Tess glimmered, remembering each step that had carried her here."
+end
+owl: "You may tell the truth, offer what you gathered, or go home with a promise you can keep. None is an unworthy answer."
+* "Tell the gate the truth, even if it sounds foolish." -> speak_truth
+* "Give the gate every spark of starlight." -> offer_light
+* "Return home to share the story." -> go_home
+
+@scene speak_truth
+set courage += 1
+set pledge = true
+sound bell
+tess: "The truth is that I am small, and I do not know how to mend the moon. But I am here, and I will not leave a frightened star alone."
+"The gate sighed with relief, as though a secret had finally found its proper home."
+jump judgement
+
+@scene offer_light
+set starlight += 1
+sound sparkle
+"The lantern opened like a flower. Out floated every spark Tess had saved, rising slowly toward the frozen moon."
+if starlight >= 3
+"The sky brightened from violet to silver as the sparks found their forgotten places."
+else
+"Only one or two sparks rose, but the moon welcomed them as if they were a thousand."
+end
+tess: "Take what I can give. It is enough to begin."
+jump judgement
+
+@scene go_home
+set kindness += 1
+hide owl
+show tess relieved at center
+"The gate did not lock when Tess turned away. Instead, it opened onto a path of familiar windows and warm kitchen lights."
+tess: "A promise can start at home. Tomorrow we will remember the stars together."
+jump ending_home
+
+@scene judgement
+background sky
+hide owl
+show tess relieved at center
+music dawn
+"The moon's great hands twitched. For an instant the whole sky seemed to hold its breath."
+if kindness >= 2
+jump ending_kind
+else
+if courage > 1
+jump ending_bold
+else
+jump ending_quiet
+end
+end
+
+@scene ending_kind
+sound chime
+"The repaired bridge became a silver line across the sky, and the moon followed it back into motion."
+tess: "Maybe that is all kindness is: a bridge we make for someone else."
+"The stars took turns twinkling so that even the shyest among them would be noticed."
+"By morning, every clock in Bramblewick was running again. A hedgehog family sent Tess a note that said THANK YOU."
+"The moon had kept its promise. And Tess knew she would keep hers."
+"The End."
+
+@scene ending_bold
+sound chime
+"The brass wheel at the top of the tower turned, one brave notch after another, until the moon's hands began to move."
+tess: "I was scared the whole time. I suppose courage does not mean waiting until fear goes away."
+"The first pale sunrise crept over the roofs. In every window, someone looked up and remembered to smile at the stars."
+"The owl would later claim he had never doubted Tess for a moment. No one entirely believed him."
+"The moon had kept its promise. And Tess knew she would keep hers."
+"The End."
+
+@scene ending_quiet
+sound chime
+"The clockwork moon listened to the tiniest spark, the softest promise, and the sound of a child choosing to try."
+tess: "Even when I have very little light, I can still carry it."
+"Then the great silver hands began to turn, quietly enough that only the owl noticed."
+"At sunrise, Tess put the copper key on her windowsill for the next traveler who might need it."
+"The moon had kept its promise. And Tess knew she would keep hers."
+"The End."
+
+@scene ending_home
+background cottage
+music dawn
+show tess relieved at center
+sound chime
+"Tess returned to Bramblewick and told the baker, the tailor, the miller, and even the shy little mice about the lonely stars."
+"That evening every window held a candle, and every voice made a little room for someone far away."
+tess: "Buenas noches, estrellas. We have not forgotten you."
+"The clockwork moon heard them all. Before the last candle went out, its great hands turned once more."
+"Morning finally arrived, and with it the smell of fresh bread."
+"The End."

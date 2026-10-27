@@ -1,0 +1,11 @@
+format_version = 1
+id = "little-lantern"
+title = "The Little Lantern"
+story = "scripts/story.vn"
+entry = "first_light"
+
+[backgrounds]
+sunrise = "assets/backgrounds/sunrise.png"
+
+[characters.pip.expressions]
+cheerful = "assets/characters/pip-cheerful.png"

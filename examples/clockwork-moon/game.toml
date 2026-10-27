@@ -1,0 +1,38 @@
+format_version = 1
+id = "clockwork-moon"
+title = "The Clockwork Moon"
+story = "scripts/story.vn"
+entry = "threshold"
+theme = "styles/moonlight.toml"
+
+[backgrounds]
+cottage = "assets/backgrounds/cottage.png"
+forest = "assets/backgrounds/forest.png"
+river = "assets/backgrounds/river.png"
+glade = "assets/backgrounds/glade.png"
+tower = "assets/backgrounds/tower.png"
+gate = "assets/backgrounds/gate.png"
+sky = "assets/backgrounds/sky.png"
+
+[music]
+hearth = "assets/audio/hearth.wav"
+wandering = "assets/audio/wandering.wav"
+dawn = "assets/audio/dawn.wav"
+
+[sounds]
+bell = "assets/audio/bell.wav"
+sparkle = "assets/audio/sparkle.wav"
+ripple = "assets/audio/ripple.wav"
+knock = "assets/audio/knock.wav"
+chime = "assets/audio/chime.wav"
+
+[characters.tess.expressions]
+curious = "assets/characters/tess-curious.png"
+determined = "assets/characters/tess-determined.png"
+relieved = "assets/characters/tess-relieved.png"
+
+[characters.owl.expressions]
+calm = "assets/characters/owl-calm.png"
+
+[characters.wisp.expressions]
+glowing = "assets/characters/wisp-glowing.png"

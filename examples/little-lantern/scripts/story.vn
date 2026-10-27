@@ -1,0 +1,27 @@
+# THE LITTLE LANTERN
+# A tiny two-choice fairytale. A complete first game can be this small.
+
+@scene first_light
+background sunrise
+show pip cheerful at center
+"At the far end of a quiet valley, a little fox named Pip carried a lantern no bigger than an apple."
+"Every evening, Pip lit it for anyone who had lost the path home."
+pip: "Oh! A traveler. Would you like to help me?"
+* "Hold the lantern while Pip opens the gate." -> hold_light
+* "Walk beside Pip and watch the stars." -> walk_together
+
+@scene hold_light
+pip: "Thank you. Even a little light feels brighter in two hands."
+"The old wooden gate opened, and the lantern sent warm circles over the grass."
+jump goodnight
+
+@scene walk_together
+pip: "I like this way best. The stars can guide both of us."
+"Together they followed the silver path until the sleepy valley appeared below."
+jump goodnight
+
+@scene goodnight
+pip: "There we are. Everyone is home."
+hide pip
+"The lantern went dark, but the kindness it had carried did not."
+"The End."
