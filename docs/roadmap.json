@@ -3,9 +3,9 @@
   "project": "Vesper",
   "objective": "Verified shippable data-driven visual novel runtime",
   "scope_weight": 100,
-  "last_verified_commit": "50afbafa0aac7f9f05e34bae7028cd68bdfc51df",
-  "verified_weight": 0,
-  "note": "No task is verified until acceptance tests/checks pass; never count authored code as verified.",
+  "last_verified_commit": "ab290193201d2925335f93f365714cbacddd3d0f",
+  "verified_weight": 21,
+  "note": "21/100 verified from narrative CI. Bevy player build is still running; no graphics or end-to-end milestone has been counted.",
   "tasks": [
     {
       "id": "F01",
@@ -14,7 +14,7 @@
       "weight": 5,
       "acceptance": "Working Bevy 0.20 startup, green Linux CI and workspace",
       "depends_on": [],
-      "status": "pending",
+      "status": "active",
       "evidence": []
     },
     {
@@ -24,8 +24,10 @@
       "weight": 8,
       "acceptance": "Parser supports scenes/dialogue/choices/visuals with source-line validation and passing tests",
       "depends_on": [],
-      "status": "pending",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI narrative job 122362442310, run 40553273464, commit ab290193: Clippy, unit tests, valid and invalid CLI checks passed"
+      ]
     },
     {
       "id": "N02",
@@ -36,8 +38,10 @@
       "depends_on": [
         "N01"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI narrative job 122362442310, run 40553273464, commit ab290193: Clippy, unit tests, valid and invalid CLI checks passed"
+      ]
     },
     {
       "id": "N03",
@@ -48,8 +52,10 @@
       "depends_on": [
         "N01"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI narrative job 122362442310, run 40553273464, commit ab290193: Clippy, unit tests, valid and invalid CLI checks passed"
+      ]
     },
     {
       "id": "A01",
@@ -85,7 +91,7 @@
         "F01",
         "N02"
       ],
-      "status": "pending",
+      "status": "active",
       "evidence": []
     },
     {
