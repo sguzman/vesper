@@ -33,7 +33,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - name: System libraries
-        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev
-      - name: Check Bevy 0.20 player
-        run: cargo check -p vesper-player
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev xvfb libgl1-mesa-dri mesa-vulkan-drivers
+      - name: Build Bevy 0.20 player
+        run: cargo build -p vesper-player
+      - name: Start player under virtual X11 display
+        run: |
+          set +e
+          LIBGL_ALWAYS_SOFTWARE=1 timeout --signal=TERM 25s xvfb-run -a target/debug/vesper-player game/scripts/demo.vn > /tmp/vesper-start.log 2>&1
+          result=$?
+          set -e
+          cat /tmp/vesper-start.log
+          if [ "$result" -ne 124 ]; then
+            echo "Player did not stay running during smoke test (exit: $result)"
+            exit 1
+          fi
+          if grep -Ei 'panicked at|thread .* panicked|Unable to find a GPU' /tmp/vesper-start.log; then
+            exit 1
+          fi
