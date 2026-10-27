@@ -3,9 +3,9 @@
   "project": "Vesper",
   "objective": "Verified shippable data-driven visual novel runtime",
   "scope_weight": 100,
-  "last_verified_commit": "02ff1cb5b66f17df866ddcc23f4b073bbeaf9c50",
-  "verified_weight": 77,
-  "note": "77/100 verified. Audio assets decoded, visual fades and accessible choices passed in CI 40565981048; audible device output was not tested on the headless runner. H01, Q01, R01 and R02 remain outstanding.",
+  "last_verified_commit": "376dac5ed6551a9b1f0a1356da7c448096e32cb5",
+  "verified_weight": 89,
+  "note": "89/100 verified: audio/fades/accessibility CI 40565981048, safe developer hot-reload CI 40566533674, relocatable Linux package CI 40566657220. Complete integrated regression CI and exhaustive demo playthrough still pending.",
   "tasks": [
     {
       "id": "F01",
@@ -157,8 +157,10 @@
         "A01",
         "P01"
       ],
-      "status": "active",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI 40566533674: live theme and paused dialogue updated; invalid script rejected without changing previous screen; modified external PNG reloaded; all checks passed."
+      ]
     },
     {
       "id": "Q01",
@@ -184,8 +186,10 @@
       "depends_on": [
         "Q01"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI 40566657220: Linux tar.gz unpacked and launched from another directory without Cargo/Rust on PATH; native host dependencies still required."
+      ]
     },
     {
       "id": "R02",

@@ -1,6 +1,7 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
 use bevy::{asset::{AssetPlugin, LoadState}, prelude::*};
+mod reload;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -49,6 +50,9 @@ fn animate_fades(
         }
     }
 }
+
+#[derive(Component)]
+struct StoryPanel;
 
 #[derive(Component)]
 enum StoryText {
@@ -144,7 +148,10 @@ fn add_text(
 }
 
 fn main() {
-    let directory = env::args().nth(1).unwrap_or_else(|| "game".into());
+    let arguments: Vec<String> = env::args().skip(1).collect();
+    let watch = arguments.iter().any(|arg| arg == "--watch");
+    let directory = arguments.iter().find(|arg| arg.as_str() != "--watch")
+        .cloned().unwrap_or_else(|| "game".into());
     let game = Game::load(&directory).unwrap_or_else(|error| {
         eprintln!("{directory}: {error}");
         process::exit(2);
@@ -156,9 +163,15 @@ fn main() {
     let asset_folder = game.root.to_string_lossy().into_owned();
     let title = game.manifest.title.clone();
     let ui_scale = game.theme.ui_scale;
-    App::new()
+    let inbox = watch.then(|| reload::start(game.root.clone()));
+    let mut app = App::new();
+    app
         .add_plugins(DefaultPlugins
-            .set(AssetPlugin { file_path: asset_folder, ..default() })
+            .set(AssetPlugin {
+                file_path: asset_folder,
+                watch_for_changes_override: Some(watch),
+                ..default()
+            })
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title,
@@ -176,8 +189,11 @@ fn main() {
             pending_audio: Vec::new(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades, monitor_audio_assets).chain())
-        .run();
+        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades, monitor_audio_assets).chain());
+    if let Some(inbox) = inbox {
+        app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
+    }
+    app.run();
 }
 
 fn apply_visual(
@@ -345,6 +361,7 @@ fn setup(
             BackgroundColor(Color::srgba(
                 background[0], background[1], background[2], background[3],
             )),
+            StoryPanel,
         ))
         .with_children(|parent| {
             add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);

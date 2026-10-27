@@ -53,3 +53,7 @@ In the game's `game.toml`, declare `[music]` and `[sounds]` asset identifiers po
 ## Linux packaging
 
 Build on Linux and run `bash packaging/linux.sh target/release/vesper-player dist/vesper-linux-x86_64.tar.gz`. The archive contains the native player, a relocatable `vesper` launcher, the license and all **external** `game/` scripts/assets. Users can unpack it anywhere and run `./vesper/vesper` without Cargo or Rust. This archive requires compatible host Linux graphics/windowing/audio runtime libraries; it is not statically linked.
+
+## Live game editing
+
+Launch `vesper-player game --watch` during development. Vesper reloads valid external `.vn` and `.toml` changes on a worker thread, applying compatible paused dialogue/choice and theme updates without recompiling. Invalid scripts or incompatible changes leave the last good state in place with a diagnostic. Bevy's file watcher independently refreshes modified images and fonts. Watching is disabled by default for published games.
