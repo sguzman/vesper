@@ -3,9 +3,9 @@
   "project": "Vesper",
   "objective": "Verified shippable data-driven visual novel runtime",
   "scope_weight": 100,
-  "last_verified_commit": "c4aefa8640bed33b8db6383e7596e751c6f6f5a3",
-  "verified_weight": 52,
-  "note": "52/100 verified. 2026-10-27 CI run 40558460155 passed headless story/manifest tests and Bevy build, virtual X11 startup, external-image pixels and keyboard branching screenshot checks. Advanced typography, audio, save/load, hot reload, packaging and full example remain incomplete.",
+  "last_verified_commit": "88cacc3f411a0ad2671a8db638bed640f3992e68",
+  "verified_weight": 71,
+  "note": "71/100 verified: P02 typography tested under a real external TTF and multilingual text (CI 40563141018); S01 save/load restored the same visual state across a process restart (CI 40563153534). Other release requirements remain pending.",
   "tasks": [
     {
       "id": "F01",
@@ -112,8 +112,10 @@
         "P01",
         "A01"
       ],
-      "status": "active",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI run 40563141018 Bevy job 122397223603: runtime TTF, UI scale and multilingual scripted dialogue changed 233570 rendered pixels; earlier UI and choice tests passed."
+      ]
     },
     {
       "id": "P03",
@@ -138,8 +140,10 @@
         "N02",
         "P01"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI run 40563153534 Bevy job 122397535585: F5 save and F9 new-process load; 4122 initial-vs-restored changed pixels, 0 saved-vs-restored changed pixels; headless JSON snapshot roundtrip and mismatch-rejection tests passed."
+      ]
     },
     {
       "id": "H01",

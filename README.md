@@ -41,3 +41,7 @@ See `docs/architecture.md` and `docs/roadmap.json` for technical and completion 
 ## External typography
 
 Set `theme = "styles/dialogue.toml"` in `game.toml`. Themes configure `ui_scale`, panel dimensions, RGBA colors, and separate speaker/dialogue/choice/hint sizes and colors. Select `[font] family = "DejaVu Sans"` for system font discovery or `[font] file = "assets/fonts/YourFont.ttf"` to load an external TTF/OTF. Font paths stay inside the game directory and no game font is compiled into Vesper. Unicode wrapping uses native Bevy text layout. Authors must license their font files.
+
+## Saving and resuming
+
+Press **F5** to save the current story, presentation state and pending choices; **F9** restores the slot. Save/load file I/O runs on background threads and never blocks Bevy's update loop. Versioned JSON saves are stored under `$XDG_DATA_HOME/vesper/saves/` or `~/.local/share/vesper/saves/` and are bound to the game id and exact story source fingerprint. `VESPER_SAVE_DIR` overrides the location for tests. Story changes safely invalidate incompatible old snapshots rather than restoring unsafe offsets. A save initiated immediately before process exit must finish writing before shutdown; a future release pass will ensure lifecycle-safe completion feedback.

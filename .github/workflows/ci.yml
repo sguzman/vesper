@@ -173,4 +173,63 @@ jobs:
               exit 1
             fi
           '
+      - name: Restore F5 save with F9 across process restart
+        run: |
+          mkdir -p /tmp/vesper-save-test
+          xvfb-run -a -s '-screen 0 1280x720x24' bash -euo pipefail -c '
+            export LIBGL_ALWAYS_SOFTWARE=1
+            export VESPER_SAVE_DIR=/tmp/vesper-save-test
+            target/debug/vesper-player game > /tmp/vesper-save.log 2>&1 &
+            first=$!
+            trap "kill $first 2>/dev/null || true" EXIT
+            win=""
+            for attempt in $(seq 1 30); do
+              win=$(xdotool search --name "Vesper Demonstration" | head -n 1 || true)
+              if [ -n "$win" ]; then break; fi
+              sleep 1
+            done
+            test -n "$win"
+            sleep 5
+            xdotool windowfocus --sync "$win"
+            xdotool key --clearmodifiers space
+            sleep 2
+            xdotool key --clearmodifiers 1
+            sleep 3
+            import -window "$win" /tmp/vesper-saved.png
+            xdotool key --clearmodifiers F5
+            for attempt in $(seq 1 30); do
+              if [ -s /tmp/vesper-save-test/vesper-demo.json ]; then break; fi
+              sleep 1
+            done
+            test -s /tmp/vesper-save-test/vesper-demo.json
+            kill "$first" || true
+            wait "$first" || true
+            target/debug/vesper-player game > /tmp/vesper-load.log 2>&1 &
+            second=$!
+            trap "kill $second 2>/dev/null || true" EXIT
+            win=""
+            for attempt in $(seq 1 30); do
+              win=$(xdotool search --name "Vesper Demonstration" | head -n 1 || true)
+              if [ -n "$win" ]; then break; fi
+              sleep 1
+            done
+            test -n "$win"
+            sleep 5
+            import -window "$win" /tmp/vesper-before-load.png
+            xdotool windowfocus --sync "$win"
+            xdotool key --clearmodifiers F9
+            sleep 3
+            import -window "$win" /tmp/vesper-restored.png
+            grep -F "Vesper save restored" /tmp/vesper-load.log
+            diff_before=$(compare -metric AE /tmp/vesper-before-load.png /tmp/vesper-restored.png null: 2>&1 || true)
+            diff_saved=$(compare -metric AE /tmp/vesper-saved.png /tmp/vesper-restored.png null: 2>&1 || true)
+            before=$(printf "%s" "$diff_before" | sed -n "s/^\([0-9][0-9]*\).*/\1/p")
+            saved=$(printf "%s" "$diff_saved" | sed -n "s/^\([0-9][0-9]*\).*/\1/p")
+            echo "Pre-load changed pixels: $before; saved-state mismatched pixels: $saved"
+            if [ -z "$before" ] || [ "$before" -lt 1000 ] || [ -z "$saved" ] || [ "$saved" -gt 2000 ]; then
+              cat /tmp/vesper-load.log
+              echo "Save/load did not accurately restore displayed scene"
+              exit 1
+            fi
+          '
 

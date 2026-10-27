@@ -2,6 +2,7 @@
 //! The .vn format is preliminary and will be stabilized before Vesper 1.0.
 
 use std::{collections::BTreeMap, sync::Arc};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Diagnostic {
@@ -9,20 +10,20 @@ pub struct Diagnostic {
     pub message: String,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Value {
     Number(i64),
     Boolean(bool),
     Text(String),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Choice {
     pub label: String,
     pub destination: String,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Visual {
     Background(String),
     Show { character: String, expression: String, position: String },
@@ -31,7 +32,7 @@ pub enum Visual {
     Sound(String),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Output {
     Dialogue { speaker: Option<String>, text: String },
     Choices(Vec<Choice>),
@@ -66,7 +67,7 @@ struct Instruction { line: usize, command: Command }
 struct Scene { instructions: Vec<Instruction> }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Story { scenes: BTreeMap<String, Scene>, entry: String }
+pub struct Story { scenes: BTreeMap<String, Scene>, entry: String, fingerprint: u64 }
 
 fn identifier(input: &str) -> bool {
     let mut chars = input.chars();
@@ -186,6 +187,8 @@ fn command(line: &str) -> Result<Command, String> {
 impl Story {
     pub fn scene_count(&self) -> usize { self.scenes.len() }
     pub fn entry_scene(&self) -> &str { &self.entry }
+    /// Stable FNV-1a checksum of authored source bytes (not a security signature).
+    pub fn fingerprint(&self) -> u64 { self.fingerprint }
     pub fn has_scene(&self, id: &str) -> bool { self.scenes.contains_key(id) }
     pub fn visual_references(&self) -> Vec<(usize, Visual)> {
         self.scenes.values()
@@ -336,18 +339,41 @@ impl Story {
                 }
             }
         }
-        if errors.is_empty() { Ok(Self { scenes, entry: entry.expect("non-empty story") }) } else { Err(errors) }
+        if errors.is_empty() {
+            let fingerprint = source.as_bytes().iter().fold(
+                0xcbf29ce484222325_u64,
+                |hash, &byte| (hash ^ u64::from(byte)).wrapping_mul(0x100000001b3),
+            );
+            Ok(Self { scenes, entry: entry.expect("non-empty story"), fingerprint })
+        } else { Err(errors) }
     }
 }
 
 /// Headless story machine. Blocking output is emitted once per player advancement.
+#[derive(Debug)]
 pub struct Machine {
     story: Arc<Story>,
     scene: String,
     cursor: usize,
     variables: BTreeMap<String, Value>,
     pending: Option<Vec<Choice>>,
+    last_output: Option<Output>,
 }
+
+/// Serializable interpreter state. The save wrapper must additionally bind this
+/// to its owning game id, presentation state, and a stable application file path.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct MachineSnapshot {
+    pub format_version: u32,
+    pub story_fingerprint: u64,
+    pub scene: String,
+    pub cursor: usize,
+    pub variables: BTreeMap<String, Value>,
+    pub pending: Option<Vec<Choice>>,
+    pub last_output: Option<Output>,
+}
+
 
 impl Machine {
     pub fn new(story: &Story, scene: &str) -> Result<Self, String> {
@@ -356,8 +382,58 @@ impl Machine {
         }
         Ok(Self {
             story: Arc::new(story.clone()), scene: scene.into(), cursor: 0,
-            variables: BTreeMap::new(), pending: None,
+            variables: BTreeMap::new(), pending: None, last_output: None,
         })
+    }
+
+    pub fn snapshot(&self) -> MachineSnapshot {
+        MachineSnapshot {
+            format_version: 1,
+            story_fingerprint: self.story.fingerprint(),
+            scene: self.scene.clone(),
+            cursor: self.cursor,
+            variables: self.variables.clone(),
+            pending: self.pending.clone(),
+            last_output: self.last_output.clone(),
+        }
+    }
+
+    pub fn restore(story: &Story, snapshot: MachineSnapshot) -> Result<Self, String> {
+        if snapshot.format_version != 1 {
+            return Err(format!("unsupported narrative save version {}", snapshot.format_version));
+        }
+        if story.fingerprint() != snapshot.story_fingerprint {
+            return Err("story file has changed since this save; refusing unsafe cursor restore".into());
+        }
+        let scene = story.scenes.get(&snapshot.scene)
+            .ok_or_else(|| format!("saved scene '{}' no longer exists", snapshot.scene))?;
+        if snapshot.cursor > scene.instructions.len() {
+            return Err("saved narrative position is outside the scene".into());
+        }
+        if let Some(pending) = &snapshot.pending {
+            let source = snapshot.cursor.checked_sub(1)
+                .and_then(|index| scene.instructions.get(index));
+            if !matches!(source, Some(Instruction {
+                command: Command::Choices(choices), ..
+            }) if choices == pending) {
+                return Err("saved pending choices do not match the story".into());
+            }
+        }
+        Ok(Self {
+            story: Arc::new(story.clone()),
+            scene: snapshot.scene,
+            cursor: snapshot.cursor,
+            variables: snapshot.variables,
+            pending: snapshot.pending,
+            last_output: snapshot.last_output,
+        })
+    }
+
+    pub fn last_output(&self) -> Option<&Output> { self.last_output.as_ref() }
+
+    fn yield_output(&mut self, output: Output) -> Result<Output, String> {
+        self.last_output = Some(output.clone());
+        Ok(output)
     }
 
     pub fn scene(&self) -> &str { &self.scene }
@@ -369,30 +445,31 @@ impl Machine {
         self.scene = destination;
         self.cursor = 0;
         self.pending = None;
+        self.last_output = None;
         Ok(())
     }
 
     pub fn advance(&mut self) -> Result<Output, String> {
         if let Some(choices) = &self.pending {
-            return Ok(Output::Choices(choices.clone()));
+            return self.yield_output(Output::Choices(choices.clone()));
         }
         // An accidental authored loop cannot hang the Bevy update system forever.
         for _ in 0..10_000 {
             let scene = &self.story.scenes[&self.scene];
             let Some(entry) = scene.instructions.get(self.cursor) else {
-                return Ok(Output::End);
+                return self.yield_output(Output::End);
             };
             let instruction = entry.command.clone();
             let line = entry.line;
             self.cursor += 1;
             match instruction {
                 Command::Dialogue(speaker, text) =>
-                    return Ok(Output::Dialogue { speaker, text }),
+                    return self.yield_output(Output::Dialogue { speaker, text }),
                 Command::Choices(options) => {
                     self.pending = Some(options.clone());
-                    return Ok(Output::Choices(options));
+                    return self.yield_output(Output::Choices(options));
                 }
-                Command::Visual(visual) => return Ok(Output::Visual(visual)),
+                Command::Visual(visual) => return self.yield_output(Output::Visual(visual)),
                 Command::Jump(dest) => {
                     self.scene = dest;
                     self.cursor = 0;
@@ -529,6 +606,46 @@ end
         let story = Story::parse("@scene a\njump a").unwrap();
         let err = Machine::new(&story, "a").unwrap().advance().unwrap_err();
         assert!(err.contains("infinite loop"));
+    }
+
+    #[test]
+    fn snapshots_roundtrip_and_preserve_choice_selection() {
+        let story = Story::parse(r#"@scene start
+set trust = 7
+"Intro"
+* "Continue" -> ending
+@scene ending
+if trust == 7
+"Correct"
+end
+"#).unwrap();
+        let mut machine = Machine::new(&story, "start").unwrap();
+        machine.advance().unwrap();
+        assert!(matches!(machine.advance().unwrap(), Output::Choices(_)));
+        let snapshot = machine.snapshot();
+        let json = serde_json::to_string(&snapshot).unwrap();
+        let restored: MachineSnapshot = serde_json::from_str(&json).unwrap();
+        let mut resumed = Machine::restore(&story, restored).unwrap();
+        assert_eq!(resumed.variables()["trust"], Value::Number(7));
+        assert!(matches!(resumed.last_output(), Some(Output::Choices(_))));
+        resumed.choose(0).unwrap();
+        assert_eq!(resumed.advance().unwrap(), Output::Dialogue {
+            speaker: None, text: "Correct".into(),
+        });
+    }
+
+    #[test]
+    fn refuses_stale_or_corrupt_snapshot() {
+        let story = Story::parse("@scene first\n\"Original\"\n").unwrap();
+        let machine = Machine::new(&story, "first").unwrap();
+        let mut snapshot = machine.snapshot();
+        let changed = Story::parse("@scene first\n\"Edited\"\n").unwrap();
+        assert!(Machine::restore(&changed, snapshot.clone()).unwrap_err().contains("changed"));
+        snapshot.cursor = usize::MAX;
+        assert!(Machine::restore(&story, snapshot.clone()).unwrap_err().contains("outside"));
+        snapshot.cursor = 0;
+        snapshot.format_version = 99;
+        assert!(Machine::restore(&story, snapshot).unwrap_err().contains("version"));
     }
 
     #[test]

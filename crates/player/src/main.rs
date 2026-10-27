@@ -1,8 +1,8 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
 use bevy::{asset::AssetPlugin, prelude::*};
-use std::{collections::BTreeMap, env, process};
-use vesper_game::Game;
+use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
+use vesper_game::{Game, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
 
 #[derive(Resource)]
@@ -13,7 +13,17 @@ struct Session {
     finished: bool,
     background: Option<Entity>,
     characters: BTreeMap<String, Entity>,
+    presentation: PresentationState,
 }
+
+#[derive(Resource, Default)]
+struct CompletedIo(Arc<Mutex<Vec<IoResult>>>);
+
+enum IoResult {
+    Saved(Result<(), String>),
+    Loaded(Result<(Machine, PresentationState), String>),
+}
+
 
 #[derive(Component)]
 enum StoryText {
@@ -34,7 +44,7 @@ impl Screen {
         Self {
             speaker,
             body,
-            hint: "Enter / Space to continue".into(),
+            hint: "Enter / Space: continue   F5: save   F9: load".into(),
             choices: false,
         }
     }
@@ -47,7 +57,7 @@ impl Screen {
         Self {
             speaker: String::new(),
             body: lines,
-            hint: "Press the number of your choice".into(),
+            hint: "Number: choose   F5: save   F9: load".into(),
             choices: true,
         }
     }
@@ -130,12 +140,14 @@ fn main() {
                 ..default()
             }))
         .insert_resource(UiScale(ui_scale))
+        .insert_resource(CompletedIo::default())
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
             background: None, characters: BTreeMap::new(),
+            presentation: PresentationState::default(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, advance_from_keyboard)
+        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io).chain())
         .run();
 }
 
@@ -161,6 +173,7 @@ fn apply_visual(
                 Transform::from_xyz(0., 0., -10.),
             )).id();
             session.background = Some(entity);
+            session.presentation.background = Some(id);
         }
         Visual::Show { character, expression, position } => {
             let path = session.game.character_expression(&character, &expression)?.to_owned();
@@ -182,12 +195,17 @@ fn apply_visual(
                 },
                 Transform::from_xyz(x, -30., 0.),
             )).id();
+            session.presentation.characters.insert(
+                character.clone(),
+                CharacterPose { expression, position },
+            );
             session.characters.insert(character, entity);
         }
         Visual::Hide(character) => {
             if let Some(previous) = session.characters.remove(&character) {
                 commands.entity(previous).despawn();
             }
+            session.presentation.characters.remove(&character);
         }
         Visual::Music(_) | Visual::Sound(_) => {
             // Audio playback belongs to milestone P03.
@@ -306,5 +324,123 @@ fn advance_from_keyboard(
     } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
         let screen = next_screen(&mut session, &mut commands, &assets);
         update_screen(screen, &session.game.theme, &mut texts);
+    }
+}
+
+/// Data directory override is especially useful for test isolation.
+/// A game id is already validated as a restricted logical identifier.
+fn save_file(game_id: &str) -> Result<PathBuf, String> {
+    let base = if let Some(path) = env::var_os("VESPER_SAVE_DIR") {
+        PathBuf::from(path)
+    } else if let Some(path) = env::var_os("XDG_DATA_HOME") {
+        PathBuf::from(path).join("vesper/saves")
+    } else if let Some(home) = env::var_os("HOME") {
+        PathBuf::from(home).join(".local/share/vesper/saves")
+    } else {
+        return Err("save directory is unavailable (set VESPER_SAVE_DIR)".into());
+    };
+    Ok(base.join(format!("{game_id}.json")))
+}
+
+fn trigger_save_load(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    session: Res<Session>,
+    completed: Res<CompletedIo>,
+) {
+    if !(keyboard.just_pressed(KeyCode::F5) || keyboard.just_pressed(KeyCode::F9)) {
+        return;
+    }
+    let path = match save_file(&session.game.manifest.id) {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("Save path error: {error}");
+            return;
+        }
+    };
+    let queue = completed.0.clone();
+    if keyboard.just_pressed(KeyCode::F5) {
+        let save = SaveData::new(
+            &session.game, &session.machine, session.presentation.clone(),
+        );
+        std::thread::spawn(move || {
+            let result = save.write_atomic(&path);
+            if let Ok(mut messages) = queue.lock() {
+                messages.push(IoResult::Saved(result));
+            }
+        });
+    } else {
+        let game = session.game.clone();
+        std::thread::spawn(move || {
+            let result = SaveData::read(&path).and_then(|save| {
+                let restored = save.restore(&game)?;
+                Ok((restored, save.presentation))
+            });
+            if let Ok(mut messages) = queue.lock() {
+                messages.push(IoResult::Loaded(result));
+            }
+        });
+    }
+}
+
+fn poll_completed_io(
+    completed: Res<CompletedIo>,
+    mut session: ResMut<Session>,
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+) {
+    let events = match completed.0.lock() {
+        Ok(mut events) => std::mem::take(&mut *events),
+        Err(_) => return,
+    };
+    for event in events {
+        match event {
+            IoResult::Saved(Ok(())) => info!("Vesper save written"),
+            IoResult::Saved(Err(error)) => error!("Vesper save failed: {error}"),
+            IoResult::Loaded(Err(error)) => error!("Vesper load failed: {error}"),
+            IoResult::Loaded(Ok((machine, state))) => {
+                if let Some(entity) = session.background.take() {
+                    commands.entity(entity).despawn();
+                }
+                for (_, entity) in std::mem::take(&mut session.characters) {
+                    commands.entity(entity).despawn();
+                }
+                session.presentation = PresentationState::default();
+                if let Some(id) = state.background {
+                    if let Err(error) = apply_visual(
+                        &mut session, &mut commands, &assets, Visual::Background(id)
+                    ) {
+                        error!("Invalid saved background: {error}");
+                        continue;
+                    }
+                }
+                for (id, pose) in state.characters {
+                    if let Err(error) = apply_visual(
+                        &mut session, &mut commands, &assets,
+                        Visual::Show {
+                            character: id,
+                            expression: pose.expression,
+                            position: pose.position,
+                        },
+                    ) {
+                        error!("Invalid saved character: {error}");
+                        continue;
+                    }
+                }
+                let last = machine.last_output().cloned();
+                session.machine = machine;
+                session.choosing = matches!(last, Some(Output::Choices(_)));
+                session.finished = matches!(last, Some(Output::End));
+                let screen = match last {
+                    Some(Output::Dialogue { speaker, text }) =>
+                        Screen::normal(speaker.unwrap_or_default(), text),
+                    Some(Output::Choices(choices)) => Screen::choices(&choices),
+                    Some(Output::End) => Screen::ending("The End".into()),
+                    _ => Screen::ending("Story restored".into()),
+                };
+                update_screen(screen, &session.game.theme, &mut texts);
+                info!("Vesper save restored");
+            }
+        }
     }
 }
