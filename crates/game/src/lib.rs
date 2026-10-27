@@ -379,21 +379,10 @@ room = "assets/room.png"
         let fixture = Fixture::new("theme");
         fs::create_dir_all(fixture.root.join("styles")).unwrap();
         let config = fixture.root.join("game.toml");
-        fs::write(&config, format!(
-            "{}\ntheme = \"styles/visual.toml\"\n",
-            fs::read_to_string(&config).unwrap()
-                .replace("[backgrounds]", "theme = \"styles/visual.toml\"\n[backgrounds]")
-                .replace("theme = \"styles/visual.toml\"\n\n", "")
-        )).unwrap();
-        // The manifest theme setting must live at its top level, not in [backgrounds].
-        let manifest = fs::read_to_string(&config).unwrap();
-        fs::write(&config, manifest.replacen(
-            "\ntheme = \"styles/visual.toml\"\n[backgrounds]",
-            "\n[backgrounds]", 1
-        )).unwrap();
-        let original = fs::read_to_string(&config).unwrap();
-        fs::write(&config, original.replacen(
-            "\n[backgrounds]", "\ntheme = \"styles/visual.toml\"\n[backgrounds]", 1
+        let initial = fs::read_to_string(&config).unwrap();
+        fs::write(&config, initial.replace(
+            "entry = \"opening\"",
+            "entry = \"opening\"\ntheme = \"styles/visual.toml\"",
         )).unwrap();
         fs::write(fixture.root.join("styles/visual.toml"),
             "ui_scale = 1.4\n[font]\nfile = \"../outside.ttf\"\n").unwrap();
