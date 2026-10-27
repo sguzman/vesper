@@ -16,7 +16,94 @@ struct Session {
 }
 
 #[derive(Component)]
-struct StoryText;
+enum StoryText {
+    Speaker,
+    Body,
+    Hint,
+}
+
+struct Screen {
+    speaker: String,
+    body: String,
+    hint: String,
+    choices: bool,
+}
+
+impl Screen {
+    fn normal(speaker: String, body: String) -> Self {
+        Self {
+            speaker,
+            body,
+            hint: "Enter / Space to continue".into(),
+            choices: false,
+        }
+    }
+
+    fn choices(options: &[vesper_story::Choice]) -> Self {
+        let mut lines = String::new();
+        for (index, option) in options.iter().enumerate() {
+            lines.push_str(&format!("{}. {}\n", index + 1, option.label));
+        }
+        Self {
+            speaker: String::new(),
+            body: lines,
+            hint: "Press the number of your choice".into(),
+            choices: true,
+        }
+    }
+
+    fn ending(message: String) -> Self {
+        Self { speaker: String::new(), body: message, hint: String::new(), choices: false }
+    }
+
+    fn part(&self, slot: &StoryText) -> &str {
+        match slot {
+            StoryText::Speaker => &self.speaker,
+            StoryText::Body => &self.body,
+            StoryText::Hint => &self.hint,
+        }
+    }
+}
+
+fn text_font(theme: &vesper_game::Theme, assets: &AssetServer) -> FontSource {
+    if let Some(file) = &theme.font.file {
+        assets.load::<Font>(file.clone()).into()
+    } else if let Some(family) = &theme.font.family {
+        FontSource::Family(family.clone().into())
+    } else {
+        FontSource::SansSerif
+    }
+}
+
+fn text_color(components: [f32; 4]) -> TextColor {
+    TextColor(Color::srgba(
+        components[0], components[1], components[2], components[3]
+    ))
+}
+
+fn add_text(
+    parent: &mut ChildSpawnerCommands,
+    slot: StoryText,
+    content: &str,
+    style: &vesper_game::TextStyle,
+    font: &FontSource,
+) {
+    parent.spawn((
+        slot,
+        Text::new(content),
+        TextFont {
+            font: font.clone(),
+            font_size: FontSize::Px(style.size),
+            ..default()
+        },
+        text_color(style.color),
+        TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+        Node {
+            width: percent(100),
+            ..default()
+        },
+    ));
+}
 
 fn main() {
     let directory = env::args().nth(1).unwrap_or_else(|| "game".into());
@@ -30,6 +117,7 @@ fn main() {
     });
     let asset_folder = game.root.to_string_lossy().into_owned();
     let title = game.manifest.title.clone();
+    let ui_scale = game.theme.ui_scale;
     App::new()
         .add_plugins(DefaultPlugins
             .set(AssetPlugin { file_path: asset_folder, ..default() })
@@ -41,6 +129,7 @@ fn main() {
                 }),
                 ..default()
             }))
+        .insert_resource(UiScale(ui_scale))
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
             background: None, characters: BTreeMap::new(),
@@ -108,41 +197,34 @@ fn apply_visual(
 }
 
 /// Execute visual actions once and yield at dialogue, choices, or ending.
-fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetServer) -> String {
+fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetServer) -> Screen {
     for _ in 0..128 {
         match session.machine.advance() {
             Ok(Output::Dialogue { speaker, text }) => {
-                return match speaker {
-                    Some(name) => format!("{name}\n{text}\n\n[Enter or Space]"),
-                    None => format!("{text}\n\n[Enter or Space]"),
-                };
+                return Screen::normal(speaker.unwrap_or_default(), text);
             }
             Ok(Output::Choices(options)) => {
                 session.choosing = true;
-                let mut display = String::from("Choose:\n");
-                for (index, option) in options.iter().enumerate() {
-                    display.push_str(&format!("{}. {}\n", index + 1, option.label));
-                }
-                return display;
+                return Screen::choices(&options);
             }
             Ok(Output::Visual(visual)) => {
                 if let Err(error) = apply_visual(session, commands, assets, visual) {
                     session.finished = true;
-                    return format!("Story asset error:\n{error}");
+                    return Screen::ending(format!("Story asset error:\n{error}"));
                 }
             }
             Ok(Output::End) => {
                 session.finished = true;
-                return "The End".into();
+                return Screen::ending("The End".into());
             }
             Err(error) => {
                 session.finished = true;
-                return format!("Story error:\n{error}");
+                return Screen::ending(format!("Story error:\n{error}"));
             }
         }
     }
     session.finished = true;
-    "Story did not reach dialogue within 128 presentation events.".into()
+    Screen::ending("Story did not reach dialogue within 128 presentation events.".into())
 }
 
 fn setup(
@@ -151,26 +233,53 @@ fn setup(
     assets: Res<AssetServer>,
 ) {
     commands.spawn(Camera2d);
+    let theme = &session.game.theme;
+    let font = text_font(theme, &assets);
     let initial = next_screen(&mut session, &mut commands, &assets);
+    let panel = &session.game.theme.panel;
+    let background = panel.background;
+    let speaker_style = theme.speaker.clone();
+    let body_style = if initial.choices { &theme.choices } else { &theme.dialogue }.clone();
+    let hint_style = theme.hint.clone();
+
     commands
         .spawn((
             Node {
                 position_type: PositionType::Absolute,
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Stretch,
+                row_gap: px(panel.gap),
                 bottom: px(24),
-                left: percent(5),
-                width: percent(90),
-                min_height: px(170),
-                padding: px(24).all(),
+                left: percent((100.0 - panel.width_percent) / 2.0),
+                width: percent(panel.width_percent),
+                min_height: px(panel.min_height),
+                padding: px(panel.padding).all(),
                 ..default()
             },
-            BackgroundColor(Color::srgba(0.04, 0.05, 0.09, 0.96)),
+            BackgroundColor(Color::srgba(
+                background[0], background[1], background[2], background[3],
+            )),
         ))
-        .with_child((
-            Text::new(initial),
-            TextFont::from_font_size(px(28)),
-            TextColor(Color::WHITE),
-            StoryText,
-        ));
+        .with_children(|parent| {
+            add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);
+            add_text(parent, StoryText::Body, &initial.body, &body_style, &font);
+            add_text(parent, StoryText::Hint, &initial.hint, &hint_style, &font);
+        });
+}
+
+fn update_screen(
+    screen: Screen,
+    theme: &vesper_game::Theme,
+    texts: &mut Query<(&mut Text, &mut TextFont, &StoryText)>,
+) {
+    for (mut text, mut font, slot) in texts.iter_mut() {
+        text.0 = screen.part(slot).to_owned();
+        if matches!(slot, StoryText::Body) {
+            font.font_size = FontSize::Px(
+                if screen.choices { theme.choices.size } else { theme.dialogue.size },
+            );
+        }
+    }
 }
 
 fn advance_from_keyboard(
@@ -178,7 +287,7 @@ fn advance_from_keyboard(
     mut session: ResMut<Session>,
     mut commands: Commands,
     assets: Res<AssetServer>,
-    mut text: Single<&mut Text, With<StoryText>>,
+    mut texts: Query<(&mut Text, &mut TextFont, &StoryText)>,
 ) {
     if session.finished { return; }
     if session.choosing {
@@ -190,10 +299,12 @@ fn advance_from_keyboard(
         if let Some(number) = number {
             if session.machine.choose(number).is_ok() {
                 session.choosing = false;
-                text.0 = next_screen(&mut session, &mut commands, &assets);
+                let screen = next_screen(&mut session, &mut commands, &assets);
+                update_screen(screen, &session.game.theme, &mut texts);
             }
         }
     } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
-        text.0 = next_screen(&mut session, &mut commands, &assets);
+        let screen = next_screen(&mut session, &mut commands, &assets);
+        update_screen(screen, &session.game.theme, &mut texts);
     }
 }
