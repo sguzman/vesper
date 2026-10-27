@@ -8,7 +8,7 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 
 - `crates/story`: graphics-independent `.vn` parser, validator and deterministic interpreter.
 - `crates/cli`: `vesper check <story.vn>` validates an external story file.
-- `crates/player`: Bevy 0.20 dialogue-and-keyboard player reading a `.vn` path at runtime; graphic build verification pending.
+- `crates/player`: Bevy 0.20 player reading external game manifests, stories, images and keyboard choices; runtime verification pending.
 - `game/scripts/demo.vn`: editable sample external story.
 - `docs/roadmap.json`: durable weighted roadmap and acceptance criteria.
 
@@ -19,8 +19,11 @@ Requires stable Rust and Bevy's Linux development libraries.
 ```sh
 cargo test -p vesper-story -p vesper-cli
 cargo run -p vesper-cli -- check game/scripts/demo.vn
-cargo run -p vesper-player -- game/scripts/demo.vn
+cargo run -p vesper-cli -- check-game game
+cargo run -p vesper-player -- game
 ```
+
+Independent `game/` and `game-alternate/` folders load without recompiling. The `vesper-game` crate verifies versioned manifests and rejects absolute, parent-traversal and external symlink paths. Small test PNGs are placeholders, not production artwork.
 
 The `.vn` language is provisional. It currently supports `@scene`, named dialogue, narration, adjacent `* "text" -> scene` choices, `jump`, `set`, `if/else/end`, `background`, `show`, `hide`, `music` and `sound`. Variables are signed integers, booleans or quoted strings. The interpreter yields presentation instructions to a future Bevy bridge. This is not a complete production authoring language yet.
 

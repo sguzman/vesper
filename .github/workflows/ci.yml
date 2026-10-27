@@ -16,11 +16,15 @@ jobs:
       - name: Format working copy
         run: cargo fmt --all
       - name: Clippy
-        run: cargo clippy -p vesper-story -p vesper-cli --all-targets -- -D warnings
+        run: cargo clippy -p vesper-story -p vesper-cli -p vesper-game --all-targets -- -D warnings
       - name: Tests
-        run: cargo test -p vesper-story -p vesper-cli
+        run: cargo test -p vesper-story -p vesper-cli -p vesper-game
       - name: Validate example
         run: cargo run -p vesper-cli -- check game/scripts/demo.vn
+      - name: Validate independent external games
+        run: |
+          cargo run -p vesper-cli -- check-game game
+          cargo run -p vesper-cli -- check-game game-alternate
       - name: Reject malformed example with file and line
         run: |
           printf '@scene intro\nset x = invalid\n' > /tmp/vesper-invalid.vn
@@ -37,13 +41,13 @@ jobs:
       - name: System libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev xvfb libgl1-mesa-dri mesa-vulkan-drivers
+          sudo apt-get install -y libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 xvfb libgl1-mesa-dri mesa-vulkan-drivers
       - name: Build Bevy 0.20 player
         run: cargo build -p vesper-player
       - name: Start player under virtual X11 display
         run: |
           set +e
-          LIBGL_ALWAYS_SOFTWARE=1 timeout --signal=TERM 25s xvfb-run -a target/debug/vesper-player game/scripts/demo.vn > /tmp/vesper-start.log 2>&1
+          LIBGL_ALWAYS_SOFTWARE=1 timeout --signal=TERM 25s xvfb-run -a target/debug/vesper-player game > /tmp/vesper-start.log 2>&1
           result=$?
           set -e
           cat /tmp/vesper-start.log

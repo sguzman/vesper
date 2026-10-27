@@ -10,3 +10,4 @@ path = "src/main.rs"
 
 [dependencies]
 vesper-story.workspace = true
+vesper-game.workspace = true
