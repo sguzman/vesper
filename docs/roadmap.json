@@ -3,9 +3,9 @@
   "project": "Vesper",
   "objective": "Verified shippable data-driven visual novel runtime",
   "scope_weight": 100,
-  "last_verified_commit": "88cacc3f411a0ad2671a8db638bed640f3992e68",
-  "verified_weight": 71,
-  "note": "71/100 verified: P02 typography tested under a real external TTF and multilingual text (CI 40563141018); S01 save/load restored the same visual state across a process restart (CI 40563153534). Other release requirements remain pending.",
+  "last_verified_commit": "02ff1cb5b66f17df866ddcc23f4b073bbeaf9c50",
+  "verified_weight": 77,
+  "note": "77/100 verified. Audio assets decoded, visual fades and accessible choices passed in CI 40565981048; audible device output was not tested on the headless runner. H01, Q01, R01 and R02 remain outstanding.",
   "tasks": [
     {
       "id": "F01",
@@ -127,8 +127,10 @@
         "P01",
         "A02"
       ],
-      "status": "pending",
-      "evidence": []
+      "status": "verified complete",
+      "evidence": [
+        "CI run 40565981048 commit 02ff1cb5: audio PCM asset decode, sprite fade completed and visibly changed 918883 pixels; ArrowDown choice marker changed 6241 pixels; Bevy/typography/save tests all green. No actual speaker output in CI."
+      ]
     },
     {
       "id": "S01",
@@ -155,7 +157,7 @@
         "A01",
         "P01"
       ],
-      "status": "pending",
+      "status": "active",
       "evidence": []
     },
     {
