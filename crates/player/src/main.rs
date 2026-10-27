@@ -1,6 +1,6 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
-use bevy::{asset::AssetPlugin, prelude::*};
+use bevy::{asset::{AssetPlugin, LoadState}, prelude::*};
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -15,6 +15,7 @@ struct Session {
     music: Option<Entity>,
     characters: BTreeMap<String, Entity>,
     presentation: PresentationState,
+    pending_audio: Vec<(String, Handle<AudioSource>)>,
 }
 
 #[derive(Resource, Default)]
@@ -36,13 +37,14 @@ fn fade_fraction(elapsed: f32, duration: f32) -> f32 {
 fn animate_fades(
     time: Res<Time>,
     mut commands: Commands,
-    mut sprites: Query<(Entity, &mut Sprite, &mut FadeIn)>,
+    mut sprites: Query<(Entity, &Name, &mut Sprite, &mut FadeIn)>,
 ) {
-    for (entity, mut sprite, mut fade) in &mut sprites {
+    for (entity, name, mut sprite, mut fade) in &mut sprites {
         fade.elapsed = (fade.elapsed + time.delta_secs()).min(fade.duration);
         let alpha = fade_fraction(fade.elapsed, fade.duration);
         sprite.color = Color::srgba(1.0, 1.0, 1.0, alpha);
         if fade.elapsed >= fade.duration {
+            info!("Vesper fade complete: {}", name.as_str());
             commands.entity(entity).remove::<FadeIn>();
         }
     }
@@ -171,9 +173,10 @@ fn main() {
             game, machine, choosing: false, finished: false,
             background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
+            pending_audio: Vec::new(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades).chain())
+        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades, monitor_audio_assets).chain())
         .run();
 }
 
@@ -250,7 +253,11 @@ fn apply_visual(
             }
             let entity = commands.spawn((
                 Name::new(format!("Music: {id}")),
-                AudioPlayer::new(assets.load::<AudioSource>(path)),
+                AudioPlayer::new({
+                    let handle = assets.load::<AudioSource>(path);
+                    session.pending_audio.push((format!("music:{id}"), handle.clone()));
+                    handle
+                }),
                 PlaybackSettings::LOOP,
             )).id();
             session.music = Some(entity);
@@ -261,7 +268,11 @@ fn apply_visual(
             let path = session.game.sound(&id)?.to_owned();
             commands.spawn((
                 Name::new(format!("Sound: {id}")),
-                AudioPlayer::new(assets.load::<AudioSource>(path)),
+                AudioPlayer::new({
+                    let handle = assets.load::<AudioSource>(path);
+                    session.pending_audio.push((format!("sound:{id}"), handle.clone()));
+                    handle
+                }),
                 PlaybackSettings::DESPAWN,
             ));
             info!("Vesper queued sound: {id}");
@@ -547,4 +558,23 @@ mod tests {
         assert_eq!(fade_fraction(2.0, 2.0), 1.0);
         assert_eq!(fade_fraction(3.0, 2.0), 1.0);
     }
+}
+
+
+/// Verify that external audio has been decoded into Bevy assets. CI has no
+/// physical audio sink, so this asserts decoding rather than audible output.
+fn monitor_audio_assets(mut session: ResMut<Session>, server: Res<AssetServer>) {
+    session.pending_audio.retain(|(name, handle)| {
+        match server.load_state(handle.id()) {
+            LoadState::Loaded => {
+                info!("Vesper decoded audio asset: {name}");
+                false
+            }
+            LoadState::Failed(error) => {
+                error!("Vesper audio asset failed ({name}): {error}");
+                false
+            }
+            _ => true,
+        }
+    });
 }
