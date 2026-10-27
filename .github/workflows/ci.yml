@@ -25,6 +25,10 @@ jobs:
         run: |
           cargo run --locked -p vesper-cli -- check-game game
           cargo run --locked -p vesper-cli -- check-game game-alternate
+      - name: Validate both fairy tale game directories
+        run: |
+          cargo run --locked -p vesper-cli -- check-game examples/little-lantern
+          cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
       - name: Verify the external PCM audio assets
         run: |
           python3 - <<'PY'
@@ -255,6 +259,16 @@ jobs:
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/hot_reload_smoke.py
       - name: Complete both reference branches and verify safe exit saves
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/reference_playthrough.py
+      - name: Render and interact with both external fairy tales
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/fairytale_smoke.py
+      - name: Archive example screenshots for optional human review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-fairytale-screenshots
+          path: /tmp/vesper-fairytale-shots/*.png
+          retention-days: 7
+          if-no-files-found: ignore
       - name: Restore F5 save with F9 across process restart
         run: |
           mkdir -p /tmp/vesper-save-test
