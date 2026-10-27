@@ -234,6 +234,8 @@ jobs:
               exit 1
             fi
           '
+      - name: Hot reload story, UI and external artwork; reject invalid source
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/hot_reload_smoke.py
       - name: Restore F5 save with F9 across process restart
         run: |
           mkdir -p /tmp/vesper-save-test
