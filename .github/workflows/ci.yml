@@ -46,8 +46,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: System libraries
         run: |
-          sudo timeout 300s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
-          sudo timeout 300s apt-get install -y --no-install-recommends libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1-dev xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' /etc/apt/apt-mirrors.txt
+          fi
+          sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 600s apt-get install -y --no-install-recommends libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1-dev xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
       - name: Build Bevy 0.20 player
         run: cargo build -p vesper-player
       - name: Start player under virtual X11 display
