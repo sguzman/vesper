@@ -86,12 +86,26 @@ jobs:
               exit 1
             fi
             sleep 5
+            grep -F "Vesper queued music: evening" /tmp/vesper-input.log
+            grep -F "Vesper queued sound: greeting" /tmp/vesper-input.log
             import -window "$win" /tmp/vesper-initial.png
             xdotool windowfocus --sync "$win"
             xdotool key --clearmodifiers space
             sleep 2
             import -window "$win" /tmp/vesper-choices.png
             xdotool windowfocus --sync "$win"
+            xdotool key --clearmodifiers Down
+            sleep 2
+            import -window "$win" /tmp/vesper-choice-down.png
+            arrow_diff=$(compare -metric AE /tmp/vesper-choices.png /tmp/vesper-choice-down.png null: 2>&1 || true)
+            echo "Arrow-selected choice changed pixels: $arrow_diff"
+            arrow_pixels=$(printf "%s" "$arrow_diff" | sed -n "s/^\([0-9][0-9]*\).*/\1/p")
+            if [ -z "$arrow_pixels" ] || [ "$arrow_pixels" -lt 20 ]; then
+              echo "ArrowDown did not move the visible selection"
+              exit 1
+            fi
+            xdotool key --clearmodifiers Up
+            sleep 1
             xdotool key --clearmodifiers 1
             sleep 2
             import -window "$win" /tmp/vesper-after-choice.png

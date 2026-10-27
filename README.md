@@ -45,3 +45,7 @@ Set `theme = "styles/dialogue.toml"` in `game.toml`. Themes configure `ui_scale`
 ## Saving and resuming
 
 Press **F5** to save the current story, presentation state and pending choices; **F9** restores the slot. Save/load file I/O runs on background threads and never blocks Bevy's update loop. Versioned JSON saves are stored under `$XDG_DATA_HOME/vesper/saves/` or `~/.local/share/vesper/saves/` and are bound to the game id and exact story source fingerprint. `VESPER_SAVE_DIR` overrides the location for tests. Story changes safely invalidate incompatible old snapshots rather than restoring unsafe offsets. A save initiated immediately before process exit must finish writing before shutdown; a future release pass will ensure lifecycle-safe completion feedback.
+
+## Audio and visual transitions
+
+In the game's `game.toml`, declare `[music]` and `[sounds]` asset identifiers pointing to game-relative WAV or OGG files. Narrative commands `music evening` and `sound greeting` queue native Bevy audio playback; music loops and replaces the previous track, effects play once. The sample files in `game/assets/audio/` are small original PCM tones. Bevy silently handles systems without an audio output device (such as headless CI), but audible playback still needs physical QA. Themes can set `fade_seconds` (0–3) for sprite/background fade-ins. During a choice, Up/Down cycles the highlighted selection, Enter/Space confirms it, and digit keys 1–9 continue to work. Choice highlight and active music are stored in saves.
