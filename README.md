@@ -4,6 +4,20 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 
 **Status:** scoped Vesper MVP verified complete (100/100 weighted roadmap points; GitHub Actions run 40571573177). Both demonstration branches, presentation, hot reload, sound asset decoding, save/load and compiler-free Linux packaging passed automated tests. Hardware audio output and exhaustive coverage of every possible Linux configuration were not directly tested.
 
+## Two standalone fairytale examples
+
+- **[The Little Lantern](examples/little-lantern/)** — the smallest complete visual novel: a little fox, one background, two choices and a shared ending.
+- **[The Clockwork Moon](examples/clockwork-moon/)** — an extended, fully branched children's adventure with 18 scenes, 36 possible choice sequences, four endings, seven locations, music, audio cues, sprite expressions, story variables, save/load, and externally editable themes.
+
+These are **separate game directories**, never compiled into the engine. Run them with:
+
+```sh
+cargo run --locked -p vesper-player -- examples/little-lantern
+cargo run --locked -p vesper-player -- examples/clockwork-moon
+```
+
+Or download the compiled **vesper-linux-fairytale-showcase** artifact from [verified Linux CI](https://github.com/sguzman/vesper/actions/runs/40579833495). Unpack its inner `vesper-linux-x86_64.tar.gz`, then use `./vesper/lantern` or `./vesper/moon` without Rust or Cargo. [Example guide, controls, and visual QA](examples/README.md).
+
 ## Workspace
 
 - `crates/story`: graphics-independent `.vn` parser, validator and deterministic interpreter.
