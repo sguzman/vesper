@@ -25,6 +25,19 @@ jobs:
         run: |
           cargo run -p vesper-cli -- check-game game
           cargo run -p vesper-cli -- check-game game-alternate
+      - name: Verify the external PCM audio assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import wave
+          for filename in ("evening.wav", "greeting.wav"):
+              with wave.open(str(Path("game/assets/audio") / filename), "rb") as wav:
+                  assert wav.getnchannels() == 1
+                  assert wav.getframerate() == 16000
+                  assert wav.getsampwidth() == 2
+                  assert wav.getnframes() > 1000
+                  print(filename, "valid PCM frames:", wav.getnframes())
+          PY
       - name: Reject malformed example with file and line
         run: |
           printf '@scene intro\nset x = invalid\n' > /tmp/vesper-invalid.vn
@@ -53,6 +66,8 @@ jobs:
           sudo timeout 600s apt-get install -y --no-install-recommends libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1-dev xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
       - name: Build Bevy 0.20 player
         run: cargo build -p vesper-player
+      - name: Test fade interpolation
+        run: cargo test -p vesper-player --bin vesper-player
       - name: Start player under virtual X11 display
         run: |
           set +e
@@ -130,6 +145,34 @@ jobs:
             echo "Initial rendered unique colors: $colors"
             if [ "$colors" -lt 12 ]; then
               echo "Expected images and text, but screenshot is nearly flat"
+              exit 1
+            fi
+          '
+      - name: Verify actual sprite fade across frames
+        run: |
+          cp -a game /tmp/vesper-fade-test
+          sed -i 's/fade_seconds = 0.25/fade_seconds = 3.0/' /tmp/vesper-fade-test/styles/dialogue.toml
+          xvfb-run -a -s '-screen 0 1280x720x24' bash -euo pipefail -c '
+            export LIBGL_ALWAYS_SOFTWARE=1
+            target/debug/vesper-player /tmp/vesper-fade-test > /tmp/vesper-fade.log 2>&1 &
+            pid=$!
+            trap "kill $pid 2>/dev/null || true" EXIT
+            win=""
+            for attempt in $(seq 1 30); do
+              win=$(xdotool search --name "Vesper Demonstration" | head -n 1 || true)
+              if [ -n "$win" ]; then break; fi
+              sleep 1
+            done
+            test -n "$win"
+            import -window "$win" /tmp/vesper-fade-early.png
+            sleep 4
+            import -window "$win" /tmp/vesper-fade-late.png
+            diff=$(compare -metric AE /tmp/vesper-fade-early.png /tmp/vesper-fade-late.png null: 2>&1 || true)
+            pixels=$(printf "%s" "$diff" | sed -n "s/^\([0-9][0-9]*\).*/\1/p")
+            echo "Fade changed pixels over frames: $pixels"
+            if [ -z "$pixels" ] || [ "$pixels" -lt 500 ]; then
+              cat /tmp/vesper-fade.log
+              echo "Expected active sprite fade to change visible pixels"
               exit 1
             fi
           '

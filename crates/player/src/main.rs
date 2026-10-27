@@ -29,6 +29,10 @@ enum IoResult {
 #[derive(Component)]
 struct FadeIn { elapsed: f32, duration: f32 }
 
+fn fade_fraction(elapsed: f32, duration: f32) -> f32 {
+    (elapsed / duration).clamp(0.0, 1.0)
+}
+
 fn animate_fades(
     time: Res<Time>,
     mut commands: Commands,
@@ -36,7 +40,7 @@ fn animate_fades(
 ) {
     for (entity, mut sprite, mut fade) in &mut sprites {
         fade.elapsed = (fade.elapsed + time.delta_secs()).min(fade.duration);
-        let alpha = (fade.elapsed / fade.duration).clamp(0.0, 1.0);
+        let alpha = fade_fraction(fade.elapsed, fade.duration);
         sprite.color = Color::srgba(1.0, 1.0, 1.0, alpha);
         if fade.elapsed >= fade.duration {
             commands.entity(entity).remove::<FadeIn>();
@@ -530,5 +534,17 @@ fn poll_completed_io(
                 info!("Vesper save restored");
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::fade_fraction;
+    #[test]
+    fn fade_progress_is_bounded_and_reaches_full_opacity() {
+        assert_eq!(fade_fraction(0.0, 2.0), 0.0);
+        assert_eq!(fade_fraction(1.0, 2.0), 0.5);
+        assert_eq!(fade_fraction(2.0, 2.0), 1.0);
+        assert_eq!(fade_fraction(3.0, 2.0), 1.0);
     }
 }
