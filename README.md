@@ -49,3 +49,7 @@ Press **F5** to save the current story, presentation state and pending choices; 
 ## Audio and visual transitions
 
 In the game's `game.toml`, declare `[music]` and `[sounds]` asset identifiers pointing to game-relative WAV or OGG files. Narrative commands `music evening` and `sound greeting` queue native Bevy audio playback; music loops and replaces the previous track, effects play once. The sample files in `game/assets/audio/` are small original PCM tones. Bevy silently handles systems without an audio output device (such as headless CI), but audible playback still needs physical QA. Themes can set `fade_seconds` (0–3) for sprite/background fade-ins. During a choice, Up/Down cycles the highlighted selection, Enter/Space confirms it, and digit keys 1–9 continue to work. Choice highlight and active music are stored in saves.
+
+## Linux packaging
+
+Build on Linux and run `bash packaging/linux.sh target/release/vesper-player dist/vesper-linux-x86_64.tar.gz`. The archive contains the native player, a relocatable `vesper` launcher, the license and all **external** `game/` scripts/assets. Users can unpack it anywhere and run `./vesper/vesper` without Cargo or Rust. This archive requires compatible host Linux graphics/windowing/audio runtime libraries; it is not statically linked.
