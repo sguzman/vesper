@@ -84,22 +84,31 @@ jobs:
             fi
             sleep 5
             import -window "$win" /tmp/vesper-initial.png
-            xdotool key --clearmodifiers --window "$win" space
+            xdotool windowfocus --sync "$win"
+            xdotool key --clearmodifiers space
             sleep 2
             import -window "$win" /tmp/vesper-choices.png
-            xdotool key --clearmodifiers --window "$win" 1
+            xdotool windowfocus --sync "$win"
+            xdotool key --clearmodifiers 1
             sleep 2
             import -window "$win" /tmp/vesper-after-choice.png
             for pair in "initial choices" "choices after-choice"; do
               read before after <<< "$pair"
-              changed=$(compare -metric AE "/tmp/vesper-$before.png" "/tmp/vesper-$after.png" null: 2>&1 || true)
-              echo "Changed pixels ($before -> $after): $changed"
-              if ! [[ "$changed" =~ ^[0-9]+$ ]] || [ "$changed" -lt 100 ]; then
+              metric=$(compare -metric AE "/tmp/vesper-$before.png" "/tmp/vesper-$after.png" null: 2>&1 || true)
+              echo "Changed pixels ($before -> $after): $metric"
+              if [[ ! "$metric" =~ ^([0-9]+) ]] || [ "${BASH_REMATCH[1]:-0}" -lt 100 ]; then
                 cat /tmp/vesper-input.log
                 echo "Expected story input to change visible dialogue"
                 exit 1
               fi
             done
+            background_colors=$(convert /tmp/vesper-initial.png -crop 300x300+120+120 +repage -format "%k" info:)
+            character_colors=$(convert /tmp/vesper-initial.png -crop 140x250+580+180 +repage -format "%k" info:)
+            echo "Background crop colors: $background_colors; character crop colors: $character_colors"
+            if [ "$background_colors" -lt 5 ] || [ "$character_colors" -lt 5 ]; then
+              echo "Expected external background and character art to be visible"
+              exit 1
+            fi
             colors=$(identify -format "%k" /tmp/vesper-initial.png)
             echo "Initial rendered unique colors: $colors"
             if [ "$colors" -lt 12 ]; then
