@@ -166,7 +166,7 @@ def check_choices(size: tuple[int, int], images: dict[str, Path]) -> None:
 
     def vertical_bounds(path: Path) -> tuple[int, int]:
         bbox = run("convert", str(path), "-format", "%@", "info:").stdout
-        m = re.fullmatch(r"(\\d+)x(\\d+)\\+(\\d+)\\+(\\d+)", bbox)
+        m = re.fullmatch(r"(\d+)x(\d+)\+(\d+)\+(\d+)", bbox)
         assert m, (path, bbox)
         _, height, _, y = map(int, m.groups())
         return y, y + height
