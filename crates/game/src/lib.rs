@@ -120,7 +120,7 @@ pub enum AtmospherePreset {
     Moonlit,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct AtmosphereTheme {
     pub preset: AtmospherePreset,
