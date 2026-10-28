@@ -7,6 +7,7 @@ mod choices;
 mod text_reveal;
 mod readout;
 mod cinematics;
+mod actors;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -73,8 +74,8 @@ struct BackgroundVisual;
 
 #[derive(Component)]
 struct CharacterVisual {
-    /// Author-defined x coordinate in the 1280x720 design canvas.
-    anchor_x: f32,
+    character: String,
+    position: String,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -137,7 +138,11 @@ fn fit_viewport(
     mut ui_scale: ResMut<UiScale>,
     mut backgrounds: Query<(&mut Transform, Option<&cinematics::BackdropMotion>, Option<&cinematics::BackdropTransition>), (With<BackgroundVisual>, Without<CharacterVisual>)>,
     mut curtains: Query<&mut Transform, (With<cinematics::BackdropCurtain>, Without<BackgroundVisual>, Without<CharacterVisual>)>,
-    mut characters: Query<(&CharacterVisual, &mut Transform), (With<CharacterVisual>, Without<BackgroundVisual>)>,
+    mut characters: Query<(
+        &CharacterVisual, &mut Transform,
+        Option<&actors::ActorEntrance>, Option<&actors::ActorExit>,
+        Option<&actors::ActorIdle>,
+    ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
     mut previous: Local<(Vec2, [u32; 4])>,
 ) {
@@ -179,10 +184,13 @@ fn fit_viewport(
         let next = Vec3::splat(m.background_scale);
         if transform.scale != next { transform.scale = next; }
     }
-    for (anchor, mut transform) in &mut characters {
-        transform.scale = Vec3::splat(m.character_scale);
-        transform.translation.x = anchor.anchor_x * m.character_scale;
-        transform.translation.y = -30.0 * m.character_scale;
+    for (actor, mut transform, entrance, exit, idle) in &mut characters {
+        let Some(config) = session.game.manifest.characters.get(&actor.character) else { continue; };
+        let next = actors::placement(size, m.character_scale, &actor.position,
+            &config.stage, entrance, exit, idle,
+            session.preferences.reduced_motion.unwrap_or(false));
+        if transform.translation != next.translation { transform.translation = next.translation; }
+        if transform.scale != next.scale { transform.scale = next.scale; }
     }
     if previous.0 != size {
         previous.0 = size;
@@ -521,7 +529,7 @@ fn main() {
             settings::pointer, advance_from_keyboard,
             choices::sync_rows, choices::sync_row_style,
             choices::scroll_selected, choices::sync_viewport,
-            choices::reserve_row_height, readout::tick, cinematics::tick,
+            choices::reserve_row_height, readout::tick, cinematics::tick, actors::tick,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
             poll_completed_io, sync_menu_selection, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
@@ -604,39 +612,72 @@ fn apply_visual(
         }
         Visual::Show { character, expression, position } => {
             let path = session.game.character_expression(&character, &expression)?.to_owned();
-            let x = match position.as_str() {
-                "left" => -350.,
-                "center" => 0.,
-                "right" => 350.,
-                _ => return Err(format!("unknown character position '{position}'")),
-            };
-            if let Some(previous) = session.characters.remove(&character) {
-                commands.entity(previous).despawn();
+            if !matches!(position.as_str(), "left" | "center" | "right") {
+                return Err(format!("unknown character position '{position}'"));
             }
-            let fade = session.game.theme.fade_seconds;
+            let stage = &session.game.manifest.characters[&character].stage;
+            let reduced = session.preferences.reduced_motion.unwrap_or(false);
+            let previous = session.characters.remove(&character);
+            let crossfade = !reduced && previous.is_some()
+                && stage.crossfade_seconds > 0.0;
+            let staged = !reduced && (crossfade || stage.enter_seconds > 0.0);
+            let duration = if crossfade { stage.crossfade_seconds }
+                else if stage.enter_seconds > 0.0 { stage.enter_seconds }
+                else { session.game.theme.fade_seconds };
+            let duration = if reduced { 0.0 } else { duration };
+            if let Some(old) = previous {
+                if crossfade {
+                    // Retain the previous expression until the incoming image
+                    // loads and becomes opaque; never block on asset I/O.
+                    commands.entity(old).remove::<FadeIn>();
+                    commands.entity(old).remove::<actors::ActorEntrance>();
+                } else {
+                    commands.entity(old).despawn();
+                }
+            }
             let entity = commands.spawn((
                 Name::new(format!("Character: {character} ({expression})")),
-                CharacterVisual { anchor_x: x },
+                CharacterVisual { character: character.clone(), position: position.clone() },
+                actors::ActorIdle::default(),
                 Sprite {
                     image: assets.load(path),
-                    color: if fade > 0.0 { Color::srgba(1.0, 1.0, 1.0, 0.0) } else { Color::WHITE },
+                    color: if duration > 0.0 {
+                        Color::srgba(1.0, 1.0, 1.0, 0.0)
+                    } else { Color::WHITE },
                     custom_size: Some(Vec2::new(320., 500.)),
                     ..default()
                 },
-                Transform::from_xyz(x, -30., 0.),
+                Transform::from_xyz(0., 0., stage.depth),
             )).id();
-            if fade > 0.0 {
-                commands.entity(entity).insert(FadeIn { elapsed: 0.0, duration: fade });
+            if staged {
+                commands.entity(entity).insert(actors::ActorEntrance {
+                    previous: if crossfade { previous } else { None },
+                    elapsed: 0.0, duration,
+                });
+                info!("Vesper character staged: {character} ({expression})");
+            } else if duration > 0.0 {
+                commands.entity(entity).insert(FadeIn { elapsed: 0.0, duration });
             }
             session.presentation.characters.insert(
-                character.clone(),
-                CharacterPose { expression, position },
+                character.clone(), CharacterPose { expression, position },
             );
             session.characters.insert(character, entity);
         }
         Visual::Hide(character) => {
             if let Some(previous) = session.characters.remove(&character) {
-                commands.entity(previous).despawn();
+                let stage = &session.game.manifest.characters[&character].stage;
+                if !session.preferences.reduced_motion.unwrap_or(false)
+                    && stage.exit_seconds > 0.0
+                {
+                    commands.entity(previous).remove::<FadeIn>()
+                        .remove::<actors::ActorEntrance>()
+                        .insert(actors::ActorExit {
+                            elapsed: 0.0, duration: stage.exit_seconds,
+                        });
+                    info!("Vesper character exit started: {character}");
+                } else {
+                    commands.entity(previous).despawn();
+                }
             }
             session.presentation.characters.remove(&character);
         }
