@@ -12,6 +12,8 @@ struct Session {
     machine: Machine,
     choosing: bool,
     finished: bool,
+    ending_selection: usize,
+    ending_message: String,
     paused: bool,
     pause_overlay: Option<Entity>,
     pause_selection: usize,
@@ -222,9 +224,22 @@ impl Screen {
     }
 
     fn ending(message: String) -> Self {
+        Self::ending_selected(message, 0)
+    }
+
+    fn ending_selected(message: String, selected: usize) -> Self {
+        let mut body = format!("{message}\n\n");
+        for (index, action) in ["Play again", "Main menu", "Quit"].iter().enumerate() {
+            body.push_str(&format!(
+                "{} {}. {}\n",
+                if index == selected { "▶" } else { " " }, index + 1, action
+            ));
+        }
         Self {
-            speaker: String::new(), body: message,
-            hint: "R: restart story   M: menu   Esc: quit".into(), choices: false,
+            speaker: String::new(),
+            body,
+            hint: "Up/Down: move   Enter: select   1-3: choose   R: replay   M: menu   Esc: quit".into(),
+            choices: false,
         }
     }
 
@@ -318,6 +333,7 @@ fn main() {
         .insert_resource(io_workers)
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
+            ending_selection: 0, ending_message: "The End".into(),
             paused: false, pause_overlay: None,
             pause_selection: 0,
             menu_overlay: None, menu_selection: 0,
@@ -445,6 +461,14 @@ fn apply_visual(
     Ok(())
 }
 
+/// Store the visible end state for keyboard selection and hot-reload refreshes.
+fn finish_story(session: &mut Session, message: String) -> Screen {
+    session.finished = true;
+    session.ending_selection = 0;
+    session.ending_message = message.clone();
+    Screen::ending(message)
+}
+
 /// Execute visual actions once and yield at dialogue, choices, or ending.
 fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetServer) -> Screen {
     for _ in 0..128 {
@@ -462,23 +486,19 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
             }
             Ok(Output::Visual(visual)) => {
                 if let Err(error) = apply_visual(session, commands, assets, visual) {
-                    session.finished = true;
-                    return Screen::ending(format!("Story asset error:\n{error}"));
+                    return finish_story(session, format!("Story asset error:\n{error}"));
                 }
             }
             Ok(Output::End) => {
                 info!("Vesper story reached ending scene: {}", session.machine.scene());
-                session.finished = true;
-                return Screen::ending("The End".into());
+                return finish_story(session, "The End".into());
             }
             Err(error) => {
-                session.finished = true;
-                return Screen::ending(format!("Story error:\n{error}"));
+                return finish_story(session, format!("Story error:\n{error}"));
             }
         }
     }
-    session.finished = true;
-    Screen::ending("Story did not reach dialogue within 128 presentation events.".into())
+    finish_story(session, "Story did not reach dialogue within 128 presentation events.".into())
 }
 
 fn setup(
@@ -666,6 +686,43 @@ fn show_main_menu(
     }
 }
 
+fn restart_story(
+    session: &mut Session,
+    commands: &mut Commands,
+    assets: &AssetServer,
+    texts: &mut Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    via_menu: bool,
+) {
+    match Machine::new(&session.game.story, &session.game.manifest.entry) {
+        Ok(machine) => {
+            if let Some(background) = session.background.take() {
+                commands.entity(background).despawn();
+            }
+            for (_, character) in std::mem::take(&mut session.characters) {
+                commands.entity(character).despawn();
+            }
+            if let Some(music) = session.music.take() {
+                commands.entity(music).despawn();
+            }
+            session.pending_audio.clear();
+            session.presentation = PresentationState::default();
+            session.machine = machine;
+            session.choosing = false;
+            session.finished = false;
+            session.ending_selection = 0;
+            session.ending_message = "The End".into();
+            let screen = next_screen(session, commands, assets);
+            update_screen(screen, &session.game.theme, texts);
+            if via_menu {
+                info!("Vesper story restarted from its beginning via menu");
+            } else {
+                info!("Vesper story restarted from its beginning");
+            }
+        }
+        Err(error) => error!("Vesper restart failed: {error}"),
+    }
+}
+
 fn advance_from_keyboard(
     input: Res<ButtonInput<KeyCode>>,
     mut session: ResMut<Session>,
@@ -698,28 +755,7 @@ fn advance_from_keyboard(
             match index {
                 0 => {
                     hide_main_menu(&mut session, &mut commands);
-                    match Machine::new(&session.game.story, &session.game.manifest.entry) {
-                        Ok(machine) => {
-                            if let Some(background) = session.background.take() {
-                                commands.entity(background).despawn();
-                            }
-                            for (_, character) in std::mem::take(&mut session.characters) {
-                                commands.entity(character).despawn();
-                            }
-                            if let Some(music) = session.music.take() {
-                                commands.entity(music).despawn();
-                            }
-                            session.pending_audio.clear();
-                            session.presentation = PresentationState::default();
-                            session.machine = machine;
-                            session.choosing = false;
-                            session.finished = false;
-                            let screen = next_screen(&mut session, &mut commands, &assets);
-                            update_screen(screen, &session.game.theme, &mut texts);
-                            info!("Vesper story restarted from its beginning via menu");
-                        }
-                        Err(error) => error!("Vesper menu start failed: {error}"),
-                    }
+                    restart_story(&mut session, &mut commands, &assets, &mut texts, true);
                 }
                 1 => hide_main_menu(&mut session, &mut commands),
                 2 => {
@@ -778,28 +814,41 @@ fn advance_from_keyboard(
         return;
     }
     if session.finished {
+        let selected = session.ending_selection;
+        let next = if input.just_pressed(KeyCode::ArrowDown) {
+            Some((selected + 1) % 3)
+        } else if input.just_pressed(KeyCode::ArrowUp) {
+            Some((selected + 2) % 3)
+        } else {
+            None
+        };
+        if let Some(next) = next {
+            session.ending_selection = next;
+            update_screen(
+                Screen::ending_selected(session.ending_message.clone(), next),
+                &session.game.theme, &mut texts,
+            );
+            return;
+        }
         if input.just_pressed(KeyCode::KeyR) {
-            match Machine::new(&session.game.story, &session.game.manifest.entry) {
-                Ok(machine) => {
-                    if let Some(background) = session.background.take() {
-                        commands.entity(background).despawn();
-                    }
-                    for (_, character) in std::mem::take(&mut session.characters) {
-                        commands.entity(character).despawn();
-                    }
-                    if let Some(music) = session.music.take() {
-                        commands.entity(music).despawn();
-                    }
-                    session.pending_audio.clear();
-                    session.presentation = PresentationState::default();
-                    session.machine = machine;
-                    session.choosing = false;
-                    session.finished = false;
-                    let screen = next_screen(&mut session, &mut commands, &assets);
-                    update_screen(screen, &session.game.theme, &mut texts);
-                    info!("Vesper story restarted from its beginning");
+            restart_story(&mut session, &mut commands, &assets, &mut texts, false);
+            return;
+        }
+        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
+            .iter().position(|key| input.just_pressed(*key));
+        let confirmed = digit.or_else(|| {
+            (input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space))
+                .then_some(selected)
+        });
+        if let Some(index) = confirmed {
+            match index {
+                0 => restart_story(&mut session, &mut commands, &assets, &mut texts, false),
+                1 => show_main_menu(&mut session, &mut commands, &assets, 0),
+                2 => {
+                    info!("Vesper quitting through ending menu");
+                    menu_exit.write(AppExit::Success);
                 }
-                Err(error) => error!("Vesper restart failed: {error}"),
+                _ => {}
             }
         }
         return;
@@ -972,6 +1021,8 @@ fn poll_completed_io(
                 session.machine = machine;
                 session.choosing = matches!(last, Some(Output::Choices(_)));
                 session.finished = matches!(last, Some(Output::End));
+                session.ending_selection = 0;
+                session.ending_message = "The End".into();
                 let screen = match last {
                     Some(Output::Dialogue { speaker, text }) =>
                         Screen::normal(speaker.unwrap_or_default(), text),
@@ -992,6 +1043,14 @@ mod tests {
     use super::{fade_fraction, viewport_metrics, panel_metrics};
     use bevy::{audio::Decodable, prelude::{AudioSource, Vec2}};
     use std::{fs, path::Path, sync::Arc};
+
+    #[test]
+    fn ending_actions_are_visible_and_selected() {
+        let screen = super::Screen::ending_selected("The End".into(), 1);
+        assert!(screen.body.contains("▶ 2. Main menu"));
+        assert!(screen.body.contains("1. Play again"));
+        assert!(screen.body.contains("3. Quit"));
+    }
 
     #[test]
     fn main_menu_labels_and_selection() {
