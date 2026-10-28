@@ -287,6 +287,106 @@ def check_reduced(game):
         stream.close()
 
 
+def check_anchors_and_idle(game, manifest):
+    """Real screenshots exercise distinct left/right slots and active idle motion."""
+    manifest.write_text(manifest.read_text().replace(
+        "idle_pixels = 0.0", "idle_pixels = 6.0"
+    ))
+    (game/"scripts/story.vn").write_text("""@scene threshold
+background cottage
+show tess curious at left
+show owl calm at right
+"Red stands on the left, blue on the right."
+"Positions remain engine-owned."
+""")
+    out=OUT/"anchors-idle"
+    proc,stream,log=launch(game,out)
+    try:
+        win=window("The Clockwork Moon")
+        wait(log,"Vesper character entrance complete: tess")
+        wait(log,"Vesper character entrance complete: owl")
+        first=out/"left-right-start.png"
+        wait_color(win,first,"red",x=290,y=300)
+        wait_color(win,first,"blue",x=990,y=300)
+        assert not color_is(first,"red",x=640,y=300), (
+            "left anchor unexpectedly covers center"
+        )
+        assert not color_is(first,"blue",x=640,y=300), (
+            "right anchor unexpectedly covers center"
+        )
+        moved=out/"left-right-idle.png"
+        deadline=time.monotonic()+3.5
+        while True:
+            time.sleep(.17)
+            shot(win,moved)
+            if difference(first,moved)>750:
+                break
+            if time.monotonic()>deadline:
+                raise AssertionError("authored idle animation never moved pixels")
+        key("p",.1)
+        wait(log,"Vesper story paused")
+        time.sleep(.55)
+        frozen_start=out/"idle-paused.png"
+        shot(win,frozen_start)
+        time.sleep(.5)
+        frozen_end=out/"idle-paused-still.png"
+        shot(win,frozen_end)
+        assert difference(frozen_start,frozen_end)==0, (
+            "idle bobbing continued during pause"
+        )
+        print("VX06 anchors/idle: left and right placement; active motion frozen on pause",flush=True)
+    finally:
+        if proc.poll() is None:
+            proc.terminate()
+            proc.wait(timeout=10)
+        stream.close()
+
+
+def check_keyboard_skip(game, manifest):
+    """K completes a two-second entrance and exit without story advancement."""
+    manifest.write_text(manifest.read_text().replace(
+        "crossfade_seconds = 1.2", "crossfade_seconds = 2.0"
+    ).replace("exit_seconds = 0.6", "exit_seconds = 2.0"))
+    (game/"scripts/story.vn").write_text("""@scene threshold
+background cottage
+show tess curious at center
+"Before expression switch."
+show tess determined at center
+"After expression switch."
+hide tess
+"After hide."
+""")
+    out=OUT/"keyboard-skip"
+    proc,stream,log=launch(game,out)
+    try:
+        win=window("The Clockwork Moon")
+        wait(log,"Vesper character entrance complete: tess")
+        before=out/"pre-skip.png"
+        wait_color(win,before,"red")
+        key("Return",.07)
+        wait(log,"Vesper character staged: tess (determined)")
+        key("k",.07)
+        wait(log,"Vesper character entrance complete: tess",count=2,timeout=1.2)
+        after=out/"entry-skipped.png"
+        wait_color(win,after,"green")
+        key("Return",.07)
+        wait(log,"Vesper character exit started: tess")
+        key("k",.07)
+        wait(log,"Vesper character exit complete: tess",timeout=1.2)
+        gone=out/"exit-skipped.png"
+        shot(win,gone)
+        assert not color_is(gone,"green"), (
+            "actor remained visible after exit was explicitly skipped"
+        )
+        assert proc.poll() is None
+        print("VX06 K: bounded entrance/exit skipped without advancing story",flush=True)
+    finally:
+        if proc.poll() is None:
+            proc.terminate()
+            proc.wait(timeout=10)
+        stream.close()
+
+
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="vesper-actors-") as root:
@@ -294,8 +394,19 @@ def main():
         check_staging(game,manifest)
         reduced_root=Path(root)/"reduced-fixture"
         reduced_root.mkdir()
-        reduced_game,_=build_fixture(reduced_root)
+        reduced_game,reduced_manifest=build_fixture(reduced_root)
+        reduced_manifest.write_text(reduced_manifest.read_text().replace(
+            "idle_pixels = 0.0", "idle_pixels = 6.0"
+        ))
         check_reduced(reduced_game)
+        anchor_root=Path(root)/"anchors-fixture"
+        anchor_root.mkdir()
+        anchor_game,anchor_manifest=build_fixture(anchor_root)
+        check_anchors_and_idle(anchor_game,anchor_manifest)
+        skip_root=Path(root)/"skip-fixture"
+        skip_root.mkdir()
+        skip_game,skip_manifest=build_fixture(skip_root)
+        check_keyboard_skip(skip_game,skip_manifest)
 
 
 if __name__=="__main__":
