@@ -167,7 +167,9 @@ def main() -> None:
 
                     # High contrast is player-owned, and its opaque panel and
                     # white text override authored low-contrast colors.
-                    for _ in range(4):
+                    # Pointer test selects row 0; keyboard-only path remains
+                    # on the font row (index 2).
+                    for _ in range(6 if game == "little-lantern" else 4):
                         key("Down", .08)
                     key("Return", .12)
                     contrast = wait_prefs(prefs_path, lambda p:
