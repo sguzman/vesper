@@ -58,7 +58,7 @@ See `docs/architecture.md` and `docs/roadmap.json` for technical and completion 
 
 ## Responsive story presentation
 
-The engine now scales panel margins, padding and minimum height with the window, while preserving each external theme's authored panel width, text sizes, contrast, and font. A subtle separator visually distinguishes dialogue and choices from keyboard controls. The responsive CI suite waits for actual rendered pixels after resize and fails with screenshot evidence if the art never reaches the viewport edges.
+The engine now scales panel margins, padding and minimum height with the window, while preserving each external theme's authored panel width, text sizes, contrast, and font. A subtle separator and intrinsic-height text blocks keep wrapped dialogue/choices separate from the keyboard hints; the compact-window graphical regression checks actual rendered glyph overlap, rather than only panel color counts. The responsive CI suite waits for actual rendered pixels after resize and fails with screenshot evidence if the art never reaches the viewport edges.
 
 ## Differentiated external fairytale themes
 

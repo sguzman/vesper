@@ -326,6 +326,21 @@ fn text_color(components: [f32; 4]) -> TextColor {
     ))
 }
 
+/// Text is intrinsic-height content in a vertical panel. In particular, a
+/// wrapped second line must never be flex-shrunk underneath the hint footer.
+fn story_text_node(slot: &StoryText) -> Node {
+    Node {
+        width: percent(100.0),
+        flex_shrink: 0.0,
+        margin: if matches!(slot, StoryText::Hint) {
+            UiRect::top(px(9.0))
+        } else {
+            UiRect::default()
+        },
+        ..default()
+    }
+}
+
 fn add_text(
     parent: &mut ChildSpawnerCommands,
     slot: StoryText,
@@ -333,10 +348,7 @@ fn add_text(
     style: &vesper_game::TextStyle,
     font: &FontSource,
 ) {
-    let mut node = Node { width: percent(100), ..default() };
-    if matches!(slot, StoryText::Hint) {
-        node.margin.top = px(3.0);
-    }
+    let node = story_text_node(&slot);
     parent.spawn((
         slot,
         Text::new(content),
@@ -596,7 +608,7 @@ fn setup(
         .with_children(|parent| {
             parent.spawn((
                 StoryAccent,
-                Node { width: percent(100), height: px(3.0), ..default() },
+                Node { width: percent(100), height: px(3.0), flex_shrink: 0.0, ..default() },
                 BackgroundColor(Color::srgba(
                     panel.accent[0], panel.accent[1], panel.accent[2], panel.accent[3]
                 )),
@@ -617,7 +629,7 @@ fn setup(
             });
             parent.spawn((
                 StorySeparator,
-                Node { width: percent(100), height: px(1.0), ..default() },
+                Node { width: percent(100), height: px(1.0), flex_shrink: 0.0, ..default() },
                 BackgroundColor(Color::srgba(
                     panel.divider[0], panel.divider[1], panel.divider[2], panel.divider[3]
                 )),
@@ -1166,6 +1178,16 @@ mod tests {
         assert!(narrow.background_scale > narrow.character_scale);
         assert_eq!(narrow.character_scale, 0.625);
         assert_eq!(narrow.ui_scale, 0.75);
+    }
+
+    #[test]
+    fn text_blocks_do_not_collapse_under_wrapping() {
+        use super::StoryText;
+        assert_eq!(super::story_text_node(&StoryText::Speaker).flex_shrink, 0.0);
+        assert_eq!(super::story_text_node(&StoryText::Body).flex_shrink, 0.0);
+        let footer = super::story_text_node(&StoryText::Hint);
+        assert_eq!(footer.flex_shrink, 0.0);
+        assert!(matches!(footer.margin.top, bevy::ui::Val::Px(value) if value >= 8.0));
     }
 
     #[test]

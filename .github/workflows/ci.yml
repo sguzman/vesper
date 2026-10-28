@@ -74,6 +74,16 @@ jobs:
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/responsive_resize_smoke.py
       - name: Verify dialogue layout at compact and standard sizes
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/dialogue_layout_smoke.py
+      - name: Prevent wrapped dialogue from overlapping keyboard hints
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/hint_overlap_smoke.py
+      - name: Preserve overlap regression screenshots and pixel masks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-hint-overlap
+          path: /tmp/vesper-hint-overlap-qa/*
+          if-no-files-found: ignore
+          retention-days: 10
       - name: Preserve dialogue layout screenshots
         if: always()
         uses: actions/upload-artifact@v4
