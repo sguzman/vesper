@@ -6,9 +6,9 @@
   "prior_scope": "docs/roadmap.json",
   "prior_scope_verified_weight": 100,
   "scope_weight": 100,
-  "verified_weight": 90,
-  "last_verified_commit": "6618d689209ddb710471b2bfe04f14027ced45df",
-  "note": "Original MVP remains 100/100. POL01 through POL05 are verified (90/100) by successful graphical and narrative CI, with screenshots manually inspected. POL06 awaits green CI on main after the polish integration.",
+  "verified_weight": 100,
+  "last_verified_commit": "49fb969cfaf774eab22ec17c4f0cf1d36b8c8ce6",
+  "note": "All six agreed post-MVP polish milestones verified (100/100). Final acceptance grounded in complete main-branch CI run 40617751211 on 49fb969; original engine MVP separately remains 100/100. Final ledger update and status prose are documentation-only.",
   "tasks": [
     {
       "id": "POL01",
@@ -86,7 +86,7 @@
       "emoji": "🧪",
       "milestone": "Verification",
       "weight": 10,
-      "status": "pending",
+      "status": "verified complete",
       "depends_on": [
         "POL02",
         "POL03",
@@ -95,7 +95,9 @@
       ],
       "description": "Polished-flow regression and docs",
       "acceptance": "All narrative, keyboard, pause, visual, audio decoder, hot reload, save/load, and resize CI passes on main; docs explain repository-native launch and controls.",
-      "evidence": []
+      "evidence": [
+        "Main-branch GitHub Actions run 40617751211 on commit 49fb969c: narrative job 122584125995 and Bevy job 122584126143 both passed. Verified source parser and 36-route external fairy-tale narrative, native build/unit tests, responsive dialogue/choice screenshots, pause/menu/restart and saved-ending navigation, external fairytale theme contrast and live reload, sprite fades, multilingual font, real rendered fairy-tale playthrough, WAV audio decoder, Linux relocatable archive, hot reload, async F5/F9 and cross-process save restoration. README and examples/README document direct launching, external theme authoring and keyboard controls. Screenshots reviewed from run 40617042817; no manual setup requested."
+      ]
     }
   ]
 }
