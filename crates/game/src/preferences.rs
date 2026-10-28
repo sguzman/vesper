@@ -64,12 +64,11 @@ impl PlayerPreferences {
         if self.text_scale.is_some_and(|v| !v.is_finite() || !(0.80..=1.60).contains(&v)) {
             return Err("text_scale must be within 0.80..=1.60".into());
         }
-        if let Some(font) = &self.font_family {
-            if font.trim() != font || font.is_empty() || font.len() > 128
+        if self.font_family.as_ref().is_some_and(|font| {
+            font.trim() != font || font.is_empty() || font.len() > 128
                 || font.chars().any(char::is_control)
-            {
-                return Err("font_family must be a nonempty, safe name up to 128 bytes".into());
-            }
+        }) {
+            return Err("font_family must be a nonempty, safe name up to 128 bytes".into());
         }
         Ok(())
     }
