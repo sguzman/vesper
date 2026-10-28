@@ -128,11 +128,24 @@ pub fn apply_reload(
         }
     }
     for (id, pose) in saved.characters {
-        if old.character_expression(&id, &pose.expression).ok()
-            != session.game.character_expression(&id, &pose.expression).ok()
-        {
-            let _ = apply_visual(&mut session, &mut commands, &assets,
-                Visual::Show { character: id, expression: pose.expression, position: pose.position });
+        let path_changed = old.character_expression(&id, &pose.expression).ok()
+            != session.game.character_expression(&id, &pose.expression).ok();
+        let depth_changed = old.manifest.characters.get(&id).map(|actor| actor.stage.depth)
+            != session.game.manifest.characters.get(&id).map(|actor| actor.stage.depth);
+        if path_changed || depth_changed {
+            // Recreate the actor when its layer changes. Mutating an existing
+            // Transform's Z alone can leave its prior sprite draw order visible
+            // after a live reload; new sprites reliably receive their layer.
+            // This changes only presentation, never the re-bound story machine.
+            let result = apply_visual(&mut session, &mut commands, &assets,
+                Visual::Show {
+                    character: id.clone(),
+                    expression: pose.expression,
+                    position: pose.position,
+                });
+            if let Err(error) = result {
+                warn!("Vesper actor reload failed for '{id}': {error}");
+            }
         }
     }
     if let Some(id) = saved.music {
