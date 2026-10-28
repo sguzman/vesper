@@ -80,6 +80,16 @@ jobs:
           path: /tmp/vesper-cinematics-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
+      - name: Verify authored character stage geometry, depth, expressions and reduced motion
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/actors_smoke.py
+      - name: Preserve VX06 staged character screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-actor-staging
+          path: /tmp/vesper-actors-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Resize story across compact, widescreen and fullscreen windows
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/responsive_resize_smoke.py
       - name: Verify player preference overrides, fallback and legacy configuration
