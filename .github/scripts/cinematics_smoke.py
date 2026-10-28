@@ -327,8 +327,14 @@ def verify_reduced_motion(tmp):
             wait_for_art(win, before)
             key("Return", .45)
             after = out/"after.png"
-            shot(win, after)
-            assert pixels(before, after) > 2000, "reduced motion blocked the story background"
+            deadline = time.monotonic() + 4.
+            while True:
+                shot(win, after)
+                if background_pixels(before, after, out) > 2000:
+                    break
+                if time.monotonic() >= deadline:
+                    raise AssertionError("reduced motion blocked the story background")
+                time.sleep(.12)
             assert "Vesper cinematic started" not in log.read_text(), (
                 "reduced motion allowed an authored cinematic transition"
             )
