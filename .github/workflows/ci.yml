@@ -70,6 +70,16 @@ jobs:
         run: cargo build --locked -p vesper-player
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
+      - name: Verify authored cinematic background modes in both external games
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/cinematics_smoke.py
+      - name: Preserve VX05 cinematic start/mid/end evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-cinematic-backgrounds
+          path: /tmp/vesper-cinematics-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Resize story across compact, widescreen and fullscreen windows
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/responsive_resize_smoke.py
       - name: Verify player preference overrides, fallback and legacy configuration
@@ -92,16 +102,6 @@ jobs:
           path: /tmp/vesper-preferences-qa/*
           if-no-files-found: ignore
           retention-days: 10
-      - name: Verify authored cinematic background modes in both external games
-        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/cinematics_smoke.py
-      - name: Preserve VX05 cinematic start/mid/end evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: vesper-cinematic-backgrounds
-          path: /tmp/vesper-cinematics-qa/**/*
-          if-no-files-found: ignore
-          retention-days: 14
       - name: Verify grapheme-safe text reveal, skip-once, reduced motion and opt-in auto
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/readout_smoke.py
       - name: Preserve VX04 visual text pacing evidence
