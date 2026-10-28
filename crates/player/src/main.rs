@@ -1,6 +1,6 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
-use bevy::{asset::{AssetPlugin, LoadState}, prelude::*, window::PrimaryWindow};
+use bevy::{asset::{AssetPlugin, LoadState}, prelude::*, text::TextLayoutInfo, window::PrimaryWindow};
 mod reload;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, save::{CharacterPose, PresentationState, SaveData}};
@@ -252,7 +252,7 @@ fn sync_menu_selection(
 }
 
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 enum StoryText {
     Speaker,
     Body,
@@ -363,6 +363,37 @@ fn add_text(
     ));
 }
 
+/// Bevy's UI flex measurement can under-report the height of wrapped text
+/// at narrow window aspect ratios. Use the *actual shaped glyph bounds* as
+/// the minimum UI height so the next sibling cannot occupy the same pixels.
+/// Text shaping happens in Bevy's normal layout pipeline, not in this system.
+/// We only update geometry when that measured height changes.
+fn text_height_reservation(actual: f32) -> Option<f32> {
+    if !actual.is_finite() || actual <= 0.0 {
+        None
+    } else {
+        Some((actual + 3.0).ceil())
+    }
+}
+
+fn reserve_story_text_height(
+    mut texts: Query<(&StoryText, &TextLayoutInfo, &mut Node)>,
+) {
+    for (slot, glyphs, mut node) in &mut texts {
+        let actual = glyphs.size.y;
+        // A small safety allowance covers subpixel rounding when fractional
+        // UiScale is used on Wayland. The height is not guessed from lines.
+        let Some(required) = text_height_reservation(actual) else { continue; };
+        if node.min_height != px(required) {
+            node.min_height = px(required);
+            if env::var_os("VESPER_TRACE_LAYOUT").is_some() {
+                info!("Vesper text {:?}: rendered {:.1}px, reserved {:.1}px",
+                    slot, actual, required);
+            }
+        }
+    }
+}
+
 fn main() {
     let arguments: Vec<String> = env::args().skip(1).collect();
     let watch = arguments.iter().any(|arg| arg == "--watch");
@@ -412,7 +443,7 @@ fn main() {
             pending_audio: Vec::new(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, sync_menu_selection, animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport).chain());
+        .add_systems(Update, (advance_from_keyboard, reserve_story_text_height, trigger_save_load, poll_completed_io, sync_menu_selection, animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
     }
@@ -1178,6 +1209,15 @@ mod tests {
         assert!(narrow.background_scale > narrow.character_scale);
         assert_eq!(narrow.character_scale, 0.625);
         assert_eq!(narrow.ui_scale, 0.75);
+    }
+
+    #[test]
+    fn measured_text_geometry_has_a_height_allowance() {
+        // Rendering-height reserve must be independent of a fixed number of
+        // lines; glyph measurement controls it even if text changes.
+        assert_eq!(super::text_height_reservation(32.3), Some(36.0));
+        assert_eq!(super::text_height_reservation(0.0), None);
+        assert_eq!(super::text_height_reservation(f32::NAN), None);
     }
 
     #[test]
