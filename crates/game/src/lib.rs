@@ -35,6 +35,59 @@ pub struct Manifest {
 #[serde(deny_unknown_fields)]
 pub struct Character {
     pub expressions: BTreeMap<String, String>,
+    /// Optional external stage styling. Existing manifests remain valid.
+    #[serde(default)]
+    pub stage: CharacterStage,
+}
+
+/// Logical 1280x720 stage offsets, scale, depth and subtle appearance motion.
+/// All limits are enforced at load time, including during hot reload.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CharacterStage {
+    pub offset_x: f32,
+    pub offset_y: f32,
+    pub scale: f32,
+    pub depth: f32,
+    pub crossfade_seconds: f32,
+    pub enter_seconds: f32,
+    pub exit_seconds: f32,
+    pub slide_pixels: f32,
+    pub idle_pixels: f32,
+    pub idle_period_seconds: f32,
+}
+
+impl Default for CharacterStage {
+    fn default() -> Self {
+        Self {
+            offset_x: 0.0, offset_y: 0.0, scale: 1.0, depth: 0.0,
+            crossfade_seconds: 0.0, enter_seconds: 0.0,
+            exit_seconds: 0.0, slide_pixels: 0.0,
+            idle_pixels: 0.0, idle_period_seconds: 4.0,
+        }
+    }
+}
+
+impl CharacterStage {
+    pub fn validate(&self) -> Result<(), String> {
+        for (name, value, min, max) in [
+            ("offset_x", self.offset_x, -400.0, 400.0),
+            ("offset_y", self.offset_y, -180.0, 180.0),
+            ("scale", self.scale, 0.5, 1.5),
+            ("depth", self.depth, 0.0, 8.0),
+            ("crossfade_seconds", self.crossfade_seconds, 0.0, 2.0),
+            ("enter_seconds", self.enter_seconds, 0.0, 2.0),
+            ("exit_seconds", self.exit_seconds, 0.0, 2.0),
+            ("slide_pixels", self.slide_pixels, 0.0, 60.0),
+            ("idle_pixels", self.idle_pixels, 0.0, 8.0),
+            ("idle_period_seconds", self.idle_period_seconds, 0.5, 10.0),
+        ] {
+            if !value.is_finite() || !(min..=max).contains(&value) {
+                return Err(format!("character.stage.{name} must be finite and in {min}..={max}"));
+            }
+        }
+        Ok(())
+    }
 }
 
 /// An externally editable visual theme; values are CSS-like logical UI sizes.
@@ -355,6 +408,8 @@ impl Game {
             if !id_valid(name) || character.expressions.is_empty() {
                 return Err(format!("invalid character '{name}' or missing expressions"));
             }
+            character.stage.validate()
+                .map_err(|error| format!("character '{name}': {error}"))?;
             for (expression, filename) in &character.expressions {
                 if !id_valid(expression) {
                     return Err(format!("invalid expression '{name}.{expression}'"));
@@ -548,6 +603,31 @@ room = "assets/room.png"
         assert!(err.contains("sound 'hello'"), "{err}");
         assert!(toml::from_str::<Theme>("fade_seconds = -1.0").unwrap().validate().is_err());
         assert!(toml::from_str::<Theme>("fade_seconds = 0.0").unwrap().validate().is_ok());
+    }
+
+    #[test]
+    fn external_staging_is_optional_and_rejects_unsafe_values() {
+        let fixture = Fixture::new("staging");
+        let file = fixture.root.join("game.toml");
+        let original = fs::read_to_string(&file).unwrap();
+        let base = format!("{original}\n[characters.tess.expressions]\ncalm = \"assets/room.png\"\n");
+        fs::write(&file, &base).unwrap();
+        let standard = Game::load(&fixture.root).unwrap();
+        assert_eq!(standard.manifest.characters["tess"].stage.scale, 1.0);
+        assert_eq!(standard.manifest.characters["tess"].stage.crossfade_seconds, 0.0);
+
+        let styled = format!("{base}\n[characters.tess.stage]\noffset_x = 24.0\nscale = 0.9\ndepth = 3.0\ncrossfade_seconds = 0.5\nidle_pixels = 2.0\n");
+        fs::write(&file, &styled).unwrap();
+        let loaded = Game::load(&fixture.root).unwrap();
+        assert_eq!(loaded.manifest.characters["tess"].stage.offset_x, 24.0);
+        assert_eq!(loaded.manifest.characters["tess"].stage.depth, 3.0);
+        for bad in ["scale = 7.0", "crossfade_seconds = -1.0",
+                    "depth = -2.0", "idle_pixels = 500.0",
+                    "offset_x = 10000.0"] {
+            fs::write(&file, format!("{base}\n[characters.tess.stage]\n{bad}\n")).unwrap();
+            let error = Game::load(&fixture.root).unwrap_err();
+            assert!(error.contains("stage"), "{bad}: {error}");
+        }
     }
 
     #[cfg(unix)]
