@@ -6,20 +6,22 @@
   "prior_scope": "docs/roadmap.json",
   "prior_scope_verified_weight": 100,
   "scope_weight": 100,
-  "verified_weight": 0,
-  "last_verified_commit": null,
-  "note": "New, explicitly requested post-MVP polish scope, independent of the previously verified 100/100 runtime roadmap. A feature is counted only after branch CI checks its acceptance criteria.",
+  "verified_weight": 15,
+  "last_verified_commit": "b3e26b8a9543355e94f21ae1602ee271b4d9001c",
+  "note": "Separate post-MVP visual/navigation scope: original MVP stays 100/100. POL01 verified on branch CI 40610400949; more presentation/navigation tasks remain pending.",
   "tasks": [
     {
       "id": "POL01",
       "emoji": "⏸️",
       "milestone": "Navigation",
       "weight": 15,
-      "status": "active",
+      "status": "verified complete",
       "depends_on": [],
       "description": "Keyboard pause overlay with no accidental dialogue or choice advancement",
       "acceptance": "P opens a legible centered pause overlay; Enter/Space while paused cannot advance; P resumes the same visual story frame; Esc quits; automated Linux screenshots and interaction checks pass.",
-      "evidence": []
+      "evidence": [
+        "CI run 40610400949, commit b3e26b8: Bevy job 122560583918 passed graphical pause screenshot regression, asserted blocking Enter/Space while paused and full visual restoration on resume; narrative, player, resize, audio decoder, hot reload, saves and Linux packaging passed."
+      ]
     },
     {
       "id": "POL02",
