@@ -82,6 +82,7 @@ pub fn tick(
     time: Res<Time>,
     session: Res<Session>,
     settings: Res<settings::SettingsState>,
+    saves: Res<save_slots::SaveUi>,
     server: Res<AssetServer>,
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
@@ -91,7 +92,7 @@ pub fn tick(
     )>,
 ) {
     let active = !session.paused && session.menu_overlay.is_none()
-        && settings.overlay.is_none() && !session.history.visible();
+        && settings.overlay.is_none() && !saves.visible() && !session.history.visible();
     let reduced = session.preferences.reduced_motion.unwrap_or(false);
     let dt = if active { time.delta_secs().clamp(0.0, 0.1) } else { 0.0 };
     let skip = reduced || (active && keys.just_pressed(KeyCode::KeyK));
