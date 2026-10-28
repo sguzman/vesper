@@ -166,7 +166,8 @@ fn fit_viewport(
         ui_scale.0 = m.ui_scale;
     }
     for (mut transform, motion, transition) in &mut backgrounds {
-        let (scale, offset) = cinematics::background_transform(size, m.background_scale, motion, transition);
+        let allowed_motion = if session.preferences.reduced_motion.unwrap_or(false) { None } else { motion };
+        let (scale, offset) = cinematics::background_transform(size, m.background_scale, allowed_motion, transition);
         let next_scale = Vec3::splat(scale);
         if transform.scale != next_scale { transform.scale = next_scale; }
         if transform.translation.x != offset.x || transform.translation.y != offset.y {
@@ -552,9 +553,11 @@ fn apply_visual(
             let path = session.game.background(&id)?.to_owned();
             let config = &session.game.theme.cinematic;
             let previous = session.background.take();
-            let cinematic = config.transition != vesper_game::BackgroundTransitionKind::Legacy
+            let reduced_motion = session.preferences.reduced_motion.unwrap_or(false);
+            let cinematic = !reduced_motion
+                && config.transition != vesper_game::BackgroundTransitionKind::Legacy
                 && config.seconds > 0.0 && previous.is_some();
-            let fade = if cinematic { config.seconds } else { session.game.theme.fade_seconds };
+            let fade = if reduced_motion { 0.0 } else if cinematic { config.seconds } else { session.game.theme.fade_seconds };
             if let Some(old) = previous {
                 if cinematic {
                     // Keep outgoing imagery visible behind the incoming
@@ -591,8 +594,10 @@ fn apply_visual(
             } else if fade > 0.0 {
                 commands.entity(entity).insert(FadeIn { elapsed: 0.0, duration: fade });
             }
-            if let Some(motion) = cinematics::motion(config) {
-                commands.entity(entity).insert(motion);
+            if !reduced_motion {
+                if let Some(motion) = cinematics::motion(config) {
+                    commands.entity(entity).insert(motion);
+                }
             }
             session.background = Some(entity);
             session.presentation.background = Some(id);
