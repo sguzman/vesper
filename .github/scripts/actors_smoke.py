@@ -258,7 +258,10 @@ def main():
     with tempfile.TemporaryDirectory(prefix="vesper-actors-") as root:
         game,manifest=build_fixture(Path(root))
         check_staging(game,manifest)
-        check_reduced(game)
+        reduced_root=Path(root)/"reduced-fixture"
+        reduced_root.mkdir()
+        reduced_game,_=build_fixture(reduced_root)
+        check_reduced(reduced_game)
 
 
 if __name__=="__main__":
