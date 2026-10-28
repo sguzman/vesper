@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 50,
-  "last_verified_commit": "3a672c7d2644b985b5c7d19adbdf65a554e194b1",
+  "verified_weight": 60,
+  "last_verified_commit": "8f82995920eb3be4942aa7b4d351613fa44999e5",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -168,8 +168,13 @@
         "Character positions remain legible behind dialogue and in narrow viewports, and layering is preserved through save/load and compatible hot reload.",
         "Automated screenshot sequences verify z-order, anchor positions, expression transitions, pause behavior and reduced-motion behavior."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Full CI run 40775856131 passed both narrative and Bevy jobs at source commit 8f82995920eb3be4942aa7b4d351613fa44999e5: Rust 21/21 player unit tests, independent externally authored game validation, previous VX01–VX05 graphical regressions, native Linux packaging, hot reload, two complete reference-game playthroughs, F5/F9 persistence and safe process restart.",
+        "VX06 real Bevy graphical acceptance in .github/scripts/actors_smoke.py passed: rendered actor depth ordering for overlapping Tess/Owl sprites, color-measured expression crossfade start/middle/end, frozen pause frames, exit transitions, changing stage z-order via live game.toml, correct reconstruction through save/restore, and compact/wide viewports. Screenshots preserved in GitHub Actions artifact vesper-actor-staging ID 12855600178.",
+        "Additional independent screenshot fixtures verified distinct left/right anchored sprites, optional authored idle movement (2,432 changed pixels), idle freezing under pause (0 changed pixels), reduced motion suppressing active idle (0 changed pixels), and K fast-forward for two-second entrance and exit. Skip requests survive asynchronous image loading; stage parameters are validated and legacy games retain existing show/hide behavior without story or save migration.",
+        "Authoring and operational guidance is documented in docs/character-staging.md. No authored .vn changes, game-specific Rust branches, synchronous rendering-thread filesystem access, or changes to the version-1 save schema were required."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX07",
