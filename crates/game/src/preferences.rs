@@ -107,7 +107,7 @@ impl PlayerPreferences {
     pub fn read_or_default(path: &Path) -> (Self, Option<String>) {
         match Self::read(path) {
             Ok(prefs) => (prefs, None),
-            Err(error) if !path.exists() => (Self::default(), None),
+            Err(_error) if !path.exists() => (Self::default(), None),
             Err(error) => (Self::default(), Some(error)),
         }
     }
@@ -305,8 +305,8 @@ mod tests {
         let m = prefs.resolve_theme(&moon, |name| name == "Reader Font");
         assert_eq!(l.panel.background[3], 0.75);
         assert_eq!(m.panel.background[3], 0.75);
-        assert_eq!(l.dialogue.size, 30.0);
-        assert_eq!(m.dialogue.size, 37.2);
+        assert!((l.dialogue.size - 30.0).abs() < 0.001);
+        assert!((m.dialogue.size - 37.2).abs() < 0.001);
         assert_eq!(l.font.family.as_deref(), Some("Reader Font"));
         assert_eq!(m.font.family.as_deref(), Some("Reader Font"));
         assert_eq!(lantern.dialogue.size, 25.0);
