@@ -99,7 +99,10 @@ def check(size: tuple[int, int], base: Path) -> None:
     # Detect visual collision by vertical extents, not merely intersecting
     # white pixels: different letters can overlap without sharing a pixel.
     def extent(path: Path) -> tuple[int, int]:
-        bbox = run("convert", str(path), "-trim", "-format", "%@", "info:").stdout
+        # %@ computes the non-background bounding box *in the original
+        # image*. Running -trim first resets its page offset to (0, 0)
+        # and silently invalidates the vertical-overlap measurement.
+        bbox = run("convert", str(path), "-format", "%@", "info:").stdout
         match = re.fullmatch(r"(\d+)x(\d+)\+(\d+)\+(\d+)", bbox)
         assert match, (path, bbox)
         _, h, _, y = map(int, match.groups())
