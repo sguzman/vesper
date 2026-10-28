@@ -207,8 +207,12 @@ fn menu_step(index: usize, direction: i32, count: usize) -> usize {
 
 fn pointer_menu_rows(
     mut session: ResMut<Session>,
-    hovered_rows: Query<(&Hovered, &MenuRow), Changed<Hovered>>,
+    hovered_rows: Query<(&Hovered, &MenuRow)>,
+    mut pointer_moves: MessageReader<bevy::window::CursorMoved>,
 ) {
+    // A new overlay can appear below an idle mouse. Its newly-added Hovered
+    // marker must not steal the initial keyboard selection.
+    if pointer_moves.read().next().is_none() { return; }
     for (hover, row) in &hovered_rows {
         if !hover.get() { continue; }
         let visible = match row.kind {
