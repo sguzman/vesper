@@ -3,9 +3,10 @@
 use super::*;
 use std::sync::mpsc::{self, Sender};
 
-pub const ITEMS: [&str; 5] = [
+pub const ITEMS: [&str; 8] = [
     "Dialogue opacity", "Text size", "Font family",
     "Reset to game defaults", "Back",
+    "Reveal speed", "Reduced motion", "Auto advance",
 ];
 
 #[derive(Resource)]
@@ -112,7 +113,23 @@ fn label(session: &Session, index: usize) -> String {
         }
         2 => format!("Font   <  {}  >", session.preferences.font_family.as_deref().unwrap_or("Game default")),
         3 => "Reset to game defaults".into(),
-        _ => "Back to menu".into(),
+        4 => "Back to menu".into(),
+        5 => {
+            let speed = session.preferences.reveal_speed
+                .unwrap_or(session.game.theme.reveal_speed);
+            let setting = match speed {
+                vesper_game::TextRevealSpeed::Instant => "Instant",
+                vesper_game::TextRevealSpeed::Slow => "Slow",
+                vesper_game::TextRevealSpeed::Normal => "Normal",
+                vesper_game::TextRevealSpeed::Fast => "Fast",
+            };
+            format!("Text reveal   <  {setting}  >")
+        }
+        6 => format!("Reduced motion   <  {}  >",
+            if session.preferences.reduced_motion.unwrap_or(false) { "On" } else { "Off" }),
+        7 => format!("Auto advance   <  {}  >",
+            if session.preferences.auto_advance.unwrap_or(false) { "On" } else { "Off" }),
+        _ => String::new(),
     }
 }
 
@@ -143,13 +160,23 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
             next.font_family = (target != 0).then(|| fonts[target].clone());
         }
         3 => next.reset(),
+        5 => {
+            use vesper_game::TextRevealSpeed as Speed;
+            let speeds = [Speed::Instant, Speed::Slow, Speed::Normal, Speed::Fast];
+            let current = next.reveal_speed.unwrap_or(session.game.theme.reveal_speed);
+            let index = speeds.iter().position(|s| *s == current).unwrap_or(0);
+            let next_index = (index as i32 + delta).rem_euclid(speeds.len() as i32) as usize;
+            next.reveal_speed = Some(speeds[next_index]);
+        }
+        6 => next.reduced_motion = Some(!next.reduced_motion.unwrap_or(false)),
+        7 => next.auto_advance = Some(!next.auto_advance.unwrap_or(false)),
         _ => {}
     }
     next
 }
 
 pub fn change(session: &mut Session, index: usize, delta: i32, writer: &PreferencesWriter) {
-    if index > 3 { return; }
+    if index == 4 || index >= ITEMS.len() { return; }
     let next = edited(session, index, delta);
     if next == session.preferences { return; }
     if let Err(error) = next.validate() {
@@ -188,7 +215,7 @@ pub fn open(
             Node {
                 width: percent(88.0), max_width: px(720.0),
                 max_height: percent(94.0),
-                padding: px(13.0).all(), row_gap: px(4.0),
+                padding: px(10.0).all(), row_gap: px(3.0),
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
@@ -213,7 +240,7 @@ pub fn open(
                         clicks.0 = Some(i);
                     }),
                     Node {
-                        width: percent(100.0), padding: px(6.0).all(),
+                        width: percent(100.0), padding: px(4.0).all(),
                         flex_shrink: 0.0, ..default()
                     },
                     BackgroundColor(Color::NONE),
@@ -222,7 +249,7 @@ pub fn open(
                         SettingsRowLabel(i),
                         Text::new(label(session, i)),
                         TextFont {
-                            font: font.clone(), font_size: FontSize::Px(18.0),
+                            font: font.clone(), font_size: FontSize::Px(16.0),
                             ..default()
                         },
                         TextColor(Color::WHITE),
@@ -400,6 +427,6 @@ mod tests {
         assert!((step_scaled(0.60, -1, 0.60, 1., 0.05) - 0.60).abs() < 0.001);
         assert!((step_scaled(0.95, 1, 0.60, 1., 0.05) - 1.).abs() < 0.001);
         assert!((step_scaled(10.60, 1, 0.80, 10.60, 0.10) - 10.60).abs() < 0.001);
-        assert_eq!(ITEMS.len(), 5);
+        assert_eq!(ITEMS.len(), 8);
     }
 }
