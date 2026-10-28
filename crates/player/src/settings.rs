@@ -334,6 +334,8 @@ pub fn sync_visuals(
     mut rows: Query<(&SettingsRow, &mut BackgroundColor), (Without<StoryPanel>, Without<SettingsPreviewPanel>)>,
     mut last: Local<Option<PlayerPreferences>>,
 ) {
+    // Never rediscover fonts or touch Bevy text entities every frame.
+    if !session.is_changed() && !state.is_changed() { return; }
     let theme = effective_theme(&session);
     if last.as_ref() != Some(&session.preferences) {
         let font = text_font(&theme, &assets);
