@@ -324,7 +324,7 @@ impl Screen {
         Self {
             speaker,
             body,
-            hint: "Enter / Space: continue   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
+            hint: "Enter/Space: continue   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu   Esc: quit".into(),
             choices: false,
             animated: true,
         }
@@ -335,7 +335,7 @@ impl Screen {
         Self {
             speaker: String::new(),
             body: String::new(),
-            hint: "Arrows: move   Enter: select   Number: choose   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
+            hint: "Arrows: move   Enter/Number: choose   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu".into(),
             choices: true,
             animated: false,
         }
