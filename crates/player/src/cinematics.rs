@@ -129,7 +129,6 @@ pub fn tick(
                 continue;
             }
             _ => {
-                waiting = true;
                 continue;
             }
         }
