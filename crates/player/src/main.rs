@@ -531,14 +531,18 @@ fn main() {
         })
         .add_systems(Startup, setup)
         .add_systems(Update, (
-            settings::pointer, advance_from_keyboard,
-            choices::sync_rows, choices::sync_row_style,
-            choices::scroll_selected, choices::sync_viewport,
-            choices::reserve_row_height, readout::tick, cinematics::tick, actors::tick,
-            atmosphere::tick,
-            settings::sync_visuals, reserve_story_text_height, trigger_save_load,
-            poll_completed_io, sync_menu_selection, feedback::tick, animate_fades,
-            monitor_audio_assets, escape_to_quit, fit_viewport,
+            (
+                settings::pointer, advance_from_keyboard,
+                choices::sync_rows, choices::sync_row_style,
+                choices::scroll_selected, choices::sync_viewport,
+                choices::reserve_row_height, readout::tick,
+                cinematics::tick, actors::tick, atmosphere::tick,
+            ).chain(),
+            (
+                settings::sync_visuals, reserve_story_text_height, trigger_save_load,
+                poll_completed_io, sync_menu_selection, feedback::tick,
+                animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
+            ).chain(),
         ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
