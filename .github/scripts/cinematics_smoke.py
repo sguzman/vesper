@@ -86,7 +86,9 @@ def wait_for_art(win, frame, timeout=6.):
     while True:
         shot(win, frame)
         colors = top_colors(frame)
-        if colors >= 80:
+        # Opaque pixel-art scenes may have few colors (e.g. 66 in Lantern),
+        # while the unrendered clear-color placeholder has exactly one.
+        if colors >= 16:
             return
         if time.monotonic() >= deadline:
             raise AssertionError(
