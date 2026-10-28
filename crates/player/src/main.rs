@@ -1,6 +1,6 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
-use bevy::{asset::{AssetPlugin, LoadState}, prelude::*, text::TextLayoutInfo, window::PrimaryWindow};
+use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui::Pressed, ui_widgets::Button, window::PrimaryWindow};
 mod reload;
 mod settings;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
@@ -208,23 +208,25 @@ fn menu_step(index: usize, direction: i32, count: usize) -> usize {
 fn pointer_menu_rows(
     mut session: ResMut<Session>,
     mut pointer: ResMut<MenuPointer>,
-    rows: Query<(&Interaction, &MenuRow), Changed<Interaction>>,
+    hovered_rows: Query<(&Hovered, &MenuRow), Changed<Hovered>>,
+    pressed_rows: Query<&MenuRow, Added<Pressed>>,
 ) {
-    for (interaction, row) in &rows {
+    for (hover, row) in &hovered_rows {
+        if !hover.get() { continue; }
         let visible = match row.kind {
             MenuKind::Pause => session.paused,
             MenuKind::Main => session.menu_overlay.is_some(),
             MenuKind::Ending => session.finished && !session.paused && session.menu_overlay.is_none(),
         };
-        if !visible || *interaction == Interaction::None { continue; }
+        if !visible { continue; }
         match row.kind {
             MenuKind::Pause => session.pause_selection = row.index,
             MenuKind::Main => session.menu_selection = row.index,
             MenuKind::Ending => session.ending_selection = row.index,
         }
-        if *interaction == Interaction::Pressed {
-            pointer.action = Some((row.kind, row.index));
-        }
+    }
+    for row in &pressed_rows {
+        pointer.action = Some((row.kind, row.index));
     }
 }
 
@@ -256,6 +258,7 @@ fn spawn_menu_rows(
             Name::new(format!("{kind:?} action {}", index + 1)),
             MenuRow { kind, index },
             Button,
+            Hovered::default(),
             Text::new(format!("{}. {}", index + 1, label)),
             TextFont { font: font.clone(), font_size: FontSize::Px(22.0), ..default() },
             TextColor(Color::WHITE),
