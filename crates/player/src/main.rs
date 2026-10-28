@@ -1118,8 +1118,12 @@ fn advance_from_keyboard(
                     &mut reading, readout::speed(&session));
             }
         }
-    } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space)
-        || reading.autoplay_ready
+    } else if !input.just_pressed(KeyCode::F5)
+        && !input.just_pressed(KeyCode::F9)
+        && !input.just_pressed(KeyCode::Escape)
+        && (input.just_pressed(KeyCode::Enter)
+            || input.just_pressed(KeyCode::Space)
+            || reading.autoplay_ready)
     {
         reading.autoplay_ready = false;
         if reading.complete_on_input() { return; }
