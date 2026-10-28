@@ -112,7 +112,8 @@ pub fn apply_reload(
     let old = session.game.clone();
     let saved = session.presentation.clone();
     session.game = updated;
-    session.display_theme = session.preferences.resolve_theme(&session.game.theme, |_| true);
+    let resolved_theme = session.preferences.resolve_theme(&session.game.theme, |_| true);
+    session.display_theme = resolved_theme;
     session.machine = rebound;
     let theme = session.display_theme.clone();
     ui_scale.0 = theme.ui_scale;
