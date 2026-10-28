@@ -151,6 +151,20 @@ def main() -> None:
                         p.get("font_family") == "sans-serif")
                     assert font["format_version"] == 1
 
+                    # Click a real Bevy settings control with the pointer.
+                    # The first opacity row is centered near x=600, y=170
+                    # in the 1280x720 settings panel.
+                    if game == "little-lantern":
+                        previous_opacity = font["panel_opacity"]
+                        run("xdotool", "mousemove", "--window", win, "600", "170")
+                        time.sleep(.4)
+                        run("xdotool", "click", "1")
+                        mouse_change = wait_prefs(prefs_path, lambda p:
+                            p.get("panel_opacity", 0) > previous_opacity + .02)
+                        assert mouse_change["panel_opacity"] <= 1.0
+                        mouse_screen = base / "settings-pointer.png"
+                        screenshot(win, mouse_screen)
+
                     # Real popup must fit every requested window; dimensions
                     # and screenshots are preserved for visual review.
                     if game == "little-lantern":
