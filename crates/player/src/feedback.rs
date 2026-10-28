@@ -16,10 +16,10 @@ pub struct FocusFeedback {
 
 impl FocusFeedback {
     pub fn menu(kind: MenuKind, index: usize, selected: bool) -> Self {
-        Self { target: FocusTarget::Menu(kind, index), amount: f32::from(selected) }
+        Self { target: FocusTarget::Menu(kind, index), amount: if selected { 1.0 } else { 0.0 } }
     }
     pub fn choice(index: usize, selected: bool) -> Self {
-        Self { target: FocusTarget::Choice(index), amount: f32::from(selected) }
+        Self { target: FocusTarget::Choice(index), amount: if selected { 1.0 } else { 0.0 } }
     }
 }
 
@@ -130,7 +130,7 @@ pub fn tick(
     ));
     if let Some(entity) = state.cue {
         if let Ok(mut background) = cues.get_mut(entity) {
-            if *background != color { *background = color; }
+            if background.0 != color.0 { background.0 = color.0; }
         }
     }
     state.remaining = (state.remaining - dt).max(0.0);
