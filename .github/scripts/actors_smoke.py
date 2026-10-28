@@ -233,15 +233,24 @@ def check_staging(game,manifest):
 
         for width,height in ((946,511),(955,520),(1920,1080)):
             run("xdotool","windowsize",win,str(width),str(height))
-            time.sleep(.3)
             frame=out/f"stage-{width}x{height}.png"
-            shot(win,frame)
-            size=run("identify","-format","%w %h",str(frame)).stdout
-            assert size==f"{width} {height}",size
-            # Both staged actors remain on screen and correctly layered.
-            assert color_is(frame,"blue",width//2,int(height*.40)),(
-                f"actor missing or wrong z-order after {width}x{height}"
-            )
+            # X11 resizes the window before wgpu has resized its render
+            # surface; the exposed area is temporarily black under llvmpipe.
+            # Poll the *new viewport center* rather than a fixed delay.
+            deadline=time.monotonic()+10.
+            while True:
+                shot(win,frame)
+                size=run("identify","-format","%w %h",str(frame)).stdout
+                if size==f"{width} {height}" and color_is(
+                    frame,"blue",width//2,int(height*.40)
+                ):
+                    break
+                if time.monotonic()>deadline:
+                    raise AssertionError(
+                        f"actor/viewport not rendered at {width}x{height}: "
+                        f"actual {size}, center {rgb(frame,width//2,int(height*.40))}"
+                    )
+                time.sleep(.15)
         assert proc.poll() is None,"player terminated"
         print("VX06 responsive: compact and wide windows preserve staged actors",flush=True)
     finally:
