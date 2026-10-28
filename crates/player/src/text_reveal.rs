@@ -80,7 +80,8 @@ impl RevealBuffer {
         }
         let Some(rate) = self.speed.rate() else { return false; };
         self.elapsed = (self.elapsed + f64::from(seconds)).min(86_400.0);
-        let next = (self.elapsed * rate).floor() as usize;
+        // f32 frame deltas can land a few ULPs below an exact boundary.
+        let next = (self.elapsed.mul_add(rate, 1e-6)).floor() as usize;
         let next = next.min(self.ends.len());
         if next == self.visible { return false; }
         self.visible = next;
