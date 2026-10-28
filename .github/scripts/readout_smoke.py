@@ -134,6 +134,56 @@ def verify_instant(game):
         print("VX04 reduced-motion override: instant text and static cue passed",flush=True)
     finally:stop(proc,stream)
 
+def verify_controls(game):
+    folder=OUT/"interactive-reading-controls"
+    proc,stream,win,log=start(game,folder)
+    try:
+        wait_for(log,"Vesper scene dialogue: first_light")
+        press("m")
+        press("4")
+        wait_for(log,"Vesper appearance settings opened")
+        for _ in range(3):
+            press("Down", .14)
+        press("Right")
+        prefs_file=folder/"preferences"/"player-preferences.json"
+        wait_for(log,"Vesper player preferences saved")
+        def load():
+            try:return json.loads(prefs_file.read_text())
+            except (OSError,json.JSONDecodeError):return {}
+        end=time.monotonic()+7
+        while time.monotonic()<end and load().get("reveal_speed")!="normal":
+            time.sleep(.1)
+        assert load().get("reveal_speed")=="normal",load()
+        press("Down")
+        press("Right")
+        press("Down")
+        press("Right")
+        end=time.monotonic()+7
+        while time.monotonic()<end:
+            value=load()
+            if value.get("reduced_motion") is True and value.get("auto_advance") is True:
+                break
+            time.sleep(.1)
+        assert load().get("reduced_motion") is True and load().get("auto_advance") is True,load()
+        run("xdotool","windowsize",win,"946","511")
+        time.sleep(.5)
+        shot(win,folder/"settings-reading-946x511.png")
+        press("Down")  # Reset to game defaults (index 6)
+        press("Return")
+        end=time.monotonic()+7
+        while time.monotonic()<end and any(
+            key in load() for key in ("reveal_speed","reduced_motion","auto_advance")
+        ):
+            time.sleep(.1)
+        assert not any(k in load() for k in ("reveal_speed","reduced_motion","auto_advance")),load()
+        press("Down") # Back (index 7)
+        press("Return")
+        wait_for(log,"Vesper appearance settings closed")
+        assert proc.poll() is None
+        print("VX04 settings: speed, reduced motion, auto opt-in, reset, Back passed",flush=True)
+    finally:stop(proc,stream)
+
+
 def verify_auto(game):
     folder=OUT/"auto-opt-in"
     proc,stream,win,log=start(game,folder,{"reveal_speed":"fast","auto_advance":True})
@@ -153,3 +203,4 @@ if __name__=="__main__":
         verify_manual(game)
         verify_instant(game)
         verify_auto(game)
+        verify_controls(game)
