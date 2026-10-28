@@ -24,7 +24,7 @@ impl FocusFeedback {
 }
 
 #[derive(Component)]
-struct ConfirmationCue;
+pub struct ConfirmationCue;
 
 #[derive(Resource, Default)]
 pub struct FeedbackState {
