@@ -109,7 +109,7 @@ pub fn tick(
     mut motions: Query<&mut BackdropMotion>,
 ) {
     let active = !session.paused && session.menu_overlay.is_none()
-        && settings.overlay.is_none();
+        && settings.overlay.is_none() && !session.history.visible();
     let reduced_motion = session.preferences.reduced_motion.unwrap_or(false);
     let dt = if active { time.delta_secs().clamp(0.0, 0.1) } else { 0.0 };
     for mut motion in &mut motions {
