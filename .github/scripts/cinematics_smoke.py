@@ -257,6 +257,53 @@ def verify_rapid_interruption(tmp):
                 proc.wait(timeout=10)
 
 
+def verify_reduced_motion(tmp):
+    # Player accessibility takes precedence over the author's cinematic theme.
+    name, title, scene, first, second, theme_name = GAMES[0]
+    root = tmp/"reduced-motion-fixture"
+    root.mkdir()
+    game, _ = clone_fixture(root, name, scene, first, second, theme_name, "crossfade")
+    out = OUT/"reduced-motion"
+    out.mkdir(parents=True, exist_ok=True)
+    prefs = out/"preferences"
+    prefs.mkdir(exist_ok=True)
+    (prefs/"player-preferences.json").write_text(
+        '{"format_version": 1, "reduced_motion": true}'
+    )
+    log = out/"player.log"
+    env = dict(os.environ, LIBGL_ALWAYS_SOFTWARE="1",
+               VESPER_SAVE_DIR=str(out/"saves"),
+               VESPER_PREFERENCES_DIR=str(prefs))
+    with log.open("w") as stream:
+        proc = subprocess.Popen([str(BIN), str(game)], env=env,
+                                stdout=stream, stderr=subprocess.STDOUT)
+        try:
+            win = window_id(title)
+            wait(log, f"Vesper scene dialogue: {scene}")
+            time.sleep(.8)
+            before = out/"before.png"
+            shot(win, before)
+            key("Return", .45)
+            after = out/"after.png"
+            shot(win, after)
+            assert pixels(before, after) > 2000, "reduced motion blocked the story background"
+            assert "Vesper cinematic started" not in log.read_text(), (
+                "reduced motion allowed an authored cinematic transition"
+            )
+            time.sleep(.35)
+            still = out/"still.png"
+            shot(win, still)
+            assert pixels(after, still) < 100, (
+                "reduced-motion background kept animating after the story settled"
+            )
+            assert proc.poll() is None, "player crashed under reduced motion"
+            print("VX05 reduced motion: immediate static background, no cinematic or pan/zoom", flush=True)
+        finally:
+            if proc.poll() is None:
+                proc.terminate()
+                proc.wait(timeout=10)
+
+
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="vesper-cinematics-") as tmp:
@@ -264,6 +311,7 @@ def main():
             for kind in MODES:
                 scenario(Path(tmp), *case, kind)
         verify_rapid_interruption(Path(tmp))
+        verify_reduced_motion(Path(tmp))
 
 
 if __name__=="__main__":
