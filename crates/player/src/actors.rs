@@ -8,6 +8,8 @@ pub struct ActorEntrance {
     pub previous: Option<Entity>,
     pub elapsed: f32,
     pub duration: f32,
+    /// Keep fast-forward requests made before the async image finishes loading.
+    pub skip_requested: bool,
 }
 
 #[derive(Component)]
@@ -129,6 +131,7 @@ pub fn tick(
             idle.elapsed = (idle.elapsed + dt).rem_euclid(period);
         }
         let Some(mut entering) = entrance else { continue; };
+        if skip { entering.skip_requested = true; }
         match server.load_state(sprite.image.id()) {
             LoadState::Loaded => {}
             LoadState::Failed(error) => {
@@ -137,7 +140,7 @@ pub fn tick(
             }
             _ => continue,
         }
-        if skip { entering.elapsed = entering.duration; }
+        if entering.skip_requested { entering.elapsed = entering.duration; }
         else { entering.elapsed = (entering.elapsed + dt).min(entering.duration); }
         let alpha = ease(entering.elapsed / entering.duration);
         sprite.color = Color::srgba(1.0, 1.0, 1.0, alpha);
@@ -183,7 +186,10 @@ mod tests {
         let stage = CharacterStage {
             slide_pixels: 30.0, idle_pixels: 5.0, ..default()
         };
-        let entering = ActorEntrance {previous: None, elapsed: 0.0, duration: 1.0};
+        let entering = ActorEntrance {
+            previous: None, elapsed: 0.0, duration: 1.0,
+            skip_requested: false,
+        };
         let idle = ActorIdle {elapsed: 1.0};
         let full = placement(Vec2::new(1280.,720.),1., "center", &stage,
             Some(&entering),None,Some(&idle),false);
