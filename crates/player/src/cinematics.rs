@@ -100,6 +100,7 @@ pub fn tick(
     session: Res<Session>,
     settings: Res<settings::SettingsState>,
     server: Res<AssetServer>,
+    input: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
     mut backdrops: Query<(Entity, &mut Sprite, Option<&mut BackdropTransition>), With<BackgroundVisual>>,
     mut curtains: Query<(Entity, &mut Sprite), (With<BackdropCurtain>, Without<BackgroundVisual>)>,
@@ -132,7 +133,12 @@ pub fn tick(
                 continue;
             }
         }
-        transition.elapsed = (transition.elapsed + dt).min(transition.duration);
+        if active && input.just_pressed(KeyCode::KeyK) {
+            transition.elapsed = transition.duration;
+            info!("Vesper cinematic skipped");
+        } else {
+            transition.elapsed = (transition.elapsed + dt).min(transition.duration);
+        }
         let t = cubic(fraction(transition.elapsed, transition.duration));
         let alpha = match transition.kind {
             Kind::FadeThroughColor if t < 0.5 => 0.0,
