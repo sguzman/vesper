@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 22,
-  "last_verified_commit": "7d726b6bff7c12003cc27a285b610206cd5765ec",
+  "verified_weight": 32,
+  "last_verified_commit": "b2284e9d5a712e9106a89e0598de6dd953e625c3",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -99,8 +99,13 @@
         "Long/multilingual dialogue and 2–9 options wrap without intersecting hints or viewport edges at 946×511, 955×520, 800×600, 900×700 and widescreen sizes.",
         "F5/F9 preserves selection; pointer and keyboard interactions cannot double-activate or advance while a menu is open; screenshots and input regressions pass."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Full narrative+Bevy Linux CI run 40725819513 passed on source b2284e9d5a712e9106a89e0598de6dd953e625c3, including all previous Settings, menu, dialogue-overlap, font, save/load, hot-reload, portable Linux and reference playthrough regressions.",
+        "Engine-owned Story choices are individual Bevy UI Button entities with own labels, selection accents, keyboard arrows/Enter/1–9 and validated On<Activate> pointer events; no concatenated in-story selection text. External .vn option destinations, authored themes, and SaveData schema remain unchanged.",
+        "Dedicated Xvfb choice_widgets_smoke.py passed: Little Lantern independent 2 rows; keyboard highlight transition; F5/F9 restored the selected row identically; real pointer click chose exactly one walk_together branch. Temporary unmodified-source clone with nine long multilingual-labelled options reached ninth branch using digit 9.",
+        "Visual regression artifact vesper-choice-widgets (ID 12832169249) downloaded and inspected: selected ninth option remains fully readable at 946x511, 955x520, 800x600, 900x700 and 1920x1080; scrolling is confined to the choice viewport and does not overlap hint or exit window. Existing two-story and four-option graphical playthroughs passed."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX04",
@@ -243,5 +248,5 @@
     }
   ],
   "note": "VX01 (8 points) verified on successful branch CI 40710370402, implementation 45a26ce9. Next VX02 is the live in-game settings UI; no VX02 points credited.",
-  "next_milestone": "VX03"
+  "next_milestone": "VX04"
 }
