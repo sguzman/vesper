@@ -18,6 +18,7 @@ pub struct HistoryLog {
     pub entries: VecDeque<HistoryEntry>,
     last_scene: Option<String>,
     pub overlay: Option<Entity>,
+    pub just_closed: bool,
 }
 
 fn bound(text: &str) -> String {
@@ -195,6 +196,7 @@ pub fn open(
 pub fn close(history: &mut HistoryLog, commands: &mut Commands) {
     if let Some(overlay)=history.overlay.take() {
         commands.entity(overlay).despawn();
+        history.just_closed = true;
         info!("Vesper reading history closed");
     }
 }
