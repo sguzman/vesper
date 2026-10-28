@@ -178,7 +178,8 @@ pub fn scroll_selected(
     mut containers: Query<(&ComputedNode, &mut ScrollPosition), With<ChoiceList>>,
     row_nodes: Query<&ComputedNode, With<ChoiceRow>>,
 ) {
-    if !session.is_changed() && !ui.is_changed() { return; }
+    // A viewport resize can change row measurements without touching Session;
+    // scan at most the small visible option set and only write when necessary.
     if active_options(&session).is_none() { return; }
     let Some(container) = ui.container else { return; };
     let Ok((computed, mut scroll)) = containers.get_mut(container) else { return; };
@@ -195,7 +196,17 @@ pub fn scroll_selected(
             if offset < current {
                 scroll.0.y = offset;
             } else if bottom > current + viewport_height {
-                scroll.0.y = (bottom - viewport_height).max(0.0);
+                // Align the scroll to a row boundary instead of cropping the
+                // first line of a preceding option at the top of the viewport.
+                let minimum = (bottom - viewport_height).max(0.0);
+                let mut boundary = 0.0;
+                for previous in ui.rows.iter().copied().take(index) {
+                    if boundary + 0.01 >= minimum { break; }
+                    let Ok(item) = row_nodes.get(previous) else { return; };
+                    boundary += item.size().y * scale + 4.0;
+                }
+                let snapped = boundary.min(offset);
+                if (snapped - current).abs() > 0.01 { scroll.0.y = snapped; }
             }
             return;
         }
