@@ -610,13 +610,13 @@ room = "assets/room.png"
         let fixture = Fixture::new("staging");
         let file = fixture.root.join("game.toml");
         let original = fs::read_to_string(&file).unwrap();
-        let base = format!("{original}\\n[characters.tess.expressions]\\ncalm = \\"assets/room.png\\"\\n");
+        let base = format!("{original}\n[characters.tess.expressions]\ncalm = \"assets/room.png\"\n");
         fs::write(&file, &base).unwrap();
         let standard = Game::load(&fixture.root).unwrap();
         assert_eq!(standard.manifest.characters["tess"].stage.scale, 1.0);
         assert_eq!(standard.manifest.characters["tess"].stage.crossfade_seconds, 0.0);
 
-        let styled = format!("{base}\\n[characters.tess.stage]\\noffset_x = 24.0\\nscale = 0.9\\ndepth = 3.0\\ncrossfade_seconds = 0.5\\nidle_pixels = 2.0\\n");
+        let styled = format!("{base}\n[characters.tess.stage]\noffset_x = 24.0\nscale = 0.9\ndepth = 3.0\ncrossfade_seconds = 0.5\nidle_pixels = 2.0\n");
         fs::write(&file, &styled).unwrap();
         let loaded = Game::load(&fixture.root).unwrap();
         assert_eq!(loaded.manifest.characters["tess"].stage.offset_x, 24.0);
@@ -624,7 +624,7 @@ room = "assets/room.png"
         for bad in ["scale = 7.0", "crossfade_seconds = -1.0",
                     "depth = -2.0", "idle_pixels = 500.0",
                     "offset_x = 10000.0"] {
-            fs::write(&file, format!("{base}\\n[characters.tess.stage]\\n{bad}\\n")).unwrap();
+            fs::write(&file, format!("{base}\n[characters.tess.stage]\n{bad}\n")).unwrap();
             let error = Game::load(&fixture.root).unwrap_err();
             assert!(error.contains("stage"), "{bad}: {error}");
         }
