@@ -82,6 +82,8 @@ jobs:
           if-no-files-found: ignore
       - name: Pause and resume story without consuming input
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/pause_smoke.py
+      - name: Exercise main menu in both external stories
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/main_menu_smoke.py
       - name: Restart completed fairy tale without exiting
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/end_replay_smoke.py
       - name: Start player under virtual X11 display

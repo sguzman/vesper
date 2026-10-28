@@ -14,6 +14,8 @@ struct Session {
     finished: bool,
     paused: bool,
     pause_overlay: Option<Entity>,
+    menu_overlay: Option<Entity>,
+    menu_selection: usize,
     background: Option<Entity>,
     music: Option<Entity>,
     characters: BTreeMap<String, Entity>,
@@ -143,7 +145,7 @@ impl Screen {
         Self {
             speaker,
             body,
-            hint: "Enter / Space: continue   P: pause   F5: save   F9: load   Esc: quit".into(),
+            hint: "Enter / Space: continue   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
             choices: false,
         }
     }
@@ -159,7 +161,7 @@ impl Screen {
         Self {
             speaker: String::new(),
             body: lines,
-            hint: "Arrows: move   Enter: select   Number: choose   P: pause   F5: save   F9: load   Esc: quit".into(),
+            hint: "Arrows: move   Enter: select   Number: choose   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
             choices: true,
         }
     }
@@ -167,7 +169,7 @@ impl Screen {
     fn ending(message: String) -> Self {
         Self {
             speaker: String::new(), body: message,
-            hint: "R: restart story   Esc: quit".into(), choices: false,
+            hint: "R: restart story   M: menu   Esc: quit".into(), choices: false,
         }
     }
 
@@ -261,6 +263,7 @@ fn main() {
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
             paused: false, pause_overlay: None,
+            menu_overlay: None, menu_selection: 0,
             background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
             pending_audio: Vec::new(),
@@ -477,13 +480,137 @@ fn update_screen(
     }
 }
 
+
+fn menu_content(name: &str, selection: usize) -> String {
+    let mut body = format!("{name} — MAIN MENU\\n\\n");
+    for (index, option) in ["Start new story", "Continue current story", "Quit"].iter().enumerate() {
+        body.push_str(&format!("{} {}. {}\\n",
+            if selection == index { "▶" } else { " " }, index + 1, option));
+    }
+    body.push_str("\\nUp/Down: select   Enter: confirm   M: close   Esc: quit");
+    body
+}
+
+fn hide_main_menu(session: &mut Session, commands: &mut Commands) {
+    if let Some(overlay) = session.menu_overlay.take() {
+        commands.entity(overlay).despawn();
+        info!("Vesper main menu closed");
+    }
+}
+
+fn show_main_menu(
+    session: &mut Session, commands: &mut Commands, assets: &AssetServer, selected: usize,
+) {
+    hide_main_menu(session, commands);
+    let font = text_font(&session.game.theme, assets);
+    let body = menu_content(&session.game.manifest.title, selected);
+    let overlay = commands.spawn((
+        Name::new("Main menu overlay"),
+        Node {
+            position_type: PositionType::Absolute,
+            left: percent(0), top: percent(0),
+            width: percent(100), height: percent(100),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.83)),
+    )).with_children(|parent| {
+        parent.spawn((
+            Node { padding: px(32).all(), max_width: percent(90), ..default() },
+            BackgroundColor(Color::srgba(0.08, 0.11, 0.19, 0.97)),
+        )).with_children(|panel| {
+            panel.spawn((
+                Text::new(body),
+                TextFont { font, font_size: FontSize::Px(28.0), ..default() },
+                TextColor(Color::WHITE),
+                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+            ));
+        });
+    }).id();
+    session.menu_overlay = Some(overlay);
+    session.menu_selection = selected;
+    if selected == 0 {
+        info!("Vesper main menu opened");
+    }
+}
+
 fn advance_from_keyboard(
     input: Res<ButtonInput<KeyCode>>,
     mut session: ResMut<Session>,
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    mut menu_exit: MessageWriter<AppExit>,
 ) {
+    if session.menu_overlay.is_some() {
+        if input.just_pressed(KeyCode::KeyM) {
+            hide_main_menu(&mut session, &mut commands);
+            return;
+        }
+        let selected = session.menu_selection;
+        if input.just_pressed(KeyCode::ArrowDown) {
+            show_main_menu(&mut session, &mut commands, &assets, (selected + 1) % 3);
+            return;
+        }
+        if input.just_pressed(KeyCode::ArrowUp) {
+            show_main_menu(&mut session, &mut commands, &assets, (selected + 2) % 3);
+            return;
+        }
+        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
+            .iter().position(|key| input.just_pressed(*key));
+        let confirmed = digit.or_else(|| {
+            (input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space))
+                .then_some(selected)
+        });
+        if let Some(index) = confirmed {
+            match index {
+                0 => {
+                    hide_main_menu(&mut session, &mut commands);
+                    match Machine::new(&session.game.story, &session.game.manifest.entry) {
+                        Ok(machine) => {
+                            if let Some(background) = session.background.take() {
+                                commands.entity(background).despawn();
+                            }
+                            for (_, character) in std::mem::take(&mut session.characters) {
+                                commands.entity(character).despawn();
+                            }
+                            if let Some(music) = session.music.take() {
+                                commands.entity(music).despawn();
+                            }
+                            session.pending_audio.clear();
+                            session.presentation = PresentationState::default();
+                            session.machine = machine;
+                            session.choosing = false;
+                            session.finished = false;
+                            let screen = next_screen(&mut session, &mut commands, &assets);
+                            update_screen(screen, &session.game.theme, &mut texts);
+                            info!("Vesper story restarted from its beginning via menu");
+                        }
+                        Err(error) => error!("Vesper menu start failed: {error}"),
+                    }
+                }
+                1 => hide_main_menu(&mut session, &mut commands),
+                2 => {
+                    info!("Vesper quitting through menu");
+                    menu_exit.write(AppExit::Success);
+                }
+                _ => {}
+            }
+        }
+        return;
+    }
+    if input.just_pressed(KeyCode::KeyM) {
+        if session.paused {
+            if let Some(overlay) = session.pause_overlay.take() {
+                commands.entity(overlay).despawn();
+            }
+            session.paused = false;
+            info!("Vesper story resumed");
+        }
+        show_main_menu(&mut session, &mut commands, &assets, 0);
+        return;
+    }
     // A transient, engine-owned pause surface. The story stays paused while
     // the UI remains responsive; no game script or theme must implement it.
     if input.just_pressed(KeyCode::KeyP) && !session.finished {
@@ -512,7 +639,7 @@ fn advance_from_keyboard(
                     BackgroundColor(Color::srgba(0.08, 0.11, 0.19, 0.96)),
                 )).with_children(|panel| {
                     panel.spawn((
-                        Text::new("PAUSED\n\nP: resume    Esc: quit"),
+                        Text::new("PAUSED\n\nP: resume    M: main menu    Esc: quit"),
                         TextFont {
                             font,
                             font_size: FontSize::Px(30.0),
@@ -626,7 +753,7 @@ fn trigger_save_load(
     completed: Res<CompletedIo>,
     workers: Res<IoWorkers>,
 ) {
-    if !(keyboard.just_pressed(KeyCode::F5) || keyboard.just_pressed(KeyCode::F9)) {
+    if (session.paused || session.menu_overlay.is_some()) || !(keyboard.just_pressed(KeyCode::F5) || keyboard.just_pressed(KeyCode::F9)) {
         return;
     }
     let path = match save_file(&session.game.manifest.id) {
@@ -751,6 +878,13 @@ mod tests {
     use super::{fade_fraction, viewport_metrics};
     use bevy::{audio::Decodable, prelude::{AudioSource, Vec2}};
     use std::{fs, path::Path, sync::Arc};
+
+    #[test]
+    fn main_menu_labels_and_selection() {
+        let menu = super::menu_content("Lantern", 1);
+        assert!(menu.contains("▶ 2. Continue current story"));
+        assert!(menu.contains("3. Quit"));
+    }
 
     #[test]
     fn decode_external_audio_through_the_actual_bevy_playback_decoder() {
