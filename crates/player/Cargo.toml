@@ -8,3 +8,4 @@ license.workspace = true
 bevy = { version = "=0.20.0", default-features = false, features = ["2d", "ui", "audio", "system_font_discovery", "file_watcher", "wav", "vorbis"] }
 vesper-story.workspace = true
 vesper-game.workspace = true
+unicode-segmentation = "=1.13.3"

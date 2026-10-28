@@ -5516,6 +5516,7 @@ name = "vesper-player"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "unicode-segmentation",
  "vesper-game",
  "vesper-story",
 ]
