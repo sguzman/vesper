@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PLAYER = ROOT / "target/debug/vesper-player"
 SOURCE = ROOT / "examples/little-lantern"
 OUT = Path("/tmp/vesper-hint-overlap-qa")
-SIZES = ((800, 600), (900, 700))
+SIZES = ((946, 511), (955, 520), (800, 600), (900, 700))
 
 
 def run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -46,14 +46,16 @@ def sample(game: Path, size: tuple[int, int], path: Path) -> None:
         try:
             win = window()
             run("xdotool", "windowfocus", "--sync", win)
-            # Three opening lines, option one, then the *exact* long line
-            # reported by the player in their visual bug reproduction.
-            time.sleep(2)
+            # Reproduce the actual user's sequence: compositor resizes the
+            # window at launch, THEN dialogue advances at the narrow aspect
+            # ratio. Resizing after advancing can accidentally repair the
+            # text measure, making the earlier regression a false negative.
+            run("xdotool", "windowsize", "--sync", win, str(size[0]), str(size[1]))
+            time.sleep(1.5)
             for key in ("Return", "Return", "Return", "1", "Return"):
                 run("xdotool", "key", "--clearmodifiers", key)
-                time.sleep(.30)
-            run("xdotool", "windowsize", "--sync", win, str(size[0]), str(size[1]))
-            time.sleep(1.3)
+                time.sleep(.35)
+            time.sleep(1.1)
             run("import", "-window", win, str(path))
             dimensions = run("identify", "-format", "%w %h", str(path)).stdout
             assert dimensions == f"{size[0]} {size[1]}", dimensions
@@ -94,13 +96,28 @@ def check(size: tuple[int, int], base: Path) -> None:
     pixels_hint = mask(base, OUT / f"{size[0]}x{size[1]}-no-hint.png", hint)
     assert pixels_body > 120, f"Body text not visible: {pixels_body}"
     assert pixels_hint > 35, f"Hint text not visible: {pixels_hint}"
+    # Detect visual collision by vertical extents, not merely intersecting
+    # white pixels: different letters can overlap without sharing a pixel.
+    def extent(path: Path) -> tuple[int, int]:
+        bbox = run("convert", str(path), "-trim", "-format", "%@", "info:").stdout
+        match = re.fullmatch(r"(\d+)x(\d+)\+(\d+)\+(\d+)", bbox)
+        assert match, (path, bbox)
+        _, h, _, y = map(int, match.groups())
+        return y, y + h
+    top_hint, _ = extent(hint)
+    _, bottom_body = extent(body)
+    gap = top_hint - bottom_body
+    assert gap >= 5, (
+        f"{size}: dialogue ends at {bottom_body} but hint starts at "
+        f"{top_hint} (gap {gap}); text is overlaid"
+    )
     overlap = OUT / f"{size[0]}x{size[1]}-overlap.png"
     run("convert", str(body), str(hint), "-compose", "multiply",
         "-composite", str(overlap))
     shared = int(round(float(run("convert", str(overlap),
         "-format", "%[fx:mean*w*h]", "info:").stdout)))
     print(f"{size[0]}x{size[1]}: {pixels_body} body pixels, "
-          f"{pixels_hint} hint pixels, {shared} overlap", flush=True)
+          f"{pixels_hint} hint pixels, {shared} overlap, {gap} px vertical gap", flush=True)
     assert shared <= 4, f"Wrapped text overlaps keyboard hint by {shared} pixels"
 
 
