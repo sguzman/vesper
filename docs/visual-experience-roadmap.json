@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 60,
-  "last_verified_commit": "8f82995920eb3be4942aa7b4d351613fa44999e5",
+  "verified_weight": 67,
+  "last_verified_commit": "f91a6d2ec168f806daa768829ba2b019f3c59e9a",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -192,8 +192,13 @@
         "Effects are optional, degrade gracefully with missing art/audio, stop or pause correctly, and have a reduced-motion/off setting.",
         "Runtime effects use cached assets and bounded entity counts; no synchronous file I/O, image generation or expensive parsing runs on the update/render thread."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Both narrative and Bevy jobs passed in complete CI run 40785668645 for verified implementation commit f91a6d2ec168f806daa768829ba2b019f3c59e9a. This included 26+ player unit tests, all VX01–VX06 graphical suites (including a strengthened red/green crossfade that exposed and repaired same-depth sprite compositing), mobile/desktop-equivalent responsive layouts, two fairytale playthroughs, external theme/art hot reload, compiler-free Linux package, and F5/F9 saves across process restart.",
+        "Live screenshot acceptance in .github/scripts/atmosphere_smoke.py confirmed deterministic motes visibly moving, pixel-identical pause and reduced-motion captures, shader-free Glow/Vignette/Moonlit/Off hot reload, shared choice/menu focus easing, and optional confirmation cues. Graphical evidence archived in GitHub Actions artifact vesper-atmosphere-feedback ID 12859840306. The radial glow output was additionally inspected and is softly feathered instead of a blocky rectangle.",
+        "Atmosphere theme defaults to off, feedback focus and confirmation duration default to zero for existing games. Validation bounds counts <=32, speed/opacity and duration/color values, and stable seed layout. No optional authored image/audio is required; a single 128x128 radial alpha mask is generated at Startup and reused across glow entities while per-frame effects update only bounded ECS entities, transforms and colors. Pausing freezes atmospheric clock and reduced motion disables moving motes and animated UI confirmation.",
+        "Complete authoring contract and rendering constraints documented in docs/atmosphere-feedback.md. No story language, save format, game-specific engine branches, or synchronous update/render file I/O changes were needed."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX08",
