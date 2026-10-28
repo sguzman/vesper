@@ -1,6 +1,7 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
 use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui_widgets::{observe, Activate, Button}, window::PrimaryWindow};
+use bevy::ecs::system::SystemParam;
 mod reload;
 mod settings;
 mod choices;
@@ -10,6 +11,8 @@ mod cinematics;
 mod actors;
 mod atmosphere;
 mod feedback;
+mod history;
+mod save_slots;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -33,6 +36,7 @@ struct Session {
     characters: BTreeMap<String, Entity>,
     presentation: PresentationState,
     pending_audio: Vec<(String, Handle<AudioSource>)>,
+    history: history::HistoryLog,
 }
 
 #[derive(Resource, Default)]
@@ -45,6 +49,7 @@ struct IoWorkers(Arc<Mutex<Vec<std::thread::JoinHandle<()>>>>);
 enum IoResult {
     Saved(Result<(), String>),
     Loaded(Result<(Machine, PresentationState), String>),
+    Slots(Result<Vec<save_slots::SlotInfo>, String>),
 }
 
 
@@ -319,7 +324,7 @@ impl Screen {
         Self {
             speaker,
             body,
-            hint: "Enter / Space: continue   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
+            hint: "Enter/Space: continue   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu   Esc: quit".into(),
             choices: false,
             animated: true,
         }
@@ -330,7 +335,7 @@ impl Screen {
         Self {
             speaker: String::new(),
             body: String::new(),
-            hint: "Arrows: move   Enter: select   Number: choose   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
+            hint: "Arrows: move   Enter/Number: choose   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu".into(),
             choices: true,
             animated: false,
         }
@@ -519,6 +524,10 @@ fn main() {
         .insert_resource(readout::ReadingState::default())
         .insert_resource(atmosphere::AtmosphereState::default())
         .insert_resource(feedback::FeedbackState::default())
+        .insert_resource(history::HistoryClick::default())
+        .insert_resource(save_slots::SaveUi::default())
+        .insert_resource(save_slots::Click::default())
+        .insert_resource(save_slots::Pending::default())
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -528,6 +537,7 @@ fn main() {
             background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
             pending_audio: Vec::new(),
+            history: history::HistoryLog::default(),
         })
         .add_systems(Startup, (atmosphere::setup, setup).chain())
         .add_systems(Update, (
@@ -540,7 +550,7 @@ fn main() {
             ).chain(),
             (
                 settings::sync_visuals, reserve_story_text_height, trigger_save_load,
-                poll_completed_io, sync_menu_selection, feedback::tick,
+                poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
             ).chain(),
         ).chain());
@@ -741,7 +751,9 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
                 if env::var_os("VESPER_TRACE_SCENES").is_some() {
                     info!("Vesper scene dialogue: {}", session.machine.scene());
                 }
-                return Screen::normal(speaker.unwrap_or_default(), text);
+                let speaker = speaker.unwrap_or_default();
+                session.history.record(session.machine.scene(), &speaker, &text);
+                return Screen::normal(speaker, text);
             }
             Ok(Output::Choices(options)) => {
                 session.choosing = true;
@@ -1003,6 +1015,7 @@ fn restart_story(
             }
             session.pending_audio.clear();
             session.presentation = PresentationState::default();
+            session.history.reset();
             session.machine = machine;
             session.choosing = false;
             session.finished = false;
@@ -1019,6 +1032,18 @@ fn restart_story(
     }
 }
 
+/// Related history/save controls share one Bevy SystemParam so the input
+/// handler stays below the ECS tuple-arity limit without extra UI work.
+#[derive(SystemParam)]
+struct OverlayInputs<'w, 's> {
+    history_click: ResMut<'w, history::HistoryClick>,
+    history_scroll: Query<'w, 's, &'static mut ScrollPosition,
+        With<history::HistoryScroll>>,
+    save_ui: ResMut<'w, save_slots::SaveUi>,
+    save_click: ResMut<'w, save_slots::Click>,
+    save_pending: ResMut<'w, save_slots::Pending>,
+}
+
 fn advance_from_keyboard(
     input: Res<ButtonInput<KeyCode>>,
     mut session: ResMut<Session>,
@@ -1032,12 +1057,36 @@ fn advance_from_keyboard(
     mut choice_click: ResMut<choices::ChoiceClick>,
     mut reading: ResMut<readout::ReadingState>,
     mut feedback_state: ResMut<feedback::FeedbackState>,
+    mut overlays: OverlayInputs,
 ) {
     // Pointer activation must never survive a pause/menu or get replayed.
     let pointer_choice = choice_click.0.take();
     if settings_state.overlay.is_some() {
         settings::keyboard(&input, &mut session, &mut settings_state,
             &mut commands, &assets, &preference_writer);
+        return;
+    }
+    // The backlog owns all input while visible; closing never advances the
+    // interpreter or consumes its pending choice.
+    if session.history.visible() {
+        history::input(&input, &mut session.history, &mut overlays.history_click,
+            &mut overlays.history_scroll, &mut commands);
+        return;
+    }
+    if overlays.save_ui.visible() {
+        save_slots::input(&input, &mut overlays.save_ui, &mut overlays.save_click,
+            &mut overlays.save_pending, &mut commands);
+        return;
+    }
+    if input.just_pressed(KeyCode::KeyH) {
+        let theme=effective_theme(&session);
+        history::open(&mut session.history, &mut commands, &assets, &theme);
+        return;
+    }
+    if input.just_pressed(KeyCode::F6) {
+        let theme=effective_theme(&session);
+        save_slots::open(&mut overlays.save_ui, &mut overlays.save_pending, &mut commands,
+            &assets, &theme);
         return;
     }
     if session.menu_overlay.is_some() {
@@ -1252,48 +1301,108 @@ fn trigger_save_load(
     session: Res<Session>,
     completed: Res<CompletedIo>,
     workers: Res<IoWorkers>,
+    mut pending: ResMut<save_slots::Pending>,
+    slot_ui: Res<save_slots::SaveUi>,
 ) {
-    if (session.paused || session.menu_overlay.is_some()) || !(keyboard.just_pressed(KeyCode::F5) || keyboard.just_pressed(KeyCode::F9)) {
+    use save_slots::Request;
+    let request = pending.0.take();
+    let quick_save = keyboard.just_pressed(KeyCode::F5);
+    let quick_load = keyboard.just_pressed(KeyCode::F9);
+    if request.is_none() && !quick_save && !quick_load { return; }
+    if request.is_none()
+        && (session.paused || session.menu_overlay.is_some()
+            || session.history.visible() || slot_ui.visible()) {
         return;
     }
-    let path = match save_file(&session.game.manifest.id) {
-        Ok(path) => path,
-        Err(error) => {
-            eprintln!("Save path error: {error}");
-            return;
-        }
-    };
     let mut active = match workers.0.lock() {
         Ok(jobs) => jobs,
         Err(_) => { error!("Vesper save worker lock is unavailable"); return; }
     };
     active.retain(|job| !job.is_finished());
     if !active.is_empty() {
+        // Manual requests survive a concurrently finishing quick-save worker.
+        // Do not leave the slot overlay stuck on "Scanning..." after F6.
+        if let Some(request) = request {
+            pending.0 = Some(request);
+        }
         warn!("Vesper save/load operation already in progress");
         return;
     }
     let queue = completed.0.clone();
-    let worker = if keyboard.just_pressed(KeyCode::F5) {
-        let save = SaveData::new(
-            &session.game, &session.machine, session.presentation.clone(),
-        );
-        std::thread::spawn(move || {
-            let result = save.write_atomic(&path);
-            if let Ok(mut messages) = queue.lock() {
-                messages.push(IoResult::Saved(result));
+    let game_id = session.game.manifest.id.clone();
+    let worker = match request {
+        Some(Request::Scan) => {
+            std::thread::spawn(move || {
+                let result = save_slots::scan(&game_id);
+                if let Ok(mut messages) = queue.lock() {
+                    messages.push(IoResult::Slots(result));
+                }
+            })
+        }
+        Some(Request::Save(slot)) => {
+            let path=match save_slots::slot_file(&game_id,slot) {
+                Ok(path)=>path,
+                Err(error)=>{error!("Vesper slot save path error: {error}");return;}
+            };
+            let save=SaveData::new(&session.game,&session.machine,
+                session.presentation.clone());
+            std::thread::spawn(move || {
+                let result=save.write_atomic(&path);
+                let succeeded=result.is_ok();
+                if let Ok(mut messages)=queue.lock() {
+                    messages.push(IoResult::Saved(result));
+                }
+                if succeeded {
+                    let updated=save_slots::scan(&game_id);
+                    if let Ok(mut messages)=queue.lock() {
+                        messages.push(IoResult::Slots(updated));
+                    }
+                }
+            })
+        }
+        Some(Request::Load(slot)) => {
+            let path=match save_slots::slot_file(&game_id,slot) {
+                Ok(path)=>path,
+                Err(error)=>{error!("Vesper slot load path error: {error}");return;}
+            };
+            let game=session.game.clone();
+            std::thread::spawn(move || {
+                let result=SaveData::read(&path).and_then(|save|{
+                    let machine=save.restore(&game)?;
+                    Ok((machine,save.presentation))
+                });
+                if let Ok(mut messages)=queue.lock() {
+                    messages.push(IoResult::Loaded(result));
+                }
+            })
+        }
+        None => {
+            let path=match save_file(&game_id) {
+                Ok(path)=>path,
+                Err(error)=>{error!("Vesper quick-save path error: {error}");return;}
+            };
+            if quick_save {
+                let save=SaveData::new(&session.game,&session.machine,
+                    session.presentation.clone());
+                std::thread::spawn(move || {
+                    let result=save.write_atomic(&path);
+                    if let Ok(mut messages)=queue.lock() {
+                        messages.push(IoResult::Saved(result));
+                    }
+                })
+            } else {
+                let game=session.game.clone();
+                std::thread::spawn(move || {
+                    let result=SaveData::read(&path).and_then(|save|{
+                        let machine=save.restore(&game)?;
+                        Ok((machine,save.presentation))
+                    });
+                    if let Ok(mut messages)=queue.lock() {
+                        messages.push(IoResult::Loaded(result));
+                    }
+                })
             }
-        })
-    } else {
-        let game = session.game.clone();
-        std::thread::spawn(move || {
-            let result = SaveData::read(&path).and_then(|save| {
-                let restored = save.restore(&game)?;
-                Ok((restored, save.presentation))
-            });
-            if let Ok(mut messages) = queue.lock() {
-                messages.push(IoResult::Loaded(result));
-            }
-        })
+        }
     };
     active.push(worker);
 }
@@ -1306,6 +1415,7 @@ fn poll_completed_io(
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
     mut reading: ResMut<readout::ReadingState>,
     mut backgrounds: Query<&mut Sprite, With<BackgroundVisual>>,
+    mut save_ui: ResMut<save_slots::SaveUi>,
 ) {
     let events = match completed.0.lock() {
         Ok(mut events) => std::mem::take(&mut *events),
@@ -1313,10 +1423,39 @@ fn poll_completed_io(
     };
     for event in events {
         match event {
-            IoResult::Saved(Ok(())) => info!("Vesper save written"),
-            IoResult::Saved(Err(error)) => error!("Vesper save failed: {error}"),
-            IoResult::Loaded(Err(error)) => error!("Vesper load failed: {error}"),
+            IoResult::Slots(Ok(slots)) => {
+                if save_ui.visible() {
+                    save_ui.slots = slots;
+                    save_ui.status = "Select a slot, then choose Save or Load".into();
+                }
+                info!("Vesper save slot metadata scanned");
+            }
+            IoResult::Slots(Err(error)) => {
+                if save_ui.visible() {
+                    save_ui.status = format!("Slot scan failed: {}", error.chars().take(120).collect::<String>());
+                }
+                error!("Vesper save slot scan failed: {error}");
+            }
+            IoResult::Saved(Ok(())) => {
+                info!("Vesper save written");
+                if save_ui.visible() { save_ui.status = "Save written successfully".into(); }
+            }
+            IoResult::Saved(Err(error)) => {
+                error!("Vesper save failed: {error}");
+                if save_ui.visible() {
+                    save_ui.status = format!("Save failed: {}", error.chars().take(120).collect::<String>());
+                }
+            }
+            IoResult::Loaded(Err(error)) => {
+                error!("Vesper load failed: {error}");
+                if save_ui.visible() {
+                    save_ui.status = format!("Load failed: {}", error.chars().take(120).collect::<String>());
+                }
+            }
             IoResult::Loaded(Ok((machine, state))) => {
+                if save_ui.visible() {
+                    save_slots::close(&mut save_ui, &mut commands);
+                }
                 let same_backdrop = state.background.is_some()
                     && state.background == session.presentation.background
                     && session.background.is_some();
@@ -1378,6 +1517,7 @@ fn poll_completed_io(
                     }
                 }
                 let last = machine.last_output().cloned();
+                session.history.reset_to_current(machine.scene(), last.as_ref());
                 session.machine = machine;
                 session.choosing = matches!(last, Some(Output::Choices(_)));
                 session.finished = matches!(last, Some(Output::End));
@@ -1547,10 +1687,21 @@ fn escape_to_quit(
     input: Res<ButtonInput<KeyCode>>,
     mut exit: MessageWriter<AppExit>,
     mut settings: ResMut<settings::SettingsState>,
+    mut session: ResMut<Session>,
+    mut slots: ResMut<save_slots::SaveUi>,
 ) {
-    let just_closed = settings.just_closed;
-    if just_closed { settings.just_closed = false; }
-    if input.just_pressed(KeyCode::Escape) && settings.overlay.is_none() && !just_closed {
+    // Both input and Escape-to-quit execute in this Update frame. A close
+    // must consume Escape before any quit action, even after its overlay was
+    // despawned by the preceding input system.
+    let just_closed = settings.just_closed
+        || session.history.just_closed || slots.just_closed;
+    settings.just_closed = false;
+    session.history.just_closed = false;
+    slots.just_closed = false;
+    if input.just_pressed(KeyCode::Escape)
+        && settings.overlay.is_none()
+        && !session.history.visible() && !slots.visible() && !just_closed
+    {
         info!("Vesper exiting by Escape");
         exit.write(AppExit::Success);
     }

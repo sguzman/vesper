@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 67,
-  "last_verified_commit": "f91a6d2ec168f806daa768829ba2b019f3c59e9a",
+  "verified_weight": 74,
+  "last_verified_commit": "6edb00f22d90e5bd013b2cd57863a2e7b7f3bb4f",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -217,8 +217,13 @@
         "History, menus and save slots are keyboard-first and pointer-accessible; exiting preserves current story/choice state; no accidental dialogue progression.",
         "Atomic background I/O and versioned saves continue working; old saves remain loadable or receive an explicit tested migration path."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Full CI run 40789199729 passed on VX08 source commit 6edb00f22d90e5bd013b2cd57863a2e7b7f3bb4f: both narrative and Bevy jobs succeeded, including the new VX08 graphical acceptance, all prior VX01–VX07 graphical suites, external theme and story hot reload, compiler-free relocated Linux package, reference-game playthroughs, and F5/F9 restoration across process restart.",
+        "VX08 graphical acceptance (.github/scripts/history_saves_smoke.py) verified that only interpreter-emitted dialogue appeared in session backlog, scene boundaries and speaker labels were visible, opening/scrolling/closing history did not advance the story, and loading a previous pending choice erased later-branch history. CI screenshot artifact vesper-history-saves ID 12860178906 was downloaded and visually inspected.",
+        "Manual F6 three-slot save/load UI showed scene metadata and occupied slots, required explicit second confirmation before overwriting, preserved slot bytes after cancel, saved a pending choice, loaded a saved slot, and kept legacy F5/F9 quick files separate and unchanged. Background-worker scans, atomic version-1 writes, 8 MiB decode cap and narrative fingerprint validation were preserved. The Escape close-event regression found during QA was fixed for both overlays and retested successfully.",
+        "Backlog bounded to newest 80 entries, each speaker/body bounded to 2048 Unicode grapheme clusters, no future branches scanned or serialized into durable saves. Full authoring/usage and migration compatibility are documented in docs/reading-history-saves.md. No story syntax change or save migration is required."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX09",
