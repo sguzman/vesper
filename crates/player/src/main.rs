@@ -1243,6 +1243,7 @@ fn poll_completed_io(
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
     mut reading: ResMut<readout::ReadingState>,
+    mut backgrounds: Query<&mut Sprite, With<BackgroundVisual>>,
 ) {
     let events = match completed.0.lock() {
         Ok(mut events) => std::mem::take(&mut *events),
@@ -1254,8 +1255,27 @@ fn poll_completed_io(
             IoResult::Saved(Err(error)) => error!("Vesper save failed: {error}"),
             IoResult::Loaded(Err(error)) => error!("Vesper load failed: {error}"),
             IoResult::Loaded(Ok((machine, state))) => {
-                if let Some(entity) = session.background.take() {
-                    commands.entity(entity).despawn();
+                let same_backdrop = state.background.is_some()
+                    && state.background == session.presentation.background
+                    && session.background.is_some();
+                let retain_for_swap = !same_backdrop && state.background.is_some()
+                    && session.game.theme.cinematic.transition
+                        != vesper_game::BackgroundTransitionKind::Legacy;
+                if same_backdrop {
+                    // A loaded background already shows the correct saved art.
+                    // Never briefly replace it with a transparent new sprite.
+                    if let Some(entity) = session.background {
+                        commands.entity(entity).remove::<FadeIn>();
+                        commands.entity(entity).remove::<cinematics::BackdropTransition>();
+                        if let Ok(mut sprite) = backgrounds.get_mut(entity) {
+                            sprite.color = Color::WHITE;
+                        }
+                        info!("Vesper restored existing background without reloading");
+                    }
+                } else if !retain_for_swap {
+                    if let Some(entity) = session.background.take() {
+                        commands.entity(entity).despawn();
+                    }
                 }
                 for (_, entity) in std::mem::take(&mut session.characters) {
                     commands.entity(entity).despawn();
@@ -1273,7 +1293,9 @@ fn poll_completed_io(
                     commands.entity(previous).despawn();
                 }
                 if let Some(id) = state.background {
-                    if let Err(error) = apply_visual(
+                    if same_backdrop {
+                        session.presentation.background = Some(id);
+                    } else if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Background(id)
                     ) {
                         error!("Invalid saved background: {error}");
