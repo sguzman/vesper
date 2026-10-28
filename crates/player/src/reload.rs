@@ -113,9 +113,6 @@ pub fn apply_reload(
     let old = session.game.clone();
     let saved = session.presentation.clone();
     session.game = updated;
-    for (id, character) in &session.game.manifest.characters {
-        info!("Vesper authored character depth: {id} -> {:.2}", character.stage.depth);
-    }
     session.machine = rebound;
     let theme = effective_theme(&session);
     ui_scale.0 = theme.ui_scale;
