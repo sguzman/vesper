@@ -106,7 +106,8 @@ pub fn tick(
         state.autoplay_ready = false;
     }
     let theme = effective_theme(&session);
-    let base_alpha = theme.hint.color[3];
+    // The cue uses the authored panel accent, separate from the keyboard hint.
+    let base_alpha = theme.panel.accent[3];
     let pulse = if session.preferences.reduced_motion.unwrap_or(false) {
         1.0
     } else {
@@ -116,7 +117,7 @@ pub fn tick(
         let display = if cue_active { Display::Flex } else { Display::None };
         if node.display != display { node.display = display; }
         if cue_active {
-            let [r,g,b,_] = theme.hint.color;
+            let [r,g,b,_] = theme.panel.accent;
             let next = Color::srgba(r,g,b,base_alpha * pulse);
             if color.0 != next { color.0 = next; }
             if font.font_size != FontSize::Px(theme.hint.size) {
