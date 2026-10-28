@@ -160,10 +160,25 @@ def scenario(tmp, game_name, title, scene, first, second, theme_name, kind):
             shot(win,restored)
             assert pixels(restored,end)>2000, "skip left previous art on screen"
             if kind == "soft_slide" and game_name == "clockwork-moon":
+                before_restore = out/"before-restore.png"
+                shot(win,before_restore)
                 key("F5",.5)
                 wait(log,"Vesper save written")
                 key("F9",.4)
                 wait(log,"Vesper save restored")
+                wait(log,"Vesper restored existing background without reloading")
+                restored = out/"same-image-restored.png"
+                shot(win,restored)
+                assert pixels(before_restore,restored)<160000, (
+                    "restoring the same background flashed to missing artwork"
+                )
+                for width,height in ((946,511),(1920,1080)):
+                    run("xdotool","windowsize",win,str(width),str(height))
+                    time.sleep(.45)
+                    image=out/f"motion-{width}x{height}.png"
+                    shot(win,image)
+                    size=run("identify","-format","%w %h",str(image)).stdout
+                    assert size==f"{width} {height}",size
                 assert proc.poll() is None
             if kind == "fade_through_color" and game_name == "clockwork-moon":
                 # A live external theme edit must not reset narrative state or
@@ -179,12 +194,51 @@ def scenario(tmp, game_name, title, scene, first, second, theme_name, kind):
                 proc.wait(timeout=10)
 
 
+def verify_rapid_interruption(tmp):
+    name,title,scene,first,second,theme_name = GAMES[1]
+    game,_ = clone_fixture(tmp,name,scene,first,second,theme_name,"fade_through_color")
+    out = OUT/"rapid-interruption"
+    out.mkdir(parents=True,exist_ok=True)
+    log=out/"player.log"
+    env=dict(os.environ,LIBGL_ALWAYS_SOFTWARE="1",
+             VESPER_SAVE_DIR=str(out/"saves"),
+             VESPER_PREFERENCES_DIR=str(out/"prefs"))
+    with log.open("w") as stream:
+        proc=subprocess.Popen([str(BIN),str(game)],env=env,
+                              stdout=stream,stderr=subprocess.STDOUT)
+        try:
+            win=window_id(title)
+            time.sleep(2.5)
+            original=out/"original.png"
+            shot(win,original)
+            key("Return",.16)
+            wait(log,"Vesper cinematic started: FadeThroughColor")
+            key("Return",.10)  # Interrupt well before 1.4s elapsed
+            wait(log,"Vesper cinematic started: FadeThroughColor",2)
+            key("k",.20)
+            wait(log,"Vesper cinematic skipped")
+            wait(log,"Vesper cinematic complete: FadeThroughColor",1)
+            time.sleep(.65)
+            completed=out/"interrupted-then-skipped.png"
+            shot(win,completed)
+            assert pixels(original,completed)<160000, (
+                "stale color curtain or transparent backdrop survived interruption"
+            )
+            assert proc.poll() is None
+            print("VX05 rapid interruption: stale curtain cleared and original background restored",flush=True)
+        finally:
+            if proc.poll() is None:
+                proc.terminate()
+                proc.wait(timeout=10)
+
+
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="vesper-cinematics-") as tmp:
         for case in GAMES:
             for kind in MODES:
                 scenario(Path(tmp), *case, kind)
+        verify_rapid_interruption(Path(tmp))
 
 
 if __name__=="__main__":
