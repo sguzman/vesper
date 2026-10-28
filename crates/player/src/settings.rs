@@ -236,9 +236,9 @@ pub fn open(
                 BackgroundColor(Color::srgba(bg[0], bg[1], bg[2], bg[3])),
             )).with_children(|preview| {
                 for (slot, content, style) in [
-                    (Preview::Speaker, "Moth Courier", &theme.speaker),
-                    (Preview::Body, "A letter for the dawn? But which dawn will it reach, when the sky has not yet woken up?", &theme.dialogue),
-                    (Preview::Choice, "▶ 1. Deliver the impossible letter", &theme.choices),
+                    (Preview::Speaker, "Sample Speaker", &theme.speaker),
+                    (Preview::Body, "A long sample dialogue line wraps naturally at different window sizes, keeping every word comfortable to read.", &theme.dialogue),
+                    (Preview::Choice, "1. Continue the sample story", &theme.choices),
                     (Preview::Hint, "Enter: continue    P: pause", &theme.hint),
                 ] {
                     preview.spawn((
