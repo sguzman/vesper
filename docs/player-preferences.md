@@ -1,4 +1,4 @@
-# Player preferences — VX01 foundation and VX02 live Settings
+# Player preferences — VX01 foundation, VX02 live Settings and VX04 reading flow
 
 Player-owned appearance overrides are distinct from external game themes and story saves. The file location on Linux is `$XDG_CONFIG_HOME/vesper/player-preferences.json` (or `~/.config/vesper/player-preferences.json`). For a portable/testing profile, `VESPER_PREFERENCES_DIR` points at the directory containing `player-preferences.json`.
 
@@ -9,7 +9,10 @@ The JSON format is strictly validated and versioned. All fields other than `form
   "format_version": 1,
   "panel_opacity": 0.8,
   "text_scale": 1.2,
-  "font_family": "monospace"
+  "font_family": "monospace",
+  "reveal_speed": "normal",
+  "reduced_motion": false,
+  "auto_advance": false
 }
 ```
 
@@ -23,4 +26,12 @@ The engine computes effective styling using **player override > authored theme >
 
 ## Live Settings controls
 
-While playing, press **P** for the pause menu or **M** for the main menu and select **4. Appearance settings**. Use **Up/Down** to select opacity, size, font, Reset or Back; **Left/Right** changes the selected value and **Enter** activates it. Pointer clicks activate the same validated settings actions. **Escape** returns to the previous menu without quitting the game or changing the story position. Every change immediately updates the on-screen dialogue and live preview, and is persisted asynchronously. Reset clears the player overrides, revealing authored game values again. The settings do not modify any authored theme or narrative save file.
+While playing, press **P** for the pause menu or **M** for the main menu and select **4. Appearance settings**. Use **Up/Down** to select opacity, size, font, reveal speed, reduced motion, auto-advance, Reset or Back; **Left/Right** changes the selected value and **Enter** activates it. Pointer clicks activate the same validated settings actions. **Escape** returns to the previous menu without quitting the game or changing the story position. Every change immediately updates the on-screen dialogue and live preview, and is persisted asynchronously. Reset clears the player overrides, revealing authored game values again. The settings do not modify any authored theme or narrative save file.
+
+## VX04 reading speed, motion and advancement
+
+The same versioned player-preferences file accepts optional `reveal_speed` (`"instant"`, `"slow"`, `"normal"` or `"fast"`), `reduced_motion` (boolean) and `auto_advance` (boolean). Authors can set `reveal_speed = "normal"` at the top level of their external theme TOML. The engine's default remains **Instant** for legacy themes. Player overrides take priority without modifying authored files; the previous preference format remains readable.
+
+With reveal enabled, dialogue is shown in Unicode grapheme clusters, so combining marks and joined emoji are not split. **Enter/Space while text is revealing completes only the current line**; the following separate press advances. Pause and menus suspend the reveal clock. F9, a valid hot reload and restored scenes show the current line fully instead of replaying a partial reveal; resizing retains its progress. A subtle theme-accent continue cue appears after the full line is visible; motion is suppressed by Reduced Motion, and cues in Instant mode are static for backward compatibility. Auto-advance is **disabled by default** and only runs after the line finishes when the player explicitly enables it. Preference writes remain on the sequential background worker.
+
+Evidence: [full VX04 narrative and Bevy Linux CI run 40745061158](https://github.com/sguzman/vesper/actions/runs/40745061158), including `.github/scripts/readout_smoke.py` (rendered timed reveal, skip-once, settings, compact resize and live theme reload), previous Settings and choice tests, all legacy graphical regressions and durable story saves.

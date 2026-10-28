@@ -4,6 +4,8 @@ use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*,
 mod reload;
 mod settings;
 mod choices;
+mod text_reveal;
+mod readout;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -285,6 +287,7 @@ struct Screen {
     body: String,
     hint: String,
     choices: bool,
+    animated: bool,
 }
 
 impl Screen {
@@ -294,6 +297,7 @@ impl Screen {
             body,
             hint: "Enter / Space: continue   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
             choices: false,
+            animated: true,
         }
     }
 
@@ -304,6 +308,7 @@ impl Screen {
             body: String::new(),
             hint: "Arrows: move   Enter: select   Number: choose   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
             choices: true,
+            animated: false,
         }
     }
 
@@ -313,6 +318,7 @@ impl Screen {
             body: message,
             hint: "Up/Down: move   Enter: select   1-3: choose   R: replay   M: menu   Esc: quit".into(),
             choices: false,
+            animated: false,
         }
     }
 
@@ -486,6 +492,7 @@ fn main() {
         .insert_resource(choices::ChoiceUi::default())
         .insert_resource(choices::ChoiceClick::default())
         .insert_resource(preferences_writer)
+        .insert_resource(readout::ReadingState::default())
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -501,7 +508,7 @@ fn main() {
             settings::pointer, advance_from_keyboard,
             choices::sync_rows, choices::sync_row_style,
             choices::scroll_selected, choices::sync_viewport,
-            choices::reserve_row_height,
+            choices::reserve_row_height, readout::tick,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
             poll_completed_io, sync_menu_selection, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
@@ -669,11 +676,14 @@ fn setup(
     mut session: ResMut<Session>,
     assets: Res<AssetServer>,
     mut choice_ui: ResMut<choices::ChoiceUi>,
+    mut reading: ResMut<readout::ReadingState>,
 ) {
     commands.spawn(Camera2d);
     let theme = effective_theme(&session);
     let font = text_font(&theme, &assets);
     let initial = next_screen(&mut session, &mut commands, &assets);
+    let initial_body = reading.begin(initial.body.clone(), initial.animated,
+        readout::speed(&session)).to_owned();
     let panel = &theme.panel;
     let geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
     let background = panel.background;
@@ -709,7 +719,7 @@ fn setup(
                 )),
             ));
             add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);
-            add_text(parent, StoryText::Body, &initial.body, &body_style, &font);
+            add_text(parent, StoryText::Body, &initial_body, &body_style, &font);
             choice_ui.container = Some(choices::spawn_container(parent));
             parent.spawn((
                 EndingActions,
@@ -731,6 +741,21 @@ fn setup(
                 )),
             ));
             add_text(parent, StoryText::Hint, &initial.hint, &hint_style, &font);
+            // Absolute corner cue does not compete with wrapped body or hint.
+            parent.spawn((
+                Name::new("Dialogue continue cue"),
+                readout::ContinueCue,
+                Text::new("▾"),
+                TextFont {
+                    font: font.clone(), font_size: FontSize::Px(hint_style.size),
+                    ..default()
+                },
+                text_color(hint_style.color),
+                Node {
+                    display: Display::None, position_type: PositionType::Absolute,
+                    top: px(4.0), right: px(8.0), ..default()
+                },
+            ));
         });
 }
 
@@ -738,9 +763,16 @@ fn update_screen(
     screen: Screen,
     theme: &vesper_game::Theme,
     texts: &mut Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    reading: &mut readout::ReadingState,
+    reveal_speed: vesper_game::TextRevealSpeed,
 ) {
+    let visible = reading.begin(screen.body.clone(), screen.animated, reveal_speed).to_owned();
     for (mut text, mut font, mut color, slot) in texts.iter_mut() {
-        text.0 = screen.part(slot).to_owned();
+        text.0 = if matches!(slot, StoryText::Body) {
+            visible.clone()
+        } else {
+            screen.part(slot).to_owned()
+        };
         if matches!(slot, StoryText::Body) {
             let style = if screen.choices { &theme.choices } else { &theme.dialogue };
             font.font_size = FontSize::Px(style.size);
@@ -861,6 +893,7 @@ fn restart_story(
     commands: &mut Commands,
     assets: &AssetServer,
     texts: &mut Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    reading: &mut readout::ReadingState,
     via_menu: bool,
 ) {
     match Machine::new(&session.game.story, &session.game.manifest.entry) {
@@ -881,7 +914,7 @@ fn restart_story(
             session.finished = false;
             session.ending_selection = 0;
             let screen = next_screen(session, commands, assets);
-            update_screen(screen, &effective_theme(session), texts);
+            update_screen(screen, &effective_theme(session), texts, reading, readout::speed(session));
             if via_menu {
                 info!("Vesper story restarted from its beginning via menu");
             } else {
@@ -903,6 +936,7 @@ fn advance_from_keyboard(
     preference_writer: Res<settings::PreferencesWriter>,
     mut pointer: ResMut<MenuPointer>,
     mut choice_click: ResMut<choices::ChoiceClick>,
+    mut reading: ResMut<readout::ReadingState>,
 ) {
     // Pointer activation must never survive a pause/menu or get replayed.
     let pointer_choice = choice_click.0.take();
@@ -937,7 +971,7 @@ fn advance_from_keyboard(
             match index {
                 0 => {
                     hide_main_menu(&mut session, &mut commands);
-                    restart_story(&mut session, &mut commands, &assets, &mut texts, true);
+                    restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, true);
                 }
                 1 => hide_main_menu(&mut session, &mut commands),
                 2 => {
@@ -1022,7 +1056,7 @@ fn advance_from_keyboard(
             return;
         }
         if input.just_pressed(KeyCode::KeyR) {
-            restart_story(&mut session, &mut commands, &assets, &mut texts, false);
+            restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, false);
             return;
         }
         let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
@@ -1035,7 +1069,7 @@ fn advance_from_keyboard(
         });
         if let Some(index) = confirmed {
             match index {
-                0 => restart_story(&mut session, &mut commands, &assets, &mut texts, false),
+                0 => restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, false),
                 1 => show_main_menu(&mut session, &mut commands, &assets, 0),
                 2 => {
                     info!("Vesper quitting through ending menu");
@@ -1062,7 +1096,8 @@ fn advance_from_keyboard(
         };
         if let Some(index) = selected {
             session.presentation.selected_choice = index;
-            update_screen(Screen::choices(&options, index), &effective_theme(&session), &mut texts);
+            update_screen(Screen::choices(&options, index), &effective_theme(&session), &mut texts,
+                &mut reading, readout::speed(&session));
             return;
         }
         let digit = [
@@ -1079,12 +1114,22 @@ fn advance_from_keyboard(
                 session.choosing = false;
                 session.presentation.selected_choice = 0;
                 let screen = next_screen(&mut session, &mut commands, &assets);
-                update_screen(screen, &effective_theme(&session), &mut texts);
+                update_screen(screen, &effective_theme(&session), &mut texts,
+                    &mut reading, readout::speed(&session));
             }
         }
-    } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
+    } else if !input.just_pressed(KeyCode::F5)
+        && !input.just_pressed(KeyCode::F9)
+        && !input.just_pressed(KeyCode::Escape)
+        && (input.just_pressed(KeyCode::Enter)
+            || input.just_pressed(KeyCode::Space)
+            || reading.autoplay_ready)
+    {
+        reading.autoplay_ready = false;
+        if reading.complete_on_input() { return; }
         let screen = next_screen(&mut session, &mut commands, &assets);
-        update_screen(screen, &effective_theme(&session), &mut texts);
+        update_screen(screen, &effective_theme(&session), &mut texts,
+                    &mut reading, readout::speed(&session));
     }
 }
 
@@ -1160,6 +1205,7 @@ fn poll_completed_io(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    mut reading: ResMut<readout::ReadingState>,
 ) {
     let events = match completed.0.lock() {
         Ok(mut events) => std::mem::take(&mut *events),
@@ -1223,7 +1269,8 @@ fn poll_completed_io(
                     Some(Output::End) => Screen::ending("The End".into()),
                     _ => Screen::ending("Story restored".into()),
                 };
-                update_screen(screen, &effective_theme(&session), &mut texts);
+                update_screen(screen, &effective_theme(&session), &mut texts,
+                    &mut reading, vesper_game::TextRevealSpeed::Instant);
                 info!("Vesper save restored");
             }
         }

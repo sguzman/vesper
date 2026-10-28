@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 32,
-  "last_verified_commit": "b2284e9d5a712e9106a89e0598de6dd953e625c3",
+  "verified_weight": 40,
+  "last_verified_commit": "17f75519b49c834844411cb299b80dde812b99b0",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -122,8 +122,14 @@
         "An unobtrusive themeable continue cue animates only when dialogue is complete; reduced-motion mode makes it static.",
         "Reveal state reconstructs safely after save/load, hot reload and window resize, including restored completed lines; no frame-rate-dependent narrative execution."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Full source CI run 40745061158 on commit 17f75519b49c834844411cb299b80dde812b99b0: narrative and Bevy jobs both success, with strict Clippy, unit tests, all past graphical menu/preferences/choice/overlap regressions, native Linux packaging, live reload, full authored-game playthroughs, and cross-restart F5/F9 saves.",
+        "Version-1-compatible player reading overrides and external theme reveal_speed offer Instant (legacy default), Slow, Normal and Fast. Precomputed bounded Unicode grapheme boundaries preserve combining glyphs and emoji; wall-time progression is independent of frame count, and first Enter/Space completes a partial line without advancing .vn state. Tests cover Unicode and frame chunking.",
+        "Rendered readout_smoke.py under Xvfb passed: slow text changed across frames, first advance only completed line, pause/menu remained safe, F5/F9 restored full line, reduced-motion rendered static text/cue, opt-in auto-advance progressed only after completed text, and Settings controls wrote and reset JSON at 946×511.",
+        "Additional graphical reload/resize acceptance passed with temporary unmodified-source Lantern clone: partial reveal continued after 946×511 resize; authored theme hot reload reconstructed the current line as fully readable; next Enter advanced exactly once. Artifact vesper-text-pacing (ID 12842011261) contains reviewed frame screenshots.",
+        "Continue cue uses externally authored panel accent, appears only on complete dialogue, and animates only in non-Instant reading modes unless reduced motion. Legacy Instant cues are static, preserving exact-pixel rejected-invalid-edit hot reload regression on full run 40745061158."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX05",
@@ -248,5 +254,5 @@
     }
   ],
   "note": "VX01 (8 points) verified on successful branch CI 40710370402, implementation 45a26ce9. Next VX02 is the live in-game settings UI; no VX02 points credited.",
-  "next_milestone": "VX04"
+  "next_milestone": "VX05"
 }

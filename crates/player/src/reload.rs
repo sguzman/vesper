@@ -65,6 +65,7 @@ pub fn apply_reload(
     mut accents: Query<&mut BackgroundColor, (With<StoryAccent>, Without<StorySeparator>, Without<StoryPanel>)>,
     mut dividers: Query<&mut BackgroundColor, (With<StorySeparator>, Without<StoryAccent>, Without<StoryPanel>)>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    mut reading: ResMut<readout::ReadingState>,
 ) {
     let results = match inbox.0.lock() {
         Ok(recv) => recv.try_iter().collect::<Vec<_>>(),
@@ -168,6 +169,9 @@ pub fn apply_reload(
         Some(Output::End) => Screen::ending("The End".into()),
         _ => Screen::ending("Story reloaded".into()),
     };
+    // Hot reload preserves the already-presented line as complete, even if
+    // its text changes. Never replay a partial line or reexecute the machine.
+    reading.restore_completed(screen.body.clone(), screen.animated);
     for (mut text, mut text_font, mut color, slot) in &mut texts {
         text.0 = screen.part(slot).to_owned();
         let style = match slot {

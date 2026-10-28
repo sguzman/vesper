@@ -1,7 +1,7 @@
 //! Filesystem-based game format. Never interpret author-controlled asset paths
 //! as unrestricted paths outside the chosen game directory.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 pub mod save;
 pub mod preferences;
 use std::{
@@ -43,6 +43,7 @@ pub struct Character {
 pub struct Theme {
     pub ui_scale: f32,
     pub fade_seconds: f32,
+    pub reveal_speed: TextRevealSpeed,
     pub font: FontSelection,
     pub panel: PanelStyle,
     pub speaker: TextStyle,
@@ -51,6 +52,26 @@ pub struct Theme {
     pub hint: TextStyle,
 }
 
+/// Text reveal speed is authorable in theme TOML and can be overridden locally.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TextRevealSpeed {
+    #[default]
+    Instant,
+    Slow,
+    Normal,
+    Fast,
+}
+impl TextRevealSpeed {
+    pub const fn rate(self) -> Option<f64> {
+        match self {
+            Self::Instant => None,
+            Self::Slow => Some(14.0),
+            Self::Normal => Some(34.0),
+            Self::Fast => Some(80.0),
+        }
+    }
+}
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct FontSelection {
@@ -106,6 +127,7 @@ impl Default for Theme {
         Self {
             ui_scale: 1.0,
             fade_seconds: 0.25,
+            reveal_speed: TextRevealSpeed::Instant,
             font: FontSelection::default(),
             panel: PanelStyle::default(),
             speaker: TextStyle { size: 25.0, color: [0.96, 0.75, 0.40, 1.0] },
