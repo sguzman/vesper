@@ -163,6 +163,9 @@ def check_staging(game,manifest):
         wait(log,"Vesper character staged: tess (determined)")
         key("p",.1)
         wait(log,"Vesper story paused")
+        # Update-thread logs precede the rendered overlay under llvmpipe.
+        # Compare only two frames captured after the pause UI is visible.
+        time.sleep(.55)
         paused=out/"paused.png"
         shot(win,paused)
         time.sleep(.45)
