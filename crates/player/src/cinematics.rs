@@ -110,9 +110,10 @@ pub fn tick(
 ) {
     let active = !session.paused && session.menu_overlay.is_none()
         && settings.overlay.is_none();
+    let reduced_motion = session.preferences.reduced_motion.unwrap_or(false);
     let dt = if active { time.delta_secs().clamp(0.0, 0.1) } else { 0.0 };
     for mut motion in &mut motions {
-        if motion.seconds > 0.0 && dt > 0.0 {
+        if !reduced_motion && motion.seconds > 0.0 && dt > 0.0 {
             motion.elapsed = (motion.elapsed + dt).min(motion.seconds);
         }
     }
@@ -124,7 +125,8 @@ pub fn tick(
         let Some(mut transition) = maybe_transition else { continue; };
         outgoing = Some(transition.outgoing);
         active_curtain = transition.curtain;
-        if active && input.just_pressed(KeyCode::KeyK) {
+        if reduced_motion || (active && input.just_pressed(KeyCode::KeyK)) {
+            // Respect an accessibility change even during an in-flight effect.
             transition.skip_requested = true;
         }
         match server.load_state(sprite.image.id()) {
