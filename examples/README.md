@@ -20,7 +20,7 @@ cargo run --locked -p vesper-player -- examples/clockwork-moon
 cargo run --locked -p vesper-player -- examples/clockwork-moon --watch
 ```
 
-Controls: **Enter/Space** advance dialogue, **Up/Down** move through choices, **1–9** choose directly, **F5** save, **F9** load, **Escape** quit. Saves use a separate game ID for each example and do not modify authoring files.
+Controls: **Enter/Space** advance dialogue, **Up/Down** move through choices, **1–9** choose directly, **F5** save, **F9** load, **R** restart after the ending, **Escape** quit. Saves use a separate game ID for each example and do not modify authoring files.
 
 ## Verification
 
