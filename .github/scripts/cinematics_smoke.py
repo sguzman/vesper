@@ -73,6 +73,28 @@ def background_pixels(a, b, out):
     return pixels(left, right)
 
 
+def top_colors(frame):
+    """Visible background detail, independent of the dialogue panel."""
+    result = run("convert", str(frame), "-crop", "1280x300+0+0",
+                 "+repage", "-format", "%k", "info:")
+    return int(result.stdout.strip())
+
+
+def wait_for_art(win, frame, timeout=6.):
+    """Asset loaded/logged != first image actually presented by the renderer."""
+    deadline = time.monotonic() + timeout
+    while True:
+        shot(win, frame)
+        colors = top_colors(frame)
+        if colors >= 80:
+            return
+        if time.monotonic() >= deadline:
+            raise AssertionError(
+                f"initial background never rendered in {frame} (colors={colors})"
+            )
+        time.sleep(.12)
+
+
 def top_brightness(frame):
     """Mean 0-255 luminance of the scene above the dialogue panel."""
     result = run("convert", str(frame), "-crop", "1280x300+0+0",
@@ -140,7 +162,7 @@ def scenario(tmp, game_name, title, scene, first, second, theme_name, kind):
             wait(log, f"Vesper scene dialogue: {scene}")
             time.sleep(1.2)
             first_image = out/"first-frame.png"
-            shot(win,first_image)
+            wait_for_art(win, first_image)
             key("Return", .15)
             wait(log,f"Vesper cinematic started: {kind.replace('_',' ').title().replace(' ','')}")
             initial = out/"transition-start.png"
@@ -243,7 +265,7 @@ def verify_rapid_interruption(tmp):
             win=window_id(title)
             time.sleep(2.5)
             original=out/"original.png"
-            shot(win,original)
+            wait_for_art(win, original)
             key("Return",.16)
             wait(log,"Vesper cinematic started: FadeThroughColor")
             key("Return",.10)  # Interrupt well before 1.4s elapsed
@@ -299,7 +321,7 @@ def verify_reduced_motion(tmp):
             wait(log, f"Vesper scene dialogue: {scene}")
             time.sleep(.8)
             before = out/"before.png"
-            shot(win, before)
+            wait_for_art(win, before)
             key("Return", .45)
             after = out/"after.png"
             shot(win, after)
