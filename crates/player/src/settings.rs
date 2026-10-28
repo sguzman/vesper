@@ -13,10 +13,11 @@ pub struct SettingsState {
     pub overlay: Option<Entity>,
     pub selection: usize,
     pub origin: MenuKind,
+    pub just_closed: bool,
 }
 impl Default for SettingsState {
     fn default() -> Self {
-        Self { overlay: None, selection: 0, origin: MenuKind::Pause }
+        Self { overlay: None, selection: 0, origin: MenuKind::Pause, just_closed: false }
     }
 }
 
@@ -268,6 +269,7 @@ pub fn close(
     commands: &mut Commands, assets: &AssetServer,
 ) {
     if let Some(entity) = state.overlay.take() { commands.entity(entity).despawn(); }
+    state.just_closed = true;
     match state.origin {
         MenuKind::Pause => show_pause_menu(session, commands, assets, PAUSE_ITEMS.len() - 1),
         MenuKind::Main | MenuKind::Ending => show_main_menu(session, commands, assets, MAIN_ITEMS.len() - 1),
@@ -327,10 +329,10 @@ pub fn sync_visuals(
     assets: Res<AssetServer>,
     mut panels: Query<&mut BackgroundColor, (With<StoryPanel>, Without<SettingsPreviewPanel>)>,
     mut texts: Query<(&StoryText, &mut TextFont, &mut TextColor), (Without<Preview>, Without<SettingsRowLabel>)>,
-    mut preview_panels: Query<&mut BackgroundColor, (With<SettingsPreviewPanel>, Without<StoryPanel>)>,
+    mut preview_panels: Query<&mut BackgroundColor, (With<SettingsPreviewPanel>, Without<StoryPanel>, Without<SettingsRow>)>,
     mut previews: Query<(&Preview, &mut TextFont, &mut TextColor), (Without<StoryText>, Without<SettingsRowLabel>)>,
     mut labels: Query<(&SettingsRowLabel, &mut Text), (Without<Preview>, Without<StoryText>)>,
-    mut rows: Query<(&SettingsRow, &mut BackgroundColor), Without<StoryPanel>>,
+    mut rows: Query<(&SettingsRow, &mut BackgroundColor), (Without<StoryPanel>, Without<SettingsPreviewPanel>)>,
     mut last: Local<Option<PlayerPreferences>>,
 ) {
     let theme = effective_theme(&session);
