@@ -43,6 +43,7 @@ pub struct Character {
 pub struct Theme {
     pub ui_scale: f32,
     pub fade_seconds: f32,
+    pub cinematic: CinematicTheme,
     pub reveal_speed: TextRevealSpeed,
     pub font: FontSelection,
     pub panel: PanelStyle,
@@ -50,6 +51,50 @@ pub struct Theme {
     pub dialogue: TextStyle,
     pub choices: TextStyle,
     pub hint: TextStyle,
+}
+
+/// Optional external-background cinematics. The default Legacy mode retains
+/// existing authored games' FadeIn behavior without changing their .vn files.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum BackgroundTransitionKind {
+    #[default]
+    Legacy,
+    Crossfade,
+    FadeThroughColor,
+    SoftSlide,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CinematicTheme {
+    pub transition: BackgroundTransitionKind,
+    /// Total seconds for crossfade, through-color or soft-slide, 0 = instant.
+    pub seconds: f32,
+    /// Opaque underlay during fade-through-color (alpha must be 1.0).
+    pub through_color: [f32; 4],
+    /// Initial pixel offset for a soft slide on the 1280x720 art canvas.
+    pub slide_pixels: f32,
+    /// 0 disables optional Ken Burns motion entirely.
+    pub motion_seconds: f32,
+    /// End scale multiplier; restrained zoom and overscan leave no image edge.
+    pub motion_zoom: f32,
+    /// Normalized 1280x720 design-frame pan, bounded by overscan per axis.
+    pub motion_pan: [f32; 2],
+}
+
+impl Default for CinematicTheme {
+    fn default() -> Self {
+        Self {
+            transition: BackgroundTransitionKind::Legacy,
+            seconds: 0.6,
+            through_color: [0.02, 0.03, 0.06, 1.0],
+            slide_pixels: 30.0,
+            motion_seconds: 0.0,
+            motion_zoom: 1.08,
+            motion_pan: [0.015, 0.0],
+        }
+    }
 }
 
 /// Text reveal speed is authorable in theme TOML and can be overridden locally.
@@ -127,6 +172,7 @@ impl Default for Theme {
         Self {
             ui_scale: 1.0,
             fade_seconds: 0.25,
+            cinematic: CinematicTheme::default(),
             reveal_speed: TextRevealSpeed::Instant,
             font: FontSelection::default(),
             panel: PanelStyle::default(),
@@ -149,6 +195,16 @@ impl Theme {
         }
         if !self.fade_seconds.is_finite() || !(0.0..=3.0).contains(&self.fade_seconds) {
             return Err("theme.fade_seconds must be between 0 and 3".into());
+        }
+        let cine = &self.cinematic;
+        if !cine.seconds.is_finite() || !(0.0..=3.0).contains(&cine.seconds)
+            || !color_valid(cine.through_color) || cine.through_color[3] != 1.0
+            || !cine.slide_pixels.is_finite() || !(0.0..=80.0).contains(&cine.slide_pixels)
+            || !cine.motion_seconds.is_finite() || !(0.0..=120.0).contains(&cine.motion_seconds)
+            || !cine.motion_zoom.is_finite() || !(1.0..=1.15).contains(&cine.motion_zoom)
+            || cine.motion_pan.iter().any(|p| !p.is_finite() || p.abs() > 0.04)
+        {
+            return Err("theme.cinematic has invalid transition, duration, zoom, pan or color".into());
         }
         let panel = &self.panel;
         if !color_valid(panel.background)
