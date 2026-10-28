@@ -11,6 +11,8 @@ pub struct BackdropTransition {
     pub elapsed: f32,
     pub curtain: Option<Entity>,
     pub slide_pixels: f32,
+    /// A K press while an incoming image is still loading is not lost.
+    pub skip_requested: bool,
 }
 
 #[derive(Component)]
@@ -122,6 +124,9 @@ pub fn tick(
         let Some(mut transition) = maybe_transition else { continue; };
         outgoing = Some(transition.outgoing);
         active_curtain = transition.curtain;
+        if active && input.just_pressed(KeyCode::KeyK) {
+            transition.skip_requested = true;
+        }
         match server.load_state(sprite.image.id()) {
             LoadState::Loaded => {}
             LoadState::Failed(error) => {
@@ -132,8 +137,9 @@ pub fn tick(
                 continue;
             }
         }
-        if active && input.just_pressed(KeyCode::KeyK) {
+        if transition.skip_requested {
             transition.elapsed = transition.duration;
+            transition.skip_requested = false;
             info!("Vesper cinematic skipped");
         } else {
             transition.elapsed = (transition.elapsed + dt).min(transition.duration);
