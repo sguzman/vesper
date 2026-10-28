@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 import re
 import subprocess
-import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -82,11 +81,12 @@ def verify(game: str, title: str, temp: Path) -> None:
 
 
 def main() -> None:
-    with tempfile.TemporaryDirectory(prefix="vesper-layout-") as temp:
-        for i, (game, title) in enumerate(GAMES):
-            path = Path(temp) / f"game-{i}"
-            path.mkdir()
-            verify(game, title, path)
+    out = Path("/tmp/vesper-layout-qa")
+    out.mkdir(parents=True, exist_ok=True)
+    for i, (game, title) in enumerate(GAMES):
+        path = out / f"game-{i}"
+        path.mkdir(exist_ok=True)
+        verify(game, title, path)
 
 
 if __name__ == "__main__":
