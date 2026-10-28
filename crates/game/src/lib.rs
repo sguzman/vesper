@@ -63,6 +63,10 @@ pub struct FontSelection {
 #[serde(default, deny_unknown_fields)]
 pub struct PanelStyle {
     pub background: [f32; 4],
+    /// Game-authored highlight bar above dialogue.
+    pub accent: [f32; 4],
+    /// Game-authored visual division between dialogue and hints.
+    pub divider: [f32; 4],
     pub width_percent: f32,
     pub min_height: f32,
     pub padding: f32,
@@ -80,6 +84,8 @@ impl Default for PanelStyle {
     fn default() -> Self {
         Self {
             background: [0.04, 0.05, 0.09, 0.96],
+            accent: [0.96, 0.75, 0.40, 1.0],
+            divider: [0.70, 0.76, 0.86, 0.34],
             width_percent: 90.0,
             min_height: 180.0,
             padding: 20.0,
@@ -123,6 +129,8 @@ impl Theme {
         }
         let panel = &self.panel;
         if !color_valid(panel.background)
+            || !color_valid(panel.accent)
+            || !color_valid(panel.divider)
             || !panel.width_percent.is_finite()
             || !(20.0..=100.0).contains(&panel.width_percent)
             || !panel.min_height.is_finite()
@@ -436,6 +444,18 @@ room = "assets/room.png"
         assert_eq!(loaded.theme.dialogue.size, 36.0);
         fs::write(fixture.root.join("styles/visual.toml"), "ui_scale = 0.1\n").unwrap();
         assert!(Game::load(&fixture.root).unwrap_err().contains("ui_scale"));
+    }
+
+    #[test]
+    fn panel_palette_defaults_and_validation() {
+        let theme: Theme = toml::from_str("[panel]\naccent = [0.72, 0.84, 1.0, 1.0]\ndivider = [0.6, 0.8, 1.0, 0.4]").unwrap();
+        assert_eq!(theme.panel.accent[0], 0.72);
+        assert!(theme.validate().is_ok());
+        let invalid: Theme = toml::from_str("[panel]\naccent = [1.2, 0.5, 0.5, 1.0]").unwrap();
+        assert!(invalid.validate().is_err());
+        // Existing themes without optional tokens remain backwards compatible.
+        assert!(toml::from_str::<Theme>("[panel]\nwidth_percent = 90.0")
+            .unwrap().validate().is_ok());
     }
 
     #[test]

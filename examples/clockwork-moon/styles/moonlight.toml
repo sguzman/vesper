@@ -1,4 +1,5 @@
-# Decorative moonlit theme. All values are external and hot reloadable.
+# Clockwork Moon: cool midnight ink, pale silver, glacial cyan, warm starlight.
+# All style tokens remain in the external game folder and hot-reload at runtime.
 ui_scale = 1.0
 fade_seconds = 0.48
 
@@ -6,7 +7,9 @@ fade_seconds = 0.48
 family = "DejaVu Sans"
 
 [panel]
-background = [0.035, 0.042, 0.105, 0.94]
+background = [0.025, 0.044, 0.088, 0.96]
+accent = [0.55, 0.83, 1.0, 1.0]
+divider = [0.43, 0.70, 0.92, 0.45]
 width_percent = 91.0
 min_height = 226.0
 padding = 20.0
@@ -14,16 +17,16 @@ gap = 8.0
 
 [speaker]
 size = 23.0
-color = [0.98, 0.82, 0.51, 1.0]
+color = [1.0, 0.82, 0.53, 1.0]
 
 [dialogue]
 size = 25.0
-color = [0.98, 0.96, 0.92, 1.0]
+color = [0.95, 0.97, 1.0, 1.0]
 
 [choices]
 size = 23.0
-color = [0.84, 0.93, 1.0, 1.0]
+color = [0.80, 0.93, 1.0, 1.0]
 
 [hint]
 size = 15.0
-color = [0.79, 0.82, 0.87, 1.0]
+color = [0.74, 0.83, 0.92, 1.0]

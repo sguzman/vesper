@@ -1,0 +1,32 @@
+# Little Lantern: soft sunrise amber and parchment on warm cocoa.
+# Independent from the Clockwork Moon palette; editable without recompilation.
+ui_scale = 1.0
+fade_seconds = 0.30
+
+[font]
+family = "DejaVu Sans"
+
+[panel]
+background = [0.12, 0.075, 0.052, 0.96]
+accent = [1.0, 0.70, 0.32, 1.0]
+divider = [1.0, 0.80, 0.56, 0.42]
+width_percent = 86.0
+min_height = 206.0
+padding = 21.0
+gap = 9.0
+
+[speaker]
+size = 25.0
+color = [1.0, 0.83, 0.55, 1.0]
+
+[dialogue]
+size = 28.0
+color = [1.0, 0.97, 0.91, 1.0]
+
+[choices]
+size = 26.0
+color = [1.0, 0.90, 0.73, 1.0]
+
+[hint]
+size = 16.0
+color = [0.88, 0.80, 0.73, 1.0]

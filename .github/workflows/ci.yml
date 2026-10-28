@@ -293,6 +293,16 @@ jobs:
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/hot_reload_smoke.py
       - name: Complete both reference branches and verify safe exit saves
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/reference_playthrough.py
+      - name: Verify distinct external fairytale themes and live accent reload
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/theme_showcase_smoke.py
+      - name: Upload fairytale theme evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-fairytale-themes
+          path: /tmp/vesper-theme-qa/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Render both fairytales and test user interaction
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/fairytale_smoke.py
       - name: Save fairytale screenshots for human visual QA

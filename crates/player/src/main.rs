@@ -179,6 +179,9 @@ struct StoryPanel;
 struct StorySeparator;
 
 #[derive(Component)]
+struct StoryAccent;
+
+#[derive(Component)]
 enum StoryText {
     Speaker,
     Body,
@@ -514,12 +517,21 @@ fn setup(
             StoryPanel,
         ))
         .with_children(|parent| {
+            parent.spawn((
+                StoryAccent,
+                Node { width: percent(100), height: px(3.0), ..default() },
+                BackgroundColor(Color::srgba(
+                    panel.accent[0], panel.accent[1], panel.accent[2], panel.accent[3]
+                )),
+            ));
             add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);
             add_text(parent, StoryText::Body, &initial.body, &body_style, &font);
             parent.spawn((
                 StorySeparator,
                 Node { width: percent(100), height: px(1.0), ..default() },
-                BackgroundColor(Color::srgba(0.70, 0.76, 0.86, 0.34)),
+                BackgroundColor(Color::srgba(
+                    panel.divider[0], panel.divider[1], panel.divider[2], panel.divider[3]
+                )),
             ));
             add_text(parent, StoryText::Hint, &initial.hint, &hint_style, &font);
         });

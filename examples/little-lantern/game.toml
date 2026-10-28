@@ -3,6 +3,7 @@ id = "little-lantern"
 title = "The Little Lantern"
 story = "scripts/story.vn"
 entry = "first_light"
+theme = "styles/lantern.toml"
 
 [backgrounds]
 sunrise = "assets/backgrounds/sunrise.png"

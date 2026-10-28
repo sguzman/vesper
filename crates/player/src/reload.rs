@@ -62,6 +62,8 @@ pub fn apply_reload(
     assets: Res<AssetServer>,
     mut ui_scale: ResMut<UiScale>,
     mut panels: Query<(&mut Node, &mut BackgroundColor), With<StoryPanel>>,
+    mut accents: Query<&mut BackgroundColor, (With<StoryAccent>, Without<StorySeparator>, Without<StoryPanel>)>,
+    mut dividers: Query<&mut BackgroundColor, (With<StorySeparator>, Without<StoryAccent>, Without<StoryPanel>)>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
 ) {
     let results = match inbox.0.lock() {
@@ -145,6 +147,15 @@ pub fn apply_reload(
         *background = BackgroundColor(Color::srgba(
             p.background[0], p.background[1], p.background[2], p.background[3]
         ));
+    }
+
+    for mut color in &mut accents {
+        let c = theme.panel.accent;
+        *color = BackgroundColor(Color::srgba(c[0], c[1], c[2], c[3]));
+    }
+    for mut color in &mut dividers {
+        let c = theme.panel.divider;
+        *color = BackgroundColor(Color::srgba(c[0], c[1], c[2], c[3]));
     }
 
     let font = text_font(&theme, &assets);
