@@ -35,6 +35,8 @@ pub struct PlayerPreferences {
     pub reduced_motion: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub auto_advance: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub high_contrast: Option<bool>,
 }
 
 impl Default for PlayerPreferences {
@@ -47,6 +49,7 @@ impl Default for PlayerPreferences {
             reveal_speed: None,
             reduced_motion: None,
             auto_advance: None,
+            high_contrast: None,
         }
     }
 }
@@ -171,6 +174,19 @@ impl PlayerPreferences {
         if let Some(family) = self.font_family.as_deref().filter(|family| available(family)) {
             result.font.file = None;
             result.font.family = Some(family.to_owned());
+        }
+        if self.high_contrast.unwrap_or(false) {
+            // Player accessibility wins over authored transparency and color,
+            // without ever changing or writing the author's theme.
+            result.panel.background = [0.015, 0.020, 0.035, 1.0];
+            result.panel.divider = [1.0, 1.0, 1.0, 0.85];
+            result.panel.accent = [1.0, 0.85, 0.22, 1.0];
+            for style in [
+                &mut result.speaker, &mut result.dialogue,
+                &mut result.choices, &mut result.hint,
+            ] {
+                style.color = [1.0, 1.0, 1.0, 1.0];
+            }
         }
         result
     }
@@ -298,6 +314,27 @@ mod tests {
         updated_author.dialogue.size = 44.0;
         assert_eq!(plain.resolve_theme(&updated_author, generic_font_available).dialogue.size, 44.0);
         assert_eq!(plain.resolve_theme(&warm, generic_font_available).dialogue.size, 28.0);
+    }
+
+    #[test]
+    fn high_contrast_is_player_owned_and_compatible_with_old_preference_files() {
+        let authored = Theme::default();
+        let original = authored.clone();
+        let old = PlayerPreferences::decode(br#"{"format_version":1,"panel_opacity":0.7}"#)
+            .unwrap();
+        assert_eq!(old.high_contrast, None);
+        let p = PlayerPreferences {
+            panel_opacity: Some(0.60),
+            high_contrast: Some(true),
+            ..Default::default()
+        };
+        let resolved = p.resolve_theme(&authored, generic_font_available);
+        assert_eq!(resolved.panel.background[3], 1.0);
+        assert_eq!(resolved.dialogue.color, [1.0; 4]);
+        assert_eq!(resolved.hint.color, [1.0; 4]);
+        assert_eq!(resolved.panel.accent[3], 1.0);
+        assert_eq!(authored.panel.background, original.panel.background);
+        assert_eq!(PlayerPreferences::decode(&p.encode().unwrap()).unwrap(), p);
     }
 
     #[test]
