@@ -6,9 +6,9 @@
   "prior_scope": "docs/roadmap.json",
   "prior_scope_verified_weight": 100,
   "scope_weight": 100,
-  "verified_weight": 15,
-  "last_verified_commit": "b3e26b8a9543355e94f21ae1602ee271b4d9001c",
-  "note": "Separate post-MVP visual/navigation scope: original MVP stays 100/100. POL01 verified on branch CI 40610400949; more presentation/navigation tasks remain pending.",
+  "verified_weight": 35,
+  "last_verified_commit": "04443e2c9923ef8f0450880d92455b24441b91ee",
+  "note": "Separate post-MVP polish roadmap. The original MVP remains verified 100/100. POL01 and POL02 are verified (35/100) by CI, with main-menu access during play retaining legacy direct-launch semantics.",
   "tasks": [
     {
       "id": "POL01",
@@ -28,13 +28,15 @@
       "emoji": "🧭",
       "milestone": "Navigation",
       "weight": 20,
-      "status": "pending",
+      "status": "verified complete",
       "depends_on": [
         "POL01"
       ],
       "description": "Main menu and purposeful navigation",
       "acceptance": "A consistent engine-owned start/continue/quit navigation works on both external games without changing scripts; paused menu navigation offers resume and quit; keyboard paths tested.",
-      "evidence": []
+      "evidence": [
+        "CI run 40613558817 (source 04443e2), Bevy job 122571026046: two repository-native external fairy tales passed graphical keyboard main-menu test (start, continue, quit, pause-to-menu), prior pause regression, and complete resize, input, fade, TTF, hot-reload, audio-decoder, save/load, packaging, screenshot and end-to-end reference suite; narrative job 122571025800 passed."
+      ]
     },
     {
       "id": "POL03",
