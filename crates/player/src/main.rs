@@ -529,7 +529,7 @@ fn main() {
             presentation: PresentationState::default(),
             pending_audio: Vec::new(),
         })
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (atmosphere::setup, setup).chain())
         .add_systems(Update, (
             (
                 settings::pointer, advance_from_keyboard,
