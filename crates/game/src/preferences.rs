@@ -57,14 +57,13 @@ impl PlayerPreferences {
         }) {
             return Err("dialogue_font_scale must be in 0.80..=1.60".into());
         }
-        if let Some(name) = &self.font_family {
-            if name.trim() != name
+        if self.font_family.as_ref().is_some_and(|name| {
+            name.trim() != name
                 || name.is_empty()
                 || name.len() > 128
                 || name.chars().any(|c| c.is_control() || c == '/' || c == '\\')
-            {
-                return Err("font_family must be a simple nonempty system family name".into());
-            }
+        }) {
+            return Err("font_family must be a simple nonempty system family name".into());
         }
         Ok(())
     }
@@ -238,7 +237,7 @@ mod tests {
             dialogue_opacity: Some(0.72),
             dialogue_font_scale: Some(1.30),
             font_family: Some("DejaVu Sans".into()),
-            ..default()
+            ..Default::default()
         };
         prefs.write_atomic(&path).unwrap();
         assert_eq!(PlayerPreferences::read(&path).unwrap(), prefs);
@@ -284,7 +283,7 @@ mod tests {
         }
         let mut prefs = PlayerPreferences {
             dialogue_opacity: Some(f32::NAN),
-            ..default()
+            ..Default::default()
         };
         assert!(prefs.encode().is_err());
         prefs.dialogue_opacity = None;
@@ -306,7 +305,7 @@ mod tests {
             dialogue_opacity: Some(0.75),
             dialogue_font_scale: Some(1.20),
             font_family: Some("Reader Font".into()),
-            ..default()
+            ..Default::default()
         };
         let l = prefs.resolve_theme(&lantern, |name| name == "Reader Font");
         let m = prefs.resolve_theme(&moon, |name| name == "Reader Font");
