@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 0,
-  "last_verified_commit": null,
+  "verified_weight": 8,
+  "last_verified_commit": "45a26ce9d7ac3e11732c0618bf9171ccb8c92028",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -53,8 +53,12 @@
         "A missing, corrupt, unsupported or stale preferences file falls back safely; compatible older versions migrate without deleting saves.",
         "Unit tests cover round-trip persistence, malformed values, absent fonts, game switching, precedence, and migrations."
       ],
-      "evidence": [],
-      "status": "active"
+      "evidence": [
+        "Branch CI run 40710370402, source 45a26ce9d: narrative and Bevy jobs both succeeded. Strict Clippy and cargo tests verified the v0→v1 migration, atomic fsync/rename round-trip and validation rollback, corrupt/missing/oversized/unsupported fallback, reset, player-over-author-over-default precedence, two authored-game style resolutions and unavailable-font fallback.",
+        "Bevy graphical preference test on run 40710370402: both Little Lantern and Clockwork Moon launched with isolated VESPER_PREFERENCES_DIR profiles; screenshots confirmed changed opacity/text-scale/font vs baseline and visible legacy migration, while corrupt JSON and unavailable font reproduced baseline pixels. Artifact 'vesper-player-preferences' (ID 12825358551) was downloaded and its 10 screenshots reviewed.",
+        "Same run passed native build, previous 946×511 wrapped-text regression, pause/menu/ending interactions, responsive screenshots, live theme hot reload, complete fairytale playthroughs, save/load across restart and relocatable Linux package. Existing example sources/saves remain unchanged."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX02",
@@ -232,5 +236,6 @@
       "evidence": [],
       "status": "pending"
     }
-  ]
+  ],
+  "note": "VX01 (8 points) verified on successful branch CI 40710370402, implementation 45a26ce9. Next VX02 is the live in-game settings UI; no VX02 points credited."
 }
