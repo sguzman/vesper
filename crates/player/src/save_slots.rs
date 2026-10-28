@@ -218,10 +218,15 @@ fn execute(ui:&mut SaveUi,pending:&mut Pending){
         Mode::Load if !info.exists => {
             ui.status=format!("Slot {slot} is empty");
         }
-        Mode::Load => {pending.0=Some(Request::Load(slot));ui.status=format!("Loading slot {slot}…");}
+        Mode::Load => {
+            pending.0=Some(Request::Load(slot));
+            ui.status=format!("Loading slot {slot}…");
+            info!("Vesper manual slot load requested: {slot}");
+        }
         Mode::Save if info.exists => {
             ui.confirm=Some(slot);
             ui.status=format!("Overwrite slot {slot}? Press Enter / Confirm, or Escape.");
+            info!("Vesper overwrite confirmation requested: {slot}");
         }
         Mode::Save => {
             pending.0=Some(Request::Save(slot));
@@ -242,6 +247,7 @@ pub fn input(key:&ButtonInput<KeyCode>,ui:&mut SaveUi,
             || matches!(action,Some(Action::Cancel)) {
             ui.confirm=None;
             ui.status="Overwrite cancelled".into();
+            info!("Vesper manual overwrite cancelled");
             return;
         }
         if key.just_pressed(KeyCode::Enter)
@@ -249,6 +255,7 @@ pub fn input(key:&ButtonInput<KeyCode>,ui:&mut SaveUi,
             let slot=ui.confirm.take().unwrap();
             pending.0=Some(Request::Save(slot));
             ui.status=format!("Saving slot {slot}…");
+            info!("Vesper overwrite confirmed: {slot}");
         }
         return;
     }
