@@ -102,7 +102,7 @@ pub fn tick(
     server: Res<AssetServer>,
     mut commands: Commands,
     mut backdrops: Query<(Entity, &mut Sprite, Option<&mut BackdropTransition>), With<BackgroundVisual>>,
-    mut curtains: Query<&mut Sprite, (With<BackdropCurtain>, Without<BackgroundVisual>)>,
+    mut curtains: Query<(Entity, &mut Sprite), (With<BackdropCurtain>, Without<BackgroundVisual>)>,
     mut motions: Query<&mut BackdropMotion>,
 ) {
     let active = !session.paused && session.menu_overlay.is_none()
@@ -115,16 +115,16 @@ pub fn tick(
     }
     let mut outgoing = None;
     let mut finished = None;
-    let mut waiting = false;
+    let mut active_curtain = None;
     for (entity, mut sprite, maybe_transition) in &mut backdrops {
         if Some(entity) != session.background { continue; }
         let Some(mut transition) = maybe_transition else { continue; };
         outgoing = Some(transition.outgoing);
+        active_curtain = transition.curtain;
         match server.load_state(sprite.image.id()) {
             LoadState::Loaded => {}
             LoadState::Failed(error) => {
                 warn!("Vesper cinematic image unavailable; keeping old background: {error}");
-                waiting = true;
                 continue;
             }
             _ => {
@@ -142,7 +142,7 @@ pub fn tick(
         let next = Color::srgba(1., 1., 1., alpha);
         if sprite.color != next { sprite.color = next; }
         if let Some(curtain) = transition.curtain {
-            if let Ok(mut layer) = curtains.get_mut(curtain) {
+            if let Ok((_, mut layer)) = curtains.get_mut(curtain) {
                 let [r,g,b,_] = session.game.theme.cinematic.through_color;
                 let curtain_alpha = if t < 0.5 { t * 2.0 } else { (1.0-t) * 2.0 };
                 layer.color = Color::srgba(r,g,b,curtain_alpha.clamp(0.0, 1.0));
@@ -165,13 +165,13 @@ pub fn tick(
             commands.entity(entity).remove::<BackdropTransition>();
         }
     }
+    for (entity, _) in &mut curtains {
+        if Some(entity) != active_curtain { commands.entity(entity).despawn(); }
+    }
     if let Some((current, old, curtain)) = finished {
         commands.entity(old).despawn();
         commands.entity(current).remove::<BackdropTransition>();
         if let Some(curtain) = curtain { commands.entity(curtain).despawn(); }
-    } else if !waiting && outgoing.is_none() {
-        // Only orphan curtains from interrupted transitions can remain.
-        // Live curtains are removed on completion or when the next transition starts.
     }
 }
 
@@ -198,8 +198,8 @@ mod tests {
             Vec2::new(800.,700.),Vec2::new(1920.,1080.)] {
             let base = (size.x/1280.).max(size.y/720.);
             let (scale,pos) = background_transform(size,base,Some(&state),None);
-            let x = (1280. * scale - size.x) * .5;
-            let y = (720. * scale - size.y) * .5;
+            let x = (1280. * scale - size.x) * 0.5;
+            let y = (720. * scale - size.y) * 0.5;
             assert!(x + 0.01 >= pos.x.abs());
             assert!(y + 0.01 >= pos.y.abs());
             assert!(scale >= base);
