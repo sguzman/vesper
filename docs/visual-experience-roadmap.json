@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 8,
-  "last_verified_commit": "45a26ce9d7ac3e11732c0618bf9171ccb8c92028",
+  "verified_weight": 22,
+  "last_verified_commit": "7d726b6bff7c12003cc27a285b610206cd5765ec",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -76,8 +76,13 @@
         "All options use proper selectable Bevy UI controls, not concatenated strings; keyboard and pointer operation plus screenshots at 946×511, 800×600, 1280×720 and 1920×1080 pass.",
         "Game theme changes under --watch continue to apply where a player has not overridden a value."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Full source CI run 40721330853 on commit 7d726b6: narrative and Bevy jobs both succeeded, including cargo build/tests, responsive layout and previous 946x511 dialogue/hint overlap, menus, hot reload, saves and full fairytale playthroughs.",
+        "Engine-owned Settings UI is accessible from pause/main menu item 4; real Bevy button Activate observers and keyboard focus tested. Graphical settings_smoke.py passed for both Little Lantern and Clockwork Moon: opacity/text scale/font, live preview, pointer click, bounded persisted JSON, restart/reset, story continuation and clean return. Evidence artifact vesper-live-settings ID 12830451893.",
+        "Settings screenshots at 946x511, 800x600, 1280x720, 1920x1080 reviewed; speaker, wrapped body, choice, hint and controls render without overlap. Preference fallback/legacy migration regression and external authored-theme live reload also passed. Player changes are written on a dedicated serialized worker, preserving authored sources and saves.",
+        "Fixed idle-cursor menu focus regression: legacy main-menu and pause/ending navigation graphical checks pass on the verified run."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX03",
@@ -237,5 +242,6 @@
       "status": "pending"
     }
   ],
-  "note": "VX01 (8 points) verified on successful branch CI 40710370402, implementation 45a26ce9. Next VX02 is the live in-game settings UI; no VX02 points credited."
+  "note": "VX01 (8 points) verified on successful branch CI 40710370402, implementation 45a26ce9. Next VX02 is the live in-game settings UI; no VX02 points credited.",
+  "next_milestone": "VX03"
 }
