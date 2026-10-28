@@ -23,6 +23,11 @@ impl Default for SettingsState {
 
 #[derive(Component)]
 pub struct SettingsRow(pub usize);
+
+/// Completed pointer/button activations enter the normal validated settings
+/// input path. Transient Pressed markers are not reliable click events.
+#[derive(Resource, Default)]
+pub struct SettingsClicks(pub Option<usize>);
 #[derive(Component)]
 pub struct SettingsRowLabel(usize);
 #[derive(Component)]
@@ -204,6 +209,9 @@ pub fn open(
                     Button,
                     Hovered::default(),
                     SettingsRow(i),
+                    observe(move |_activate: On<Activate>, mut clicks: ResMut<SettingsClicks>| {
+                        clicks.0 = Some(i);
+                    }),
                     Node {
                         width: percent(100.0), padding: px(6.0).all(),
                         flex_shrink: 0.0, ..default()
@@ -307,17 +315,19 @@ pub fn pointer(
     writer: Res<PreferencesWriter>, mut commands: Commands,
     assets: Res<AssetServer>,
     hovered_rows: Query<(&Hovered, &SettingsRow), Changed<Hovered>>,
-    pressed_rows: Query<&SettingsRow, Added<Pressed>>,
+    mut clicks: ResMut<SettingsClicks>,
 ) {
-    if state.overlay.is_none() { return; }
+    if state.overlay.is_none() {
+        clicks.0 = None;
+        return;
+    }
     for (hover, row) in &hovered_rows {
         if hover.get() { state.selection = row.0; }
     }
-    for row in &pressed_rows {
-        state.selection = row.0;
-        if row.0 == 4 { close(&mut session, &mut state, &mut commands, &assets); }
-        else { change(&mut session, row.0, 1, &writer); }
-        break;
+    if let Some(index) = clicks.0.take() {
+        state.selection = index;
+        if index == 4 { close(&mut session, &mut state, &mut commands, &assets); }
+        else { change(&mut session, index, 1, &writer); }
     }
 }
 
