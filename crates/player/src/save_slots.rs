@@ -87,6 +87,7 @@ pub struct Pending(pub Option<Request>);
 #[derive(Resource, Default)]
 pub struct SaveUi {
     pub overlay: Option<Entity>,
+    pub just_closed: bool,
     pub mode: Mode,
     pub selected: usize, // index 0..SLOT_COUNT-1
     pub confirm: Option<usize>,
@@ -203,6 +204,7 @@ pub fn close(ui:&mut SaveUi,commands:&mut Commands){
     if let Some(entity)=ui.overlay.take() {
         commands.entity(entity).despawn();
         ui.confirm=None;
+        ui.just_closed = true;
         info!("Vesper save slots closed");
     }
 }
