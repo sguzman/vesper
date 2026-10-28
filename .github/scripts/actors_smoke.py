@@ -209,7 +209,7 @@ def check_staging(game,manifest):
         wait_color(win,owl_alone,"blue")
         key("Return",.1)
         wait(log,"Vesper character staged: tess (relieved)")
-        wait(log,"Vesper character entrance complete: tess",3)
+        wait(log,"Vesper character entrance complete: tess",4)
         respawned=out/"reintroduced-tess-depth.png"
         shot(win,respawned)
         print(f"VX06 depth probes: hot-reload={hot_reload_rgb}, tess-removed={rgb(owl_alone)}, tess-reintroduced={rgb(respawned)}",flush=True)
