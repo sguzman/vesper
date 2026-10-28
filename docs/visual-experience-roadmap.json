@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 40,
-  "last_verified_commit": "17f75519b49c834844411cb299b80dde812b99b0",
+  "verified_weight": 50,
+  "last_verified_commit": "3a672c7d2644b985b5c7d19adbdf65a554e194b1",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -146,8 +146,12 @@
         "Transitions can be interrupted, skipped, paused, restored and hot-reloaded safely without leaving stale entities or black frames.",
         "CI captures start/mid/end frames for two different external stories and proves each effect reaches its declared final visual state."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Full source CI run 40763057822 on commit 3a672c7d2644b985b5c7d19adbdf65a554e194b1: both narrative and Bevy jobs passed; strict build/unit tests, previous visual preference/choice/dialogue/text pacing/menu regressions, external story hot reload, full example playthroughs, relocatable Linux archive and F5/F9 saves across restart all passed.",
+        "VX05 cinematic graphical acceptance exercised crossfade, fade-through-color and soft-slide in both independently authored Little Lantern and Clockwork Moon. Real rendered start/middle/end artwork and destination-after-skip frame comparisons, pause, rapid interruption, F5/F9 restoration, and external theme hot reload passed. Screenshot artifact vesper-cinematic-backgrounds ID 12848796970 on run 40763057822 was downloaded and visually inspected.",
+        "Optional bounded Ken Burns pan/zoom preserves cover cropping at narrow/ultrawide aspect ratios; reduced-motion preference suppresses new background transitions and motion and terminates in-flight effects. Dedicated graphical reduced-motion case confirmed immediate changed destination art and an identical subsequent static frame. Legacy games retain their original defaults and unchanged external stories and saves."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX06",
