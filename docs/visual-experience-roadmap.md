@@ -1,6 +1,6 @@
 # Vesper — Visual Experience Roadmap
 
-**Status:** planned, **0 / 100 verified points**. This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
+**Status:** in progress, **22 / 100 verified points** (VX01 + VX02 verified; VX03 next). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
 
 **Goal:** A lovely, expressive visual novel reader: readable, configurable dialogue; distinct choices; gentle cinematic staging; history and saves; accessible motion controls; and a complete original game that demonstrates all of them.
 
@@ -8,8 +8,8 @@
 
 | ID | Weight | Milestone | Proof of completion |
 | --- | ---: | --- | --- |
-| VX01 | 8 | 🧱 Player preferences foundation | Preferences are stored in an atomic, bounded, versioned JSON file under the platform-appropriate user data/config directory; no writes on the render/update thread. |
-| VX02 | 14 | 🎛️ Live appearance settings | From pause/main menus, players can adjust dialogue panel opacity (bounded 0.60–1.00), dialogue font size multiplier (0.80–1.60), choose an installed or game-approved font with safe fallback, and restore defaults. |
+| VX01 | 8 | 🧱 Player preferences foundation — verified | Preferences are stored in an atomic, bounded, versioned JSON file under the platform-appropriate user data/config directory; no writes on the render/update thread. |
+| VX02 | 14 | 🎛️ Live appearance settings — verified ([CI run 40721330853](https://github.com/sguzman/vesper/actions/runs/40721330853)) | From pause/main menus, players can adjust dialogue panel opacity (bounded 0.60–1.00), dialogue font size multiplier (0.80–1.60), choose an installed or game-approved font with safe fallback, and restore defaults. |
 | VX03 | 10 | 💬 Dialogue and choice composition | Each choice is a separate, engine-owned UI entity with selection/highlight, focus, mouse target and keyboard action; choice data remains supplied by external .vn scripts. |
 | VX04 | 8 | ⌨️ Text pacing and reading cues | A reveal effect supports instant/off, slow, normal and fast player choices, with Unicode grapheme-safe pacing and no string corruption. |
 | VX05 | 10 | 🎞️ Cinematic background presentation | External theme/story data can specify bounded crossfade, fade-through-color and soft-slide background transitions, with compatible defaults for legacy .vn games. |
@@ -21,7 +21,7 @@
 
 ## What players will control
 
-Players get an engine-owned **Settings** screen from the pause and main menus. Its first-class controls include dialogue-box **opacity (60–100%)**, **text size (80–160% of the game theme)**, **font selection** among approved/installed choices, and **Reset to game defaults**. Changes have a live preview and persist to local preferences, not game source files. Later stages add **text reveal speed, instant text, reduced motion and high contrast**.
+Players now have an engine-owned **Settings** screen (option 4 from pause and main menus). Its first-class controls include dialogue-box **opacity (60–100%)**, **text size (80–160% of the game theme)**, **font selection** among approved/installed choices, and **Reset to game defaults**. Changes have a live preview and persist to local preferences, not game source files. Later stages add **text reveal speed, instant text, reduced motion and high contrast**.
 
 There are two distinct authorities: game creators supply a default external TOML theme, and players may override presentation details locally. Theme hot reload still works for fields the player hasn't overridden. If a requested font disappears, the engine uses a readable fallback. Do not hide validation errors or corrupt story saves.
 

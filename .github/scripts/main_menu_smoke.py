@@ -12,7 +12,8 @@ GAMES = (("examples/little-lantern", "The Little Lantern"),
          ("examples/clockwork-moon", "The Clockwork Moon"))
 
 def run(*args: str) -> None:
-    subprocess.run(args, check=True, capture_output=True, text=True)
+    # Never strand CI indefinitely on an X11 focus or input command.
+    subprocess.run(args, check=True, capture_output=True, text=True, timeout=20)
 
 def change(a: Path, b: Path) -> int:
     result = subprocess.run(["compare", "-metric", "AE", str(a), str(b), "null:"],

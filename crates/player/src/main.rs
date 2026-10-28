@@ -1,7 +1,8 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
-use bevy::{asset::{AssetPlugin, LoadState}, prelude::*, text::TextLayoutInfo, window::PrimaryWindow};
+use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui_widgets::{observe, Activate, Button}, window::PrimaryWindow};
 mod reload;
+mod settings;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -195,8 +196,19 @@ struct MenuRow { kind: MenuKind, index: usize }
 #[derive(Component)]
 struct EndingActions;
 
-const PAUSE_ITEMS: [&str; 3] = ["Resume story", "Main menu", "Quit"];
-const MAIN_ITEMS: [&str; 3] = ["Start new story", "Continue current story", "Quit"];
+#[derive(Resource, Default)]
+struct MenuPointer { action: Option<(MenuKind, usize)> }
+
+/// Preserve the previous Up-from-first = Quit navigation shortcut.
+fn menu_step(index: usize, direction: i32, count: usize) -> usize {
+    if direction < 0 && index == 0 && count == 4 { return 2; }
+    (index as i32 + direction).rem_euclid(count as i32) as usize
+}
+
+
+
+const PAUSE_ITEMS: [&str; 4] = ["Resume story", "Main menu", "Quit", "Appearance settings"];
+const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Quit", "Appearance settings"];
 const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
 
 /// Retain row identity while focus changes: only selected row colors update.
@@ -222,6 +234,11 @@ fn spawn_menu_rows(
         parent.spawn((
             Name::new(format!("{kind:?} action {}", index + 1)),
             MenuRow { kind, index },
+            Button,
+            Hovered::default(),
+            observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
+                pointer.action = Some((kind, index));
+            }),
             Text::new(format!("{}. {}", index + 1, label)),
             TextFont { font: font.clone(), font_size: FontSize::Px(22.0), ..default() },
             TextColor(Color::WHITE),
@@ -440,6 +457,7 @@ fn main() {
     let title = game.manifest.title.clone();
     let ui_scale = game.theme.ui_scale;
     let inbox = watch.then(|| reload::start(game.root.clone()));
+    let (preferences_writer, preferences_shutdown) = settings::start_writer();
     let io_workers = IoWorkers::default();
     let outstanding_workers = io_workers.0.clone();
     let mut app = App::new();
@@ -461,6 +479,10 @@ fn main() {
         .insert_resource(UiScale(ui_scale))
         .insert_resource(CompletedIo::default())
         .insert_resource(io_workers)
+        .insert_resource(settings::SettingsState::default())
+        .insert_resource(settings::SettingsClicks::default())
+        .insert_resource(MenuPointer::default())
+        .insert_resource(preferences_writer)
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -472,11 +494,17 @@ fn main() {
             pending_audio: Vec::new(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, reserve_story_text_height, trigger_save_load, poll_completed_io, sync_menu_selection, animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport).chain());
+        .add_systems(Update, (
+            settings::pointer, advance_from_keyboard,
+            settings::sync_visuals, reserve_story_text_height, trigger_save_load,
+            poll_completed_io, sync_menu_selection, animate_fades,
+            monitor_audio_assets, escape_to_quit, fit_viewport,
+        ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
     }
     app.run();
+    preferences_shutdown.finish();
     // This is after Bevy's UI/render loop has exited, so joining cannot
     // block a live frame. F5 immediately followed by closing the window is safe.
     if let Ok(mut jobs) = outstanding_workers.lock() {
@@ -863,7 +891,15 @@ fn advance_from_keyboard(
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
     mut menu_exit: MessageWriter<AppExit>,
+    mut settings_state: ResMut<settings::SettingsState>,
+    preference_writer: Res<settings::PreferencesWriter>,
+    mut pointer: ResMut<MenuPointer>,
 ) {
+    if settings_state.overlay.is_some() {
+        settings::keyboard(&input, &mut session, &mut settings_state,
+            &mut commands, &assets, &preference_writer);
+        return;
+    }
     if session.menu_overlay.is_some() {
         if input.just_pressed(KeyCode::KeyM) {
             hide_main_menu(&mut session, &mut commands);
@@ -871,16 +907,18 @@ fn advance_from_keyboard(
         }
         let selected = session.menu_selection;
         if input.just_pressed(KeyCode::ArrowDown) {
-            session.menu_selection = (selected + 1) % MAIN_ITEMS.len();
+            session.menu_selection = menu_step(selected, 1, MAIN_ITEMS.len());
             return;
         }
         if input.just_pressed(KeyCode::ArrowUp) {
-            session.menu_selection = (selected + MAIN_ITEMS.len() - 1) % MAIN_ITEMS.len();
+            session.menu_selection = menu_step(selected, -1, MAIN_ITEMS.len());
             return;
         }
-        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
+        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3, KeyCode::Digit4]
             .iter().position(|key| input.just_pressed(*key));
-        let confirmed = digit.or_else(|| {
+        let from_pointer = pointer.action.take()
+            .and_then(|(kind, index)| (kind == MenuKind::Main).then_some(index));
+        let confirmed = from_pointer.or(digit).or_else(|| {
             (input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space))
                 .then_some(selected)
         });
@@ -894,6 +932,11 @@ fn advance_from_keyboard(
                 2 => {
                     info!("Vesper quitting through menu");
                     menu_exit.write(AppExit::Success);
+                }
+                3 => {
+                    hide_main_menu(&mut session, &mut commands);
+                    settings::open(&session, &mut settings_state, &mut commands,
+                        &assets, MenuKind::Main);
                 }
                 _ => {}
             }
@@ -920,16 +963,19 @@ fn advance_from_keyboard(
     if session.paused {
         let selected = session.pause_selection;
         if input.just_pressed(KeyCode::ArrowDown) {
-            session.pause_selection = (selected + 1) % PAUSE_ITEMS.len();
+            session.pause_selection = menu_step(selected, 1, PAUSE_ITEMS.len());
             return;
         }
         if input.just_pressed(KeyCode::ArrowUp) {
-            session.pause_selection = (selected + PAUSE_ITEMS.len() - 1) % PAUSE_ITEMS.len();
+            session.pause_selection = menu_step(selected, -1, PAUSE_ITEMS.len());
             return;
         }
-        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
+        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3, KeyCode::Digit4]
             .iter().position(|key| input.just_pressed(*key));
-        let confirmed = digit.or_else(|| input.just_pressed(KeyCode::Enter).then_some(selected));
+        let from_pointer = pointer.action.take()
+            .and_then(|(kind, index)| (kind == MenuKind::Pause).then_some(index));
+        let confirmed = from_pointer.or(digit)
+            .or_else(|| input.just_pressed(KeyCode::Enter).then_some(selected));
         if let Some(index) = confirmed {
             match index {
                 0 => dismiss_pause(&mut session, &mut commands),
@@ -940,6 +986,11 @@ fn advance_from_keyboard(
                 2 => {
                     info!("Vesper quitting through pause menu");
                     menu_exit.write(AppExit::Success);
+                }
+                3 => {
+                    dismiss_pause(&mut session, &mut commands);
+                    settings::open(&session, &mut settings_state, &mut commands,
+                        &assets, MenuKind::Pause);
                 }
                 _ => {}
             }
@@ -965,7 +1016,9 @@ fn advance_from_keyboard(
         }
         let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
             .iter().position(|key| input.just_pressed(*key));
-        let confirmed = digit.or_else(|| {
+        let from_pointer = pointer.action.take()
+            .and_then(|(kind, index)| (kind == MenuKind::Ending).then_some(index));
+        let confirmed = from_pointer.or(digit).or_else(|| {
             (input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space))
                 .then_some(selected)
         });
@@ -1189,7 +1242,8 @@ mod tests {
         let (active_bg, active_fg) = super::menu_row_colors(MenuKind::Pause, true, accent);
         assert_ne!(idle_bg, active_bg);
         assert_ne!(idle_fg, active_fg);
-        assert_eq!(super::MAIN_ITEMS.len(), 3);
+        assert_eq!(super::MAIN_ITEMS.len(), 4);
+        assert_eq!(super::menu_step(0, -1, 4), 2);
     }
 
     #[test]
@@ -1307,8 +1361,14 @@ fn monitor_audio_assets(mut session: ResMut<Session>, server: Res<AssetServer>) 
 }
 
 
-fn escape_to_quit(input: Res<ButtonInput<KeyCode>>, mut exit: MessageWriter<AppExit>) {
-    if input.just_pressed(KeyCode::Escape) {
+fn escape_to_quit(
+    input: Res<ButtonInput<KeyCode>>,
+    mut exit: MessageWriter<AppExit>,
+    mut settings: ResMut<settings::SettingsState>,
+) {
+    let just_closed = settings.just_closed;
+    if just_closed { settings.just_closed = false; }
+    if input.just_pressed(KeyCode::Escape) && settings.overlay.is_none() && !just_closed {
         info!("Vesper exiting by Escape");
         exit.write(AppExit::Success);
     }
