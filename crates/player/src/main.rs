@@ -893,6 +893,7 @@ fn restart_story(
     commands: &mut Commands,
     assets: &AssetServer,
     texts: &mut Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    reading: &mut readout::ReadingState,
     via_menu: bool,
 ) {
     match Machine::new(&session.game.story, &session.game.manifest.entry) {
@@ -913,7 +914,7 @@ fn restart_story(
             session.finished = false;
             session.ending_selection = 0;
             let screen = next_screen(session, commands, assets);
-            update_screen(screen, &effective_theme(session), texts);
+            update_screen(screen, &effective_theme(session), texts, reading, readout::speed(session));
             if via_menu {
                 info!("Vesper story restarted from its beginning via menu");
             } else {
@@ -935,6 +936,7 @@ fn advance_from_keyboard(
     preference_writer: Res<settings::PreferencesWriter>,
     mut pointer: ResMut<MenuPointer>,
     mut choice_click: ResMut<choices::ChoiceClick>,
+    mut reading: ResMut<readout::ReadingState>,
 ) {
     // Pointer activation must never survive a pause/menu or get replayed.
     let pointer_choice = choice_click.0.take();
@@ -969,7 +971,7 @@ fn advance_from_keyboard(
             match index {
                 0 => {
                     hide_main_menu(&mut session, &mut commands);
-                    restart_story(&mut session, &mut commands, &assets, &mut texts, true);
+                    restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, true);
                 }
                 1 => hide_main_menu(&mut session, &mut commands),
                 2 => {
@@ -1054,7 +1056,7 @@ fn advance_from_keyboard(
             return;
         }
         if input.just_pressed(KeyCode::KeyR) {
-            restart_story(&mut session, &mut commands, &assets, &mut texts, false);
+            restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, false);
             return;
         }
         let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
@@ -1094,7 +1096,8 @@ fn advance_from_keyboard(
         };
         if let Some(index) = selected {
             session.presentation.selected_choice = index;
-            update_screen(Screen::choices(&options, index), &effective_theme(&session), &mut texts);
+            update_screen(Screen::choices(&options, index), &effective_theme(&session), &mut texts,
+                &mut reading, readout::speed(&session));
             return;
         }
         let digit = [
@@ -1111,12 +1114,18 @@ fn advance_from_keyboard(
                 session.choosing = false;
                 session.presentation.selected_choice = 0;
                 let screen = next_screen(&mut session, &mut commands, &assets);
-                update_screen(screen, &effective_theme(&session), &mut texts);
+                update_screen(screen, &effective_theme(&session), &mut texts,
+                    &mut reading, readout::speed(&session));
             }
         }
-    } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
+    } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space)
+        || reading.autoplay_ready
+    {
+        reading.autoplay_ready = false;
+        if reading.complete_on_input() { return; }
         let screen = next_screen(&mut session, &mut commands, &assets);
-        update_screen(screen, &effective_theme(&session), &mut texts);
+        update_screen(screen, &effective_theme(&session), &mut texts,
+                    &mut reading, readout::speed(&session));
     }
 }
 
@@ -1192,6 +1201,7 @@ fn poll_completed_io(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    mut reading: ResMut<readout::ReadingState>,
 ) {
     let events = match completed.0.lock() {
         Ok(mut events) => std::mem::take(&mut *events),
@@ -1255,7 +1265,8 @@ fn poll_completed_io(
                     Some(Output::End) => Screen::ending("The End".into()),
                     _ => Screen::ending("Story restored".into()),
                 };
-                update_screen(screen, &effective_theme(&session), &mut texts);
+                update_screen(screen, &effective_theme(&session), &mut texts,
+                    &mut reading, readout::speed(&session));
                 info!("Vesper save restored");
             }
         }
