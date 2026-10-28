@@ -314,15 +314,11 @@ pub fn pointer(
     mut session: ResMut<Session>, mut state: ResMut<SettingsState>,
     writer: Res<PreferencesWriter>, mut commands: Commands,
     assets: Res<AssetServer>,
-    hovered_rows: Query<(&Hovered, &SettingsRow), Changed<Hovered>>,
     mut clicks: ResMut<SettingsClicks>,
 ) {
     if state.overlay.is_none() {
         clicks.0 = None;
         return;
-    }
-    for (hover, row) in &hovered_rows {
-        if hover.get() { state.selection = row.0; }
     }
     if let Some(index) = clicks.0.take() {
         state.selection = index;
