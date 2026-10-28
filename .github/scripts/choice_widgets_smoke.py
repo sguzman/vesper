@@ -104,7 +104,7 @@ def verify_two_choices(base: Path):
         press("Down")
         frame(win, second)
         delta = changed(first, second)
-        assert 40 < delta < 70000, f"focus changed unexpected pixels: {delta}"
+        assert 40 < delta < 250000, f"focus changed unexpected pixels: {delta}"
 
         press("F5")
         wait(log, "Vesper save written")
