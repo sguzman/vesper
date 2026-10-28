@@ -114,9 +114,14 @@ def verify_two_choices(base: Path):
         restored = folder / "choice-restored.png"
         frame(win, restored)
         assert changed(second, restored) < 5000, "F5/F9 changed selected row or game scene"
-        press("Return")
+        # Pointer activation must use the same validated narrative branch,
+        # without requiring an Enter key or triggering two choices at once.
+        call("xdotool", "mousemove", "--window", win, "550", "575")
+        time.sleep(.35)
+        call("xdotool", "click", "1")
         wait(log, "Vesper scene dialogue: walk_together")
-        print("Lantern: separate rows, focus, save/load and keyboard selection passed", flush=True)
+        assert log.read_text(errors="replace").count("Vesper scene dialogue: walk_together") == 1
+        print("Lantern: separate rows, focus, F5/F9 and pointer activation passed", flush=True)
     finally:
         stop(player, stream)
 
@@ -132,7 +137,7 @@ def verify_nine_options(base: Path, tmp: Path):
     )
     generated = "\n".join(
         f'* "Choice {index}: We can travel beside the lantern and watch the starlight'
-        f' gather over this very quiet valley together." -> '
+        f' gather over this very quiet valley together. Buenas noches, mañana, étoile." -> '
         f'{"walk_together" if index == 9 else "hold_light"}'
         for index in range(1, 10)
     )
@@ -156,10 +161,11 @@ def verify_nine_options(base: Path, tmp: Path):
         last = folder / "nine-946x511-selected-last.png"
         frame(win, last, 946, 511)
         assert changed(first, last) > 100, "last choice was not visually revealed"
-        call("xdotool", "windowsize", win, "800", "600")
-        time.sleep(.8)
-        narrow = folder / "nine-800x600-selected-last.png"
-        frame(win, narrow, 800, 600)
+        for width, height in ((955, 520), (800, 600), (900, 700), (1920, 1080)):
+            call("xdotool", "windowsize", win, str(width), str(height))
+            time.sleep(.65)
+            picture = folder / f"nine-{width}x{height}-selected-last.png"
+            frame(win, picture, width, height)
         press("9")
         wait(log, "Vesper scene dialogue: walk_together")
         assert player.poll() is None, "choosing ninth option crashed"
