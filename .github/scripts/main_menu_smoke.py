@@ -48,7 +48,12 @@ def verify(game: str, title: str, folder: Path) -> None:
             key("m")
             run("import", "-window", window, str(menu))
             assert change(before, menu) > 5000, f"{title}: no visible menu"
+            selected = folder / "menu-selected.png"
             key("Down")
+            run("import", "-window", window, str(selected))
+            selection_change = change(menu, selected)
+            assert selection_change > 90, f"{title}: moving selection did not update an independent row"
+            assert selection_change < 60000, f"{title}: menu focus unexpectedly redrew the full screen"
             key("Return")  # Continue must leave the current frame unchanged
             run("import", "-window", window, str(after))
             assert change(before, after) < 3000, f"{title}: Continue changed the story"

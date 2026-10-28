@@ -183,6 +183,76 @@ struct StorySeparator;
 #[derive(Component)]
 struct StoryAccent;
 
+/// One selection = one UI entity. Labels are never rebuilt as a menu string.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum MenuKind { Pause, Main, Ending }
+
+#[derive(Component)]
+struct MenuRow { kind: MenuKind, index: usize }
+
+#[derive(Component)]
+struct EndingActions;
+
+const PAUSE_ITEMS: [&str; 3] = ["Resume story", "Main menu", "Quit"];
+const MAIN_ITEMS: [&str; 3] = ["Start new story", "Continue current story", "Quit"];
+const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
+
+/// Retain row identity while focus changes: only selected row colors update.
+fn menu_row_colors(kind: MenuKind, selected: bool, accent: [f32; 4]) -> (Color, Color) {
+    if selected {
+        let alpha = if kind == MenuKind::Ending { 0.50 } else { 0.94 };
+        (
+            Color::srgba(accent[0] * 0.27, accent[1] * 0.27, accent[2] * 0.27, alpha),
+            Color::srgba(1.0, 0.98, 0.91, 1.0),
+        )
+    } else {
+        (Color::NONE, Color::srgba(0.80, 0.84, 0.90, 1.0))
+    }
+}
+
+fn spawn_menu_rows(
+    parent: &mut ChildSpawnerCommands,
+    kind: MenuKind,
+    options: &[&str],
+    font: &FontSource,
+) {
+    for (index, label) in options.iter().enumerate() {
+        parent.spawn((
+            Name::new(format!("{kind:?} action {}", index + 1)),
+            MenuRow { kind, index },
+            Text::new(format!("{}. {}", index + 1, label)),
+            TextFont { font: font.clone(), font_size: FontSize::Px(22.0), ..default() },
+            TextColor(Color::WHITE),
+            TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+            Node { width: percent(100.0), padding: px(10.0).all(), ..default() },
+            BackgroundColor(Color::NONE),
+        ));
+    }
+}
+
+fn sync_menu_selection(
+    session: Res<Session>,
+    mut rows: Query<(&MenuRow, &mut BackgroundColor, &mut TextColor)>,
+    mut ending: Query<&mut Node, With<EndingActions>>,
+) {
+    for mut node in &mut ending {
+        let display = if session.finished { Display::Flex } else { Display::None };
+        if node.display != display { node.display = display; }
+    }
+    for (row, mut bg, mut fg) in &mut rows {
+        let active = match row.kind {
+            MenuKind::Pause => session.paused && row.index == session.pause_selection,
+            MenuKind::Main => session.menu_overlay.is_some() && row.index == session.menu_selection,
+            MenuKind::Ending => session.finished && row.index == session.ending_selection,
+        };
+        let (background, foreground) =
+            menu_row_colors(row.kind, active, session.game.theme.panel.accent);
+        if bg.0 != background { bg.0 = background; }
+        if fg.0 != foreground { fg.0 = foreground; }
+    }
+}
+
+
 #[derive(Component)]
 enum StoryText {
     Speaker,
@@ -224,20 +294,9 @@ impl Screen {
     }
 
     fn ending(message: String) -> Self {
-        Self::ending_selected(message, 0)
-    }
-
-    fn ending_selected(message: String, selected: usize) -> Self {
-        let mut body = format!("{message}\n\n");
-        for (index, action) in ["Play again", "Main menu", "Quit"].iter().enumerate() {
-            body.push_str(&format!(
-                "{} {}. {}\n",
-                if index == selected { "▶" } else { " " }, index + 1, action
-            ));
-        }
         Self {
             speaker: String::new(),
-            body,
+            body: message,
             hint: "Up/Down: move   Enter: select   1-3: choose   R: replay   M: menu   Esc: quit".into(),
             choices: false,
         }
@@ -342,7 +401,7 @@ fn main() {
             pending_audio: Vec::new(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport).chain());
+        .add_systems(Update, (advance_from_keyboard, trigger_save_load, poll_completed_io, sync_menu_selection, animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
     }
@@ -547,6 +606,18 @@ fn setup(
             add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);
             add_text(parent, StoryText::Body, &initial.body, &body_style, &font);
             parent.spawn((
+                EndingActions,
+                Node {
+                    display: Display::None,
+                    flex_direction: FlexDirection::Column,
+                    row_gap: px(6.0),
+                    width: percent(100.0),
+                    ..default()
+                },
+            )).with_children(|list| {
+                spawn_menu_rows(list, MenuKind::Ending, &ENDING_ITEMS, &font);
+            });
+            parent.spawn((
                 StorySeparator,
                 Node { width: percent(100), height: px(1.0), ..default() },
                 BackgroundColor(Color::srgba(
@@ -574,14 +645,63 @@ fn update_screen(
 
 
 
-fn pause_content(selection: usize) -> String {
-    let mut body = String::from("PAUSED\\n\\n");
-    for (index, option) in ["Resume story", "Main menu", "Quit"].iter().enumerate() {
-        body.push_str(&format!("{} {}. {}\\n",
-            if index == selection { "▶" } else { " " }, index + 1, option));
-    }
-    body.push_str("\\nUp/Down: select   Enter: confirm   P: resume   Esc: quit");
-    body
+/// The overlay layout stays mounted for its entire menu lifetime; moving focus
+/// never despawns entities, rewrites a giant Text node, or resets the story.
+fn spawn_center_menu(
+    commands: &mut Commands,
+    assets: &AssetServer,
+    theme: &vesper_game::Theme,
+    title: &str,
+    kind: MenuKind,
+    options: &[&str],
+    instructions: &str,
+) -> Entity {
+    let font = text_font(theme, assets);
+    let accent = theme.panel.accent;
+    commands.spawn((
+        Name::new(format!("{kind:?} overlay")),
+        Node {
+            position_type: PositionType::Absolute,
+            left: percent(0.0), top: percent(0.0),
+            width: percent(100.0), height: percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.78)),
+    )).with_children(|parent| {
+        parent.spawn((
+            Name::new(format!("{kind:?} panel")),
+            Node {
+                width: percent(85.0),
+                max_width: px(660.0),
+                flex_direction: FlexDirection::Column,
+                padding: px(26.0).all(),
+                row_gap: px(10.0),
+                ..default()
+            },
+            BackgroundColor(Color::srgba(0.055, 0.072, 0.12, 0.97)),
+        )).with_children(|panel| {
+            panel.spawn((
+                Text::new(title),
+                TextFont { font: font.clone(), font_size: FontSize::Px(28.0), ..default() },
+                TextColor(Color::srgba(1.0, 0.98, 0.92, 1.0)),
+                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+            ));
+            panel.spawn((
+                Node { width: percent(100.0), height: px(2.0), ..default() },
+                BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
+            ));
+            spawn_menu_rows(panel, kind, options, &font);
+            panel.spawn((
+                Text::new(instructions),
+                TextFont { font, font_size: FontSize::Px(15.0), ..default() },
+                TextColor(Color::srgba(0.72, 0.77, 0.84, 1.0)),
+                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+                Node { margin: UiRect::top(px(6.0)), ..default() },
+            ));
+        });
+    }).id()
 }
 
 fn dismiss_pause(session: &mut Session, commands: &mut Commands) {
@@ -598,48 +718,15 @@ fn show_pause_menu(
     if let Some(overlay) = session.pause_overlay.take() {
         commands.entity(overlay).despawn();
     }
-    let font = text_font(&session.game.theme, assets);
-    let body = pause_content(selected);
-    let overlay = commands.spawn((
-        Name::new("Pause overlay"),
-        Node {
-            position_type: PositionType::Absolute,
-            left: percent(0), top: percent(0),
-            width: percent(100), height: percent(100),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
-        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.80)),
-    )).with_children(|parent| {
-        parent.spawn((
-            Node { padding: px(32).all(), max_width: percent(90), ..default() },
-            BackgroundColor(Color::srgba(0.08, 0.11, 0.19, 0.97)),
-        )).with_children(|panel| {
-            panel.spawn((
-                Text::new(body),
-                TextFont { font, font_size: FontSize::Px(28.0), ..default() },
-                TextColor(Color::WHITE),
-                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
-            ));
-        });
-    }).id();
+    let overlay = spawn_center_menu(
+        commands, assets, &session.game.theme, "PAUSED", MenuKind::Pause,
+        &PAUSE_ITEMS,
+        "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
+    );
     session.pause_overlay = Some(overlay);
     session.paused = true;
     session.pause_selection = selected;
-    if selected == 0 {
-        info!("Vesper story paused");
-    }
-}
-
-fn menu_content(name: &str, selection: usize) -> String {
-    let mut body = format!("{name} — MAIN MENU\\n\\n");
-    for (index, option) in ["Start new story", "Continue current story", "Quit"].iter().enumerate() {
-        body.push_str(&format!("{} {}. {}\\n",
-            if selection == index { "▶" } else { " " }, index + 1, option));
-    }
-    body.push_str("\\nUp/Down: select   Enter: confirm   M: close   Esc: quit");
-    body
+    info!("Vesper story paused");
 }
 
 fn hide_main_menu(session: &mut Session, commands: &mut Commands) {
@@ -653,37 +740,14 @@ fn show_main_menu(
     session: &mut Session, commands: &mut Commands, assets: &AssetServer, selected: usize,
 ) {
     hide_main_menu(session, commands);
-    let font = text_font(&session.game.theme, assets);
-    let body = menu_content(&session.game.manifest.title, selected);
-    let overlay = commands.spawn((
-        Name::new("Main menu overlay"),
-        Node {
-            position_type: PositionType::Absolute,
-            left: percent(0), top: percent(0),
-            width: percent(100), height: percent(100),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
-        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.83)),
-    )).with_children(|parent| {
-        parent.spawn((
-            Node { padding: px(32).all(), max_width: percent(90), ..default() },
-            BackgroundColor(Color::srgba(0.08, 0.11, 0.19, 0.97)),
-        )).with_children(|panel| {
-            panel.spawn((
-                Text::new(body),
-                TextFont { font, font_size: FontSize::Px(28.0), ..default() },
-                TextColor(Color::WHITE),
-                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
-            ));
-        });
-    }).id();
+    let title = format!("{} — Main menu", session.game.manifest.title);
+    let overlay = spawn_center_menu(
+        commands, assets, &session.game.theme, &title, MenuKind::Main, &MAIN_ITEMS,
+        "Up/Down: select    Enter: confirm    M: close    Esc: quit",
+    );
     session.menu_overlay = Some(overlay);
     session.menu_selection = selected;
-    if selected == 0 {
-        info!("Vesper main menu opened");
-    }
+    info!("Vesper main menu opened");
 }
 
 fn restart_story(
@@ -738,11 +802,11 @@ fn advance_from_keyboard(
         }
         let selected = session.menu_selection;
         if input.just_pressed(KeyCode::ArrowDown) {
-            show_main_menu(&mut session, &mut commands, &assets, (selected + 1) % 3);
+            session.menu_selection = (selected + 1) % MAIN_ITEMS.len();
             return;
         }
         if input.just_pressed(KeyCode::ArrowUp) {
-            show_main_menu(&mut session, &mut commands, &assets, (selected + 2) % 3);
+            session.menu_selection = (selected + MAIN_ITEMS.len() - 1) % MAIN_ITEMS.len();
             return;
         }
         let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
@@ -787,11 +851,11 @@ fn advance_from_keyboard(
     if session.paused {
         let selected = session.pause_selection;
         if input.just_pressed(KeyCode::ArrowDown) {
-            show_pause_menu(&mut session, &mut commands, &assets, (selected + 1) % 3);
+            session.pause_selection = (selected + 1) % PAUSE_ITEMS.len();
             return;
         }
         if input.just_pressed(KeyCode::ArrowUp) {
-            show_pause_menu(&mut session, &mut commands, &assets, (selected + 2) % 3);
+            session.pause_selection = (selected + PAUSE_ITEMS.len() - 1) % PAUSE_ITEMS.len();
             return;
         }
         let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
@@ -824,10 +888,6 @@ fn advance_from_keyboard(
         };
         if let Some(next) = next {
             session.ending_selection = next;
-            update_screen(
-                Screen::ending_selected(session.ending_message.clone(), next),
-                &session.game.theme, &mut texts,
-            );
             return;
         }
         if input.just_pressed(KeyCode::KeyR) {
@@ -1045,18 +1105,23 @@ mod tests {
     use std::{fs, path::Path, sync::Arc};
 
     #[test]
-    fn ending_actions_are_visible_and_selected() {
-        let screen = super::Screen::ending_selected("The End".into(), 1);
-        assert!(screen.body.contains("▶ 2. Main menu"));
-        assert!(screen.body.contains("1. Play again"));
-        assert!(screen.body.contains("3. Quit"));
+    fn ending_actions_are_separate_widgets() {
+        let screen = super::Screen::ending("The End".into());
+        assert_eq!(screen.body, "The End");
+        assert_eq!(super::ENDING_ITEMS, ["Play again", "Main menu", "Quit"]);
+        assert_eq!(super::PAUSE_ITEMS[0], "Resume story");
+        assert_eq!(super::MAIN_ITEMS[1], "Continue current story");
     }
 
     #[test]
-    fn main_menu_labels_and_selection() {
-        let menu = super::menu_content("Lantern", 1);
-        assert!(menu.contains("▶ 2. Continue current story"));
-        assert!(menu.contains("3. Quit"));
+    fn menu_focus_uses_independent_row_colors() {
+        use super::MenuKind;
+        let accent = [0.45, 0.75, 1.0, 1.0];
+        let (idle_bg, idle_fg) = super::menu_row_colors(MenuKind::Pause, false, accent);
+        let (active_bg, active_fg) = super::menu_row_colors(MenuKind::Pause, true, accent);
+        assert_ne!(idle_bg, active_bg);
+        assert_ne!(idle_fg, active_fg);
+        assert_eq!(super::MAIN_ITEMS.len(), 3);
     }
 
     #[test]
