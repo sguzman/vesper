@@ -11,6 +11,7 @@ mod actors;
 mod atmosphere;
 mod feedback;
 mod history;
+mod save_slots;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -47,6 +48,7 @@ struct IoWorkers(Arc<Mutex<Vec<std::thread::JoinHandle<()>>>>);
 enum IoResult {
     Saved(Result<(), String>),
     Loaded(Result<(Machine, PresentationState), String>),
+    Slots(Result<Vec<save_slots::SlotInfo>, String>),
 }
 
 
@@ -522,6 +524,9 @@ fn main() {
         .insert_resource(atmosphere::AtmosphereState::default())
         .insert_resource(feedback::FeedbackState::default())
         .insert_resource(history::HistoryClick::default())
+        .insert_resource(save_slots::SaveUi::default())
+        .insert_resource(save_slots::Click::default())
+        .insert_resource(save_slots::Pending::default())
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -544,7 +549,7 @@ fn main() {
             ).chain(),
             (
                 settings::sync_visuals, reserve_story_text_height, trigger_save_load,
-                poll_completed_io, sync_menu_selection, feedback::tick,
+                poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
             ).chain(),
         ).chain());
@@ -1041,6 +1046,9 @@ fn advance_from_keyboard(
     mut feedback_state: ResMut<feedback::FeedbackState>,
     mut history_click: ResMut<history::HistoryClick>,
     mut history_scroll: Query<&mut ScrollPosition, With<history::HistoryScroll>>,
+    mut save_ui: ResMut<save_slots::SaveUi>,
+    mut save_click: ResMut<save_slots::Click>,
+    mut save_pending: ResMut<save_slots::Pending>,
 ) {
     // Pointer activation must never survive a pause/menu or get replayed.
     let pointer_choice = choice_click.0.take();
@@ -1059,6 +1067,17 @@ fn advance_from_keyboard(
     if input.just_pressed(KeyCode::KeyH) {
         let theme=effective_theme(&session);
         history::open(&mut session.history, &mut commands, &assets, &theme);
+        return;
+    }
+    if save_ui.visible() {
+        save_slots::input(&input, &mut save_ui, &mut save_click,
+            &mut save_pending, &mut commands);
+        return;
+    }
+    if input.just_pressed(KeyCode::F6) {
+        let theme=effective_theme(&session);
+        save_slots::open(&mut save_ui, &mut save_pending, &mut commands,
+            &assets, &theme);
         return;
     }
     if session.menu_overlay.is_some() {
