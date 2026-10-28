@@ -1064,14 +1064,14 @@ fn advance_from_keyboard(
             &mut history_scroll, &mut commands);
         return;
     }
-    if input.just_pressed(KeyCode::KeyH) {
-        let theme=effective_theme(&session);
-        history::open(&mut session.history, &mut commands, &assets, &theme);
-        return;
-    }
     if save_ui.visible() {
         save_slots::input(&input, &mut save_ui, &mut save_click,
             &mut save_pending, &mut commands);
+        return;
+    }
+    if input.just_pressed(KeyCode::KeyH) {
+        let theme=effective_theme(&session);
+        history::open(&mut session.history, &mut commands, &assets, &theme);
         return;
     }
     if input.just_pressed(KeyCode::F6) {
@@ -1311,6 +1311,11 @@ fn trigger_save_load(
     };
     active.retain(|job| !job.is_finished());
     if !active.is_empty() {
+        // Manual requests survive a concurrently finishing quick-save worker.
+        // Do not leave the slot overlay stuck on "Scanning..." after F6.
+        if let Some(request) = request {
+            pending.0 = Some(request);
+        }
         warn!("Vesper save/load operation already in progress");
         return;
     }
