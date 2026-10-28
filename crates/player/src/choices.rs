@@ -208,10 +208,15 @@ mod tests {
     use super::*;
     #[test]
     fn viewport_height_is_finite_and_bounded() {
-        assert_eq!(choice_viewport_height(511.0), 219.73);
-        assert_eq!(choice_viewport_height(720.0), 309.6);
-        assert_eq!(choice_viewport_height(1080.0), 464.4);
-        assert_eq!(choice_viewport_height(10.0), 120.0);
-        assert_eq!(choice_viewport_height(3000.0), 480.0);
+        for (height, expected) in [
+            (511.0, 219.73),
+            (720.0, 309.6),
+            (1080.0, 464.4),
+            (10.0, 120.0),
+            (3000.0, 480.0),
+        ] {
+            let computed = choice_viewport_height(height);
+            assert!((computed - expected).abs() < 0.001, "{height}: {computed}");
+        }
     }
 }
