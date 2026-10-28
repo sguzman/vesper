@@ -1266,7 +1266,7 @@ fn poll_completed_io(
                     _ => Screen::ending("Story restored".into()),
                 };
                 update_screen(screen, &effective_theme(&session), &mut texts,
-                    &mut reading, readout::speed(&session));
+                    &mut reading, vesper_game::TextRevealSpeed::Instant);
                 info!("Vesper save restored");
             }
         }
