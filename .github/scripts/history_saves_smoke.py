@@ -143,13 +143,14 @@ def check_history_and_slots(game):
             assert payload["format_version"]==1
             assert payload["machine"]["pending"] is not None
 
+            original_slot_bytes=slot.read_bytes()
             key("Return")
             wait(log,"Vesper overwrite confirmation requested: 1")
             confirmation=out/"overwrite-confirmation.png"
             shot(win,confirmation)
             key("Escape")
             wait(log,"Vesper manual overwrite cancelled")
-            assert slot.read_bytes()==slot.read_bytes(),"cancelled save changed bytes"
+            assert slot.read_bytes()==original_slot_bytes,"cancelled save changed bytes"
             key("Return")
             wait(log,"Vesper overwrite confirmation requested: 1",count=2)
             key("Return")
@@ -182,7 +183,7 @@ def check_history_and_slots(game):
             key("Escape")
             key("F6")
             wait(log,"Vesper save slots opened",count=2)
-            wait(log,"Vesper save slot metadata scanned",count=3)
+            wait(log,"Vesper save slot metadata scanned",count=4)
             key("Right")
             key("Return")
             wait(log,"Vesper manual slot load requested: 1")
