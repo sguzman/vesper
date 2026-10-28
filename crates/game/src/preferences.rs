@@ -10,7 +10,7 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 
-use crate::Theme;
+use crate::{TextRevealSpeed, Theme};
 
 pub const VERSION: u32 = 1;
 const MAX_BYTES: u64 = 16 * 1024;
@@ -29,6 +29,12 @@ pub struct PlayerPreferences {
     pub text_scale: Option<f32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub font_family: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reveal_speed: Option<TextRevealSpeed>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reduced_motion: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_advance: Option<bool>,
 }
 
 impl Default for PlayerPreferences {
@@ -38,6 +44,9 @@ impl Default for PlayerPreferences {
             panel_opacity: None,
             text_scale: None,
             font_family: None,
+            reveal_speed: None,
+            reduced_motion: None,
+            auto_advance: None,
         }
     }
 }

@@ -3,31 +3,9 @@
 //! Build the boundary table once for each newly displayed dialogue line.
 //! Per-frame work only advances a counter and borrows an existing UTF-8 prefix.
 use unicode_segmentation::UnicodeSegmentation;
+pub use vesper_game::TextRevealSpeed as RevealSpeed;
 
 pub const MAX_ANIMATED_BYTES: usize = 32 * 1024;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum RevealSpeed {
-    Instant,
-    Slow,
-    Normal,
-    Fast,
-}
-
-impl RevealSpeed {
-    pub const fn rate(self) -> Option<f64> {
-        match self {
-            Self::Instant => None,
-            Self::Slow => Some(14.0),
-            Self::Normal => Some(34.0),
-            Self::Fast => Some(80.0),
-        }
-    }
-}
-
-impl Default for RevealSpeed {
-    fn default() -> Self { Self::Normal }
-}
 
 #[derive(Debug, Clone)]
 pub struct RevealBuffer {
