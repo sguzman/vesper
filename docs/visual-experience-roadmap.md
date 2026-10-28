@@ -1,6 +1,6 @@
 # Vesper — Visual Experience Roadmap
 
-**Status:** in progress, **60 / 100 verified points** (VX01–VX06 verified; VX07 next). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
+**Status:** in progress, **67 / 100 verified points** (VX01–VX07 verified; VX08 next). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
 
 **Goal:** A lovely, expressive visual novel reader: readable, configurable dialogue; distinct choices; gentle cinematic staging; history and saves; accessible motion controls; and a complete original game that demonstrates all of them.
 
@@ -14,7 +14,7 @@
 | VX04 | 8 | ⌨️ Text pacing and reading cues — verified ([CI run 40745061158](https://github.com/sguzman/vesper/actions/runs/40745061158)) | A reveal effect supports instant/off, slow, normal and fast player choices, with Unicode grapheme-safe pacing and no string corruption. |
 | VX05 | 10 | 🎞️ Cinematic background presentation — verified ([CI run 40763057822](https://github.com/sguzman/vesper/actions/runs/40763057822)) | External theme/story data can specify bounded crossfade, fade-through-color and soft-slide background transitions, with compatible defaults for legacy .vn games. |
 | VX06 | 10 | 🎭 Character staging and expression polish — verified ([CI run 40775856131](https://github.com/sguzman/vesper/actions/runs/40775856131)) | Externally declared sprite anchors/scale/depth and expression-crossfades work for multiple characters without engine references to specific games. |
-| VX07 | 7 | ✨ Atmosphere and micro-interactions | Provide a small, bounded data-driven library of 2D atmospheric presets such as drifting motes, gentle glow and vignette, with deterministic seeds and no mandatory shaders. |
+| VX07 | 7 | ✨ Atmosphere and micro-interactions — verified ([CI run 40785668645](https://github.com/sguzman/vesper/actions/runs/40785668645)) | Provide a small, bounded data-driven library of 2D atmospheric presets such as drifting motes, gentle glow and vignette, with deterministic seeds and no mandatory shaders. |
 | VX08 | 7 | 📖 Reading history and polished saves | A readable, scrollable dialogue backlog shows the current session's recent lines with speaker names and scene boundaries, with a documented bounded memory limit and no spoilers from future branches. |
 | VX09 | 8 | ♿ Accessibility and experience regression | Readable defaults and player controls for high-contrast text, reduced motion, text speed/instant reveal, and safe font fallback are documented and tested. |
 | VX10 | 18 | 🌠 Original generated-asset showcase game | Create a self-contained examples/dawn-post-office/ with its own game.toml, authored .vn narrative, theme(s), asset manifest, README, artwork/audio directories and runnable Linux launcher; no game-specific Rust branches. |
