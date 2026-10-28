@@ -2,6 +2,7 @@
 
 use bevy::{asset::{AssetPlugin, LoadState}, prelude::*, text::TextLayoutInfo, window::PrimaryWindow};
 mod reload;
+mod settings;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -195,8 +196,8 @@ struct MenuRow { kind: MenuKind, index: usize }
 #[derive(Component)]
 struct EndingActions;
 
-const PAUSE_ITEMS: [&str; 3] = ["Resume story", "Main menu", "Quit"];
-const MAIN_ITEMS: [&str; 3] = ["Start new story", "Continue current story", "Quit"];
+const PAUSE_ITEMS: [&str; 4] = ["Resume story", "Main menu", "Quit", "Appearance settings"];
+const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Quit", "Appearance settings"];
 const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
 
 /// Retain row identity while focus changes: only selected row colors update.
@@ -222,6 +223,7 @@ fn spawn_menu_rows(
         parent.spawn((
             Name::new(format!("{kind:?} action {}", index + 1)),
             MenuRow { kind, index },
+            Button,
             Text::new(format!("{}. {}", index + 1, label)),
             TextFont { font: font.clone(), font_size: FontSize::Px(22.0), ..default() },
             TextColor(Color::WHITE),
@@ -440,6 +442,7 @@ fn main() {
     let title = game.manifest.title.clone();
     let ui_scale = game.theme.ui_scale;
     let inbox = watch.then(|| reload::start(game.root.clone()));
+    let (preferences_writer, preferences_shutdown) = settings::start_writer();
     let io_workers = IoWorkers::default();
     let outstanding_workers = io_workers.0.clone();
     let mut app = App::new();
@@ -461,6 +464,9 @@ fn main() {
         .insert_resource(UiScale(ui_scale))
         .insert_resource(CompletedIo::default())
         .insert_resource(io_workers)
+        .insert_resource(settings::SettingsState::default())
+        .insert_resource(MenuPointer::default())
+        .insert_resource(preferences_writer)
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -472,11 +478,17 @@ fn main() {
             pending_audio: Vec::new(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (advance_from_keyboard, reserve_story_text_height, trigger_save_load, poll_completed_io, sync_menu_selection, animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport).chain());
+        .add_systems(Update, (
+            pointer_menu_rows, settings::pointer, advance_from_keyboard,
+            settings::sync_visuals, reserve_story_text_height, trigger_save_load,
+            poll_completed_io, sync_menu_selection, animate_fades,
+            monitor_audio_assets, escape_to_quit, fit_viewport,
+        ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
     }
     app.run();
+    preferences_shutdown.finish();
     // This is after Bevy's UI/render loop has exited, so joining cannot
     // block a live frame. F5 immediately followed by closing the window is safe.
     if let Ok(mut jobs) = outstanding_workers.lock() {
@@ -1189,7 +1201,8 @@ mod tests {
         let (active_bg, active_fg) = super::menu_row_colors(MenuKind::Pause, true, accent);
         assert_ne!(idle_bg, active_bg);
         assert_ne!(idle_fg, active_fg);
-        assert_eq!(super::MAIN_ITEMS.len(), 3);
+        assert_eq!(super::MAIN_ITEMS.len(), 4);
+        assert_eq!(super::menu_step(0, -1, 4), 2);
     }
 
     #[test]
