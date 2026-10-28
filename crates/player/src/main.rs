@@ -206,6 +206,11 @@ fn menu_step(index: usize, direction: i32, count: usize) -> usize {
 }
 
 
+
+const PAUSE_ITEMS: [&str; 4] = ["Resume story", "Main menu", "Quit", "Appearance settings"];
+const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Quit", "Appearance settings"];
+const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
+
 /// Retain row identity while focus changes: only selected row colors update.
 fn menu_row_colors(kind: MenuKind, selected: bool, accent: [f32; 4]) -> (Color, Color) {
     if selected {
