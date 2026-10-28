@@ -1385,7 +1385,8 @@ fn escape_to_quit(
     mut exit: MessageWriter<AppExit>,
     mut settings: ResMut<settings::SettingsState>,
 ) {
-    let just_closed = std::mem::take(&mut settings.just_closed);
+    let just_closed = settings.just_closed;
+    if just_closed { settings.just_closed = false; }
     if input.just_pressed(KeyCode::Escape) && settings.overlay.is_none() && !just_closed {
         info!("Vesper exiting by Escape");
         exit.write(AppExit::Success);
