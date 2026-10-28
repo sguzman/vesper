@@ -20,7 +20,7 @@ Or download the compiled **vesper-linux-fairytale-showcase** artifact from [veri
 
 ## Presentation polish (next phase)
 
-The original MVP remains verified 100%. A separate [weighted polish roadmap](docs/polish-roadmap.json) tracks the next phase of visual composition and navigation without changing the MVP acceptance ledger. **P** toggles an engine-owned pause overlay during play; **R** restarts after an ending. The Little Lantern intentionally contains no audio; The Clockwork Moon uses external WAV assets.
+The original MVP remains verified 100%. A separate [weighted polish roadmap](docs/polish-roadmap.json) tracks the next phase of visual composition and navigation without changing the MVP acceptance ledger. **P** opens a keyboard-navigable pause menu (P again resumes), **M** opens the main menu during play, and **R** restarts after an ending. Main-menu commands start a new playthrough, continue the in-memory session, or quit. Pause-menu commands resume, open the main menu, or quit. Both menus support Up/Down, Enter, and number keys 1–3. External games still launch directly into gameplay. The Little Lantern intentionally contains no audio; The Clockwork Moon uses external WAV assets.
 
 ## Workspace
 

@@ -14,6 +14,7 @@ struct Session {
     finished: bool,
     paused: bool,
     pause_overlay: Option<Entity>,
+    pause_selection: usize,
     menu_overlay: Option<Entity>,
     menu_selection: usize,
     background: Option<Entity>,
@@ -263,6 +264,7 @@ fn main() {
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
             paused: false, pause_overlay: None,
+            pause_selection: 0,
             menu_overlay: None, menu_selection: 0,
             background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
@@ -481,6 +483,65 @@ fn update_screen(
 }
 
 
+
+fn pause_content(selection: usize) -> String {
+    let mut body = String::from("PAUSED\\n\\n");
+    for (index, option) in ["Resume story", "Main menu", "Quit"].iter().enumerate() {
+        body.push_str(&format!("{} {}. {}\\n",
+            if index == selection { "▶" } else { " " }, index + 1, option));
+    }
+    body.push_str("\\nUp/Down: select   Enter: confirm   P: resume   Esc: quit");
+    body
+}
+
+fn dismiss_pause(session: &mut Session, commands: &mut Commands) {
+    if let Some(overlay) = session.pause_overlay.take() {
+        commands.entity(overlay).despawn();
+    }
+    session.paused = false;
+    info!("Vesper story resumed");
+}
+
+fn show_pause_menu(
+    session: &mut Session, commands: &mut Commands, assets: &AssetServer, selected: usize,
+) {
+    if let Some(overlay) = session.pause_overlay.take() {
+        commands.entity(overlay).despawn();
+    }
+    let font = text_font(&session.game.theme, assets);
+    let body = pause_content(selected);
+    let overlay = commands.spawn((
+        Name::new("Pause overlay"),
+        Node {
+            position_type: PositionType::Absolute,
+            left: percent(0), top: percent(0),
+            width: percent(100), height: percent(100),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.80)),
+    )).with_children(|parent| {
+        parent.spawn((
+            Node { padding: px(32).all(), max_width: percent(90), ..default() },
+            BackgroundColor(Color::srgba(0.08, 0.11, 0.19, 0.97)),
+        )).with_children(|panel| {
+            panel.spawn((
+                Text::new(body),
+                TextFont { font, font_size: FontSize::Px(28.0), ..default() },
+                TextColor(Color::WHITE),
+                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+            ));
+        });
+    }).id();
+    session.pause_overlay = Some(overlay);
+    session.paused = true;
+    session.pause_selection = selected;
+    if selected == 0 {
+        info!("Vesper story paused");
+    }
+}
+
 fn menu_content(name: &str, selection: usize) -> String {
     let mut body = format!("{name} — MAIN MENU\\n\\n");
     for (index, option) in ["Start new story", "Continue current story", "Quit"].iter().enumerate() {
@@ -602,65 +663,48 @@ fn advance_from_keyboard(
     }
     if input.just_pressed(KeyCode::KeyM) {
         if session.paused {
-            if let Some(overlay) = session.pause_overlay.take() {
-                commands.entity(overlay).despawn();
-            }
-            session.paused = false;
-            info!("Vesper story resumed");
+            dismiss_pause(&mut session, &mut commands);
         }
         show_main_menu(&mut session, &mut commands, &assets, 0);
         return;
     }
-    // A transient, engine-owned pause surface. The story stays paused while
-    // the UI remains responsive; no game script or theme must implement it.
+    // The pause menu retains the existing P-to-resume behavior, and Space
+    // remains ignored while paused (POL01 regression guarantee).
     if input.just_pressed(KeyCode::KeyP) && !session.finished {
-        session.paused = !session.paused;
         if session.paused {
-            let font = text_font(&session.game.theme, &assets);
-            let overlay = commands.spawn((
-                Name::new("Pause overlay"),
-                Node {
-                    position_type: PositionType::Absolute,
-                    left: percent(0),
-                    top: percent(0),
-                    width: percent(100),
-                    height: percent(100),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    ..default()
-                },
-                BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.76)),
-            )).with_children(|parent| {
-                parent.spawn((
-                    Node {
-                        padding: px(32).all(),
-                        ..default()
-                    },
-                    BackgroundColor(Color::srgba(0.08, 0.11, 0.19, 0.96)),
-                )).with_children(|panel| {
-                    panel.spawn((
-                        Text::new("PAUSED\n\nP: resume    M: main menu    Esc: quit"),
-                        TextFont {
-                            font,
-                            font_size: FontSize::Px(30.0),
-                            ..default()
-                        },
-                        TextColor(Color::WHITE),
-                        TextLayout::new(Justify::Center, LineBreak::WordOrCharacter),
-                    ));
-                });
-            }).id();
-            session.pause_overlay = Some(overlay);
-            info!("Vesper story paused");
+            dismiss_pause(&mut session, &mut commands);
         } else {
-            if let Some(overlay) = session.pause_overlay.take() {
-                commands.entity(overlay).despawn();
-            }
-            info!("Vesper story resumed");
+            show_pause_menu(&mut session, &mut commands, &assets, 0);
         }
         return;
     }
     if session.paused {
+        let selected = session.pause_selection;
+        if input.just_pressed(KeyCode::ArrowDown) {
+            show_pause_menu(&mut session, &mut commands, &assets, (selected + 1) % 3);
+            return;
+        }
+        if input.just_pressed(KeyCode::ArrowUp) {
+            show_pause_menu(&mut session, &mut commands, &assets, (selected + 2) % 3);
+            return;
+        }
+        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
+            .iter().position(|key| input.just_pressed(*key));
+        let confirmed = digit.or_else(|| input.just_pressed(KeyCode::Enter).then_some(selected));
+        if let Some(index) = confirmed {
+            match index {
+                0 => dismiss_pause(&mut session, &mut commands),
+                1 => {
+                    dismiss_pause(&mut session, &mut commands);
+                    show_main_menu(&mut session, &mut commands, &assets, 0);
+                }
+                2 => {
+                    info!("Vesper quitting through pause menu");
+                    menu_exit.write(AppExit::Success);
+                }
+                _ => {}
+            }
+        }
         return;
     }
     if session.finished {

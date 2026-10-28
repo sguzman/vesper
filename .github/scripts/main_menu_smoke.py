@@ -57,7 +57,8 @@ def verify(game: str, title: str, folder: Path) -> None:
             key("Return")  # Start resets in-memory story
             assert "restarted from its beginning via menu" in log.read_text(errors="replace")
             key("p")
-            key("m")  # Pause -> menu
+            key("Down")
+            key("Return")  # Pause option 2 -> Main menu
             key("Up")  # Start -> Quit
             key("Return")
             process.wait(timeout=12)
