@@ -12,6 +12,7 @@ pub struct ReadingState {
     showing_dialogue: bool,
     auto_elapsed: f32,
     pub autoplay_ready: bool,
+    dirty: bool,
 }
 
 pub fn speed(session: &Session) -> RevealSpeed {
@@ -32,6 +33,7 @@ impl ReadingState {
         ));
         self.auto_elapsed = 0.0;
         self.autoplay_ready = false;
+        self.dirty = true;
         self.buffer.as_ref().map_or("", RevealBuffer::visible_text)
     }
 
@@ -45,6 +47,7 @@ impl ReadingState {
     pub fn complete_on_input(&mut self) -> bool {
         let was_partial = self.buffer.as_mut().is_some_and(RevealBuffer::complete_now);
         if was_partial {
+            self.dirty = true;
             self.auto_elapsed = 0.0;
             self.autoplay_ready = false;
             info!("Vesper reveal completed by reader");
@@ -73,16 +76,19 @@ pub fn tick(
     let mut complete = false;
     let showing_dialogue = state.showing_dialogue;
     if let Some(buffer) = &mut state.buffer {
+        let was_complete = buffer.is_complete();
         buffer.set_speed(chosen_speed);
-        if active { changed = buffer.advance(time.delta_secs()); }
+        if !was_complete && buffer.is_complete() { changed = true; }
+        if active { changed |= buffer.advance(time.delta_secs()); }
         complete = buffer.is_complete();
     }
 
-    if changed || (active && state.buffer.is_some()) {
-        if let Some(text) = state.full_body() {
+    if changed || state.dirty {
+        state.dirty = false;
+        if let Some(text) = state.full_body().map(str::to_owned) {
             for (slot, mut body) in &mut bodies {
                 if matches!(slot, StoryText::Body) && body.0 != text {
-                    body.0 = text.to_owned();
+                    body.0.clone_from(&text);
                 }
             }
         }
