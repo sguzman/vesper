@@ -64,13 +64,14 @@ pub fn tick(
     time: Res<Time>,
     session: Res<Session>,
     settings: Res<settings::SettingsState>,
+    saves: Res<save_slots::SaveUi>,
     mut state: ResMut<ReadingState>,
     mut bodies: Query<(&StoryText, &mut Text), Without<ContinueCue>>,
     mut cues: Query<(&mut Node, &mut TextColor, &mut TextFont), With<ContinueCue>>,
     assets: Res<AssetServer>,
 ) {
     let active = !session.paused && session.menu_overlay.is_none()
-        && settings.overlay.is_none() && !session.history.visible()
+        && settings.overlay.is_none() && !saves.visible() && !session.history.visible()
         && !session.finished && !session.choosing;
     let chosen_speed = speed(&session);
     let mut changed = false;
