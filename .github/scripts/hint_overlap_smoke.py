@@ -69,12 +69,15 @@ def sample(game: Path, size: tuple[int, int], path: Path) -> None:
 def invisible_theme(game: Path, section: str) -> None:
     path = game / "styles/lantern.toml"
     source = path.read_text()
-    prefix, block = source.split(f"[{section}]\n", 1)
-    head, tail = block.split("\n[", 1)
-    changed, count = re.subn(r"(?m)^color = \[[^\]]+\]$",
-                             "color = [1.0, 1.0, 1.0, 0.0]", head)
+    block = re.search(rf"(?ms)^\[{re.escape(section)}\]\n.*?(?=^\[|\Z)", source)
+    assert block, f"missing [{section}] in {path}"
+    changed, count = re.subn(
+        r"(?m)^color = \[[^\]]+\]$",
+        "color = [1.0, 1.0, 1.0, 0.0]",
+        block.group(),
+    )
     assert count == 1, (section, count)
-    path.write_text(prefix + f"[{section}]\n" + changed + "\n[" + tail)
+    path.write_text(source[:block.start()] + changed + source[block.end():])
 
 
 def mask(base: Path, invisible: Path, output: Path) -> int:
