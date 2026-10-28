@@ -8,6 +8,7 @@ mod text_reveal;
 mod readout;
 mod cinematics;
 mod actors;
+mod atmosphere;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -514,6 +515,7 @@ fn main() {
         .insert_resource(choices::ChoiceClick::default())
         .insert_resource(preferences_writer)
         .insert_resource(readout::ReadingState::default())
+        .insert_resource(atmosphere::AtmosphereState::default())
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -530,6 +532,7 @@ fn main() {
             choices::sync_rows, choices::sync_row_style,
             choices::scroll_selected, choices::sync_viewport,
             choices::reserve_row_height, readout::tick, cinematics::tick, actors::tick,
+            atmosphere::tick,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
             poll_completed_io, sync_menu_selection, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
