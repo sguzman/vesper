@@ -71,16 +71,9 @@ def ready(win,img):
     raise AssertionError("background never reached the renderer")
 
 
-def changed(a,b,top_only=False):
-    if top_only:
-        a=a.parent/("cropped-a-"+a.stem+".png")
-        b=b.parent/("cropped-b-"+b.stem+".png")
-        # Avoid repeatedly allocating large image comparisons; only crop
-        # the upper scene, safely above narrative UI.
-        run("convert",str(a.parent/a.name.replace("cropped-a-","")) if False else
-            str(a), "null:",check=False)
+def changed(a,b):
     result=run("compare","-metric","AE",str(a),str(b),"null:",check=False)
-    match=re.match(r"^\d+",result.stderr.strip())
+    match=re.match(r"^\\d+",result.stderr.strip())
     assert match,result.stderr
     return int(match.group())
 
@@ -158,6 +151,10 @@ def check_presets(game,theme,original):
         wait(log,"Vesper atmosphere configured: Motes, 16 entities")
         start=out/"motes-start.png"
         ready(win,start)
+        # Wait for the initial external scene's legacy fade to finish; measure
+        # atmosphere motion rather than image loading/fade-in.
+        time.sleep(1.0)
+        shot(win,start)
         time.sleep(.6)
         moving=out/"motes-moving.png"
         shot(win,moving)
@@ -204,6 +201,8 @@ def check_reduced(game,theme,original):
         wait(log,"Vesper atmosphere configured: Motes")
         image=out/"reduced-start.png"
         ready(win,image)
+        time.sleep(1.0)
+        shot(win,image)
         time.sleep(.8)
         still=out/"reduced-still.png"
         shot(win,still)
