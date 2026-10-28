@@ -17,6 +17,7 @@ pub const MAX_PREFERENCES_BYTES: usize = 64 * 1024;
 #[serde(default, deny_unknown_fields)]
 pub struct PlayerPreferences {
     /// Version 0 (or a missing version) is the initial compatible draft.
+    #[serde(default)]
     pub format_version: u32,
     pub dialogue_opacity: Option<f32>,
     pub dialogue_font_scale: Option<f32>,
