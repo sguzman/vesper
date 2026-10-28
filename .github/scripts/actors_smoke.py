@@ -121,6 +121,10 @@ show owl calm at center
 "Red is above blue."
 show tess determined at center
 "Green crossfades over red while blue stays behind."
+hide tess
+"Blue stands alone after Tess leaves."
+show tess relieved at center
+"Tess comes back underneath Owl's new depth."
 hide owl
 "The blue owl exits; green stays on the stage."
 "The End."
@@ -191,8 +195,24 @@ def check_staging(game,manifest):
                            .replace("depth = 1.0","depth = 7.0"))
         wait(log,"Vesper hot reload applied")
         blue=out/"hot-reloaded-depth.png"
-        wait_color(win,blue,"blue")
-        print("VX06 hot reload: authored depth reordered without replaying story",flush=True)
+        shot(win,blue)
+        hot_reload_rgb=rgb(blue)
+
+        # Diagnose the world/render discrepancy by exposing the owl without
+        # the tess sprite, then restoring a fresh tess expression at lower z.
+        key("Return",.1)
+        wait(log,"Vesper character exit started: tess")
+        wait(log,"Vesper character exit complete: tess")
+        owl_alone=out/"owl-uncovered.png"
+        wait_color(win,owl_alone,"blue")
+        key("Return",.1)
+        wait(log,"Vesper character staged: tess (relieved)")
+        wait(log,"Vesper character entrance complete: tess",3)
+        respawned=out/"reintroduced-tess-depth.png"
+        shot(win,respawned)
+        print(f"VX06 depth probes: hot-reload={hot_reload_rgb}, tess-removed={rgb(owl_alone)}, tess-reintroduced={rgb(respawned)}",flush=True)
+        assert color_is(blue,"blue"), "hot-reloaded world depth failed to reorder existing sprites"
+        assert color_is(respawned,"blue"), "new sprite did not respect reloaded depth"
 
         key("Return",.1)
         wait(log,"Vesper character exit started: owl")
