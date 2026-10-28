@@ -16,17 +16,17 @@ jobs:
       - name: Format working copy
         run: cargo fmt --all
       - name: Clippy
-        run: cargo clippy -p vesper-story -p vesper-cli -p vesper-game --all-targets -- -D warnings
+        run: cargo clippy --locked -p vesper-story -p vesper-cli -p vesper-game --all-targets -- -D warnings
       - name: Tests
-        run: cargo test -p vesper-story -p vesper-cli -p vesper-game
+        run: cargo test --locked -p vesper-story -p vesper-cli -p vesper-game
       - name: Validate example
-        run: cargo run -p vesper-cli -- check game/scripts/demo.vn
+        run: cargo run --locked -p vesper-cli -- check game/scripts/demo.vn
       - name: Validate independent external games
         run: |
-          cargo run -p vesper-cli -- check-game game
-          cargo run -p vesper-cli -- check-game game-alternate
-          cargo run -p vesper-cli -- check-game examples/little-lantern
-          cargo run -p vesper-cli -- check-game examples/clockwork-moon
+          cargo run --locked -p vesper-cli -- check-game game
+          cargo run --locked -p vesper-cli -- check-game game-alternate
+          cargo run --locked -p vesper-cli -- check-game examples/little-lantern
+          cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
       - name: Verify the external PCM audio assets
         run: |
           python3 - <<'PY'
@@ -43,7 +43,7 @@ jobs:
       - name: Reject malformed example with file and line
         run: |
           printf '@scene intro\nset x = invalid\n' > /tmp/vesper-invalid.vn
-          if cargo run -p vesper-cli -- check /tmp/vesper-invalid.vn > /tmp/vesper-cli.log 2>&1; then
+          if cargo run --locked -p vesper-cli -- check /tmp/vesper-invalid.vn > /tmp/vesper-cli.log 2>&1; then
             echo 'invalid story unexpectedly passed'; exit 1
           fi
           grep -F '/tmp/vesper-invalid.vn:2:' /tmp/vesper-cli.log
@@ -67,9 +67,9 @@ jobs:
           sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
           sudo timeout 600s apt-get install -y --no-install-recommends libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1-dev xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
       - name: Build Bevy 0.20 player
-        run: cargo build -p vesper-player
+        run: cargo build --locked -p vesper-player
       - name: Test fade interpolation
-        run: cargo test -p vesper-player --bin vesper-player
+        run: cargo test --locked -p vesper-player --bin vesper-player
       - name: Resize story across compact, widescreen and fullscreen windows
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/responsive_resize_smoke.py
       - name: Capture responsive screenshots on success or failure
@@ -220,7 +220,7 @@ jobs:
               'lots of additional words to ensure that wrapping works when the window is narrower."')
           novel.write_text(script)
           PY
-          cargo run -p vesper-cli -- check-game /tmp/vesper-typography
+          cargo run --locked -p vesper-cli -- check-game /tmp/vesper-typography
           xvfb-run -a -s '-screen 0 1280x720x24' bash -euo pipefail -c '
             export LIBGL_ALWAYS_SOFTWARE=1
             target/debug/vesper-player /tmp/vesper-typography > /tmp/vesper-typography.log 2>&1 &
