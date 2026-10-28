@@ -391,9 +391,9 @@ mod tests {
     use super::*;
     #[test]
     fn stepping_is_bounded() {
-        assert!((step_scaled(.60, -1, .60, 1., .05) - .60).abs() < .001);
-        assert!((step_scaled(.95, 1, .60, 1., .05) - 1.).abs() < .001);
-        assert!((step_scaled(1.60, 1, .80, 1.60, .10) - 1.60).abs() < .001);
+        assert!((step_scaled(0.60, -1, 0.60, 1., 0.05) - 0.60).abs() < 0.001);
+        assert!((step_scaled(0.95, 1, 0.60, 1., 0.05) - 1.).abs() < 0.001);
+        assert!((step_scaled(10.60, 1, 0.80, 10.60, 0.10) - 10.60).abs() < 0.001);
         assert_eq!(ITEMS.len(), 5);
     }
 }
