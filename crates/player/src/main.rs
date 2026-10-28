@@ -1380,9 +1380,10 @@ fn monitor_audio_assets(mut session: ResMut<Session>, server: Res<AssetServer>) 
 fn escape_to_quit(
     input: Res<ButtonInput<KeyCode>>,
     mut exit: MessageWriter<AppExit>,
-    settings: Res<settings::SettingsState>,
+    mut settings: ResMut<settings::SettingsState>,
 ) {
-    if input.just_pressed(KeyCode::Escape) && settings.overlay.is_none() {
+    let just_closed = std::mem::take(&mut settings.just_closed);
+    if input.just_pressed(KeyCode::Escape) && settings.overlay.is_none() && !just_closed {
         info!("Vesper exiting by Escape");
         exit.write(AppExit::Success);
     }
