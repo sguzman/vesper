@@ -22,6 +22,10 @@ Or download the compiled **vesper-linux-fairytale-showcase** artifact from [veri
 
 The original MVP remains verified 100%. The separate [weighted presentation-polish roadmap](docs/polish-roadmap.json) is also **100/100 verified**, on [passing main-branch graphical and narrative CI](https://github.com/sguzman/vesper/actions/runs/40617751211); both milestone ledgers remain independent. **P** opens a keyboard-navigable pause menu (P again resumes), **M** opens the main menu during play, and **R** restarts after an ending. Main-menu commands start a new playthrough, continue the in-memory session, or quit. Pause-menu commands resume, open the main menu, or quit. Both menus use dedicated Bevy UI option rows with independently highlighted selection (no string-generated menu); Up/Down moves focus without respawning the overlay, and Enter or number keys 1–3 activate an action. Ending actions use the same row-based selection system. External games still launch directly into gameplay. Completed games now display an explicit, keyboard-selectable **Play again / Main menu / Quit** ending screen; Up/Down, Enter, 1–3, R and M work without a dead-end. The Little Lantern intentionally contains no audio; The Clockwork Moon uses external WAV assets.
 
+## Visual experience and player-customization roadmap (new phase)
+
+The next independent phase is **planned at 0/100 verified points**: [visual experience roadmap](docs/visual-experience-roadmap.md) · [weighted progress ledger](docs/visual-experience-roadmap.json). It will add live player controls for dialogue opacity, font, size and reading pace; structured choices; cinematics, sprite staging and subtle atmosphere; history/saves and accessibility testing. The **final milestone** creates a complete, original generated-asset fairy tale, *The Post Office at the Edge of Dawn*. Prior MVP and presentation-polish roadmaps remain at 100/100; none of the new features is claimed as implemented.
+
 ## Workspace
 
 - `crates/story`: graphics-independent `.vn` parser, validator and deterministic interpreter.

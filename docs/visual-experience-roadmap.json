@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "project": "Vesper",
+  "phase": "Visual experience and player customization",
+  "objective": "Make Vesper feel like a polished, accessible, expressive visual novel reader while retaining engine-neutral external authoring; conclude with one original showcase game using freshly generated assets.",
+  "prior_scopes": [
+    "docs/roadmap.json",
+    "docs/polish-roadmap.json"
+  ],
+  "prior_scopes_verified_weight": {
+    "docs/roadmap.json": 100,
+    "docs/polish-roadmap.json": 100
+  },
+  "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
+  "scope_weight": 100,
+  "verified_weight": 0,
+  "last_verified_commit": null,
+  "status": "planned; not implemented",
+  "created_date": "2026-10-28",
+  "rules": {
+    "architecture": "All Rust/Bevy systems and widgets generic; narrative/assets/themes externally authored. Preserve backward compatibility for existing example directories and save schema or provide explicit migrations.",
+    "player_vs_author": "Player preferences override game theme when explicitly selected, without editing source files; themes remain hot-reloadable for unoverridden options.",
+    "performance": "No slow I/O, art generation, blocking parsing or unbounded per-frame allocations on update/render threads; use asynchronous loading/writing and cache renderer assets.",
+    "platform": "Linux x86-64, Wayland/Hyprland first; keyboard-first with pointer support. No Mac hardware, paid API or npm requirement.",
+    "verification": "Each milestone earns its weight only after criteria are met on a passing source commit with targeted tests, screenshot evidence for visual work and full relevant CI; an accepted roadmap is not evidence of feature completion.",
+    "visuals": "Coherent visual language, contrast, legibility and controlled motion are more important than simply adding effects; default to readable/reduced-distraction behavior.",
+    "production_scope": "Exclude a WYSIWYG editor, AI at runtime, remote backends, full 3D renderer, general scripting-language replacement, and arbitrary game-specific engine branches."
+  },
+  "showcase": {
+    "title": "The Post Office at the Edge of Dawn",
+    "slug": "dawn-post-office",
+    "tone": "Cozy, whimsical storybook fantasy with charming expressive characters and a little mystery",
+    "story_seed": "A tiny moth courier must deliver a letter addressed to a morning that has not yet happened; each stop on the waking sky changes what the letter means.",
+    "intended_duration_minutes": "12–20",
+    "minimum_locations": 5,
+    "minimum_characters": 3,
+    "minimum_expression_images": 9,
+    "minimum_endings": 3,
+    "asset_strategy": "Generate original art at VX10; produce original local/procedural WAV/OGG cues and license-safe fonts. Package only external media and scripts. Keep prompts, source/provenance notes and consistency checks with the game.",
+    "presentation_demo": "Settings live preview, themed UI, selected choices, reveal speed, background/character transitions, idle motion, atmosphere, history/saves, accessibility and low-motion mode"
+  },
+  "tasks": [
+    {
+      "id": "VX01",
+      "emoji": "🧱",
+      "milestone": "Player preferences foundation",
+      "weight": 8,
+      "depends_on": [],
+      "description": "Introduce validated, versioned local player preferences, separate from game-authored themes and story saves.",
+      "acceptance": [
+        "Preferences are stored in an atomic, bounded, versioned JSON file under the platform-appropriate user data/config directory; no writes on the render/update thread.",
+        "Precedence is explicit: validated player override > externally authored theme > engine default. Choosing Reset returns to game defaults without modifying game files.",
+        "A missing, corrupt, unsupported or stale preferences file falls back safely; compatible older versions migrate without deleting saves.",
+        "Unit tests cover round-trip persistence, malformed values, absent fonts, game switching, precedence, and migrations."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX02",
+      "emoji": "🎛️",
+      "milestone": "Live appearance settings",
+      "weight": 14,
+      "depends_on": [
+        "VX01"
+      ],
+      "description": "An engine-owned, keyboard-first Settings screen for players to tune dialogue presentation in real time.",
+      "acceptance": [
+        "From pause/main menus, players can adjust dialogue panel opacity (bounded 0.60–1.00), dialogue font size multiplier (0.80–1.60), choose an installed or game-approved font with safe fallback, and restore defaults.",
+        "A live preview displays speaker, long wrapped body, choices and hints; changing the settings updates existing UI entities without restarting, editing game TOML, or resetting story position.",
+        "Settings persist after restart and apply to both bundled examples; invalid or missing fonts restore a readable fallback without a crash.",
+        "All options use proper selectable Bevy UI controls, not concatenated strings; keyboard and pointer operation plus screenshots at 946×511, 800×600, 1280×720 and 1920×1080 pass.",
+        "Game theme changes under --watch continue to apply where a player has not overridden a value."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX03",
+      "emoji": "💬",
+      "milestone": "Dialogue and choice composition",
+      "weight": 10,
+      "depends_on": [
+        "VX02"
+      ],
+      "description": "Replace string-built in-story choice selection with reusable selectable UI rows, and refine dialogue hierarchy.",
+      "acceptance": [
+        "Each choice is a separate, engine-owned UI entity with selection/highlight, focus, mouse target and keyboard action; choice data remains supplied by external .vn scripts.",
+        "Speaker nameplate, body, controls hint and selection indicator have distinct, themeable geometry; no fixed giant text string synthesizes choice selection.",
+        "Long/multilingual dialogue and 2–9 options wrap without intersecting hints or viewport edges at 946×511, 955×520, 800×600, 900×700 and widescreen sizes.",
+        "F5/F9 preserves selection; pointer and keyboard interactions cannot double-activate or advance while a menu is open; screenshots and input regressions pass."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX04",
+      "emoji": "⌨️",
+      "milestone": "Text pacing and reading cues",
+      "weight": 8,
+      "depends_on": [
+        "VX03"
+      ],
+      "description": "Authorable animated text reveal, controlled player reading speed and clear advance affordances.",
+      "acceptance": [
+        "A reveal effect supports instant/off, slow, normal and fast player choices, with Unicode grapheme-safe pacing and no string corruption.",
+        "Enter/Space on revealing text finishes the current line before advancing; pause, menu, load, and history never accidentally skip; optional auto-advance is explicitly opt-in.",
+        "An unobtrusive themeable continue cue animates only when dialogue is complete; reduced-motion mode makes it static.",
+        "Reveal state reconstructs safely after save/load, hot reload and window resize, including restored completed lines; no frame-rate-dependent narrative execution."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX05",
+      "emoji": "🎞️",
+      "milestone": "Cinematic background presentation",
+      "weight": 10,
+      "depends_on": [
+        "VX03"
+      ],
+      "description": "Data-authored, reusable transitions and gentle camera motion without hardcoded game-specific cinematics.",
+      "acceptance": [
+        "External theme/story data can specify bounded crossfade, fade-through-color and soft-slide background transitions, with compatible defaults for legacy .vn games.",
+        "An optional restrained 2D pan/zoom ('Ken Burns') preset preserves aspect, guards against image-edge exposure and never blocks keyboard input.",
+        "Transitions can be interrupted, skipped, paused, restored and hot-reloaded safely without leaving stale entities or black frames.",
+        "CI captures start/mid/end frames for two different external stories and proves each effect reaches its declared final visual state."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX06",
+      "emoji": "🎭",
+      "milestone": "Character staging and expression polish",
+      "weight": 10,
+      "depends_on": [
+        "VX05"
+      ],
+      "description": "Better external sprite presentation: layers, anchors, expression changes and subtle, skippable motion.",
+      "acceptance": [
+        "Externally declared sprite anchors/scale/depth and expression-crossfades work for multiple characters without engine references to specific games.",
+        "Bounded optional entrance/exit and gentle idle motion are presentation-only, deterministic under pause, disabled under reduced motion, and do not change story state.",
+        "Character positions remain legible behind dialogue and in narrow viewports, and layering is preserved through save/load and compatible hot reload.",
+        "Automated screenshot sequences verify z-order, anchor positions, expression transitions, pause behavior and reduced-motion behavior."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX07",
+      "emoji": "✨",
+      "milestone": "Atmosphere and micro-interactions",
+      "weight": 7,
+      "depends_on": [
+        "VX05",
+        "VX06"
+      ],
+      "description": "Subtle visual atmosphere, configurable UI polish, and unobtrusive interactive feedback.",
+      "acceptance": [
+        "Provide a small, bounded data-driven library of 2D atmospheric presets such as drifting motes, gentle glow and vignette, with deterministic seeds and no mandatory shaders.",
+        "Themeable focus transitions, choice confirmation feedback and optional original UI cues are consistent across menus and choices.",
+        "Effects are optional, degrade gracefully with missing art/audio, stop or pause correctly, and have a reduced-motion/off setting.",
+        "Runtime effects use cached assets and bounded entity counts; no synchronous file I/O, image generation or expensive parsing runs on the update/render thread."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX08",
+      "emoji": "📖",
+      "milestone": "Reading history and polished saves",
+      "weight": 7,
+      "depends_on": [
+        "VX01",
+        "VX03",
+        "VX04"
+      ],
+      "description": "Make returning to a story more pleasant without compromising durable saves.",
+      "acceptance": [
+        "A readable, scrollable dialogue backlog shows the current session's recent lines with speaker names and scene boundaries, with a documented bounded memory limit and no spoilers from future branches.",
+        "A structured load/save UI shows existing slot information and provides confirmation before overwrite; the existing F5/F9 quick actions remain backward compatible.",
+        "History, menus and save slots are keyboard-first and pointer-accessible; exiting preserves current story/choice state; no accidental dialogue progression.",
+        "Atomic background I/O and versioned saves continue working; old saves remain loadable or receive an explicit tested migration path."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX09",
+      "emoji": "♿",
+      "milestone": "Accessibility and experience regression",
+      "weight": 8,
+      "depends_on": [
+        "VX01",
+        "VX02",
+        "VX03",
+        "VX04",
+        "VX05",
+        "VX06",
+        "VX07",
+        "VX08"
+      ],
+      "description": "Verify visual clarity, accessibility, settings reliability and Linux-first performance before the showcase game.",
+      "acceptance": [
+        "Readable defaults and player controls for high-contrast text, reduced motion, text speed/instant reveal, and safe font fallback are documented and tested.",
+        "Screenshot tests isolate actual glyph bounds (not only shared letter pixels) at the previously failed 946×511 and 955×520 Wayland sizes, 800×600, 900×700, 1280×720 and 1920×1080; dialogue/hint and option regions maintain measurable separation.",
+        "End-to-end CI covers keyboard/pointer navigation, focus, pause, saves, preference persistence, hot reload, transition interruptions, both legacy fairy tales and relocatable Linux packaging.",
+        "Check that visual polish introduces no blocking asset/file operations on the render thread and no unbounded per-frame allocation/asset spawning; record qualitative graphical artifact review separately from automated checks.",
+        "Linux/Wayland-first operation and free tooling are retained; hardware-specific audio/driver behavior is not falsely certified by Xvfb."
+      ],
+      "evidence": [],
+      "status": "pending"
+    },
+    {
+      "id": "VX10",
+      "emoji": "🌠",
+      "milestone": "Original generated-asset showcase game",
+      "weight": 18,
+      "depends_on": [
+        "VX09"
+      ],
+      "description": "Create and publish The Post Office at the Edge of Dawn, a complete new external visual novel that demonstrates the new presentation features rather than another placeholder demo.",
+      "acceptance": [
+        "Create a self-contained examples/dawn-post-office/ with its own game.toml, authored .vn narrative, theme(s), asset manifest, README, artwork/audio directories and runnable Linux launcher; no game-specific Rust branches.",
+        "Author a coherent cozy fantasy story (~12–20 minutes of normal reading) about a tiny moth courier delivering an impossible letter across the waking sky; include >=3 named characters, >=5 illustrated locations, >=3 meaningful endings and at least one conditional payoff.",
+        "Generate original, consistent-looking artwork for >=5 backgrounds and >=9 transparent character/expression images, plus a coordinated UI treatment and original procedurally generated sound/music; validate transparency, dimensions, path safety, provenance and permitted asset rights. Use image generation during this milestone, not placeholder art or borrowed copyrighted media.",
+        "Demonstrate in natural narrative beats: player font/size/opacity preferences, individual choice UI, text pacing, scene transitions, sprite expression/idle motion, atmosphere, history, save/resume, and reduced-motion fallback.",
+        "Pass story/asset validation and all ending-path checks; capture and review actual Linux screenshots/video-frame sequences, verify game package runs without Rust installed, and update README with launch commands and controls.",
+        "Final main-branch CI must be fully green and the user-facing playthrough must be coherent and visually reviewed; no declaration of 100% based solely on generated image count."
+      ],
+      "evidence": [],
+      "status": "pending"
+    }
+  ]
+}
