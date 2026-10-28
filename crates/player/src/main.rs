@@ -5,6 +5,7 @@ mod reload;
 mod settings;
 mod choices;
 mod text_reveal;
+mod readout;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -286,6 +287,7 @@ struct Screen {
     body: String,
     hint: String,
     choices: bool,
+    animated: bool,
 }
 
 impl Screen {
@@ -295,6 +297,7 @@ impl Screen {
             body,
             hint: "Enter / Space: continue   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
             choices: false,
+            animated: true,
         }
     }
 
@@ -305,6 +308,7 @@ impl Screen {
             body: String::new(),
             hint: "Arrows: move   Enter: select   Number: choose   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
             choices: true,
+            animated: false,
         }
     }
 
@@ -314,6 +318,7 @@ impl Screen {
             body: message,
             hint: "Up/Down: move   Enter: select   1-3: choose   R: replay   M: menu   Esc: quit".into(),
             choices: false,
+            animated: false,
         }
     }
 
@@ -487,6 +492,7 @@ fn main() {
         .insert_resource(choices::ChoiceUi::default())
         .insert_resource(choices::ChoiceClick::default())
         .insert_resource(preferences_writer)
+        .insert_resource(readout::ReadingState::default())
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -502,7 +508,7 @@ fn main() {
             settings::pointer, advance_from_keyboard,
             choices::sync_rows, choices::sync_row_style,
             choices::scroll_selected, choices::sync_viewport,
-            choices::reserve_row_height,
+            choices::reserve_row_height, readout::tick,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
             poll_completed_io, sync_menu_selection, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
@@ -670,11 +676,14 @@ fn setup(
     mut session: ResMut<Session>,
     assets: Res<AssetServer>,
     mut choice_ui: ResMut<choices::ChoiceUi>,
+    mut reading: ResMut<readout::ReadingState>,
 ) {
     commands.spawn(Camera2d);
     let theme = effective_theme(&session);
     let font = text_font(&theme, &assets);
     let initial = next_screen(&mut session, &mut commands, &assets);
+    let initial_body = reading.begin(initial.body.clone(), initial.animated,
+        readout::speed(&session)).to_owned();
     let panel = &theme.panel;
     let geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
     let background = panel.background;
@@ -710,7 +719,7 @@ fn setup(
                 )),
             ));
             add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);
-            add_text(parent, StoryText::Body, &initial.body, &body_style, &font);
+            add_text(parent, StoryText::Body, &initial_body, &body_style, &font);
             choice_ui.container = Some(choices::spawn_container(parent));
             parent.spawn((
                 EndingActions,
@@ -732,6 +741,21 @@ fn setup(
                 )),
             ));
             add_text(parent, StoryText::Hint, &initial.hint, &hint_style, &font);
+            // Absolute corner cue does not compete with wrapped body or hint.
+            parent.spawn((
+                Name::new("Dialogue continue cue"),
+                readout::ContinueCue,
+                Text::new("▾"),
+                TextFont {
+                    font: font.clone(), font_size: FontSize::Px(hint_style.size),
+                    ..default()
+                },
+                text_color(hint_style.color),
+                Node {
+                    display: Display::None, position_type: PositionType::Absolute,
+                    top: px(4.0), right: px(8.0), ..default()
+                },
+            ));
         });
 }
 
@@ -739,9 +763,16 @@ fn update_screen(
     screen: Screen,
     theme: &vesper_game::Theme,
     texts: &mut Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
+    reading: &mut readout::ReadingState,
+    reveal_speed: vesper_game::TextRevealSpeed,
 ) {
+    let visible = reading.begin(screen.body.clone(), screen.animated, reveal_speed).to_owned();
     for (mut text, mut font, mut color, slot) in texts.iter_mut() {
-        text.0 = screen.part(slot).to_owned();
+        text.0 = if matches!(slot, StoryText::Body) {
+            visible.clone()
+        } else {
+            screen.part(slot).to_owned()
+        };
         if matches!(slot, StoryText::Body) {
             let style = if screen.choices { &theme.choices } else { &theme.dialogue };
             font.font_size = FontSize::Px(style.size);
