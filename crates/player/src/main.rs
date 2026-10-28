@@ -1069,7 +1069,7 @@ fn advance_from_keyboard(
         });
         if let Some(index) = confirmed {
             match index {
-                0 => restart_story(&mut session, &mut commands, &assets, &mut texts, false),
+                0 => restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, false),
                 1 => show_main_menu(&mut session, &mut commands, &assets, 0),
                 2 => {
                     info!("Vesper quitting through ending menu");
