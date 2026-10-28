@@ -1,6 +1,7 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
 use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui_widgets::{observe, Activate, Button}, window::PrimaryWindow};
+use bevy::ecs::system::SystemParam;
 mod reload;
 mod settings;
 mod choices;
@@ -1031,6 +1032,18 @@ fn restart_story(
     }
 }
 
+/// Related history/save controls share one Bevy SystemParam so the input
+/// handler stays below the ECS tuple-arity limit without extra UI work.
+#[derive(SystemParam)]
+struct OverlayInputs<'w, 's> {
+    history_click: ResMut<'w, history::HistoryClick>,
+    history_scroll: Query<'w, 's, &'static mut ScrollPosition,
+        With<history::HistoryScroll>>,
+    save_ui: ResMut<'w, save_slots::SaveUi>,
+    save_click: ResMut<'w, save_slots::Click>,
+    save_pending: ResMut<'w, save_slots::Pending>,
+}
+
 fn advance_from_keyboard(
     input: Res<ButtonInput<KeyCode>>,
     mut session: ResMut<Session>,
@@ -1044,11 +1057,7 @@ fn advance_from_keyboard(
     mut choice_click: ResMut<choices::ChoiceClick>,
     mut reading: ResMut<readout::ReadingState>,
     mut feedback_state: ResMut<feedback::FeedbackState>,
-    mut history_click: ResMut<history::HistoryClick>,
-    mut history_scroll: Query<&mut ScrollPosition, With<history::HistoryScroll>>,
-    mut save_ui: ResMut<save_slots::SaveUi>,
-    mut save_click: ResMut<save_slots::Click>,
-    mut save_pending: ResMut<save_slots::Pending>,
+    mut overlays: OverlayInputs,
 ) {
     // Pointer activation must never survive a pause/menu or get replayed.
     let pointer_choice = choice_click.0.take();
@@ -1060,13 +1069,13 @@ fn advance_from_keyboard(
     // The backlog owns all input while visible; closing never advances the
     // interpreter or consumes its pending choice.
     if session.history.visible() {
-        history::input(&input, &mut session.history, &mut history_click,
-            &mut history_scroll, &mut commands);
+        history::input(&input, &mut session.history, &mut overlays.history_click,
+            &mut overlays.history_scroll, &mut commands);
         return;
     }
-    if save_ui.visible() {
-        save_slots::input(&input, &mut save_ui, &mut save_click,
-            &mut save_pending, &mut commands);
+    if overlays.save_ui.visible() {
+        save_slots::input(&input, &mut overlays.save_ui, &mut overlays.save_click,
+            &mut overlays.save_pending, &mut commands);
         return;
     }
     if input.just_pressed(KeyCode::KeyH) {
@@ -1076,7 +1085,7 @@ fn advance_from_keyboard(
     }
     if input.just_pressed(KeyCode::F6) {
         let theme=effective_theme(&session);
-        save_slots::open(&mut save_ui, &mut save_pending, &mut commands,
+        save_slots::open(&mut overlays.save_ui, &mut overlays.save_pending, &mut commands,
             &assets, &theme);
         return;
     }
