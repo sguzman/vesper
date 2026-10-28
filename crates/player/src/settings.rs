@@ -24,11 +24,11 @@ impl Default for SettingsState {
 #[derive(Component)]
 pub struct SettingsRow(pub usize);
 #[derive(Component)]
-struct SettingsRowLabel(usize);
+pub struct SettingsRowLabel(usize);
 #[derive(Component)]
-struct SettingsPreviewPanel;
+pub struct SettingsPreviewPanel;
 #[derive(Component, Clone, Copy)]
-enum Preview { Speaker, Body, Choice, Hint }
+pub enum Preview { Speaker, Body, Choice, Hint }
 
 #[derive(Resource)]
 pub struct PreferencesWriter(Option<Sender<Option<PlayerPreferences>>>);
