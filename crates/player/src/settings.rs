@@ -202,6 +202,7 @@ pub fn open(
                 panel.spawn((
                     Name::new(format!("Settings option {}", i + 1)),
                     Button,
+                    Hovered::default(),
                     SettingsRow(i),
                     Node {
                         width: percent(100.0), padding: px(6.0).all(),
@@ -305,20 +306,18 @@ pub fn pointer(
     mut session: ResMut<Session>, mut state: ResMut<SettingsState>,
     writer: Res<PreferencesWriter>, mut commands: Commands,
     assets: Res<AssetServer>,
-    rows: Query<(&Interaction, &SettingsRow), Changed<Interaction>>,
+    hovered_rows: Query<(&Hovered, &SettingsRow), Changed<Hovered>>,
+    pressed_rows: Query<&SettingsRow, Added<Pressed>>,
 ) {
     if state.overlay.is_none() { return; }
-    for (interaction, row) in &rows {
-        match interaction {
-            Interaction::Hovered => state.selection = row.0,
-            Interaction::Pressed => {
-                state.selection = row.0;
-                if row.0 == 4 { close(&mut session, &mut state, &mut commands, &assets); }
-                else { change(&mut session, row.0, 1, &writer); }
-                break;
-            }
-            Interaction::None => {}
-        }
+    for (hover, row) in &hovered_rows {
+        if hover.get() { state.selection = row.0; }
+    }
+    for row in &pressed_rows {
+        state.selection = row.0;
+        if row.0 == 4 { close(&mut session, &mut state, &mut commands, &assets); }
+        else { change(&mut session, row.0, 1, &writer); }
+        break;
     }
 }
 
