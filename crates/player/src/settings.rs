@@ -379,7 +379,7 @@ pub fn sync_visuals(
         let selected = row.0 == state.selection;
         let a = theme.panel.accent;
         let color = if selected {
-            Color::srgba(a[0] * .27, a[1] * .27, a[2] * .27, .92)
+            Color::srgba(a[0] * 0.27, a[1] * 0.27, a[2] * 0.27, 0.92)
         } else { Color::NONE };
         if background.0 != color { background.0 = color; }
     }
