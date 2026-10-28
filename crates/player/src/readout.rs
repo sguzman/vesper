@@ -70,7 +70,8 @@ pub fn tick(
     assets: Res<AssetServer>,
 ) {
     let active = !session.paused && session.menu_overlay.is_none()
-        && settings.overlay.is_none() && !session.finished && !session.choosing;
+        && settings.overlay.is_none() && !session.history.visible()
+        && !session.finished && !session.choosing;
     let chosen_speed = speed(&session);
     let mut changed = false;
     let mut complete = false;
