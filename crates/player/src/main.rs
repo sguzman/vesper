@@ -3,12 +3,14 @@
 use bevy::{asset::{AssetPlugin, LoadState}, prelude::*, text::TextLayoutInfo, window::PrimaryWindow};
 mod reload;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
-use vesper_game::{Game, save::{CharacterPose, PresentationState, SaveData}};
+use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
 
 #[derive(Resource)]
 struct Session {
     game: Game,
+    /// Player-owned overrides loaded once before entering Bevy's update loop.
+    preferences: PlayerPreferences,
     machine: Machine,
     choosing: bool,
     finished: bool,
@@ -137,7 +139,8 @@ fn fit_viewport(
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
     if size.x < 1.0 || size.y < 1.0 { return; }
     let m = viewport_metrics(size, session.game.theme.ui_scale);
-    let panel = &session.game.theme.panel;
+    let resolved = effective_theme(&session);
+    let panel = &resolved.panel;
     let panel_key = [
         panel.width_percent.to_bits(),
         panel.min_height.to_bits(),
@@ -310,6 +313,16 @@ impl Screen {
     }
 }
 
+/// Compute the presentation effective at this instant. The authored game
+/// theme remains untouched, so --watch picks up unoverridden changes.
+fn effective_theme(session: &Session) -> vesper_game::Theme {
+    let authored = &session.game.theme;
+    session.preferences.resolve_theme(authored, |family| {
+        generic_font_available(family)
+            || authored.font.family.as_deref() == Some(family)
+    })
+}
+
 fn text_font(theme: &vesper_game::Theme, assets: &AssetServer) -> FontSource {
     if let Some(file) = &theme.font.file {
         assets.load::<Font>(file.clone()).into()
@@ -408,6 +421,21 @@ fn main() {
         eprintln!("{directory}: {error}");
         process::exit(2);
     });
+    // This read takes place before app.run(), never on the render/UI thread.
+    // No file is written until the player explicitly edits preferences (VX02).
+    let preferences = match default_file() {
+        Ok(path) => {
+            let (value, warning) = PlayerPreferences::load_or_default(&path);
+            if let Some(message) = warning {
+                eprintln!("Vesper player preferences ignored: {message}");
+            }
+            value
+        }
+        Err(message) => {
+            eprintln!("Vesper player preferences unavailable: {message}");
+            PlayerPreferences::default()
+        }
+    };
     let asset_folder = game.root.to_string_lossy().into_owned();
     let title = game.manifest.title.clone();
     let ui_scale = game.theme.ui_scale;
@@ -434,7 +462,7 @@ fn main() {
         .insert_resource(CompletedIo::default())
         .insert_resource(io_workers)
         .insert_resource(Session {
-            game, machine, choosing: false, finished: false,
+            game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
             paused: false, pause_overlay: None,
             pause_selection: 0,
@@ -608,10 +636,10 @@ fn setup(
     assets: Res<AssetServer>,
 ) {
     commands.spawn(Camera2d);
-    let theme = session.game.theme.clone();
+    let theme = effective_theme(&session);
     let font = text_font(&theme, &assets);
     let initial = next_screen(&mut session, &mut commands, &assets);
-    let panel = &session.game.theme.panel;
+    let panel = &theme.panel;
     let geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
     let background = panel.background;
     let speaker_style = theme.speaker.clone();
@@ -761,7 +789,7 @@ fn show_pause_menu(
         commands.entity(overlay).despawn();
     }
     let overlay = spawn_center_menu(
-        commands, assets, &session.game.theme, "PAUSED", MenuKind::Pause,
+        commands, assets, &effective_theme(session), "PAUSED", MenuKind::Pause,
         &PAUSE_ITEMS,
         "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
     );
@@ -784,7 +812,7 @@ fn show_main_menu(
     hide_main_menu(session, commands);
     let title = format!("{} — Main menu", session.game.manifest.title);
     let overlay = spawn_center_menu(
-        commands, assets, &session.game.theme, &title, MenuKind::Main, &MAIN_ITEMS,
+        commands, assets, &effective_theme(session), &title, MenuKind::Main, &MAIN_ITEMS,
         "Up/Down: select    Enter: confirm    M: close    Esc: quit",
     );
     session.menu_overlay = Some(overlay);
@@ -817,7 +845,7 @@ fn restart_story(
             session.finished = false;
             session.ending_selection = 0;
             let screen = next_screen(session, commands, assets);
-            update_screen(screen, &session.game.theme, texts);
+            update_screen(screen, &effective_theme(session), texts);
             if via_menu {
                 info!("Vesper story restarted from its beginning via menu");
             } else {
@@ -970,7 +998,7 @@ fn advance_from_keyboard(
         };
         if let Some(index) = selected {
             session.presentation.selected_choice = index;
-            update_screen(Screen::choices(&options, index), &session.game.theme, &mut texts);
+            update_screen(Screen::choices(&options, index), &effective_theme(&session), &mut texts);
             return;
         }
         let digit = [
@@ -987,12 +1015,12 @@ fn advance_from_keyboard(
                 session.choosing = false;
                 session.presentation.selected_choice = 0;
                 let screen = next_screen(&mut session, &mut commands, &assets);
-                update_screen(screen, &session.game.theme, &mut texts);
+                update_screen(screen, &effective_theme(&session), &mut texts);
             }
         }
     } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
         let screen = next_screen(&mut session, &mut commands, &assets);
-        update_screen(screen, &session.game.theme, &mut texts);
+        update_screen(screen, &effective_theme(&session), &mut texts);
     }
 }
 
@@ -1131,7 +1159,7 @@ fn poll_completed_io(
                     Some(Output::End) => Screen::ending("The End".into()),
                     _ => Screen::ending("Story restored".into()),
                 };
-                update_screen(screen, &session.game.theme, &mut texts);
+                update_screen(screen, &effective_theme(&session), &mut texts);
                 info!("Vesper save restored");
             }
         }
