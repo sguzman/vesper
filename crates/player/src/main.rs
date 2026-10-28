@@ -13,7 +13,6 @@ struct Session {
     choosing: bool,
     finished: bool,
     ending_selection: usize,
-    ending_message: String,
     paused: bool,
     pause_overlay: Option<Entity>,
     pause_selection: usize,
@@ -392,7 +391,7 @@ fn main() {
         .insert_resource(io_workers)
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
-            ending_selection: 0, ending_message: "The End".into(),
+            ending_selection: 0,
             paused: false, pause_overlay: None,
             pause_selection: 0,
             menu_overlay: None, menu_selection: 0,
@@ -524,7 +523,6 @@ fn apply_visual(
 fn finish_story(session: &mut Session, message: String) -> Screen {
     session.finished = true;
     session.ending_selection = 0;
-    session.ending_message = message.clone();
     Screen::ending(message)
 }
 
@@ -774,7 +772,6 @@ fn restart_story(
             session.choosing = false;
             session.finished = false;
             session.ending_selection = 0;
-            session.ending_message = "The End".into();
             let screen = next_screen(session, commands, assets);
             update_screen(screen, &session.game.theme, texts);
             if via_menu {
@@ -1082,7 +1079,6 @@ fn poll_completed_io(
                 session.choosing = matches!(last, Some(Output::Choices(_)));
                 session.finished = matches!(last, Some(Output::End));
                 session.ending_selection = 0;
-                session.ending_message = "The End".into();
                 let screen = match last {
                     Some(Output::Dialogue { speaker, text }) =>
                         Screen::normal(speaker.unwrap_or_default(), text),

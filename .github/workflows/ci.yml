@@ -94,6 +94,14 @@ jobs:
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/pause_smoke.py
       - name: Exercise main menu in both external stories
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/main_menu_smoke.py
+      - name: Preserve structured pause and main menu screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-structured-menus
+          path: /tmp/vesper-structured-menu-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Restart completed fairy tale without exiting
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/end_replay_smoke.py
       - name: End-screen replay, main menu, quit and restored ending

@@ -4,10 +4,10 @@ import os
 from pathlib import Path
 import re
 import subprocess
-import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
+OUTPUT = Path("/tmp/vesper-structured-menu-qa")
 GAMES = (("examples/little-lantern", "The Little Lantern"),
          ("examples/clockwork-moon", "The Clockwork Moon"))
 
@@ -62,7 +62,13 @@ def verify(game: str, title: str, folder: Path) -> None:
             key("Return")  # Start resets in-memory story
             assert "restarted from its beginning via menu" in log.read_text(errors="replace")
             key("p")
+            paused = folder / "pause.png"
+            paused_selected = folder / "pause-selected.png"
+            run("import", "-window", window, str(paused))
             key("Down")
+            run("import", "-window", window, str(paused_selected))
+            pause_change = change(paused, paused_selected)
+            assert 90 < pause_change < 60000, f"{title}: pause selection did not affect only its row ({pause_change})"
             key("Return")  # Pause option 2 -> Main menu
             key("Up")  # Start -> Quit
             key("Return")
@@ -76,5 +82,6 @@ def verify(game: str, title: str, folder: Path) -> None:
                 process.wait(timeout=10)
 
 for game, title in GAMES:
-    with tempfile.TemporaryDirectory(prefix="vesper-menu-") as tmp:
-        verify(game, title, Path(tmp))
+    folder = OUTPUT / Path(game).name
+    folder.mkdir(parents=True, exist_ok=True)
+    verify(game, title, folder)
