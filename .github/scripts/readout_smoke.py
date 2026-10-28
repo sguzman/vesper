@@ -62,7 +62,7 @@ def fixture(parent, mode):
                                   'fade_seconds = 0.0\nreveal_speed = "'+mode+'"'))
     return game
 
-def start(game,folder,prefs=None,extra=None):
+def start(game,folder,prefs=None,extra=None,watch=False):
     folder.mkdir(parents=True,exist_ok=True)
     pref_dir=folder/"preferences"
     pref_dir.mkdir()
@@ -73,7 +73,9 @@ def start(game,folder,prefs=None,extra=None):
              VESPER_PREFERENCES_DIR=str(pref_dir),VESPER_SAVE_DIR=str(folder/"saves"))
     if extra: env.update(extra)
     stream=log.open("w")
-    proc=subprocess.Popen([str(PLAYER),str(game)],stdout=stream,stderr=subprocess.STDOUT,env=env)
+    command=[str(PLAYER),str(game)]
+    if watch: command.append("--watch")
+    proc=subprocess.Popen(command,stdout=stream,stderr=subprocess.STDOUT,env=env)
     try: win=focus_window()
     except BaseException:
         proc.terminate();proc.wait(timeout=10);stream.close();raise
@@ -119,6 +121,39 @@ def verify_manual(game):
         assert diff(loaded,after_load)<1500,"F9 replayed reveal rather than restoring completed text"
         print("VX04 manual: timed reveal, skip once, pause, F5/F9 complete passed",flush=True)
     finally:stop(proc,stream)
+
+def verify_reload_and_resize(game):
+    folder=OUT/"watch-and-resize"
+    proc,stream,win,log=start(game,folder,watch=True)
+    try:
+        wait_for(log,"Vesper scene dialogue: first_light")
+        time.sleep(1.3)
+        run("xdotool","windowsize",win,"946","511")
+        time.sleep(.45)
+        before=shot(win,folder/"resized-reveal-partial.png")
+        time.sleep(.6)
+        later=shot(win,folder/"resized-reveal-continuing.png")
+        assert diff(before,later)>100,"resize unexpectedly froze a partially revealing line"
+
+        # An external authored theme change must keep the currently displayed
+        # narrative state and reconstruct the visible line as complete.
+        theme=game/"styles"/"lantern.toml"
+        text=theme.read_text()
+        assert "reveal_speed = \"slow\"" in text
+        theme.write_text(text.replace("reveal_speed = \"slow\"",
+                                           'reveal_speed = "fast"'))
+        wait_for(log,"Vesper hot reload applied")
+        time.sleep(.45)
+        complete=shot(win,folder/"hot-reload-completed-line.png")
+        assert diff(later,complete)>150,"hot reload did not complete current line"
+        press("Return")
+        data=log.read_text(errors="replace")
+        assert data.count("Vesper scene dialogue: first_light")>=2, (
+            "hot reload lost completion state; first Enter did not advance"
+        )
+        print("VX04 watch/resize: partial progression and completed hot reload passed",flush=True)
+    finally:stop(proc,stream)
+
 
 def verify_instant(game):
     folder=OUT/"reduced-motion"
@@ -204,3 +239,6 @@ if __name__=="__main__":
         verify_instant(game)
         verify_auto(game)
         verify_controls(game)
+        watch_game=Path(tmp)/"little-lantern-watch"
+        shutil.copytree(game,watch_game)
+        verify_reload_and_resize(watch_game)
