@@ -73,7 +73,7 @@ def ready(win,img):
 
 def changed(a,b):
     result=run("compare","-metric","AE",str(a),str(b),"null:",check=False)
-    match=re.match(r"^\\d+",result.stderr.strip())
+    match=re.match(r"^\d+",result.stderr.strip())
     assert match,result.stderr
     return int(match.group())
 
