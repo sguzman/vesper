@@ -20,7 +20,7 @@ def changed_pixels(a: Path, b: Path) -> int:
         ["compare", "-metric", "AE", str(a), str(b), "null:"],
         capture_output=True, text=True
     )
-    match = re.match(r"^\\d+", result.stderr.strip())
+    match = re.match(r"^\d+", result.stderr.strip())
     assert match is not None, f"unrecognized image metric: {result.stderr}"
     return int(match.group())
 
