@@ -205,33 +205,6 @@ fn menu_step(index: usize, direction: i32, count: usize) -> usize {
     (index as i32 + direction).rem_euclid(count as i32) as usize
 }
 
-fn pointer_menu_rows(
-    mut session: ResMut<Session>,
-    hovered_rows: Query<(&Hovered, &MenuRow)>,
-    mut pointer_moves: MessageReader<bevy::window::CursorMoved>,
-) {
-    // A new overlay can appear below an idle mouse. Its newly-added Hovered
-    // marker must not steal the initial keyboard selection.
-    if pointer_moves.read().next().is_none() { return; }
-    for (hover, row) in &hovered_rows {
-        if !hover.get() { continue; }
-        let visible = match row.kind {
-            MenuKind::Pause => session.paused,
-            MenuKind::Main => session.menu_overlay.is_some(),
-            MenuKind::Ending => session.finished && !session.paused && session.menu_overlay.is_none(),
-        };
-        if !visible { continue; }
-        match row.kind {
-            MenuKind::Pause => session.pause_selection = row.index,
-            MenuKind::Main => session.menu_selection = row.index,
-            MenuKind::Ending => session.ending_selection = row.index,
-        }
-    }
-}
-
-const PAUSE_ITEMS: [&str; 4] = ["Resume story", "Main menu", "Quit", "Appearance settings"];
-const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Quit", "Appearance settings"];
-const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
 
 /// Retain row identity while focus changes: only selected row colors update.
 fn menu_row_colors(kind: MenuKind, selected: bool, accent: [f32; 4]) -> (Color, Color) {
@@ -517,7 +490,7 @@ fn main() {
         })
         .add_systems(Startup, setup)
         .add_systems(Update, (
-            pointer_menu_rows, settings::pointer, advance_from_keyboard,
+            settings::pointer, advance_from_keyboard,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
             poll_completed_io, sync_menu_selection, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
