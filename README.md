@@ -56,6 +56,10 @@ The current `.vn` language is intentionally minimal and remains extensible. It s
 
 See `docs/architecture.md` and `docs/roadmap.json` for technical and completion policies.
 
+## Responsive story presentation
+
+The engine now scales panel margins, padding and minimum height with the window, while preserving each external theme's authored panel width, text sizes, contrast, and font. A subtle separator visually distinguishes dialogue and choices from keyboard controls. The responsive CI suite waits for actual rendered pixels after resize and fails with screenshot evidence if the art never reaches the viewport edges.
+
 ## External typography
 
 Set `theme = "styles/dialogue.toml"` in `game.toml`. Themes configure `ui_scale`, panel dimensions, RGBA colors, and separate speaker/dialogue/choice/hint sizes and colors. Select `[font] family = "DejaVu Sans"` for system font discovery or `[font] file = "assets/fonts/YourFont.ttf"` to load an external TTF/OTF. Font paths stay inside the game directory and no game font is compiled into Vesper. Unicode wrapping uses native Bevy text layout. Authors must license their font files.

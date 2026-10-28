@@ -67,14 +67,29 @@ def main() -> None:
                 for width, height in [(1600, 900), (900, 700), (1920, 1080)]:
                     call("xdotool", "windowsize", "--sync", win, str(width), str(height))
                     wait_for(log, f"Vesper viewport resized: {width}x{height}")
-                    time.sleep(1.5)
                     frame = out / f"frame-{width}x{height}.png"
-                    call("import", "-window", win, str(frame))
-                    size = image_size(frame)
-                    assert size == (width, height), f"unexpected screenshot size: {size}"
                     strip_height = min(height - 160, 440)
-                    left = unique_in_strip(frame, 0, 100, 110, strip_height)
-                    right = unique_in_strip(frame, width - 110, 100, 110, strip_height)
+                    # Window existence and resize logs can precede the first
+                    # presented frame on software GPU runners. Poll real pixels,
+                    # but fail with the last screenshot if edges stay letterboxed.
+                    deadline = time.monotonic() + 12
+                    attempt = 0
+                    while True:
+                        attempt += 1
+                        time.sleep(0.4)
+                        call("import", "-window", win, str(frame))
+                        size = image_size(frame)
+                        assert size == (width, height), f"unexpected screenshot size: {size}"
+                        left = unique_in_strip(frame, 0, 100, 110, strip_height)
+                        right = unique_in_strip(frame, width - 110, 100, strip_height)
+                        if left >= 3 and right >= 3:
+                            break
+                        if time.monotonic() >= deadline:
+                            raise AssertionError(
+                                f"{width}x{height}: scene never reached both edges "
+                                f"after {attempt} captures (left={left}, right={right}); "
+                                f"last screenshot retained: {frame}"
+                            )
                     left_pixel = call("convert", str(frame), "-format",
                                       "%[pixel:p{30,300}]", "info:").stdout
                     middle_pixel = call("convert", str(frame), "-format",

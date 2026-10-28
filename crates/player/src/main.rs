@@ -89,6 +89,37 @@ fn viewport_metrics(size: Vec2, authored_ui_scale: f32) -> ViewportMetrics {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+struct PanelMetrics {
+    bottom: f32,
+    min_height: f32,
+    padding: f32,
+    gap: f32,
+}
+
+/// Fit the authored panel within the usable part of a small window, while
+/// keeping its external theme width and contrast. No layout work blocks UI.
+fn panel_metrics(viewport: Vec2, panel: &vesper_game::PanelStyle) -> PanelMetrics {
+    let width = viewport.x.max(1.0);
+    let height = viewport.y.max(1.0);
+    let compact = (width / 1280.0).min(height / 720.0).clamp(0.60, 1.0);
+    PanelMetrics {
+        bottom: (height * 0.033).clamp(8.0, 24.0),
+        min_height: panel.min_height.min(height * 0.48),
+        padding: panel.padding * compact,
+        gap: (panel.gap * compact).max(3.0),
+    }
+}
+
+fn apply_panel_metrics(node: &mut Node, panel: &vesper_game::PanelStyle, metrics: PanelMetrics) {
+    node.bottom = px(metrics.bottom);
+    node.left = percent((100.0 - panel.width_percent) / 2.0);
+    node.width = percent(panel.width_percent);
+    node.min_height = px(metrics.min_height);
+    node.padding = px(metrics.padding).all();
+    node.row_gap = px(metrics.gap);
+}
+
 /// Work in logical window dimensions: Wayland's per-monitor scale factor is
 /// already handled by Bevy. Recalculate every frame so spawned/reloaded
 /// sprites inherit the current size, even when the window did not just resize.
@@ -98,12 +129,18 @@ fn fit_viewport(
     mut ui_scale: ResMut<UiScale>,
     mut backgrounds: Query<&mut Transform, (With<BackgroundVisual>, Without<CharacterVisual>)>,
     mut characters: Query<(&CharacterVisual, &mut Transform), (With<CharacterVisual>, Without<BackgroundVisual>)>,
+    mut panels: Query<&mut Node, With<StoryPanel>>,
     mut previous: Local<Vec2>,
 ) {
     let Ok(window) = windows.single() else { return; };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
     if size.x < 1.0 || size.y < 1.0 { return; }
     let m = viewport_metrics(size, session.game.theme.ui_scale);
+    let panel = &session.game.theme.panel;
+    let geometry = panel_metrics(size, panel);
+    for mut node in &mut panels {
+        apply_panel_metrics(&mut node, panel, geometry);
+    }
     if (ui_scale.0 - m.ui_scale).abs() > 0.001 {
         ui_scale.0 = m.ui_scale;
     }
@@ -126,6 +163,9 @@ fn fit_viewport(
 
 #[derive(Component)]
 struct StoryPanel;
+
+#[derive(Component)]
+struct StorySeparator;
 
 #[derive(Component)]
 enum StoryText {
@@ -206,6 +246,10 @@ fn add_text(
     style: &vesper_game::TextStyle,
     font: &FontSource,
 ) {
+    let mut node = Node { width: percent(100), ..default() };
+    if matches!(slot, StoryText::Hint) {
+        node.margin.top = px(3.0);
+    }
     parent.spawn((
         slot,
         Text::new(content),
@@ -216,10 +260,7 @@ fn add_text(
         },
         text_color(style.color),
         TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
-        Node {
-            width: percent(100),
-            ..default()
-        },
+        node,
     ));
 }
 
@@ -436,6 +477,7 @@ fn setup(
     let font = text_font(&theme, &assets);
     let initial = next_screen(&mut session, &mut commands, &assets);
     let panel = &session.game.theme.panel;
+    let geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
     let background = panel.background;
     let speaker_style = theme.speaker.clone();
     let body_style = if initial.choices { &theme.choices } else { &theme.dialogue }.clone();
@@ -447,12 +489,12 @@ fn setup(
                 position_type: PositionType::Absolute,
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Stretch,
-                row_gap: px(panel.gap),
-                bottom: px(24),
+                row_gap: px(geometry.gap),
+                bottom: px(geometry.bottom),
                 left: percent((100.0 - panel.width_percent) / 2.0),
                 width: percent(panel.width_percent),
-                min_height: px(panel.min_height),
-                padding: px(panel.padding).all(),
+                min_height: px(geometry.min_height),
+                padding: px(geometry.padding).all(),
                 ..default()
             },
             BackgroundColor(Color::srgba(
@@ -463,6 +505,11 @@ fn setup(
         .with_children(|parent| {
             add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);
             add_text(parent, StoryText::Body, &initial.body, &body_style, &font);
+            parent.spawn((
+                StorySeparator,
+                Node { width: percent(100), height: px(1.0), ..default() },
+                BackgroundColor(Color::srgba(0.70, 0.76, 0.86, 0.34)),
+            ));
             add_text(parent, StoryText::Hint, &initial.hint, &hint_style, &font);
         });
 }
@@ -919,7 +966,7 @@ fn poll_completed_io(
 
 #[cfg(test)]
 mod tests {
-    use super::{fade_fraction, viewport_metrics};
+    use super::{fade_fraction, viewport_metrics, panel_metrics};
     use bevy::{audio::Decodable, prelude::{AudioSource, Vec2}};
     use std::{fs, path::Path, sync::Arc};
 
@@ -976,6 +1023,24 @@ mod tests {
         assert!(narrow.background_scale > narrow.character_scale);
         assert_eq!(narrow.character_scale, 0.625);
         assert_eq!(narrow.ui_scale, 0.75);
+    }
+
+    #[test]
+    fn compact_panel_respects_window_height_and_authored_theme() {
+        let panel = vesper_game::PanelStyle {
+            background: [0.04, 0.05, 0.09, 0.94],
+            width_percent: 90.0,
+            min_height: 226.0,
+            padding: 22.0,
+            gap: 8.0,
+        };
+        let compact = panel_metrics(Vec2::new(640.0, 360.0), &panel);
+        let standard = panel_metrics(Vec2::new(1280.0, 720.0), &panel);
+        assert!(compact.padding < standard.padding);
+        assert!(compact.min_height <= 360.0 * 0.48);
+        assert!(compact.bottom > 0.0 && compact.bottom < 24.0);
+        assert_eq!(standard.padding, panel.padding);
+        assert_eq!(standard.min_height, panel.min_height);
     }
 
     #[test]
