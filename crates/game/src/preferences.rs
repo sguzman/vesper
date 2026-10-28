@@ -155,6 +155,10 @@ impl PlayerPreferences {
         system_font_exists: impl Fn(&str) -> bool,
     ) -> Theme {
         let mut effective = authored.clone();
+        // Reject in-memory edits too, not only preferences loaded from JSON.
+        if self.validate().is_err() {
+            return effective;
+        }
         if let Some(alpha) = self.dialogue_opacity {
             effective.panel.background[3] = alpha;
         }
@@ -238,7 +242,7 @@ mod tests {
         };
         prefs.write_atomic(&path).unwrap();
         assert_eq!(PlayerPreferences::read(&path).unwrap(), prefs);
-        assert_eq!(fs::read(save).unwrap(), b"existing story save");
+        assert_eq!(fs::read(save).unwrap().as_slice(), &b"existing story save"[..]);
         assert!(fs::read_dir(path.parent().unwrap()).unwrap().all(|item| {
             item.unwrap().path().extension().is_some_and(|extension| extension == "json")
         }));
@@ -253,7 +257,7 @@ mod tests {
         let (prefs, diagnostic) = PlayerPreferences::read_or_default(&path);
         assert_eq!(prefs, PlayerPreferences::default());
         assert!(diagnostic.unwrap().contains("invalid preferences JSON"));
-        assert_eq!(fs::read(&path).unwrap(), b"{bad json");
+        assert_eq!(fs::read(&path).unwrap().as_slice(), &b"{bad json"[..]);
         assert!(PlayerPreferences::decode(br#"{"format_version":99}"#).is_err());
         assert!(PlayerPreferences::decode(&vec![b' '; MAX_PREFERENCES_BYTES + 1]).is_err());
     }
@@ -278,8 +282,10 @@ mod tests {
         ] {
             assert!(PlayerPreferences::decode(json.as_bytes()).is_err(), "{json}");
         }
-        let mut prefs = PlayerPreferences::default();
-        prefs.dialogue_opacity = Some(f32::NAN);
+        let mut prefs = PlayerPreferences {
+            dialogue_opacity: Some(f32::NAN),
+            ..default()
+        };
         assert!(prefs.encode().is_err());
         prefs.dialogue_opacity = None;
         prefs.dialogue_font_scale = Some(f32::INFINITY);
