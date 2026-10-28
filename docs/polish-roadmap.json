@@ -6,9 +6,9 @@
   "prior_scope": "docs/roadmap.json",
   "prior_scope_verified_weight": 100,
   "scope_weight": 100,
-  "verified_weight": 60,
-  "last_verified_commit": "3a4408d3c5d98349aca67f02eb217e3dd6ad8849",
-  "note": "Original MVP remains 100/100. New presentation/navigation polish scope is 60/100: POL01, POL02, POL03 verified with CI. Visual-art direction and full production polish remain out of scope until POL04 and later tasks complete.",
+  "verified_weight": 90,
+  "last_verified_commit": "6618d689209ddb710471b2bfe04f14027ced45df",
+  "note": "Original MVP remains 100/100. POL01 through POL05 are verified (90/100) by successful graphical and narrative CI, with screenshots manually inspected. POL06 awaits green CI on main after the polish integration.",
   "tasks": [
     {
       "id": "POL01",
@@ -56,26 +56,30 @@
       "emoji": "🎨",
       "milestone": "Presentation",
       "weight": 20,
-      "status": "pending",
+      "status": "verified complete",
       "depends_on": [
         "POL03"
       ],
       "description": "External themes and both example presentations receive coherent visual styling",
       "acceptance": "Both repository-native examples have intentionally differentiated, readable game data-driven styling and retain theme hot reload; illustrative screenshot evidence is captured and reviewed.",
-      "evidence": []
+      "evidence": [
+        "CI run 40617042817 on 6618d689 (Bevy job 122581999103): both examples rendered with distinct external theme palettes; 4 text styles per game exceeded 4.5:1 contrast against panel backgrounds; live theme accent edits visibly changed screenshot pixels without restart. Captured artifact vesper-fairytale-themes (12785721872) and manually reviewed both original and edited screenshots for visible warm/cool differentiation, readable line wrapping and accent placement. Existing theme hot reload and whole suite passed."
+      ]
     },
     {
       "id": "POL05",
       "emoji": "🏁",
       "milestone": "Navigation",
       "weight": 10,
-      "status": "pending",
+      "status": "verified complete",
       "depends_on": [
         "POL02"
       ],
       "description": "Designed ending interactions",
       "acceptance": "Ending state visibly offers restart, navigation, and exit; no dead-end input; saved and freshly started sessions work and keybindings remain accessible.",
-      "evidence": []
+      "evidence": [
+        "CI run 40617042817 on 6618d689 (Bevy job 122581999103): new end-screen interaction test passed selectable Play again, Main menu, Quit, arrow-highlight screenshots and cross-process F5/F9 end-state recovery. Prior R-to-restart and general menu, save/load, full rendered fairy-tale playthroughs still pass. Artifact vesper-ending-navigation (12785447766) captured; reviewed ending screenshot for unclipped menu and clear selected action."
+      ]
     },
     {
       "id": "POL06",
