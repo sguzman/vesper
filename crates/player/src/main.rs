@@ -189,6 +189,10 @@ fn fit_viewport(
         let next = actors::placement(size, m.character_scale, &actor.position,
             &config.stage, entrance, exit, idle,
             session.preferences.reduced_motion.unwrap_or(false));
+        if transform.translation.z != next.translation.z {
+            info!("Vesper character layer updated: {} -> {:.2}",
+                actor.character, next.translation.z);
+        }
         if transform.translation != next.translation { transform.translation = next.translation; }
         if transform.scale != next.scale { transform.scale = next.scale; }
     }
