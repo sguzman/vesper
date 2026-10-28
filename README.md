@@ -24,7 +24,7 @@ The original MVP remains verified 100%. The separate [weighted presentation-poli
 
 ## Visual experience and player-customization roadmap (new phase)
 
-The next independent phase is **planned at 0/100 verified points**: [visual experience roadmap](docs/visual-experience-roadmap.md) · [weighted progress ledger](docs/visual-experience-roadmap.json). It will add live player controls for dialogue opacity, font, size and reading pace; structured choices; cinematics, sprite staging and subtle atmosphere; history/saves and accessibility testing. The **final milestone** creates a complete, original generated-asset fairy tale, *The Post Office at the Edge of Dawn*. Prior MVP and presentation-polish roadmaps remain at 100/100; none of the new features is claimed as implemented.
+The independent visual-experience phase is **8/100 verified points (VX01 complete; VX02 next)**: [visual experience roadmap](docs/visual-experience-roadmap.md) · [weighted progress ledger](docs/visual-experience-roadmap.json). It will add live player controls for dialogue opacity, font, size and reading pace; structured choices; cinematics, sprite staging and subtle atmosphere; history/saves and accessibility testing. The **final milestone** creates a complete, original generated-asset fairy tale, *The Post Office at the Edge of Dawn*. Prior MVP and presentation-polish roadmaps remain at 100/100; the player-preferences foundation has passed [narrative and Bevy CI](https://github.com/sguzman/vesper/actions/runs/40712738040); the Settings UI and later milestones are not yet implemented.
 
 ## Player-owned appearance preferences (VX01 foundation)
 
