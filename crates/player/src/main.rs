@@ -136,6 +136,7 @@ fn fit_viewport(
     session: Res<Session>,
     mut ui_scale: ResMut<UiScale>,
     mut backgrounds: Query<(&mut Transform, Option<&cinematics::BackdropMotion>, Option<&cinematics::BackdropTransition>), (With<BackgroundVisual>, Without<CharacterVisual>)>,
+    mut curtains: Query<&mut Transform, (With<cinematics::BackdropCurtain>, Without<BackgroundVisual>, Without<CharacterVisual>)>,
     mut characters: Query<(&CharacterVisual, &mut Transform), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
     mut previous: Local<(Vec2, [u32; 4])>,
@@ -172,6 +173,10 @@ fn fit_viewport(
             transform.translation.x = offset.x;
             transform.translation.y = offset.y;
         }
+    }
+    for mut transform in &mut curtains {
+        let next = Vec3::splat(m.background_scale);
+        if transform.scale != next { transform.scale = next; }
     }
     for (anchor, mut transform) in &mut characters {
         transform.scale = Vec3::splat(m.character_scale);
