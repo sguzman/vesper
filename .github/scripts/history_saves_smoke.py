@@ -53,6 +53,38 @@ def shot(win,path):
     run("import","-window",win,str(path))
 
 
+def scene_colors(path):
+    result=run("convert",str(path),"-crop","1280x260+0+0",
+               "+repage","-format","%k","info:")
+    return int(result.stdout.strip())
+
+
+def ready(win,path,timeout=9.):
+    deadline=time.monotonic()+timeout
+    while True:
+        shot(win,path)
+        if scene_colors(path)>=16:
+            return
+        if time.monotonic()>deadline:
+            raise AssertionError(
+                f"background did not render before screenshot: {path}"
+            )
+        time.sleep(.12)
+
+
+def wait_visual_change(win,from_image,to_image,minimum=5000,timeout=5.):
+    deadline=time.monotonic()+timeout
+    while True:
+        shot(win,to_image)
+        if difference(from_image,to_image)>minimum:
+            return
+        if time.monotonic()>deadline:
+            raise AssertionError(
+                f"visual change not presented: {to_image}"
+            )
+        time.sleep(.12)
+
+
 def difference(a,b):
     result=run("compare","-metric","AE",str(a),str(b),"null:",check=False)
     m=re.match(r"\d+",result.stderr.strip())
@@ -96,14 +128,14 @@ def check_history_and_slots(game):
         try:
             win=window()
             wait(log,"Vesper scene dialogue: threshold")
-            time.sleep(.9)
             base=out/"dialogue.png"
+            ready(win,base)
+            time.sleep(.2)
             shot(win,base)
             key("h")
             wait(log,"Vesper reading history opened: 2 entries")
             history1=out/"history-initial.png"
-            shot(win,history1)
-            assert difference(base,history1)>5000,"reading history overlay not visible"
+            wait_visual_change(win,base,history1,minimum=5000)
             key("Return")
             key("Page_Up")
             key("Page_Down")
@@ -117,8 +149,7 @@ def check_history_and_slots(game):
             key("h")
             wait(log,"Vesper reading history opened: 3 entries")
             history2=out/"history-two-lines.png"
-            shot(win,history2)
-            assert difference(history1,history2)>100,"history did not add a line"
+            wait_visual_change(win,history1,history2,minimum=100)
             key("h")
             wait(log,"Vesper reading history closed",count=2)
             key("Return",.3)
@@ -129,8 +160,7 @@ def check_history_and_slots(game):
             wait(log,"Vesper save slots opened")
             wait(log,"Vesper save slot metadata scanned")
             manager=out/"slot-empty.png"
-            shot(win,manager)
-            assert difference(manager,base)>5000,"manual save overlay not visible"
+            wait_visual_change(win,base,manager,minimum=5000)
             key("Return")
             wait(log,"Vesper save written",count=1)
             wait(log,"Vesper save slot metadata scanned",count=2)
@@ -176,10 +206,7 @@ def check_history_and_slots(game):
             key("h")
             wait(log,"Vesper reading history opened: 0 entries")
             restored=out/"history-after-rewind.png"
-            shot(win,restored)
-            assert difference(branch,restored)>100, (
-                "load retained later-branch dialogue in history"
-            )
+            wait_visual_change(win,branch,restored,minimum=100)
             key("Escape")
             key("F6")
             wait(log,"Vesper save slots opened",count=2)
