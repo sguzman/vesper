@@ -1,6 +1,6 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
-use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui::Pressed, ui_widgets::Button, window::PrimaryWindow};
+use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui_widgets::{observe, Activate, Button}, window::PrimaryWindow};
 mod reload;
 mod settings;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
@@ -207,9 +207,7 @@ fn menu_step(index: usize, direction: i32, count: usize) -> usize {
 
 fn pointer_menu_rows(
     mut session: ResMut<Session>,
-    mut pointer: ResMut<MenuPointer>,
     hovered_rows: Query<(&Hovered, &MenuRow), Changed<Hovered>>,
-    pressed_rows: Query<&MenuRow, Added<Pressed>>,
 ) {
     for (hover, row) in &hovered_rows {
         if !hover.get() { continue; }
@@ -224,9 +222,6 @@ fn pointer_menu_rows(
             MenuKind::Main => session.menu_selection = row.index,
             MenuKind::Ending => session.ending_selection = row.index,
         }
-    }
-    for row in &pressed_rows {
-        pointer.action = Some((row.kind, row.index));
     }
 }
 
@@ -259,6 +254,9 @@ fn spawn_menu_rows(
             MenuRow { kind, index },
             Button,
             Hovered::default(),
+            observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
+                pointer.action = Some((kind, index));
+            }),
             Text::new(format!("{}. {}", index + 1, label)),
             TextFont { font: font.clone(), font_size: FontSize::Px(22.0), ..default() },
             TextColor(Color::WHITE),
@@ -500,6 +498,7 @@ fn main() {
         .insert_resource(CompletedIo::default())
         .insert_resource(io_workers)
         .insert_resource(settings::SettingsState::default())
+        .insert_resource(settings::SettingsClicks::default())
         .insert_resource(MenuPointer::default())
         .insert_resource(preferences_writer)
         .insert_resource(Session {
