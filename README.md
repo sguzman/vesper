@@ -26,6 +26,25 @@ The original MVP remains verified 100%. The separate [weighted presentation-poli
 
 The next independent phase is **planned at 0/100 verified points**: [visual experience roadmap](docs/visual-experience-roadmap.md) · [weighted progress ledger](docs/visual-experience-roadmap.json). It will add live player controls for dialogue opacity, font, size and reading pace; structured choices; cinematics, sprite staging and subtle atmosphere; history/saves and accessibility testing. The **final milestone** creates a complete, original generated-asset fairy tale, *The Post Office at the Edge of Dawn*. Prior MVP and presentation-polish roadmaps remain at 100/100; none of the new features is claimed as implemented.
 
+## Player-owned appearance preferences (VX01 foundation)
+
+Vesper now reads optional per-user appearance preferences at startup from
+`$XDG_CONFIG_HOME/vesper/preferences.json`, falling back to
+`~/.config/vesper/preferences.json`. For isolated tests, the
+`VESPER_PREFERENCES_FILE` environment variable may point to a different file.
+Preferences are **not** stored in the game directory or alongside F5/F9 saves.
+
+The version-1 JSON format accepts optional `dialogue_opacity` (0.60–1.00),
+`dialogue_font_scale` (0.80–1.60), and `font_family` (a system family name).
+Omitted/null fields track the current external game theme. Overrides take precedence
+without rewriting the theme, and changes to non-overridden theme fields still apply
+during `--watch`. Invalid, corrupt, too-large or unsupported files are ignored
+with a diagnostic; old story saves remain untouched. Writes use synchronized
+temporary files and atomic replacement, outside the Bevy frame loop.
+
+**This is storage and theme-resolution infrastructure, not a completed settings
+screen.** Players cannot change settings through the UI until VX02 is implemented.
+
 ## Workspace
 
 - `crates/story`: graphics-independent `.vn` parser, validator and deterministic interpreter.
