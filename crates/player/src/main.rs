@@ -10,6 +10,7 @@ mod cinematics;
 mod actors;
 mod atmosphere;
 mod feedback;
+mod history;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -33,6 +34,7 @@ struct Session {
     characters: BTreeMap<String, Entity>,
     presentation: PresentationState,
     pending_audio: Vec<(String, Handle<AudioSource>)>,
+    history: history::HistoryLog,
 }
 
 #[derive(Resource, Default)]
@@ -519,6 +521,7 @@ fn main() {
         .insert_resource(readout::ReadingState::default())
         .insert_resource(atmosphere::AtmosphereState::default())
         .insert_resource(feedback::FeedbackState::default())
+        .insert_resource(history::HistoryClick::default())
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -528,6 +531,7 @@ fn main() {
             background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
             pending_audio: Vec::new(),
+            history: history::HistoryLog::default(),
         })
         .add_systems(Startup, (atmosphere::setup, setup).chain())
         .add_systems(Update, (
@@ -741,7 +745,9 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
                 if env::var_os("VESPER_TRACE_SCENES").is_some() {
                     info!("Vesper scene dialogue: {}", session.machine.scene());
                 }
-                return Screen::normal(speaker.unwrap_or_default(), text);
+                let speaker = speaker.unwrap_or_default();
+                session.history.record(session.machine.scene(), &speaker, &text);
+                return Screen::normal(speaker, text);
             }
             Ok(Output::Choices(options)) => {
                 session.choosing = true;
@@ -1003,6 +1009,7 @@ fn restart_story(
             }
             session.pending_audio.clear();
             session.presentation = PresentationState::default();
+            session.history.reset();
             session.machine = machine;
             session.choosing = false;
             session.finished = false;
@@ -1032,12 +1039,26 @@ fn advance_from_keyboard(
     mut choice_click: ResMut<choices::ChoiceClick>,
     mut reading: ResMut<readout::ReadingState>,
     mut feedback_state: ResMut<feedback::FeedbackState>,
+    mut history_click: ResMut<history::HistoryClick>,
+    mut history_scroll: Query<&mut ScrollPosition, With<history::HistoryScroll>>,
 ) {
     // Pointer activation must never survive a pause/menu or get replayed.
     let pointer_choice = choice_click.0.take();
     if settings_state.overlay.is_some() {
         settings::keyboard(&input, &mut session, &mut settings_state,
             &mut commands, &assets, &preference_writer);
+        return;
+    }
+    // The backlog owns all input while visible; closing never advances the
+    // interpreter or consumes its pending choice.
+    if session.history.visible() {
+        history::input(&input, &mut session.history, &mut history_click,
+            &mut history_scroll, &mut commands);
+        return;
+    }
+    if input.just_pressed(KeyCode::KeyH) {
+        let theme=effective_theme(&session);
+        history::open(&mut session.history, &mut commands, &assets, &theme);
         return;
     }
     if session.menu_overlay.is_some() {
@@ -1253,7 +1274,7 @@ fn trigger_save_load(
     completed: Res<CompletedIo>,
     workers: Res<IoWorkers>,
 ) {
-    if (session.paused || session.menu_overlay.is_some()) || !(keyboard.just_pressed(KeyCode::F5) || keyboard.just_pressed(KeyCode::F9)) {
+    if (session.paused || session.menu_overlay.is_some() || session.history.visible()) || !(keyboard.just_pressed(KeyCode::F5) || keyboard.just_pressed(KeyCode::F9)) {
         return;
     }
     let path = match save_file(&session.game.manifest.id) {
@@ -1378,6 +1399,7 @@ fn poll_completed_io(
                     }
                 }
                 let last = machine.last_output().cloned();
+                session.history.reset_to_current(machine.scene(), last.as_ref());
                 session.machine = machine;
                 session.choosing = matches!(last, Some(Output::Choices(_)));
                 session.finished = matches!(last, Some(Output::End));
