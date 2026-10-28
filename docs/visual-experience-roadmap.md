@@ -1,6 +1,6 @@
 # Vesper — Visual Experience Roadmap
 
-**Status:** in progress, **40 / 100 verified points** (VX01–VX04 verified; VX05 next). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
+**Status:** in progress, **50 / 100 verified points** (VX01–VX05 verified; VX06 next). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
 
 **Goal:** A lovely, expressive visual novel reader: readable, configurable dialogue; distinct choices; gentle cinematic staging; history and saves; accessible motion controls; and a complete original game that demonstrates all of them.
 
@@ -12,7 +12,7 @@
 | VX02 | 14 | 🎛️ Live appearance settings — verified ([CI run 40721330853](https://github.com/sguzman/vesper/actions/runs/40721330853)) | From pause/main menus, players can adjust dialogue panel opacity (bounded 0.60–1.00), dialogue font size multiplier (0.80–1.60), choose an installed or game-approved font with safe fallback, and restore defaults. |
 | VX03 | 10 | 💬 Dialogue and choice composition — verified ([CI run 40725819513](https://github.com/sguzman/vesper/actions/runs/40725819513)) | Each choice is a separate, engine-owned UI entity with selection/highlight, focus, mouse target and keyboard action; choice data remains supplied by external .vn scripts. |
 | VX04 | 8 | ⌨️ Text pacing and reading cues — verified ([CI run 40745061158](https://github.com/sguzman/vesper/actions/runs/40745061158)) | A reveal effect supports instant/off, slow, normal and fast player choices, with Unicode grapheme-safe pacing and no string corruption. |
-| VX05 | 10 | 🎞️ Cinematic background presentation | External theme/story data can specify bounded crossfade, fade-through-color and soft-slide background transitions, with compatible defaults for legacy .vn games. |
+| VX05 | 10 | 🎞️ Cinematic background presentation — verified ([CI run 40763057822](https://github.com/sguzman/vesper/actions/runs/40763057822)) | External theme/story data can specify bounded crossfade, fade-through-color and soft-slide background transitions, with compatible defaults for legacy .vn games. |
 | VX06 | 10 | 🎭 Character staging and expression polish | Externally declared sprite anchors/scale/depth and expression-crossfades work for multiple characters without engine references to specific games. |
 | VX07 | 7 | ✨ Atmosphere and micro-interactions | Provide a small, bounded data-driven library of 2D atmospheric presets such as drifting motes, gentle glow and vignette, with deterministic seeds and no mandatory shaders. |
 | VX08 | 7 | 📖 Reading history and polished saves | A readable, scrollable dialogue backlog shows the current session's recent lines with speaker names and scene boundaries, with a documented bounded memory limit and no spoilers from future branches. |
