@@ -58,7 +58,7 @@ See `docs/architecture.md` and `docs/roadmap.json` for technical and completion 
 
 ## Responsive story presentation
 
-The engine now scales panel margins, padding and minimum height with the window, while preserving each external theme's authored panel width, text sizes, contrast, and font. A subtle separator and intrinsic-height text blocks keep wrapped dialogue/choices separate from the keyboard hints; the compact-window graphical regression checks actual rendered glyph overlap, rather than only panel color counts. The responsive CI suite waits for actual rendered pixels after resize and fails with screenshot evidence if the art never reaches the viewport edges.
+The engine now scales panel margins, padding and minimum height with the window, while preserving each external theme's authored panel width, text sizes, contrast, and font. A subtle separator and shaped-glyph-height reservation keep wrapped dialogue/choices separate from the keyboard hints, even at fractional UI scales. The graphical regression checks actual rendered glyph bounds at 946×511 and 955×520 (the reported Wayland window sizes) as well as 800×600 and 900×700; the old implementation overlapped by 5 px at 946×511, while the measured-height implementation left an 8 px gap. The responsive CI suite waits for actual rendered pixels after resize and fails with screenshot evidence if the art never reaches the viewport edges.
 
 ## Differentiated external fairytale themes
 
