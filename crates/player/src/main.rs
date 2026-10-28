@@ -196,6 +196,38 @@ struct MenuRow { kind: MenuKind, index: usize }
 #[derive(Component)]
 struct EndingActions;
 
+#[derive(Resource, Default)]
+struct MenuPointer { action: Option<(MenuKind, usize)> }
+
+/// Preserve the previous Up-from-first = Quit navigation shortcut.
+fn menu_step(index: usize, direction: i32, count: usize) -> usize {
+    if direction < 0 && index == 0 && count == 4 { return 2; }
+    (index as i32 + direction).rem_euclid(count as i32) as usize
+}
+
+fn pointer_menu_rows(
+    mut session: ResMut<Session>,
+    mut pointer: ResMut<MenuPointer>,
+    rows: Query<(&Interaction, &MenuRow), Changed<Interaction>>,
+) {
+    for (interaction, row) in &rows {
+        let visible = match row.kind {
+            MenuKind::Pause => session.paused,
+            MenuKind::Main => session.menu_overlay.is_some(),
+            MenuKind::Ending => session.finished && !session.paused && session.menu_overlay.is_none(),
+        };
+        if !visible || *interaction == Interaction::None { continue; }
+        match row.kind {
+            MenuKind::Pause => session.pause_selection = row.index,
+            MenuKind::Main => session.menu_selection = row.index,
+            MenuKind::Ending => session.ending_selection = row.index,
+        }
+        if *interaction == Interaction::Pressed {
+            pointer.action = Some((row.kind, row.index));
+        }
+    }
+}
+
 const PAUSE_ITEMS: [&str; 4] = ["Resume story", "Main menu", "Quit", "Appearance settings"];
 const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Quit", "Appearance settings"];
 const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
@@ -875,7 +907,15 @@ fn advance_from_keyboard(
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
     mut menu_exit: MessageWriter<AppExit>,
+    mut settings_state: ResMut<settings::SettingsState>,
+    preference_writer: Res<settings::PreferencesWriter>,
+    mut pointer: ResMut<MenuPointer>,
 ) {
+    if settings_state.overlay.is_some() {
+        settings::keyboard(&input, &mut session, &mut settings_state,
+            &mut commands, &assets, &preference_writer);
+        return;
+    }
     if session.menu_overlay.is_some() {
         if input.just_pressed(KeyCode::KeyM) {
             hide_main_menu(&mut session, &mut commands);
@@ -1320,8 +1360,12 @@ fn monitor_audio_assets(mut session: ResMut<Session>, server: Res<AssetServer>) 
 }
 
 
-fn escape_to_quit(input: Res<ButtonInput<KeyCode>>, mut exit: MessageWriter<AppExit>) {
-    if input.just_pressed(KeyCode::Escape) {
+fn escape_to_quit(
+    input: Res<ButtonInput<KeyCode>>,
+    mut exit: MessageWriter<AppExit>,
+    settings: Res<settings::SettingsState>,
+) {
+    if input.just_pressed(KeyCode::Escape) && settings.overlay.is_none() {
         info!("Vesper exiting by Escape");
         exit.write(AppExit::Success);
     }
