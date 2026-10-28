@@ -4,6 +4,7 @@ use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*,
 mod reload;
 mod settings;
 mod choices;
+mod text_reveal;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
