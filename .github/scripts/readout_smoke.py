@@ -177,9 +177,14 @@ def verify_controls(game):
         press("m")
         press("4")
         wait_for(log,"Vesper appearance settings opened")
+        # Wait for the real overlay to be presented before sending repeated
+        # keys. Software Vulkan can render the first settings frame slowly
+        # after six back-to-back real-window cinematic sessions.
+        time.sleep(.9)
+        shot(win,folder/"settings-open-before-input.png")
         for _ in range(3):
-            press("Down", .14)
-        press("Right")
+            press("Down", .32)
+        press("Right", .50)
         prefs_file=folder/"preferences"/"player-preferences.json"
         wait_for(log,"Vesper player preferences saved")
         def load():

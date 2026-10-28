@@ -6,6 +6,7 @@ mod settings;
 mod choices;
 mod text_reveal;
 mod readout;
+mod cinematics;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -134,7 +135,8 @@ fn fit_viewport(
     windows: Query<&Window, With<PrimaryWindow>>,
     session: Res<Session>,
     mut ui_scale: ResMut<UiScale>,
-    mut backgrounds: Query<&mut Transform, (With<BackgroundVisual>, Without<CharacterVisual>)>,
+    mut backgrounds: Query<(&mut Transform, Option<&cinematics::BackdropMotion>, Option<&cinematics::BackdropTransition>), (With<BackgroundVisual>, Without<CharacterVisual>)>,
+    mut curtains: Query<&mut Transform, (With<cinematics::BackdropCurtain>, Without<BackgroundVisual>, Without<CharacterVisual>)>,
     mut characters: Query<(&CharacterVisual, &mut Transform), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
     mut previous: Local<(Vec2, [u32; 4])>,
@@ -163,8 +165,19 @@ fn fit_viewport(
     if (ui_scale.0 - m.ui_scale).abs() > 0.001 {
         ui_scale.0 = m.ui_scale;
     }
-    for mut transform in &mut backgrounds {
-        transform.scale = Vec3::splat(m.background_scale);
+    for (mut transform, motion, transition) in &mut backgrounds {
+        let allowed_motion = if session.preferences.reduced_motion.unwrap_or(false) { None } else { motion };
+        let (scale, offset) = cinematics::background_transform(size, m.background_scale, allowed_motion, transition);
+        let next_scale = Vec3::splat(scale);
+        if transform.scale != next_scale { transform.scale = next_scale; }
+        if transform.translation.x != offset.x || transform.translation.y != offset.y {
+            transform.translation.x = offset.x;
+            transform.translation.y = offset.y;
+        }
+    }
+    for mut transform in &mut curtains {
+        let next = Vec3::splat(m.background_scale);
+        if transform.scale != next { transform.scale = next; }
     }
     for (anchor, mut transform) in &mut characters {
         transform.scale = Vec3::splat(m.character_scale);
@@ -508,7 +521,7 @@ fn main() {
             settings::pointer, advance_from_keyboard,
             choices::sync_rows, choices::sync_row_style,
             choices::scroll_selected, choices::sync_viewport,
-            choices::reserve_row_height, readout::tick,
+            choices::reserve_row_height, readout::tick, cinematics::tick,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
             poll_completed_io, sync_menu_selection, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
@@ -538,10 +551,24 @@ fn apply_visual(
     match visual {
         Visual::Background(id) => {
             let path = session.game.background(&id)?.to_owned();
-            if let Some(previous) = session.background.take() {
-                commands.entity(previous).despawn();
+            let config = &session.game.theme.cinematic;
+            let previous = session.background.take();
+            let reduced_motion = session.preferences.reduced_motion.unwrap_or(false);
+            let cinematic = !reduced_motion
+                && config.transition != vesper_game::BackgroundTransitionKind::Legacy
+                && config.seconds > 0.0 && previous.is_some();
+            let fade = if reduced_motion { 0.0 } else if cinematic { config.seconds } else { session.game.theme.fade_seconds };
+            if let Some(old) = previous {
+                if cinematic {
+                    // Keep outgoing imagery visible behind the incoming
+                    // sprite; an interrupted transition loses its old clock.
+                    commands.entity(old).remove::<FadeIn>();
+                    commands.entity(old).remove::<cinematics::BackdropTransition>();
+                    commands.entity(old).insert(Transform::from_xyz(0., 0., -10.));
+                } else {
+                    commands.entity(old).despawn();
+                }
             }
-            let fade = session.game.theme.fade_seconds;
             let entity = commands.spawn((
                 Name::new(format!("Background: {id}")),
                 BackgroundVisual,
@@ -551,10 +578,26 @@ fn apply_visual(
                     custom_size: Some(Vec2::new(1280., 720.)),
                     ..default()
                 },
-                Transform::from_xyz(0., 0., -10.),
+                Transform::from_xyz(0., 0., if cinematic { -9.8 } else { -10. }),
             )).id();
-            if fade > 0.0 {
+            if cinematic {
+                let outgoing = previous.expect("transition requires outgoing background");
+                let curtain = if config.transition == vesper_game::BackgroundTransitionKind::FadeThroughColor {
+                    Some(cinematics::create_curtain(commands, config))
+                } else { None };
+                commands.entity(entity).insert(cinematics::BackdropTransition {
+                    outgoing, kind: config.transition, duration: config.seconds,
+                    elapsed: 0.0, curtain, slide_pixels: config.slide_pixels,
+                    skip_requested: false,
+                });
+                info!("Vesper cinematic started: {:?}", config.transition);
+            } else if fade > 0.0 {
                 commands.entity(entity).insert(FadeIn { elapsed: 0.0, duration: fade });
+            }
+            if !reduced_motion {
+                if let Some(motion) = cinematics::motion(config) {
+                    commands.entity(entity).insert(motion);
+                }
             }
             session.background = Some(entity);
             session.presentation.background = Some(id);
@@ -1206,6 +1249,7 @@ fn poll_completed_io(
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
     mut reading: ResMut<readout::ReadingState>,
+    mut backgrounds: Query<&mut Sprite, With<BackgroundVisual>>,
 ) {
     let events = match completed.0.lock() {
         Ok(mut events) => std::mem::take(&mut *events),
@@ -1217,8 +1261,27 @@ fn poll_completed_io(
             IoResult::Saved(Err(error)) => error!("Vesper save failed: {error}"),
             IoResult::Loaded(Err(error)) => error!("Vesper load failed: {error}"),
             IoResult::Loaded(Ok((machine, state))) => {
-                if let Some(entity) = session.background.take() {
-                    commands.entity(entity).despawn();
+                let same_backdrop = state.background.is_some()
+                    && state.background == session.presentation.background
+                    && session.background.is_some();
+                let retain_for_swap = !same_backdrop && state.background.is_some()
+                    && session.game.theme.cinematic.transition
+                        != vesper_game::BackgroundTransitionKind::Legacy;
+                if same_backdrop {
+                    // A loaded background already shows the correct saved art.
+                    // Never briefly replace it with a transparent new sprite.
+                    if let Some(entity) = session.background {
+                        commands.entity(entity).remove::<FadeIn>();
+                        commands.entity(entity).remove::<cinematics::BackdropTransition>();
+                        if let Ok(mut sprite) = backgrounds.get_mut(entity) {
+                            sprite.color = Color::WHITE;
+                        }
+                        info!("Vesper restored existing background without reloading");
+                    }
+                } else if !retain_for_swap {
+                    if let Some(entity) = session.background.take() {
+                        commands.entity(entity).despawn();
+                    }
                 }
                 for (_, entity) in std::mem::take(&mut session.characters) {
                     commands.entity(entity).despawn();
@@ -1236,7 +1299,9 @@ fn poll_completed_io(
                     commands.entity(previous).despawn();
                 }
                 if let Some(id) = state.background {
-                    if let Err(error) = apply_visual(
+                    if same_backdrop {
+                        session.presentation.background = Some(id);
+                    } else if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Background(id)
                     ) {
                         error!("Invalid saved background: {error}");
