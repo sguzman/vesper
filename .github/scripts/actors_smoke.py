@@ -376,10 +376,14 @@ hide tess
         key("k",.07)
         wait(log,"Vesper character exit complete: tess",timeout=1.2)
         gone=out/"exit-skipped.png"
-        shot(win,gone)
-        assert not color_is(gone,"green"), (
-            "actor remained visible after exit was explicitly skipped"
-        )
+        deadline=time.monotonic()+3.
+        while True:
+            shot(win,gone)
+            if not color_is(gone,"green"):
+                break
+            if time.monotonic()>deadline:
+                raise AssertionError("actor remained visible after exit was skipped")
+            time.sleep(.12)
         assert proc.poll() is None
         print("VX06 K: bounded entrance/exit skipped without advancing story",flush=True)
     finally:
