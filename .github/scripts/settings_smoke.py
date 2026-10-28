@@ -91,9 +91,22 @@ def main() -> None:
                     screenshot(win, before)
 
                     key("m")
+                    menu = base / "main-menu.png"
+                    screenshot(win, menu)
                     key("4")
                     wait_log(log, "Vesper appearance settings opened")
                     first = base / "settings-initial.png"
+                    # Bevy rendering is asynchronous relative to log emission.
+                    # Do not misattribute the menu-to-settings transition to a
+                    # focus change: first require the new frame to be visible.
+                    end = time.monotonic() + 10
+                    while True:
+                        screenshot(win, first)
+                        if difference(menu, first) > 60000:
+                            break
+                        assert time.monotonic() < end, "settings never appeared as rendered pixels"
+                        time.sleep(.20)
+                    time.sleep(.5)
                     screenshot(win, first)
                     assert difference(before, first) > 5000
 
