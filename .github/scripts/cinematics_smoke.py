@@ -196,7 +196,9 @@ def scenario(tmp, game_name, title, scene, first, second, theme_name, kind):
 
 def verify_rapid_interruption(tmp):
     name,title,scene,first,second,theme_name = GAMES[1]
-    game,_ = clone_fixture(tmp,name,scene,first,second,theme_name,"fade_through_color")
+    interrupt_root = tmp/"interrupt-fixture"
+    interrupt_root.mkdir()
+    game,_ = clone_fixture(interrupt_root,name,scene,first,second,theme_name,"fade_through_color")
     out = OUT/"rapid-interruption"
     out.mkdir(parents=True,exist_ok=True)
     log=out/"player.log"
