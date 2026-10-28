@@ -372,7 +372,7 @@ fn text_height_reservation(actual: f32) -> Option<f32> {
     if !actual.is_finite() || actual <= 0.0 {
         None
     } else {
-        Some((actual + 3.0).ceil())
+        Some((actual + 10.0).ceil())
     }
 }
 
@@ -381,8 +381,9 @@ fn reserve_story_text_height(
 ) {
     for (slot, glyphs, mut node) in &mut texts {
         let actual = glyphs.size.y;
-        // A small safety allowance covers subpixel rounding when fractional
-        // UiScale is used on Wayland. The height is not guessed from lines.
+        // Extra measured-height breathing room covers subpixel rounding and
+        // keeps the hint visibly separate at compact/fractional scales.
+        // The number of wrapped lines is still never guessed.
         let Some(required) = text_height_reservation(actual) else { continue; };
         if node.min_height != px(required) {
             node.min_height = px(required);
@@ -1215,7 +1216,7 @@ mod tests {
     fn measured_text_geometry_has_a_height_allowance() {
         // Rendering-height reserve must be independent of a fixed number of
         // lines; glyph measurement controls it even if text changes.
-        assert_eq!(super::text_height_reservation(32.3), Some(36.0));
+        assert_eq!(super::text_height_reservation(32.3), Some(43.0));
         assert_eq!(super::text_height_reservation(0.0), None);
         assert_eq!(super::text_height_reservation(f32::NAN), None);
     }
