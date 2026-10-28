@@ -84,7 +84,9 @@ fn play(game: &Game, decisions: &[usize]) -> ResultState {
 #[test]
 fn the_little_lantern_is_a_complete_minimal_novel() {
     let game = game("little-lantern");
-    assert!(game.manifest.theme.is_none());
+    assert_eq!(game.manifest.theme.as_deref(), Some("styles/lantern.toml"));
+    assert!(game.theme.panel.accent[0] > game.theme.panel.accent[2],
+        "Lantern should load its warm external accent");
     assert!(game.manifest.music.is_empty() && game.manifest.sounds.is_empty());
     assert_eq!(game.manifest.backgrounds.len(), 1);
     assert_eq!(game.manifest.characters.len(), 1);
