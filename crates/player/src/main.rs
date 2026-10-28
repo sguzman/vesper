@@ -1401,6 +1401,7 @@ fn poll_completed_io(
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
     mut reading: ResMut<readout::ReadingState>,
     mut backgrounds: Query<&mut Sprite, With<BackgroundVisual>>,
+    mut save_ui: ResMut<save_slots::SaveUi>,
 ) {
     let events = match completed.0.lock() {
         Ok(mut events) => std::mem::take(&mut *events),
@@ -1408,10 +1409,39 @@ fn poll_completed_io(
     };
     for event in events {
         match event {
-            IoResult::Saved(Ok(())) => info!("Vesper save written"),
-            IoResult::Saved(Err(error)) => error!("Vesper save failed: {error}"),
-            IoResult::Loaded(Err(error)) => error!("Vesper load failed: {error}"),
+            IoResult::Slots(Ok(slots)) => {
+                if save_ui.visible() {
+                    save_ui.slots = slots;
+                    save_ui.status = "Select a slot, then choose Save or Load".into();
+                }
+                info!("Vesper save slot metadata scanned");
+            }
+            IoResult::Slots(Err(error)) => {
+                if save_ui.visible() {
+                    save_ui.status = format!("Slot scan failed: {}", error.chars().take(120).collect::<String>());
+                }
+                error!("Vesper save slot scan failed: {error}");
+            }
+            IoResult::Saved(Ok(())) => {
+                info!("Vesper save written");
+                if save_ui.visible() { save_ui.status = "Save written successfully".into(); }
+            }
+            IoResult::Saved(Err(error)) => {
+                error!("Vesper save failed: {error}");
+                if save_ui.visible() {
+                    save_ui.status = format!("Save failed: {}", error.chars().take(120).collect::<String>());
+                }
+            }
+            IoResult::Loaded(Err(error)) => {
+                error!("Vesper load failed: {error}");
+                if save_ui.visible() {
+                    save_ui.status = format!("Load failed: {}", error.chars().take(120).collect::<String>());
+                }
+            }
             IoResult::Loaded(Ok((machine, state))) => {
+                if save_ui.visible() {
+                    save_slots::close(&mut save_ui, &mut commands);
+                }
                 let same_backdrop = state.background.is_some()
                     && state.background == session.presentation.background
                     && session.background.is_some();
