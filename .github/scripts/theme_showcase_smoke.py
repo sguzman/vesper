@@ -103,10 +103,13 @@ def main():
                     original = path.read_text()
                     # Only alter a presentation token; hot reload must update
                     # its actual rendered accent and panel color without restart.
-                    changed = original.replace(
-                        "accent = [" + ", ".join(str(x) for x in panel["accent"]) + "]",
-                        "accent = [1.0, 0.0, 0.8, 1.0]"
+                    import re
+                    changed, replaced = re.subn(
+                        r"(?m)^accent = \[[^\]]+\]$",
+                        "accent = [1.0, 0.0, 0.8, 1.0]",
+                        original,
                     )
+                    assert replaced == 1, f"expected one accent token in {slug}"
                     assert changed != original, f"accent token missing in {slug}"
                     path.write_text(changed)
                     await_log(log, "Vesper hot reload applied")
