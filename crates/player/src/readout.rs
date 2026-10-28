@@ -108,7 +108,8 @@ pub fn tick(
     let theme = effective_theme(&session);
     // The cue uses the authored panel accent, separate from the keyboard hint.
     let base_alpha = theme.panel.accent[3];
-    let pulse = if session.preferences.reduced_motion.unwrap_or(false) {
+    let pulse = if session.preferences.reduced_motion.unwrap_or(false)
+        || chosen_speed == RevealSpeed::Instant {
         1.0
     } else {
         0.70 + 0.30 * (time.elapsed_secs() * 2.5).sin().abs()
