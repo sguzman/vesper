@@ -99,6 +99,7 @@ pub fn sync_rows(
             let row = children.spawn((
                 Name::new(format!("Story choice {}", index + 1)),
                 ChoiceRow(index),
+                feedback::FocusFeedback::choice(index, selected == index),
                 Button,
                 Hovered::default(),
                 observe(move |_activate: On<Activate>, mut clicks: ResMut<ChoiceClick>| {

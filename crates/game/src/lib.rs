@@ -97,6 +97,8 @@ pub struct Theme {
     pub ui_scale: f32,
     pub fade_seconds: f32,
     pub cinematic: CinematicTheme,
+    pub atmosphere: AtmosphereTheme,
+    pub feedback: FeedbackTheme,
     pub reveal_speed: TextRevealSpeed,
     pub font: FontSelection,
     pub panel: PanelStyle,
@@ -104,6 +106,94 @@ pub struct Theme {
     pub dialogue: TextStyle,
     pub choices: TextStyle,
     pub hint: TextStyle,
+}
+
+/// Subtle shader-free visual atmosphere; Off keeps legacy games unchanged.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AtmospherePreset {
+    #[default]
+    Off,
+    Motes,
+    Glow,
+    Vignette,
+    Moonlit,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct AtmosphereTheme {
+    pub preset: AtmospherePreset,
+    /// Stable author-controlled seed; identical settings yield identical layout.
+    pub seed: u64,
+    /// Only relevant to Motes/Moonlit; always capped at 32 entities.
+    pub count: u8,
+    /// 0 disables motion; logical canvas pixels per second otherwise.
+    pub speed: f32,
+    /// Bounded logical radius of each mote.
+    pub radius: f32,
+    /// Contribution of tint/edge overlays; never hides story or characters.
+    pub opacity: f32,
+    pub color: [f32; 4],
+}
+
+impl Default for AtmosphereTheme {
+    fn default() -> Self {
+        Self {
+            preset: AtmospherePreset::Off,
+            seed: 73, count: 16, speed: 8.0, radius: 3.0,
+            opacity: 0.15, color: [0.9, 0.84, 1.0, 1.0],
+        }
+    }
+}
+
+impl AtmosphereTheme {
+    pub fn validate(&self) -> Result<(), String> {
+        if self.count > 32
+            || !self.speed.is_finite() || !(0.0..=24.0).contains(&self.speed)
+            || !self.radius.is_finite() || !(1.0..=8.0).contains(&self.radius)
+            || !self.opacity.is_finite() || !(0.0..=0.35).contains(&self.opacity)
+            || !self.color.iter().all(|v| v.is_finite() && (0.0..=1.0).contains(v))
+        {
+            return Err("theme.atmosphere has invalid count, speed, radius, opacity or color".into());
+        }
+        Ok(())
+    }
+}
+
+/// Shared, validated interaction design tokens for menus and story choices.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct FeedbackTheme {
+    pub focus_seconds: f32,
+    pub confirm_seconds: f32,
+    pub cue_opacity: f32,
+    pub cue_color: [f32; 4],
+}
+
+impl Default for FeedbackTheme {
+    fn default() -> Self {
+        Self {
+            // Opt-in: legacy game themes retain instant focus and no cue.
+            focus_seconds: 0.0, confirm_seconds: 0.0, cue_opacity: 0.45,
+            cue_color: [0.96, 0.75, 0.40, 1.0],
+        }
+    }
+}
+
+impl FeedbackTheme {
+    pub fn validate(&self) -> Result<(), String> {
+        if !self.focus_seconds.is_finite() || !(0.0..=0.35).contains(&self.focus_seconds)
+            || !self.confirm_seconds.is_finite()
+            || !(0.0..=0.35).contains(&self.confirm_seconds)
+            || !self.cue_opacity.is_finite()
+            || !(0.0..=0.65).contains(&self.cue_opacity)
+            || !self.cue_color.iter().all(|v| v.is_finite() && (0.0..=1.0).contains(v))
+        {
+            return Err("theme.feedback contains invalid animation duration, cue opacity or color".into());
+        }
+        Ok(())
+    }
 }
 
 /// Optional external-background cinematics. The default Legacy mode retains
@@ -226,6 +316,8 @@ impl Default for Theme {
             ui_scale: 1.0,
             fade_seconds: 0.25,
             cinematic: CinematicTheme::default(),
+            atmosphere: AtmosphereTheme::default(),
+            feedback: FeedbackTheme::default(),
             reveal_speed: TextRevealSpeed::Instant,
             font: FontSelection::default(),
             panel: PanelStyle::default(),
@@ -259,6 +351,8 @@ impl Theme {
         {
             return Err("theme.cinematic has invalid transition, duration, zoom, pan or color".into());
         }
+        self.atmosphere.validate()?;
+        self.feedback.validate()?;
         let panel = &self.panel;
         if !color_valid(panel.background)
             || !color_valid(panel.accent)
@@ -578,6 +672,30 @@ room = "assets/room.png"
         assert_eq!(loaded.theme.dialogue.size, 36.0);
         fs::write(fixture.root.join("styles/visual.toml"), "ui_scale = 0.1\n").unwrap();
         assert!(Game::load(&fixture.root).unwrap_err().contains("ui_scale"));
+    }
+
+    #[test]
+    fn atmosphere_and_feedback_are_bounded_and_legacy_optional() {
+        let legacy: Theme = toml::from_str("fade_seconds = 0.2").unwrap();
+        assert_eq!(legacy.atmosphere.preset, AtmospherePreset::Off);
+        assert!(legacy.validate().is_ok());
+        let themed: Theme = toml::from_str(
+            "[atmosphere]\npreset = \"moonlit\"\nseed = 4321\ncount = 24\nspeed = 6.0\n[feedback]\nfocus_seconds = 0.1\nconfirm_seconds = 0.2\n"
+        ).unwrap();
+        assert_eq!(themed.atmosphere.preset, AtmospherePreset::Moonlit);
+        assert_eq!(themed.atmosphere.count, 24);
+        assert!(themed.validate().is_ok());
+        for bad in [
+            "[atmosphere]\ncount = 33",
+            "[atmosphere]\nopacity = 0.95",
+            "[atmosphere]\nspeed = -1.0",
+            "[feedback]\nfocus_seconds = 5.0",
+            "[feedback]\ncue_opacity = -0.1",
+        ] {
+            let parsed: Theme = toml::from_str(bad).unwrap();
+            assert!(parsed.validate().is_err(), "invalid theme accepted: {bad}");
+        }
+        assert!(toml::from_str::<Theme>("[atmosphere]\npreset = \"unknown\"").is_err());
     }
 
     #[test]

@@ -178,10 +178,20 @@ def check_staging(game,manifest):
         assert difference(paused,frozen)==0,"pause advanced a character transition"
         key("p",.1)
         middle=out/"crossfade-middle.png"
-        time.sleep(.3)
-        shot(win,middle)
-        mid=rgb(middle)
-        assert mid[0]>65 and mid[1]>70, f"no blended expression midpoint: {mid}"
+        # Incoming external artwork is asynchronously loaded and llvmpipe
+        # may present an old frame after unpausing. Observe actual blended
+        # pixels rather than requiring one specific post-resume timestamp.
+        deadline=time.monotonic()+4.0
+        while True:
+            shot(win,middle)
+            mid=rgb(middle)
+            if 75 < mid[0] < 225 and 78 < mid[1] < 195:
+                break
+            if time.monotonic()>deadline:
+                raise AssertionError(
+                    f"no blended expression frame before completion: {mid}"
+                )
+            time.sleep(.045)
         wait(log,"Vesper character entrance complete: tess",2)
         green=out/"top-green.png"
         wait_color(win,green,"green")

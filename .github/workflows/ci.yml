@@ -70,6 +70,16 @@ jobs:
         run: cargo build --locked -p vesper-player
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
+      - name: Verify VX07 atmosphere presets and UI micro-interactions
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/atmosphere_smoke.py
+      - name: Preserve VX07 atmospheric graphical evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-atmosphere-feedback
+          path: /tmp/vesper-atmosphere-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verify authored character stage geometry, depth, expressions and reduced motion
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/actors_smoke.py
       - name: Preserve VX06 staged character screenshot evidence

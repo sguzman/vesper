@@ -68,7 +68,12 @@ pub fn placement(
         }
     }
     y = y.clamp(-max_y, max_y);
-    Transform::from_xyz(x, y, stage.depth).with_scale(Vec3::splat(scale))
+    // An incoming expression must composite above the retained opaque
+    // outgoing sprite. Equal-Z transparent sprites have an unspecified draw
+    // order, which can otherwise collapse a crossfade into an abrupt swap.
+    let front = entrance.is_some_and(|effect| effect.previous.is_some());
+    let z = stage.depth + if front { 0.02 } else { 0.0 };
+    Transform::from_xyz(x, y, z).with_scale(Vec3::splat(scale))
 }
 
 /// Finish presentation-only animation without advancing the narrative. Pauses
@@ -179,6 +184,22 @@ mod tests {
             None, None, None, false);
         assert_eq!(t.translation.x, -350.0);
         assert_eq!(t.translation.y, -30.0);
+    }
+
+    #[test]
+    fn crossfade_keeps_incoming_sprite_ahead_of_retained_expression() {
+        let stage = CharacterStage { depth: 4.0, ..default() };
+        let entering = ActorEntrance {
+            previous: Some(Entity::PLACEHOLDER),
+            elapsed: 0.3,
+            duration: 1.0,
+            skip_requested: false,
+        };
+        let size = Vec2::new(1280.0, 720.0);
+        let old = placement(size, 1.0, "center", &stage, None, None, None, false);
+        let new = placement(size, 1.0, "center", &stage, Some(&entering), None, None, false);
+        assert!(new.translation.z > old.translation.z);
+        assert!(new.translation.z - old.translation.z < 0.05);
     }
 
     #[test]
