@@ -5,8 +5,8 @@ use std::sync::mpsc::{self, Sender};
 
 pub const ITEMS: [&str; 8] = [
     "Dialogue opacity", "Text size", "Font family",
-    "Reset to game defaults", "Back",
     "Reveal speed", "Reduced motion", "Auto advance",
+    "Reset to game defaults", "Back",
 ];
 
 #[derive(Resource)]
@@ -112,9 +112,9 @@ fn label(session: &Session, index: usize) -> String {
             format!("Text size   <  {value}  >")
         }
         2 => format!("Font   <  {}  >", session.preferences.font_family.as_deref().unwrap_or("Game default")),
-        3 => "Reset to game defaults".into(),
-        4 => "Back to menu".into(),
-        5 => {
+        6 => "Reset to game defaults".into(),
+        7 => "Back to menu".into(),
+        3 => {
             let speed = session.preferences.reveal_speed
                 .unwrap_or(session.game.theme.reveal_speed);
             let setting = match speed {
@@ -125,9 +125,9 @@ fn label(session: &Session, index: usize) -> String {
             };
             format!("Text reveal   <  {setting}  >")
         }
-        6 => format!("Reduced motion   <  {}  >",
+        4 => format!("Reduced motion   <  {}  >",
             if session.preferences.reduced_motion.unwrap_or(false) { "On" } else { "Off" }),
-        7 => format!("Auto advance   <  {}  >",
+        5 => format!("Auto advance   <  {}  >",
             if session.preferences.auto_advance.unwrap_or(false) { "On" } else { "Off" }),
         _ => String::new(),
     }
@@ -159,8 +159,8 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
             let target = (current as i32 + delta).rem_euclid(fonts.len() as i32) as usize;
             next.font_family = (target != 0).then(|| fonts[target].clone());
         }
-        3 => next.reset(),
-        5 => {
+        6 => next.reset(),
+        3 => {
             use vesper_game::TextRevealSpeed as Speed;
             let speeds = [Speed::Instant, Speed::Slow, Speed::Normal, Speed::Fast];
             let current = next.reveal_speed.unwrap_or(session.game.theme.reveal_speed);
@@ -168,15 +168,15 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
             let next_index = (index as i32 + delta).rem_euclid(speeds.len() as i32) as usize;
             next.reveal_speed = Some(speeds[next_index]);
         }
-        6 => next.reduced_motion = Some(!next.reduced_motion.unwrap_or(false)),
-        7 => next.auto_advance = Some(!next.auto_advance.unwrap_or(false)),
+        4 => next.reduced_motion = Some(!next.reduced_motion.unwrap_or(false)),
+        5 => next.auto_advance = Some(!next.auto_advance.unwrap_or(false)),
         _ => {}
     }
     next
 }
 
 pub fn change(session: &mut Session, index: usize, delta: i32, writer: &PreferencesWriter) {
-    if index == 4 || index >= ITEMS.len() { return; }
+    if index == 7 || index >= ITEMS.len() { return; }
     let next = edited(session, index, delta);
     if next == session.preferences { return; }
     if let Err(error) = next.validate() {
@@ -331,7 +331,7 @@ pub fn keyboard(
     } else if input.just_pressed(KeyCode::ArrowRight) {
         change(session, state.selection, 1, writer);
     } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
-        if state.selection == 4 { close(session, state, commands, assets); }
+        if state.selection == 7 { close(session, state, commands, assets); }
         else { change(session, state.selection, 1, writer); }
     }
 }
@@ -349,7 +349,7 @@ pub fn pointer(
     }
     if let Some(index) = clicks.0.take() {
         state.selection = index;
-        if index == 4 { close(&mut session, &mut state, &mut commands, &assets); }
+        if index == 7 { close(&mut session, &mut state, &mut commands, &assets); }
         else { change(&mut session, index, 1, &writer); }
     }
 }
