@@ -174,7 +174,8 @@ pub struct FeedbackTheme {
 impl Default for FeedbackTheme {
     fn default() -> Self {
         Self {
-            focus_seconds: 0.16, confirm_seconds: 0.14, cue_opacity: 0.45,
+            // Opt-in: legacy game themes retain instant focus and no cue.
+            focus_seconds: 0.0, confirm_seconds: 0.0, cue_opacity: 0.45,
             cue_color: [0.96, 0.75, 0.40, 1.0],
         }
     }
