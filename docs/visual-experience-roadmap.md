@@ -1,6 +1,6 @@
 # Vesper — Visual Experience Roadmap
 
-**Status:** planned, **0 / 100 verified points**. This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
+**Status:** VX01 verified, **8 / 100 verified points**. Next: VX02 live appearance Settings. This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
 
 **Goal:** A lovely, expressive visual novel reader: readable, configurable dialogue; distinct choices; gentle cinematic staging; history and saves; accessible motion controls; and a complete original game that demonstrates all of them.
 
@@ -8,7 +8,7 @@
 
 | ID | Weight | Milestone | Proof of completion |
 | --- | ---: | --- | --- |
-| VX01 | 8 | 🧱 Player preferences foundation | Preferences are stored in an atomic, bounded, versioned JSON file under the platform-appropriate user data/config directory; no writes on the render/update thread. |
+| VX01 | 8 | 🧱 Player preferences foundation — verified ([CI run 40712738040](https://github.com/sguzman/vesper/actions/runs/40712738040)) | Preferences are stored in an atomic, bounded, versioned JSON file under the platform-appropriate user data/config directory; no writes on the render/update thread. |
 | VX02 | 14 | 🎛️ Live appearance settings | From pause/main menus, players can adjust dialogue panel opacity (bounded 0.60–1.00), dialogue font size multiplier (0.80–1.60), choose an installed or game-approved font with safe fallback, and restore defaults. |
 | VX03 | 10 | 💬 Dialogue and choice composition | Each choice is a separate, engine-owned UI entity with selection/highlight, focus, mouse target and keyboard action; choice data remains supplied by external .vn scripts. |
 | VX04 | 8 | ⌨️ Text pacing and reading cues | A reveal effect supports instant/off, slow, normal and fast player choices, with Unicode grapheme-safe pacing and no string corruption. |
