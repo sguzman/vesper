@@ -202,7 +202,8 @@ pub fn tick(
             authored.preset, state.entities.len());
     }
     let active = !session.paused && !session.finished
-        && session.menu_overlay.is_none() && settings.overlay.is_none();
+        && session.menu_overlay.is_none() && settings.overlay.is_none()
+        && !session.history.visible();
     let reduced = session.preferences.reduced_motion.unwrap_or(false);
     if active && !reduced {
         state.elapsed = (state.elapsed + time.delta_secs().clamp(0.0, 0.1))
