@@ -195,7 +195,9 @@ def check_staging(game,manifest):
                            .replace("depth = 1.0","depth = 7.0"))
         wait(log,"Vesper hot reload applied")
         blue=out/"hot-reloaded-depth.png"
-        shot(win,blue)
+        # The hot-reload log is emitted by Update before that frame reaches
+        # llvmpipe. Wait for the actual visible result before asserting z-order.
+        wait_color(win,blue,"blue",timeout=8.)
         hot_reload_rgb=rgb(blue)
 
         # Diagnose the world/render discrepancy by exposing the owl without
