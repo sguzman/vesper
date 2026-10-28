@@ -74,6 +74,16 @@ jobs:
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/responsive_resize_smoke.py
       - name: Verify player preference overrides, fallback and legacy configuration
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/preferences_smoke.py
+      - name: Exercise live player appearance settings and save/restart/reset
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/settings_smoke.py
+      - name: Preserve live settings screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-live-settings
+          path: /tmp/vesper-live-settings-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Upload player preferences screenshots
         if: always()
         uses: actions/upload-artifact@v4
