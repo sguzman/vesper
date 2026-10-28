@@ -585,6 +585,7 @@ fn apply_visual(
                 commands.entity(entity).insert(cinematics::BackdropTransition {
                     outgoing, kind: config.transition, duration: config.seconds,
                     elapsed: 0.0, curtain, slide_pixels: config.slide_pixels,
+                    skip_requested: false,
                 });
                 info!("Vesper cinematic started: {:?}", config.transition);
             } else if fade > 0.0 {
