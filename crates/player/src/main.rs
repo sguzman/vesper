@@ -6,6 +6,7 @@ mod settings;
 mod choices;
 mod text_reveal;
 mod readout;
+mod cinematics;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -134,7 +135,7 @@ fn fit_viewport(
     windows: Query<&Window, With<PrimaryWindow>>,
     session: Res<Session>,
     mut ui_scale: ResMut<UiScale>,
-    mut backgrounds: Query<&mut Transform, (With<BackgroundVisual>, Without<CharacterVisual>)>,
+    mut backgrounds: Query<(&mut Transform, Option<&cinematics::BackdropMotion>, Option<&cinematics::BackdropTransition>), (With<BackgroundVisual>, Without<CharacterVisual>)>,
     mut characters: Query<(&CharacterVisual, &mut Transform), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
     mut previous: Local<(Vec2, [u32; 4])>,
@@ -163,8 +164,14 @@ fn fit_viewport(
     if (ui_scale.0 - m.ui_scale).abs() > 0.001 {
         ui_scale.0 = m.ui_scale;
     }
-    for mut transform in &mut backgrounds {
-        transform.scale = Vec3::splat(m.background_scale);
+    for (mut transform, motion, transition) in &mut backgrounds {
+        let (scale, offset) = cinematics::background_transform(size, m.background_scale, motion, transition);
+        let next_scale = Vec3::splat(scale);
+        if transform.scale != next_scale { transform.scale = next_scale; }
+        if transform.translation.x != offset.x || transform.translation.y != offset.y {
+            transform.translation.x = offset.x;
+            transform.translation.y = offset.y;
+        }
     }
     for (anchor, mut transform) in &mut characters {
         transform.scale = Vec3::splat(m.character_scale);
@@ -508,7 +515,7 @@ fn main() {
             settings::pointer, advance_from_keyboard,
             choices::sync_rows, choices::sync_row_style,
             choices::scroll_selected, choices::sync_viewport,
-            choices::reserve_row_height, readout::tick,
+            choices::reserve_row_height, readout::tick, cinematics::tick,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
             poll_completed_io, sync_menu_selection, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
@@ -538,10 +545,22 @@ fn apply_visual(
     match visual {
         Visual::Background(id) => {
             let path = session.game.background(&id)?.to_owned();
-            if let Some(previous) = session.background.take() {
-                commands.entity(previous).despawn();
+            let config = &session.game.theme.cinematic;
+            let previous = session.background.take();
+            let cinematic = config.transition != vesper_game::BackgroundTransitionKind::Legacy
+                && config.seconds > 0.0 && previous.is_some();
+            let fade = if cinematic { config.seconds } else { session.game.theme.fade_seconds };
+            if let Some(old) = previous {
+                if cinematic {
+                    // Keep outgoing imagery visible behind the incoming
+                    // sprite; an interrupted transition loses its old clock.
+                    commands.entity(old).remove::<FadeIn>();
+                    commands.entity(old).remove::<cinematics::BackdropTransition>();
+                    commands.entity(old).insert(Transform::from_xyz(0., 0., -10.));
+                } else {
+                    commands.entity(old).despawn();
+                }
             }
-            let fade = session.game.theme.fade_seconds;
             let entity = commands.spawn((
                 Name::new(format!("Background: {id}")),
                 BackgroundVisual,
@@ -551,10 +570,23 @@ fn apply_visual(
                     custom_size: Some(Vec2::new(1280., 720.)),
                     ..default()
                 },
-                Transform::from_xyz(0., 0., -10.),
+                Transform::from_xyz(0., 0., if cinematic { -9.8 } else { -10. }),
             )).id();
-            if fade > 0.0 {
+            if cinematic {
+                let outgoing = previous.expect("transition requires outgoing background");
+                let curtain = if config.transition == vesper_game::BackgroundTransitionKind::FadeThroughColor {
+                    Some(cinematics::create_curtain(commands, config))
+                } else { None };
+                commands.entity(entity).insert(cinematics::BackdropTransition {
+                    outgoing, kind: config.transition, duration: config.seconds,
+                    elapsed: 0.0, curtain, slide_pixels: config.slide_pixels,
+                });
+                info!("Vesper cinematic started: {:?}", config.transition);
+            } else if fade > 0.0 {
                 commands.entity(entity).insert(FadeIn { elapsed: 0.0, duration: fade });
+            }
+            if let Some(motion) = cinematics::motion(config) {
+                commands.entity(entity).insert(motion);
             }
             session.background = Some(entity);
             session.presentation.background = Some(id);
