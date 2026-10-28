@@ -73,6 +73,14 @@ def background_pixels(a, b, out):
     return pixels(left, right)
 
 
+def top_brightness(frame):
+    """Mean 0-255 luminance of the scene above the dialogue panel."""
+    result = run("convert", str(frame), "-crop", "1280x300+0+0",
+                 "+repage", "-colorspace", "gray",
+                 "-format", "%[fx:mean*255]", "info:")
+    return float(result.stdout.strip())
+
+
 def clone_fixture(tmp, game_name, scene, first, second, theme_name, kind):
     copy = tmp / f"{game_name}-{kind}"
     shutil.copytree(ROOT / "examples" / game_name, copy)
@@ -240,6 +248,15 @@ def verify_rapid_interruption(tmp):
             wait(log,"Vesper cinematic started: FadeThroughColor")
             key("Return",.10)  # Interrupt well before 1.4s elapsed
             wait(log,"Vesper cinematic started: FadeThroughColor",2)
+            # A rapid replacement must never expose the empty render clear
+            # color while prior/incoming artwork is loading.
+            for index in range(2):
+                time.sleep(.12)
+                frame = out/f"interruption-{index}.png"
+                shot(win, frame)
+                assert top_brightness(frame) > 22, (
+                    f"background went dark during interruption: {frame}"
+                )
             key("k",.20)
             wait(log,"Vesper cinematic skipped")
             wait(log,"Vesper cinematic complete: FadeThroughColor",1)
