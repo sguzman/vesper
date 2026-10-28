@@ -1292,17 +1292,19 @@ fn trigger_save_load(
     session: Res<Session>,
     completed: Res<CompletedIo>,
     workers: Res<IoWorkers>,
+    mut pending: ResMut<save_slots::Pending>,
+    slot_ui: Res<save_slots::SaveUi>,
 ) {
-    if (session.paused || session.menu_overlay.is_some() || session.history.visible()) || !(keyboard.just_pressed(KeyCode::F5) || keyboard.just_pressed(KeyCode::F9)) {
+    use save_slots::Request;
+    let request = pending.0.take();
+    let quick_save = keyboard.just_pressed(KeyCode::F5);
+    let quick_load = keyboard.just_pressed(KeyCode::F9);
+    if request.is_none() && !quick_save && !quick_load { return; }
+    if request.is_none()
+        && (session.paused || session.menu_overlay.is_some()
+            || session.history.visible() || slot_ui.visible()) {
         return;
     }
-    let path = match save_file(&session.game.manifest.id) {
-        Ok(path) => path,
-        Err(error) => {
-            eprintln!("Save path error: {error}");
-            return;
-        }
-    };
     let mut active = match workers.0.lock() {
         Ok(jobs) => jobs,
         Err(_) => { error!("Vesper save worker lock is unavailable"); return; }
@@ -1313,27 +1315,80 @@ fn trigger_save_load(
         return;
     }
     let queue = completed.0.clone();
-    let worker = if keyboard.just_pressed(KeyCode::F5) {
-        let save = SaveData::new(
-            &session.game, &session.machine, session.presentation.clone(),
-        );
-        std::thread::spawn(move || {
-            let result = save.write_atomic(&path);
-            if let Ok(mut messages) = queue.lock() {
-                messages.push(IoResult::Saved(result));
+    let game_id = session.game.manifest.id.clone();
+    let worker = match request {
+        Some(Request::Scan) => {
+            std::thread::spawn(move || {
+                let result = save_slots::scan(&game_id);
+                if let Ok(mut messages) = queue.lock() {
+                    messages.push(IoResult::Slots(result));
+                }
+            })
+        }
+        Some(Request::Save(slot)) => {
+            let path=match save_slots::slot_file(&game_id,slot) {
+                Ok(path)=>path,
+                Err(error)=>{error!("Vesper slot save path error: {error}");return;}
+            };
+            let save=SaveData::new(&session.game,&session.machine,
+                session.presentation.clone());
+            std::thread::spawn(move || {
+                let result=save.write_atomic(&path);
+                let succeeded=result.is_ok();
+                if let Ok(mut messages)=queue.lock() {
+                    messages.push(IoResult::Saved(result));
+                }
+                if succeeded {
+                    let updated=save_slots::scan(&game_id);
+                    if let Ok(mut messages)=queue.lock() {
+                        messages.push(IoResult::Slots(updated));
+                    }
+                }
+            })
+        }
+        Some(Request::Load(slot)) => {
+            let path=match save_slots::slot_file(&game_id,slot) {
+                Ok(path)=>path,
+                Err(error)=>{error!("Vesper slot load path error: {error}");return;}
+            };
+            let game=session.game.clone();
+            std::thread::spawn(move || {
+                let result=SaveData::read(&path).and_then(|save|{
+                    let machine=save.restore(&game)?;
+                    Ok((machine,save.presentation))
+                });
+                if let Ok(mut messages)=queue.lock() {
+                    messages.push(IoResult::Loaded(result));
+                }
+            })
+        }
+        None => {
+            let path=match save_file(&game_id) {
+                Ok(path)=>path,
+                Err(error)=>{error!("Vesper quick-save path error: {error}");return;}
+            };
+            if quick_save {
+                let save=SaveData::new(&session.game,&session.machine,
+                    session.presentation.clone());
+                std::thread::spawn(move || {
+                    let result=save.write_atomic(&path);
+                    if let Ok(mut messages)=queue.lock() {
+                        messages.push(IoResult::Saved(result));
+                    }
+                })
+            } else {
+                let game=session.game.clone();
+                std::thread::spawn(move || {
+                    let result=SaveData::read(&path).and_then(|save|{
+                        let machine=save.restore(&game)?;
+                        Ok((machine,save.presentation))
+                    });
+                    if let Ok(mut messages)=queue.lock() {
+                        messages.push(IoResult::Loaded(result));
+                    }
+                })
             }
-        })
-    } else {
-        let game = session.game.clone();
-        std::thread::spawn(move || {
-            let result = SaveData::read(&path).and_then(|save| {
-                let restored = save.restore(&game)?;
-                Ok((restored, save.presentation))
-            });
-            if let Ok(mut messages) = queue.lock() {
-                messages.push(IoResult::Loaded(result));
-            }
-        })
+        }
     };
     active.push(worker);
 }
