@@ -313,6 +313,7 @@ def verify_reduced_motion(tmp):
     )
     log = out/"player.log"
     env = dict(os.environ, LIBGL_ALWAYS_SOFTWARE="1",
+               VESPER_TRACE_SCENES="1",
                VESPER_SAVE_DIR=str(out/"saves"),
                VESPER_PREFERENCES_DIR=str(prefs))
     with log.open("w") as stream:
