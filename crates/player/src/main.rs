@@ -923,16 +923,18 @@ fn advance_from_keyboard(
         }
         let selected = session.menu_selection;
         if input.just_pressed(KeyCode::ArrowDown) {
-            session.menu_selection = (selected + 1) % MAIN_ITEMS.len();
+            session.menu_selection = menu_step(selected, 1, MAIN_ITEMS.len());
             return;
         }
         if input.just_pressed(KeyCode::ArrowUp) {
-            session.menu_selection = (selected + MAIN_ITEMS.len() - 1) % MAIN_ITEMS.len();
+            session.menu_selection = menu_step(selected, -1, MAIN_ITEMS.len());
             return;
         }
-        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
+        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3, KeyCode::Digit4]
             .iter().position(|key| input.just_pressed(*key));
-        let confirmed = digit.or_else(|| {
+        let from_pointer = pointer.action.take()
+            .and_then(|(kind, index)| (kind == MenuKind::Main).then_some(index));
+        let confirmed = from_pointer.or(digit).or_else(|| {
             (input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space))
                 .then_some(selected)
         });
@@ -946,6 +948,11 @@ fn advance_from_keyboard(
                 2 => {
                     info!("Vesper quitting through menu");
                     menu_exit.write(AppExit::Success);
+                }
+                3 => {
+                    hide_main_menu(&mut session, &mut commands);
+                    settings::open(&session, &mut settings_state, &mut commands,
+                        &assets, MenuKind::Main);
                 }
                 _ => {}
             }
@@ -972,16 +979,19 @@ fn advance_from_keyboard(
     if session.paused {
         let selected = session.pause_selection;
         if input.just_pressed(KeyCode::ArrowDown) {
-            session.pause_selection = (selected + 1) % PAUSE_ITEMS.len();
+            session.pause_selection = menu_step(selected, 1, PAUSE_ITEMS.len());
             return;
         }
         if input.just_pressed(KeyCode::ArrowUp) {
-            session.pause_selection = (selected + PAUSE_ITEMS.len() - 1) % PAUSE_ITEMS.len();
+            session.pause_selection = menu_step(selected, -1, PAUSE_ITEMS.len());
             return;
         }
-        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
+        let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3, KeyCode::Digit4]
             .iter().position(|key| input.just_pressed(*key));
-        let confirmed = digit.or_else(|| input.just_pressed(KeyCode::Enter).then_some(selected));
+        let from_pointer = pointer.action.take()
+            .and_then(|(kind, index)| (kind == MenuKind::Pause).then_some(index));
+        let confirmed = from_pointer.or(digit)
+            .or_else(|| input.just_pressed(KeyCode::Enter).then_some(selected));
         if let Some(index) = confirmed {
             match index {
                 0 => dismiss_pause(&mut session, &mut commands),
@@ -992,6 +1002,11 @@ fn advance_from_keyboard(
                 2 => {
                     info!("Vesper quitting through pause menu");
                     menu_exit.write(AppExit::Success);
+                }
+                3 => {
+                    dismiss_pause(&mut session, &mut commands);
+                    settings::open(&session, &mut settings_state, &mut commands,
+                        &assets, MenuKind::Pause);
                 }
                 _ => {}
             }
@@ -1017,7 +1032,9 @@ fn advance_from_keyboard(
         }
         let digit = [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3]
             .iter().position(|key| input.just_pressed(*key));
-        let confirmed = digit.or_else(|| {
+        let from_pointer = pointer.action.take()
+            .and_then(|(kind, index)| (kind == MenuKind::Ending).then_some(index));
+        let confirmed = from_pointer.or(digit).or_else(|| {
             (input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space))
                 .then_some(selected)
         });
