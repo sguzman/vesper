@@ -1,7 +1,7 @@
 //! Filesystem-based game format. Never interpret author-controlled asset paths
 //! as unrestricted paths outside the chosen game directory.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 pub mod save;
 pub mod preferences;
 use std::{
