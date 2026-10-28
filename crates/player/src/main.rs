@@ -1056,6 +1056,7 @@ mod tests {
             min_height: 226.0,
             padding: 22.0,
             gap: 8.0,
+            ..Default::default()
         };
         let compact = panel_metrics(Vec2::new(640.0, 360.0), &panel);
         let standard = panel_metrics(Vec2::new(1280.0, 720.0), &panel);
