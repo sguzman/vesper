@@ -656,7 +656,7 @@ fn apply_visual(
             if staged {
                 commands.entity(entity).insert(actors::ActorEntrance {
                     previous: if crossfade { previous } else { None },
-                    elapsed: 0.0, duration,
+                    elapsed: 0.0, duration, skip_requested: false,
                 });
                 info!("Vesper character staged: {character} ({expression})");
             } else if duration > 0.0 {
