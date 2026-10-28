@@ -64,6 +64,15 @@ def pixels(a,b):
     return int(match.group())
 
 
+def background_pixels(a, b, out):
+    """Ignore dialogue when checking which actual background was rendered."""
+    left, right = out/"crop-a.png", out/"crop-b.png"
+    for source, target in ((a, left), (b, right)):
+        run("convert", str(source), "-crop", "1280x320+0+0",
+            "+repage", str(target))
+    return pixels(left, right)
+
+
 def clone_fixture(tmp, game_name, scene, first, second, theme_name, kind):
     copy = tmp / f"{game_name}-{kind}"
     shutil.copytree(ROOT / "examples" / game_name, copy)
@@ -157,8 +166,22 @@ def scenario(tmp, game_name, title, scene, first, second, theme_name, kind):
             wait(log,"Vesper cinematic skipped")
             wait(log,"Vesper cinematic complete:",2)
             restored=out/"skipped-back-to-first.png"
-            shot(win,restored)
-            assert pixels(restored,end)>2000, "skip left previous art on screen"
+            # The update-thread completion log may precede the presented
+            # frame, especially under the software renderer in CI.
+            # Require the *rendered destination art* rather than just a log.
+            deadline = time.monotonic() + 3.0
+            while True:
+                shot(win, restored)
+                first_distance = background_pixels(restored, first_image, out)
+                previous_distance = background_pixels(restored, end, out)
+                if first_distance < previous_distance:
+                    break
+                if time.monotonic() >= deadline:
+                    raise AssertionError(
+                        f"skip never displayed destination background: "
+                        f"first={first_distance}, previous={previous_distance}"
+                    )
+                time.sleep(.12)
             if kind == "soft_slide" and game_name == "clockwork-moon":
                 before_restore = out/"before-restore.png"
                 shot(win,before_restore)
