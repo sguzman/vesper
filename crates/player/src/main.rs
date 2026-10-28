@@ -163,7 +163,10 @@ impl Screen {
     }
 
     fn ending(message: String) -> Self {
-        Self { speaker: String::new(), body: message, hint: String::new(), choices: false }
+        Self {
+            speaker: String::new(), body: message,
+            hint: "R: restart story   Esc: quit".into(), choices: false,
+        }
     }
 
     fn part(&self, slot: &StoryText) -> &str {
@@ -478,7 +481,33 @@ fn advance_from_keyboard(
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
 ) {
-    if session.finished { return; }
+    if session.finished {
+        if input.just_pressed(KeyCode::KeyR) {
+            match Machine::new(&session.game.story, &session.game.manifest.entry) {
+                Ok(machine) => {
+                    if let Some(background) = session.background.take() {
+                        commands.entity(background).despawn();
+                    }
+                    for (_, character) in std::mem::take(&mut session.characters) {
+                        commands.entity(character).despawn();
+                    }
+                    if let Some(music) = session.music.take() {
+                        commands.entity(music).despawn();
+                    }
+                    session.pending_audio.clear();
+                    session.presentation = PresentationState::default();
+                    session.machine = machine;
+                    session.choosing = false;
+                    session.finished = false;
+                    let screen = next_screen(&mut session, &mut commands, &assets);
+                    update_screen(screen, &session.game.theme, &mut texts);
+                    info!("Vesper story restarted from its beginning");
+                }
+                Err(error) => error!("Vesper restart failed: {error}"),
+            }
+        }
+        return;
+    }
     if session.choosing {
         let options = match session.machine.last_output() {
             Some(Output::Choices(options)) => options.clone(),
@@ -665,7 +694,33 @@ fn poll_completed_io(
 #[cfg(test)]
 mod tests {
     use super::{fade_fraction, viewport_metrics};
-    use bevy::prelude::Vec2;
+    use bevy::{audio::Decodable, prelude::{AudioSource, Vec2}};
+    use std::{fs, path::Path, sync::Arc};
+
+    #[test]
+    fn decode_external_audio_through_the_actual_bevy_playback_decoder() {
+        let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let mut decoded = 0;
+        for game in ["game", "examples/clockwork-moon"] {
+            let dir = workspace.join(game).join("assets/audio");
+            if !dir.is_dir() { continue; }
+            for entry in fs::read_dir(&dir).expect("list authored audio").flatten() {
+                let path = entry.path();
+                if !matches!(path.extension().and_then(|ext| ext.to_str()), Some("wav" | "ogg")) {
+                    continue;
+                }
+                let bytes: Arc<[u8]> = fs::read(&path)
+                    .unwrap_or_else(|error| panic!("{}: {error}", path.display()))
+                    .into();
+                let source = AudioSource { bytes };
+                let sample = source.decoder().next();
+                assert!(sample.is_some(), "decoder returned no samples for {}", path.display());
+                decoded += 1;
+            }
+        }
+        assert_eq!(decoded, 10, "all 10 authored external WAVs must decode");
+    }
+
     #[test]
     fn viewport_scales_equally_with_window_and_preserves_aspect() {
         let baseline = viewport_metrics(Vec2::new(1280.0, 720.0), 1.0);
