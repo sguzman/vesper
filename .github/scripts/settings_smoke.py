@@ -210,10 +210,9 @@ def main() -> None:
                     key("p")
                     key("4")
                     wait_log(restart, "Vesper appearance settings opened")
-                    # 4th row = reset; return via Escape to the paused menu.
-                    key("Down")
-                    key("Down")
-                    key("Down")
+                    # VX04 reading controls precede Reset (7th row).
+                    for _ in range(6):
+                        key("Down")
                     key("Return")
                     wait_prefs(prefs_path, lambda p:
                         p.get("panel_opacity") is None and
