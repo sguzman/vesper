@@ -3,6 +3,7 @@
 use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui_widgets::{observe, Activate, Button}, window::PrimaryWindow};
 mod reload;
 mod settings;
+mod choices;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -296,17 +297,11 @@ impl Screen {
         }
     }
 
-    fn choices(options: &[vesper_story::Choice], selected: usize) -> Self {
-        let mut lines = String::new();
-        for (index, option) in options.iter().enumerate() {
-            lines.push_str(&format!("{} {}. {}\n",
-                if index == selected { "▶" } else { " " },
-                index + 1, option.label,
-            ));
-        }
+    fn choices(_options: &[vesper_story::Choice], _selected: usize) -> Self {
+        // Actual options belong to independently selectable Bevy UI entities.
         Self {
             speaker: String::new(),
-            body: lines,
+            body: String::new(),
             hint: "Arrows: move   Enter: select   Number: choose   P: pause   M: menu   F5: save   F9: load   Esc: quit".into(),
             choices: true,
         }
@@ -407,9 +402,15 @@ fn text_height_reservation(actual: f32) -> Option<f32> {
 }
 
 fn reserve_story_text_height(
-    mut texts: Query<(&StoryText, &TextLayoutInfo, &mut Node)>,
+    mut texts: Query<(&StoryText, &TextLayoutInfo, &Text, &mut Node)>,
 ) {
-    for (slot, glyphs, mut node) in &mut texts {
+    for (slot, glyphs, text, mut node) in &mut texts {
+        if text.0.is_empty() {
+            // An empty body must not retain the old dialogue min-height
+            // when the separate choice list takes its place.
+            if node.min_height != px(0.0) { node.min_height = px(0.0); }
+            continue;
+        }
         let actual = glyphs.size.y;
         // Extra measured-height breathing room covers subpixel rounding and
         // keeps the hint visibly separate at compact/fractional scales.
@@ -482,6 +483,8 @@ fn main() {
         .insert_resource(settings::SettingsState::default())
         .insert_resource(settings::SettingsClicks::default())
         .insert_resource(MenuPointer::default())
+        .insert_resource(choices::ChoiceUi::default())
+        .insert_resource(choices::ChoiceClick::default())
         .insert_resource(preferences_writer)
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
@@ -496,6 +499,9 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Update, (
             settings::pointer, advance_from_keyboard,
+            choices::sync_rows, choices::sync_row_style,
+            choices::scroll_selected, choices::sync_viewport,
+            choices::reserve_row_height,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
             poll_completed_io, sync_menu_selection, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
@@ -662,6 +668,7 @@ fn setup(
     mut commands: Commands,
     mut session: ResMut<Session>,
     assets: Res<AssetServer>,
+    mut choice_ui: ResMut<choices::ChoiceUi>,
 ) {
     commands.spawn(Camera2d);
     let theme = effective_theme(&session);
@@ -703,6 +710,7 @@ fn setup(
             ));
             add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);
             add_text(parent, StoryText::Body, &initial.body, &body_style, &font);
+            choice_ui.container = Some(choices::spawn_container(parent));
             parent.spawn((
                 EndingActions,
                 Node {
@@ -894,7 +902,10 @@ fn advance_from_keyboard(
     mut settings_state: ResMut<settings::SettingsState>,
     preference_writer: Res<settings::PreferencesWriter>,
     mut pointer: ResMut<MenuPointer>,
+    mut choice_click: ResMut<choices::ChoiceClick>,
 ) {
+    // Pointer activation must never survive a pause/menu or get replayed.
+    let pointer_choice = choice_click.0.take();
     if settings_state.overlay.is_some() {
         settings::keyboard(&input, &mut session, &mut settings_state,
             &mut commands, &assets, &preference_writer);
@@ -1059,7 +1070,7 @@ fn advance_from_keyboard(
             KeyCode::Digit4, KeyCode::Digit5, KeyCode::Digit6,
             KeyCode::Digit7, KeyCode::Digit8, KeyCode::Digit9,
         ].iter().position(|key| input.just_pressed(*key));
-        let confirmed = digit.or_else(|| {
+        let confirmed = pointer_choice.filter(|index| *index < options.len()).or(digit).or_else(|| {
             (input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space))
                 .then_some(current)
         });
@@ -1345,6 +1356,9 @@ mod tests {
 /// Verify that external audio has been decoded into Bevy assets. CI has no
 /// physical audio sink, so this asserts decoding rather than audible output.
 fn monitor_audio_assets(mut session: ResMut<Session>, server: Res<AssetServer>) {
+    // Avoid flagging Session as changed on every idle frame; choice rows and
+    // settings only need refreshing when their inputs actually change.
+    if session.pending_audio.is_empty() { return; }
     session.pending_audio.retain(|(name, handle)| {
         match server.load_state(handle.id()) {
             LoadState::Loaded => {
