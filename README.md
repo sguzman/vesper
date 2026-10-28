@@ -20,7 +20,7 @@ Or download the compiled **vesper-linux-fairytale-showcase** artifact from [veri
 
 ## Presentation polish (next phase)
 
-The original MVP remains verified 100%. A separate [weighted polish roadmap](docs/polish-roadmap.json) tracks the next phase of visual composition and navigation without changing the MVP acceptance ledger. **P** opens a keyboard-navigable pause menu (P again resumes), **M** opens the main menu during play, and **R** restarts after an ending. Main-menu commands start a new playthrough, continue the in-memory session, or quit. Pause-menu commands resume, open the main menu, or quit. Both menus support Up/Down, Enter, and number keys 1–3. External games still launch directly into gameplay. The Little Lantern intentionally contains no audio; The Clockwork Moon uses external WAV assets.
+The original MVP remains verified 100%. A separate [weighted polish roadmap](docs/polish-roadmap.json) tracks the next phase of visual composition and navigation without changing the MVP acceptance ledger. **P** opens a keyboard-navigable pause menu (P again resumes), **M** opens the main menu during play, and **R** restarts after an ending. Main-menu commands start a new playthrough, continue the in-memory session, or quit. Pause-menu commands resume, open the main menu, or quit. Both menus support Up/Down, Enter, and number keys 1–3. External games still launch directly into gameplay. Completed games now display an explicit, keyboard-selectable **Play again / Main menu / Quit** ending screen; Up/Down, Enter, 1–3, R and M work without a dead-end. The Little Lantern intentionally contains no audio; The Clockwork Moon uses external WAV assets.
 
 ## Workspace
 
@@ -60,9 +60,13 @@ See `docs/architecture.md` and `docs/roadmap.json` for technical and completion 
 
 The engine now scales panel margins, padding and minimum height with the window, while preserving each external theme's authored panel width, text sizes, contrast, and font. A subtle separator visually distinguishes dialogue and choices from keyboard controls. The responsive CI suite waits for actual rendered pixels after resize and fails with screenshot evidence if the art never reaches the viewport edges.
 
+## Differentiated external fairytale themes
+
+The Little Lantern supplies `examples/little-lantern/styles/lantern.toml` with warm sunrise amber, cocoa and parchment tones; The Clockwork Moon supplies `examples/clockwork-moon/styles/moonlight.toml` with midnight-blue, silver and cyan. Both manifests load their own external theme, and the common engine renders the theme-owned `[panel] background`, `accent`, and `divider` colors. All four text categories retain independently authored type sizes and colors. The graphical theme smoke test validates text/background contrast, screenshots, and a live accent change for each game.
+
 ## External typography
 
-Set `theme = "styles/dialogue.toml"` in `game.toml`. Themes configure `ui_scale`, panel dimensions, RGBA colors, and separate speaker/dialogue/choice/hint sizes and colors. Select `[font] family = "DejaVu Sans"` for system font discovery or `[font] file = "assets/fonts/YourFont.ttf"` to load an external TTF/OTF. Font paths stay inside the game directory and no game font is compiled into Vesper. Unicode wrapping uses native Bevy text layout. Authors must license their font files.
+Set `theme = "styles/dialogue.toml"` in `game.toml`. Themes configure `ui_scale`, panel dimensions, RGBA colors (including optional `[panel] accent` and `divider` tokens), and separate speaker/dialogue/choice/hint sizes and colors. Select `[font] family = "DejaVu Sans"` for system font discovery or `[font] file = "assets/fonts/YourFont.ttf"` to load an external TTF/OTF. Font paths stay inside the game directory and no game font is compiled into Vesper. Unicode wrapping uses native Bevy text layout. Authors must license their font files.
 
 ## Saving and resuming
 

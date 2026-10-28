@@ -4,7 +4,7 @@ These are self-contained **external games**, not hard-coded engine demos. Every 
 
 ## The Little Lantern — beginner example
 
-Path: `examples/little-lantern/`. A fox and a lantern, one background, one sprite, a single two-option choice, two little branches and a shared ending. Minimal `game.toml`, no styling or audio configuration.
+Path: `examples/little-lantern/`. A fox and a lantern, one background, one sprite, a single two-option choice, two little branches and a shared ending. Minimal `game.toml`, a warm `styles/lantern.toml` theme, and no audio.
 
 ```sh
 cargo run --locked -p vesper-player -- examples/little-lantern
@@ -20,7 +20,7 @@ cargo run --locked -p vesper-player -- examples/clockwork-moon
 cargo run --locked -p vesper-player -- examples/clockwork-moon --watch
 ```
 
-Controls: **Enter/Space** advance dialogue, **Up/Down** move through choices, **1–9** choose directly, **F5** save, **F9** load, **R** restart after the ending, **P** pause (P again resumes), **M** main menu, **Escape** quit. Menus use Up/Down, Enter or number keys 1–3. Pressing Space while paused does not advance dialogue. Saves use a separate game ID for each example and do not modify authoring files.
+Controls: **Enter/Space** advance dialogue, **Up/Down** move through choices, **1–9** choose directly, **F5** save, **F9** load, **R** restart after the ending, **P** pause (P again resumes), **M** main menu, **Escape** quit. At the ending, a visible menu lets you select **Play again**, **Main menu**, or **Quit** using Up/Down and Enter or keys 1–3. Menus use Up/Down, Enter or number keys 1–3. Pressing Space while paused does not advance dialogue. Saves use a separate game ID for each example and do not modify authoring files.
 
 ## Verification
 
@@ -32,7 +32,7 @@ cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
 cargo test --locked -p vesper-game --test fairy_tales
 ```
 
-CI additionally launches both examples under Linux/Xvfb, captures actual Bevy screenshots, advances the story and checks visual changes and save restoration. The extended novel's graph test explores every reachable combination and rejects crashes, loops and missing endings. This automation checks *functionality*, not subjective illustration quality or audio on real speakers; a short human review on Hyprland is still worthwhile.
+CI additionally launches both examples under Linux/Xvfb, captures actual Bevy screenshots, validates separately authored warm and cool panel styles (including >=4.5:1 text contrast), verifies live accent reloading, ending-menu navigation, and saved ending restoration. The extended novel's graph test explores every reachable combination and rejects crashes, loops and missing endings. This automation checks *functionality*, not subjective illustration quality or audio on real speakers; a short human review on Hyprland is still worthwhile.
 
 ### Artwork and audio
 
