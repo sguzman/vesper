@@ -1687,10 +1687,21 @@ fn escape_to_quit(
     input: Res<ButtonInput<KeyCode>>,
     mut exit: MessageWriter<AppExit>,
     mut settings: ResMut<settings::SettingsState>,
+    mut session: ResMut<Session>,
+    mut slots: ResMut<save_slots::SaveUi>,
 ) {
-    let just_closed = settings.just_closed;
-    if just_closed { settings.just_closed = false; }
-    if input.just_pressed(KeyCode::Escape) && settings.overlay.is_none() && !just_closed {
+    // Both input and Escape-to-quit execute in this Update frame. A close
+    // must consume Escape before any quit action, even after its overlay was
+    // despawned by the preceding input system.
+    let just_closed = settings.just_closed
+        || session.history.just_closed || slots.just_closed;
+    settings.just_closed = false;
+    session.history.just_closed = false;
+    slots.just_closed = false;
+    if input.just_pressed(KeyCode::Escape)
+        && settings.overlay.is_none()
+        && !session.history.visible() && !slots.visible() && !just_closed
+    {
         info!("Vesper exiting by Escape");
         exit.write(AppExit::Success);
     }
