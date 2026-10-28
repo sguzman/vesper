@@ -6,9 +6,9 @@
   "prior_scope": "docs/roadmap.json",
   "prior_scope_verified_weight": 100,
   "scope_weight": 100,
-  "verified_weight": 35,
-  "last_verified_commit": "04443e2c9923ef8f0450880d92455b24441b91ee",
-  "note": "Separate post-MVP polish roadmap. The original MVP remains verified 100/100. POL01 and POL02 are verified (35/100) by CI, with main-menu access during play retaining legacy direct-launch semantics.",
+  "verified_weight": 60,
+  "last_verified_commit": "3a4408d3c5d98349aca67f02eb217e3dd6ad8849",
+  "note": "Original MVP remains 100/100. New presentation/navigation polish scope is 60/100: POL01, POL02, POL03 verified with CI. Visual-art direction and full production polish remain out of scope until POL04 and later tasks complete.",
   "tasks": [
     {
       "id": "POL01",
@@ -43,11 +43,13 @@
       "emoji": "💬",
       "milestone": "Presentation",
       "weight": 25,
-      "status": "pending",
+      "status": "verified complete",
       "depends_on": [],
       "description": "Visual hierarchy and adaptive dialogue/choice composition",
       "acceptance": "Speaker, dialogue, choices and hints have clear, consistent spacing and contrast at compact, 16:9 and fullscreen layouts; test screenshots show no panel overflow or clipping.",
-      "evidence": []
+      "evidence": [
+        "CI run 40615302829, source 3a4408d3: Bevy and narrative jobs both succeeded. Validated adaptive panel bounds by unit test; screenshots exercised dialogue and choice presentations at 900x700, 1280x720 and 1600x900 in both external fairytales; resize readiness regression exercised 1600x900, 900x700 and 1920x1080. Screenshot artifact vesper-dialogue-layout retained. Pause/menu/restart, keyboard branching, visual fades, multilingual font styling, game hot reload, Linux package, reference playthroughs and save restoration all passed."
+      ]
     },
     {
       "id": "POL04",
