@@ -3,6 +3,7 @@
 
 use serde::Deserialize;
 pub mod save;
+pub mod preferences;
 use std::{
     collections::BTreeMap,
     fs,
