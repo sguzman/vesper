@@ -13,9 +13,9 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 0,
-  "last_verified_commit": null,
-  "status": "active: VX01 implementation awaiting CI",
+  "verified_weight": 8,
+  "last_verified_commit": "9f95b96e637bd4fde20275cee1d7c5f99c07a073",
+  "status": "VX01 verified complete; VX02 next",
   "created_date": "2026-10-28",
   "rules": {
     "architecture": "All Rust/Bevy systems and widgets generic; narrative/assets/themes externally authored. Preserve backward compatibility for existing example directories and save schema or provide explicit migrations.",
@@ -53,8 +53,13 @@
         "A missing, corrupt, unsupported or stale preferences file falls back safely; compatible older versions migrate without deleting saves.",
         "Unit tests cover round-trip persistence, malformed values, absent fonts, game switching, precedence, and migrations."
       ],
-      "evidence": [],
-      "status": "active"
+      "evidence": [
+        "Verified source commit 9f95b96e637bd4fde20275cee1d7c5f99c07a073",
+        "GitHub Actions run 40712738040: narrative and Bevy jobs both passed",
+        "Six vesper-game preference unit tests passed: atomic round-trip, corrupt/oversized fallback, numeric/path validation, migration, game switching/precedence/reset, XDG path",
+        "Full Bevy suite passed: compact window overlap, keyboard/menus, external art/fonts, package, hot reload, F5/F9 and reference fairy tales"
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX02",
@@ -233,10 +238,9 @@
       "status": "pending"
     }
   ],
-  "active_work": {
-    "milestone": "VX01",
-    "branch": "feature/vx01-player-preferences",
-    "pr": "https://github.com/sguzman/vesper/pull/1",
-    "verification": "Unit and graphical CI not yet confirmed; 0 earned points"
+  "next_work": {
+    "milestone": "VX02",
+    "status": "pending",
+    "focus": "Live appearance Settings screen with worker-persisted changes, font fallback and preview"
   }
 }
