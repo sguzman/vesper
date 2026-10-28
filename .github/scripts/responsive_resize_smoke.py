@@ -81,7 +81,7 @@ def main() -> None:
                         size = image_size(frame)
                         assert size == (width, height), f"unexpected screenshot size: {size}"
                         left = unique_in_strip(frame, 0, 100, 110, strip_height)
-                        right = unique_in_strip(frame, width - 110, 100, strip_height)
+                        right = unique_in_strip(frame, width - 110, 100, 110, strip_height)
                         if left >= 3 and right >= 3:
                             break
                         if time.monotonic() >= deadline:
