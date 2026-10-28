@@ -91,7 +91,16 @@ def main() -> None:
                     screenshot(win, before)
 
                     key("m")
+                    wait_log(log, "Vesper main menu opened")
                     menu = base / "main-menu.png"
+                    end = time.monotonic() + 10
+                    while True:
+                        screenshot(win, menu)
+                        if difference(before, menu) > 5000:
+                            break
+                        assert time.monotonic() < end, "main menu never appeared as rendered pixels"
+                        time.sleep(.20)
+                    time.sleep(.35)
                     screenshot(win, menu)
                     key("4")
                     wait_log(log, "Vesper appearance settings opened")
