@@ -18,6 +18,10 @@ cargo run --locked -p vesper-player -- examples/clockwork-moon
 
 Or download the compiled **vesper-linux-fairytale-showcase** artifact from [verified Linux CI](https://github.com/sguzman/vesper/actions/runs/40579833495). Unpack its inner `vesper-linux-x86_64.tar.gz`, then use `./vesper/lantern` or `./vesper/moon` without Rust or Cargo. [Example guide, controls, and visual QA](examples/README.md).
 
+## Presentation polish (next phase)
+
+The original MVP remains verified 100%. A separate [weighted polish roadmap](docs/polish-roadmap.json) tracks the next phase of visual composition and navigation without changing the MVP acceptance ledger. **P** toggles an engine-owned pause overlay during play; **R** restarts after an ending. The Little Lantern intentionally contains no audio; The Clockwork Moon uses external WAV assets.
+
 ## Workspace
 
 - `crates/story`: graphics-independent `.vn` parser, validator and deterministic interpreter.

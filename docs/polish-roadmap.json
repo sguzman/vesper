@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "project": "Vesper",
+  "phase": "Presentation and navigation polish",
+  "objective": "Improve visual readability and deliberate menu/navigation interactions for both repository-native example stories while preserving a single externally data-driven Bevy runtime.",
+  "prior_scope": "docs/roadmap.json",
+  "prior_scope_verified_weight": 100,
+  "scope_weight": 100,
+  "verified_weight": 0,
+  "last_verified_commit": null,
+  "note": "New, explicitly requested post-MVP polish scope, independent of the previously verified 100/100 runtime roadmap. A feature is counted only after branch CI checks its acceptance criteria.",
+  "tasks": [
+    {
+      "id": "POL01",
+      "emoji": "⏸️",
+      "milestone": "Navigation",
+      "weight": 15,
+      "status": "active",
+      "depends_on": [],
+      "description": "Keyboard pause overlay with no accidental dialogue or choice advancement",
+      "acceptance": "P opens a legible centered pause overlay; Enter/Space while paused cannot advance; P resumes the same visual story frame; Esc quits; automated Linux screenshots and interaction checks pass.",
+      "evidence": []
+    },
+    {
+      "id": "POL02",
+      "emoji": "🧭",
+      "milestone": "Navigation",
+      "weight": 20,
+      "status": "pending",
+      "depends_on": [
+        "POL01"
+      ],
+      "description": "Main menu and purposeful navigation",
+      "acceptance": "A consistent engine-owned start/continue/quit navigation works on both external games without changing scripts; paused menu navigation offers resume and quit; keyboard paths tested.",
+      "evidence": []
+    },
+    {
+      "id": "POL03",
+      "emoji": "💬",
+      "milestone": "Presentation",
+      "weight": 25,
+      "status": "pending",
+      "depends_on": [],
+      "description": "Visual hierarchy and adaptive dialogue/choice composition",
+      "acceptance": "Speaker, dialogue, choices and hints have clear, consistent spacing and contrast at compact, 16:9 and fullscreen layouts; test screenshots show no panel overflow or clipping.",
+      "evidence": []
+    },
+    {
+      "id": "POL04",
+      "emoji": "🎨",
+      "milestone": "Presentation",
+      "weight": 20,
+      "status": "pending",
+      "depends_on": [
+        "POL03"
+      ],
+      "description": "External themes and both example presentations receive coherent visual styling",
+      "acceptance": "Both repository-native examples have intentionally differentiated, readable game data-driven styling and retain theme hot reload; illustrative screenshot evidence is captured and reviewed.",
+      "evidence": []
+    },
+    {
+      "id": "POL05",
+      "emoji": "🏁",
+      "milestone": "Navigation",
+      "weight": 10,
+      "status": "pending",
+      "depends_on": [
+        "POL02"
+      ],
+      "description": "Designed ending interactions",
+      "acceptance": "Ending state visibly offers restart, navigation, and exit; no dead-end input; saved and freshly started sessions work and keybindings remain accessible.",
+      "evidence": []
+    },
+    {
+      "id": "POL06",
+      "emoji": "🧪",
+      "milestone": "Verification",
+      "weight": 10,
+      "status": "pending",
+      "depends_on": [
+        "POL02",
+        "POL03",
+        "POL04",
+        "POL05"
+      ],
+      "description": "Polished-flow regression and docs",
+      "acceptance": "All narrative, keyboard, pause, visual, audio decoder, hot reload, save/load, and resize CI passes on main; docs explain repository-native launch and controls.",
+      "evidence": []
+    }
+  ]
+}

@@ -12,6 +12,8 @@ struct Session {
     machine: Machine,
     choosing: bool,
     finished: bool,
+    paused: bool,
+    pause_overlay: Option<Entity>,
     background: Option<Entity>,
     music: Option<Entity>,
     characters: BTreeMap<String, Entity>,
@@ -141,7 +143,7 @@ impl Screen {
         Self {
             speaker,
             body,
-            hint: "Enter / Space: continue   F5: save   F9: load   Esc: quit".into(),
+            hint: "Enter / Space: continue   P: pause   F5: save   F9: load   Esc: quit".into(),
             choices: false,
         }
     }
@@ -157,7 +159,7 @@ impl Screen {
         Self {
             speaker: String::new(),
             body: lines,
-            hint: "Arrows: move   Enter: select   Number: choose   F5: save   F9: load   Esc: quit".into(),
+            hint: "Arrows: move   Enter: select   Number: choose   P: pause   F5: save   F9: load   Esc: quit".into(),
             choices: true,
         }
     }
@@ -258,6 +260,7 @@ fn main() {
         .insert_resource(io_workers)
         .insert_resource(Session {
             game, machine, choosing: false, finished: false,
+            paused: false, pause_overlay: None,
             background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
             pending_audio: Vec::new(),
@@ -481,6 +484,58 @@ fn advance_from_keyboard(
     assets: Res<AssetServer>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
 ) {
+    // A transient, engine-owned pause surface. The story stays paused while
+    // the UI remains responsive; no game script or theme must implement it.
+    if input.just_pressed(KeyCode::KeyP) && !session.finished {
+        session.paused = !session.paused;
+        if session.paused {
+            let font = text_font(&session.game.theme, &assets);
+            let overlay = commands.spawn((
+                Name::new("Pause overlay"),
+                Node {
+                    position_type: PositionType::Absolute,
+                    left: percent(0),
+                    top: percent(0),
+                    width: percent(100),
+                    height: percent(100),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.76)),
+            )).with_children(|parent| {
+                parent.spawn((
+                    Node {
+                        padding: px(32).all(),
+                        ..default()
+                    },
+                    BackgroundColor(Color::srgba(0.08, 0.11, 0.19, 0.96)),
+                )).with_children(|panel| {
+                    panel.spawn((
+                        Text::new("PAUSED\n\nP: resume    Esc: quit"),
+                        TextFont {
+                            font,
+                            font_size: FontSize::Px(30.0),
+                            ..default()
+                        },
+                        TextColor(Color::WHITE),
+                        TextLayout::new(Justify::Center, LineBreak::WordOrCharacter),
+                    ));
+                });
+            }).id();
+            session.pause_overlay = Some(overlay);
+            info!("Vesper story paused");
+        } else {
+            if let Some(overlay) = session.pause_overlay.take() {
+                commands.entity(overlay).despawn();
+            }
+            info!("Vesper story resumed");
+        }
+        return;
+    }
+    if session.paused {
+        return;
+    }
     if session.finished {
         if input.just_pressed(KeyCode::KeyR) {
             match Machine::new(&session.game.story, &session.game.manifest.entry) {
