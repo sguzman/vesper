@@ -26,6 +26,10 @@ The original MVP remains verified 100%. The separate [weighted presentation-poli
 
 The next independent phase is **planned at 0/100 verified points**: [visual experience roadmap](docs/visual-experience-roadmap.md) · [weighted progress ledger](docs/visual-experience-roadmap.json). It will add live player controls for dialogue opacity, font, size and reading pace; structured choices; cinematics, sprite staging and subtle atmosphere; history/saves and accessibility testing. The **final milestone** creates a complete, original generated-asset fairy tale, *The Post Office at the Edge of Dawn*. Prior MVP and presentation-polish roadmaps remain at 100/100; none of the new features is claimed as implemented.
 
+## Player preferences (VX01 foundation)
+
+The first visual-experience milestone adds versioned, validated local player preferences: panel opacity, text scale, and safe font selection, with fallback to the external game theme. Startup loads preferences without altering games or saves; the new settings UI and live controls will arrive in VX02. [Configuration and verification details](docs/player-preferences.md).
+
 ## Workspace
 
 - `crates/story`: graphics-independent `.vn` parser, validator and deterministic interpreter.

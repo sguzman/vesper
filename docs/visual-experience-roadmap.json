@@ -15,7 +15,7 @@
   "scope_weight": 100,
   "verified_weight": 0,
   "last_verified_commit": null,
-  "status": "planned; not implemented",
+  "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
     "architecture": "All Rust/Bevy systems and widgets generic; narrative/assets/themes externally authored. Preserve backward compatibility for existing example directories and save schema or provide explicit migrations.",
@@ -54,7 +54,7 @@
         "Unit tests cover round-trip persistence, malformed values, absent fonts, game switching, precedence, and migrations."
       ],
       "evidence": [],
-      "status": "pending"
+      "status": "active"
     },
     {
       "id": "VX02",
