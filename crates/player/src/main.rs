@@ -9,6 +9,7 @@ mod readout;
 mod cinematics;
 mod actors;
 mod atmosphere;
+mod feedback;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -259,6 +260,7 @@ fn spawn_menu_rows(
         parent.spawn((
             Name::new(format!("{kind:?} action {}", index + 1)),
             MenuRow { kind, index },
+            feedback::FocusFeedback::menu(kind, index, false),
             Button,
             Hovered::default(),
             observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
@@ -516,6 +518,7 @@ fn main() {
         .insert_resource(preferences_writer)
         .insert_resource(readout::ReadingState::default())
         .insert_resource(atmosphere::AtmosphereState::default())
+        .insert_resource(feedback::FeedbackState::default())
         .insert_resource(Session {
             game, preferences, machine, choosing: false, finished: false,
             ending_selection: 0,
@@ -534,7 +537,7 @@ fn main() {
             choices::reserve_row_height, readout::tick, cinematics::tick, actors::tick,
             atmosphere::tick,
             settings::sync_visuals, reserve_story_text_height, trigger_save_load,
-            poll_completed_io, sync_menu_selection, animate_fades,
+            poll_completed_io, sync_menu_selection, feedback::tick, animate_fades,
             monitor_audio_assets, escape_to_quit, fit_viewport,
         ).chain());
     if let Some(inbox) = inbox {
@@ -1024,6 +1027,7 @@ fn advance_from_keyboard(
     mut pointer: ResMut<MenuPointer>,
     mut choice_click: ResMut<choices::ChoiceClick>,
     mut reading: ResMut<readout::ReadingState>,
+    mut feedback_state: ResMut<feedback::FeedbackState>,
 ) {
     // Pointer activation must never survive a pause/menu or get replayed.
     let pointer_choice = choice_click.0.take();
@@ -1055,6 +1059,7 @@ fn advance_from_keyboard(
                 .then_some(selected)
         });
         if let Some(index) = confirmed {
+            feedback::signal(&mut feedback_state, &session);
             match index {
                 0 => {
                     hide_main_menu(&mut session, &mut commands);
@@ -1109,6 +1114,7 @@ fn advance_from_keyboard(
         let confirmed = from_pointer.or(digit)
             .or_else(|| input.just_pressed(KeyCode::Enter).then_some(selected));
         if let Some(index) = confirmed {
+            feedback::signal(&mut feedback_state, &session);
             match index {
                 0 => dismiss_pause(&mut session, &mut commands),
                 1 => {
@@ -1155,6 +1161,7 @@ fn advance_from_keyboard(
                 .then_some(selected)
         });
         if let Some(index) = confirmed {
+            feedback::signal(&mut feedback_state, &session);
             match index {
                 0 => restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, false),
                 1 => show_main_menu(&mut session, &mut commands, &assets, 0),
@@ -1198,6 +1205,7 @@ fn advance_from_keyboard(
         });
         if let Some(index) = confirmed {
             if session.machine.choose(index).is_ok() {
+                feedback::signal(&mut feedback_state, &session);
                 session.choosing = false;
                 session.presentation.selected_choice = 0;
                 let screen = next_screen(&mut session, &mut commands, &assets);
