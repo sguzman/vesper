@@ -73,6 +73,21 @@ def verify(game: str, title: str, temp: Path) -> None:
                 # Preserve evidence of the actual rendered image if a later
                 # presentation regression occurs.
                 print(f"{title} {width}x{height}: {content_colors} panel colors", flush=True)
+            # Move to the authored first choice screen; validate the same
+            # panel remains visually populated with multiple selectable rows.
+            for _ in range(3 if "little-lantern" in game else 6):
+                call("xdotool", "key", "--clearmodifiers", "Return")
+                time.sleep(.30)
+            for width, height in SIZES:
+                call("xdotool", "windowsize", "--sync", win, str(width), str(height))
+                choices = temp / f"{width}x{height}-choices.png"
+                sample(win, choices, width, height)
+                panel_y = int(height * .65)
+                content_colors = colors(
+                    choices, f"{width // 2}x{height - panel_y - 10}+{width // 4}+{panel_y}"
+                )
+                assert content_colors > 18, f"{game} {width}x{height}: choices clipped or invisible"
+                print(f"{title} {width}x{height}: {content_colors} choice-panel colors", flush=True)
             assert process.poll() is None, f"{title} crashed while resizing"
         finally:
             if process.poll() is None:
