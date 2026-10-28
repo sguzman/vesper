@@ -130,16 +130,27 @@ fn fit_viewport(
     mut backgrounds: Query<&mut Transform, (With<BackgroundVisual>, Without<CharacterVisual>)>,
     mut characters: Query<(&CharacterVisual, &mut Transform), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
-    mut previous: Local<Vec2>,
+    mut previous: Local<(Vec2, [u32; 4])>,
 ) {
     let Ok(window) = windows.single() else { return; };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
     if size.x < 1.0 || size.y < 1.0 { return; }
     let m = viewport_metrics(size, session.game.theme.ui_scale);
     let panel = &session.game.theme.panel;
-    let geometry = panel_metrics(size, panel);
-    for mut node in &mut panels {
-        apply_panel_metrics(&mut node, panel, geometry);
+    let panel_key = [
+        panel.width_percent.to_bits(),
+        panel.min_height.to_bits(),
+        panel.padding.to_bits(),
+        panel.gap.to_bits(),
+    ];
+    // Avoid marking the Bevy UI layout dirty every frame. The panel is
+    // reflowed only after a viewport or external theme-geometry change.
+    if previous.0 != size || previous.1 != panel_key {
+        let geometry = panel_metrics(size, panel);
+        for mut node in &mut panels {
+            apply_panel_metrics(&mut node, panel, geometry);
+        }
+        previous.1 = panel_key;
     }
     if (ui_scale.0 - m.ui_scale).abs() > 0.001 {
         ui_scale.0 = m.ui_scale;
@@ -152,8 +163,8 @@ fn fit_viewport(
         transform.translation.x = anchor.anchor_x * m.character_scale;
         transform.translation.y = -30.0 * m.character_scale;
     }
-    if *previous != size {
-        *previous = size;
+    if previous.0 != size {
+        previous.0 = size;
         info!(
             "Vesper viewport resized: {}x{}; scene scale {:.3}; background cover {:.3}",
             size.x.round(), size.y.round(), m.character_scale, m.background_scale
