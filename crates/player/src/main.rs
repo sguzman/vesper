@@ -139,7 +139,7 @@ fn fit_viewport(
     mut backgrounds: Query<(&mut Transform, Option<&cinematics::BackdropMotion>, Option<&cinematics::BackdropTransition>), (With<BackgroundVisual>, Without<CharacterVisual>)>,
     mut curtains: Query<&mut Transform, (With<cinematics::BackdropCurtain>, Without<BackgroundVisual>, Without<CharacterVisual>)>,
     mut characters: Query<(
-        &CharacterVisual, &Sprite, &mut Transform,
+        &CharacterVisual, &mut Transform,
         Option<&actors::ActorEntrance>, Option<&actors::ActorExit>,
         Option<&actors::ActorIdle>,
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
@@ -184,15 +184,11 @@ fn fit_viewport(
         let next = Vec3::splat(m.background_scale);
         if transform.scale != next { transform.scale = next; }
     }
-    for (actor, sprite, mut transform, entrance, exit, idle) in &mut characters {
+    for (actor, mut transform, entrance, exit, idle) in &mut characters {
         let Some(config) = session.game.manifest.characters.get(&actor.character) else { continue; };
         let next = actors::placement(size, m.character_scale, &actor.position,
             &config.stage, entrance, exit, idle,
             session.preferences.reduced_motion.unwrap_or(false));
-        if transform.translation.z != next.translation.z {
-            info!("Vesper character layer updated: {} -> {:.2} (alpha {:.2})",
-                actor.character, next.translation.z, sprite.color.alpha());
-        }
         if transform.translation != next.translation { transform.translation = next.translation; }
         if transform.scale != next.scale { transform.scale = next.scale; }
     }
