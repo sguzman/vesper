@@ -112,8 +112,9 @@ pub fn apply_reload(
     let old = session.game.clone();
     let saved = session.presentation.clone();
     session.game = updated;
+    session.display_theme = session.preferences.resolve_theme(&session.game.theme, |_| true);
     session.machine = rebound;
-    let theme = session.game.theme.clone();
+    let theme = session.display_theme.clone();
     ui_scale.0 = theme.ui_scale;
 
     // Preserve existing entities and handles unless their declared paths
