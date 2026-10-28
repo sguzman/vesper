@@ -184,8 +184,10 @@ def scenario(tmp, game_name, title, scene, first, second, theme_name, kind):
             wait(log,f"Vesper cinematic complete: {kind.replace('_',' ').title().replace(' ','')}",timeout=15)
             time.sleep(.15)
             end=out/"transition-end.png"
-            shot(win,end)
-            assert pixels(first_image,end)>2000, "background did not change"
+            wait_for_art(win, end)
+            assert background_pixels(first_image, end, out)>2000, (
+                "declared second background was not rendered"
+            )
             assert pixels(initial,end)>500, "no transition visible across frames"
             assert pixels(halfway,end)>250, "transition lacked a distinct midpoint"
             assert proc.poll() is None,"player crashed"
