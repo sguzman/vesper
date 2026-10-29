@@ -1,6 +1,8 @@
 //! Deterministic narrative parser and interpreter, independent of graphics and frame rate.
 //! The .vn format is preliminary and will be stabilized before Vesper 1.0.
 
+pub mod rich_text;
+
 use std::{collections::BTreeMap, sync::Arc};
 use serde::{Deserialize, Serialize};
 
