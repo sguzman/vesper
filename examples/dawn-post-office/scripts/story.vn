@@ -1,0 +1,335 @@
+# THE POST OFFICE AT THE EDGE OF DAWN
+# Original external Vesper visual novel. Every ending and authored asset is game-owned.
+# Theme, staging, music and art live beside this story; no special player code.
+#
+# The final choice chooses the ending, while two earlier decisions change
+# the letter's meaning and the dialogue remembered at the horizon.
+
+@scene sorting_room
+set kindness = 0
+set courage = 0
+set wonder = 0
+set promise = "unspoken"
+set route = "none"
+background sorting_room
+music morning_sorting
+show nima hopeful at center
+"The post office stood where the last night-cloud touched the first gold line of the sky. It had seven tiny windows, a crooked brass roof, and a bell that rang whenever someone remembered a kindness."
+"Nima, its smallest courier, was a moth with ink on her antennae and a satchel that could hold exactly one letter, three biscuits, and an unreasonable amount of hope."
+"Her wings were made for lamplight. The first rays of morning always made them sparkle, which was inconvenient for a courier who preferred not to be noticed."
+sound brass_bell
+show orin wry at right
+orin: "Our punctuality record is excellent, if you disregard the years, months, and several Wednesdays in which the sun forgot to rise."
+nima: "I think those should count."
+orin: "Then it's merely adequate. A suitable record for an owl with a desk."
+"The sorting trays were labeled YESTERDAY, TODAY, TOMORROW, and APOLOGIES NEVER MAILED. At the very bottom, underneath a teacup ring, waited a fresh envelope."
+"The address had been written in ink the color of a clear sky after rain: TO THE MORNING THAT HAS NOT HAPPENED YET."
+nima: "That can't be a real address."
+orin: "Neither was the first address anyone ever wrote. Someone had to invent it."
+"The letter was lighter than a petal, but it made the counter creak when Nima picked it up. Through the paper she could feel something warm and expectant, like a small heart preparing to sing."
+nima: "Is it from the future?"
+orin: "Perhaps. Or perhaps it is from someone who wants a future badly enough to write one a letter."
+"Orin lifted his spectacles. His expression softened in the way old libraries soften when someone opens a beloved book."
+show orin warm at right
+orin: "There are six stops between this desk and the Edge of Dawn. None is terribly far unless you travel without noticing anyone."
+nima: "Where do I begin?"
+orin: "By choosing what sort of thing you believe a letter can carry."
+* "A promise that somebody will come." -> route_promise
+* "A question no one knows how to ask." -> route_question
+* "A kindness that has nowhere to go." -> route_kindness
+
+@scene route_promise
+set promise = "arrival"
+set kindness += 1
+set route = "promise"
+show nima curious at center
+nima: "A promise is like a destination. It exists before you reach it."
+orin: "Often. But a promise can also be a bridge, and a bridge only matters if somebody needs to cross."
+"He tucked the letter beneath the flap of Nima's satchel, careful not to cover the little silver seal."
+orin: "Then carry it as if someone is waiting on the other side."
+jump sky_garden
+
+@scene route_question
+set promise = "question"
+set wonder += 1
+set route = "question"
+show nima curious at center
+nima: "A question can make a whole new place appear. It happened when I asked where the rain goes after it falls."
+orin: "And where does it go?"
+nima: "I'm still finding out."
+orin: "Very good. A completed curiosity is an old sock. A living one has somewhere to travel."
+"Nima slipped the letter into her satchel with the address facing outward, as if the world might help her read it."
+jump sky_garden
+
+@scene route_kindness
+set promise = "kindness"
+set kindness += 2
+set route = "kindness"
+show nima brave at center
+nima: "Sometimes people have something good to give, but they don't know whom to give it to."
+orin: "A noble postal emergency. We should put it on the forms."
+"He stamped the envelope with a small golden star, but the stamp left behind a drawing of an open door."
+orin: "If the letter belongs to everyone, be especially careful to deliver it to somebody."
+jump sky_garden
+
+@scene sky_garden
+background sky_garden
+music hanging_gardens
+hide orin
+show nima hopeful at left
+"The Sky Garden grew on balconies suspended from kite strings. Its paths were ribbons of moss, its fences were woven from wind, and its vegetables wore little weights so they wouldn't drift into the stratosphere."
+"Most mornings, gardeners came here to wake the flowers with stories. This morning, the flowers slept, and the birds on the railing were facing east with puzzled expressions."
+"Nima followed a path between pale-blue ferns. Every leaf caught a different picture of the world below: a village with chimney smoke, a river, a forgotten red mitten."
+sound wing_flutter
+show kettle sleepy at right
+"A round teapot with little feet was watering an empty flowerpot. Steam puffed from his spout in deeply discouraged spirals."
+kettle: "Good morning. If you find any morning, let me know. I've spent my last three cups on the subject."
+nima: "You're watering nothing."
+kettle: "Not nothing. Possibility. It's much more demanding."
+"The teapot introduced himself as Kettle, keeper of the garden's wake-up tea and occasional philosopher of the inconveniently obvious."
+show kettle patient at right
+kettle: "The blossoms won't open. They say the light hasn't decided what to be. Frankly, I sympathize."
+"Nima knelt beside the empty pot and saw a seed so small it looked like a punctuation mark."
+nima: "What does it grow?"
+kettle: "No idea. It arrived in an envelope with the word SOMEDAY on it."
+"She thought of the envelope in her satchel. Perhaps post offices were full of things whose names didn't exist yet."
+if route == "promise"
+"Nima remembered Orin's bridge. She placed her paw beside the seed so it could feel the warmth of someone who had come."
+end
+if route == "question"
+"Nima wondered whether a seed waited for light, or whether the act of waiting was itself a kind of light."
+end
+if route == "kindness"
+"Nima brushed a few grains of soil around the seed. She didn't need to know what it would become to make room for it."
+end
+show nima curious at left
+nima: "Would a little tea help?"
+kettle: "Certainly not. Tea is for deciding difficult things, not making them easy."
+"He considered the pot."
+kettle: "Of course, the seed might disagree."
+sound teacup
+"A single drop fell from Kettle's spout. The soil shimmered, and a pale green stem lifted itself out of the earth. On its tip hung a bell-shaped bud, smaller than Nima's thumb."
+kettle: "Well. The garden appears to have issued a correction."
+"Nima smiled. Above them, the lowest cloud moved an inch toward the horizon."
+nima: "I'm carrying a letter to a morning that hasn't happened yet."
+kettle: "Then you'll want the Teacup Observatory. It's the only place that keeps a map of things that are nearly true."
+"The teapot took a little brass spoon from his pocket and gave it to her."
+kettle: "If you become lost, tap this against something you care about. The sound will be worth following."
+sound brass_bell
+"Nima thanked him and left the bud opening slowly behind her. She couldn't tell whether it was the start of the day or the beginning of something entirely different."
+jump teacup_observatory
+
+@scene teacup_observatory
+background teacup_observatory
+music cloud_waltz
+show nima curious at center
+hide kettle
+"The Teacup Observatory occupied a porcelain cup balanced on a single white chimney. Its handle served as a staircase; its saucer held a telescope and the kind of sugar bowl that looks as if it knows a secret."
+"The astronomers had retired years ago. Their charts remained pinned to the ceiling, where the stars were connected by lines of red thread."
+"Nima climbed the handle, taking care to step over a family of migrating dust motes."
+"Through the telescope she saw not planets but almosts: a violin waiting for its first song, a house whose door had never been knocked upon, a girl rehearsing an apology in an empty room."
+nima: "These aren't places."
+"A voice came from somewhere behind the sugar bowl."
+show kettle sparkle at left
+kettle: "And yet every one of them is somewhere you might arrive."
+"Nima jumped."
+nima: "How did you get here?"
+kettle: "Express teapot. We have privileges not afforded to ordinary crockery."
+"He set a tiny cup on the telescope's brass rim. The tea inside reflected an unfamiliar pink sunrise."
+kettle: "The sky is waiting because there are too many possible mornings. Someone must help it choose what kind."
+nima: "How?"
+kettle: "By deciding what you would give up to make one real."
+"The letter began to hum in Nima's satchel. She placed it on the saucer, but the seal stayed firmly closed."
+"In the glass of the telescope three possible worlds appeared. In one, all the doors were open; in another, every question had a place to grow; in the third, everyone remembered someone who needed help."
+"She wondered which world had written the address."
+kettle: "I won't ask you to choose the whole sky. Choose what you will carry across the next bridge."
+* "Carry the warmth of someone waiting." -> compass_warmth
+* "Carry the courage to be uncertain." -> compass_uncertainty
+* "Carry a little light for a stranger." -> compass_stranger
+
+@scene compass_warmth
+set kindness += 1
+set courage += 1
+show nima hopeful at center
+nima: "Somebody has to be the person who waits at the other end of a long journey."
+kettle: "It is an underrated occupation. Requires excellent patience, terrible weather, and a chair."
+"Nima carefully folded a corner of the telescope chart into a paper boat. Inside it, she imagined a small lantern shining in a window."
+"On the saucer, the reflection of the pink sunrise grew a shade warmer."
+jump cloud_quarter
+
+@scene compass_uncertainty
+set wonder += 2
+show nima curious at center
+nima: "I want to keep the question, even if I never learn its answer."
+kettle: "Splendid. Most interesting things would vanish if we insisted on knowing what they were before meeting them."
+"Nima left the chart unfolded. She would walk with the stars for as long as they continued to surprise her."
+"The tea reflected a sunrise of coral and blue, with room between its colors for another color nobody had named."
+jump cloud_quarter
+
+@scene compass_stranger
+set kindness += 2
+show nima brave at center
+nima: "The letter may not be for anyone I know. They still deserve to receive it."
+kettle: "Especially then. Familiarity makes generosity too easy to explain away."
+"Nima held her satchel close to her chest and thought of the anonymous seed in the garden."
+"Far away, below the observatory, another empty pot gave the smallest possible green spark."
+jump cloud_quarter
+
+@scene cloud_quarter
+background cloud_quarter
+music hanging_gardens
+hide kettle
+show nima hopeful at center
+"The Cloud Quarter was a neighborhood of little houses tethered to enormous balloons. Laundry floated in gentle loops. Neighbors traded weather through their windows: a teaspoon of fog for a pocket of sunshine, a cool breeze for an afternoon nap."
+"Today all the windows stood open. Nobody wanted to miss the first sign that the sky had made up its mind."
+"Nima stopped at a bakery perched on a cloud the shape of a sleeping rabbit. Inside, the ovens were cold, but the baker had set out bowls of flour just in case."
+"She found a lost glove on the doorstep. Someone had embroidered a tiny moon on its cuff."
+sound wing_flutter
+show orin worried at right
+"Orin's silhouette appeared in a public message mirror. He looked more tired than he had at the desk."
+orin: "Courier Nima, our clocks are beginning to disagree with one another. One says tomorrow is late. Another says tomorrow has been canceled."
+nima: "I'm at the Cloud Quarter. There's a glove here."
+orin: "An excellent discovery. I'm afraid it will not repair the clocks."
+nima: "Maybe not. But somebody must be looking for it."
+"She asked at the bakery, at the weather exchange, and at a house built from three upside-down umbrellas. Finally a little rabbit answered the door wearing only one glove."
+"The rabbit took the lost glove with both paws, and for a moment the entire street smelled of warm bread."
+show orin warm at right
+orin: "The bells just rang."
+nima: "I only brought a glove home."
+orin: "Sometimes the world is repaired in pieces too small for the repairer to notice."
+"The message mirror flickered as another clock struck a different hour."
+orin: "The Bell Roof is awake. That's where our last reliable hour keeps its shoes. Go before it wanders off."
+hide orin
+"Nima left the neighborhood to the sound of shutters opening. A few balloons lifted higher, as though the houses themselves wanted a better view."
+jump bell_roof
+
+@scene bell_roof
+background bell_roof
+music cloud_waltz
+show nima brave at left
+"Above the Cloud Quarter stood a tower without walls. Its roof held an enormous brass bell, a stone bench, and a door that led nowhere until somebody asked the right question."
+"Here the sky was neither dark nor light. Instead it looked unfinished: a watercolor waiting for its final wash."
+"Each second a shadow moved across the bench, but no sound came from the bell."
+"Nima set her satchel beside her and listened. Inside the envelope something was tapping softly, matching the beat of her own heart."
+sound brass_bell
+show kettle patient at right
+"Kettle stepped out of the nowhere door with a cup on his head."
+kettle: "Don't ask. The shortcut was very poorly signposted."
+nima: "Is it almost morning?"
+kettle: "Almost is a lovely word. It leaves room for people to arrive."
+"He showed her a tarnished plaque on the bell."
+"The inscription read: LET THE FIRST SOUND BE SOMETHING WORTH REPEATING."
+"Nima tapped the brass spoon against the bell. Instead of ringing, it whispered every small thing she had done since leaving the post office: a warm hand beside a seed, a patient choice, a returned glove."
+if kindness >= 3
+"One sound rose above the others. It was the gentle click of a door being opened for someone who could not reach the latch."
+end
+if wonder >= 2
+"Another sound joined it, the soft breath people take just before they ask an important question."
+end
+if courage >= 1
+"Underneath both was the steady rhythm of wings moving forward, even when the path did not appear."
+end
+nima: "They sound so ordinary."
+kettle: "Everything wonderful is ordinary to the person who does it every day."
+"The bell finally rang. Its note rolled outward across the clouds. One by one, the little windows below answered with warm light."
+"The envelope's silver seal cracked a hair's breadth. Nima could see a few letters inside, but not enough to read."
+kettle: "The Horizon Gate is opening. You can deliver your message now."
+nima: "And if the morning isn't ready?"
+kettle: "Then it may be fortunate that someone has come with a letter."
+hide kettle
+"Nima lifted into the air. Below her, the bell kept ringing; ahead of her, the sky spread like a page waiting for a first sentence."
+jump horizon_gate
+
+@scene horizon_gate
+background horizon_gate
+music first_light
+show nima curious at center
+"The Edge of Dawn was not a cliff. It was a small wooden gate floating in open sky, with a latch shaped like a sunrise and a welcome mat woven from cloud."
+"Beyond it waited a room of impossible quiet. Thousands of pale threads hung from its ceiling, each ending in a tiny unlit star."
+"In the center stood a chair and an empty envelope rack. A sign above them read: ALL FUTURES MUST BE DELIVERED IN PERSON."
+"Nima walked through, and the gate closed without a sound."
+"Her satchel grew light. The letter slid into her hands and unfolded by itself."
+"The paper was blank. Or almost blank. At its bottom, in a hand she recognized but couldn't place, was a single sentence."
+nima: "Dear Morning, there is still someone who wants to meet you."
+"She read it again. No instructions. No official stamp. No explanation for why a whole sky had stopped to listen."
+show orin warm at right
+"Orin stepped out of a pool of reflected starlight, looking as surprised as Nima."
+orin: "Ah. It found you, then."
+nima: "You sent it?"
+orin: "No. I held the paper while someone very small asked what to write. The rest came from whoever would carry it."
+"Nima remembered the seed, the telescope, the lost glove, the bell, and all the ordinary little sounds that had become a song."
+if route == "promise"
+"She thought of a promise as a bridge between people who might never see the same sunrise."
+end
+if route == "question"
+"She thought of a question as a window nobody had yet opened."
+end
+if route == "kindness"
+"She thought of a kindness as a letter whose address might be written after it was sent."
+end
+orin: "The morning can become any of the futures you've carried here. None will be perfect. Each will leave room for another courier."
+"Three threads shimmered before her: one warm as a hand held out, one bright as a question, one steady as a little lamp in the rain."
+"Nima reached toward them. For the first time she understood that a letter could carry more than one truth, but a delivery needed someone to choose when to open it."
+nima: "Then I know what I want to say."
+* "Tell the morning: everyone deserves someone waiting for them." -> ending_homecoming
+* "Tell the morning: there is still so much to discover." -> ending_questions
+* "Tell the morning: begin with one small kindness." -> ending_lanterns
+
+@scene ending_homecoming
+set promise = "homecoming"
+background sunrise
+music first_light
+show nima hopeful at center
+hide orin
+"The first thread curled around Nima's wrist. It felt like someone taking her hand at a crowded station."
+nima: "Dear Morning, please come. We have saved a place for you."
+"The gate opened onto streets full of neighbors carrying mismatched chairs outside. No one knew precisely whom they were waiting for, so they waited for everyone."
+if kindness >= 3
+"The little rabbit from the Cloud Quarter set an extra cup on its table. The garden's new bellflower rang in answer, though it was miles away."
+else
+"The baker lit the ovens. A child left the door ajar for somebody still walking up the road."
+end
+"Soft gold spread through the sky, then rose across every window, doorway, path, and bridge. It was a sunrise made not of certainty but of welcome."
+"Nima returned to the post office with a new envelope tucked into her satchel. Its address read: TO EVERYONE WHO IS STILL ON THEIR WAY."
+"Orin filed it in a tray he had never needed before."
+"The first true morning arrived with chairs to spare, and no one was asked to prove they belonged."
+"The End."
+
+@scene ending_questions
+set promise = "wonder"
+background sunrise
+music first_light
+show nima curious at center
+hide orin
+"The second thread rose like a ribbon in a curious breeze. As Nima touched it, hundreds of tiny windows opened along the horizon."
+nima: "Dear Morning, please arrive with enough light for all the things we don't know."
+"The sun appeared not as a perfectly round answer but as a bright question mark, which made the astronomers laugh so hard that they nearly dropped their telescopes."
+if wonder >= 2
+"The Teacup Observatory's telescope revealed a new constellation shaped like a map with no final destination."
+else
+"In the Sky Garden, the nameless seed grew a second leaf, and nobody tried to name it."
+end
+"Every street found something worth discovering. The baker wondered whether cloud dough could rise; the rabbit wondered where the clouds slept; Orin wondered why he had ever believed a desk could keep him from an adventure."
+"Nima delivered her blank envelope to the archive of possible things, where a clerk stamped it QUESTIONS WELCOME."
+"That morning did not solve every mystery. It gave every mystery a beginning, and every beginning a little light."
+"The End."
+
+@scene ending_lanterns
+set promise = "kindness"
+background sunrise
+music first_light
+show nima brave at center
+hide orin
+"The third thread glowed like a lantern carried through rain. Nima drew it close enough to warm her wings."
+nima: "Dear Morning, please begin wherever somebody needs a little help."
+"Across the sky, a thousand small lights answered. A baker warmed the bread for a stranger. A gardener watered a seed without asking what it would become. Someone returned a glove."
+if kindness >= 4
+"Each kindness lit the next, and the clouds blossomed with gold before the sun had even climbed the horizon."
+else
+"At first the lights were few and far apart. Then the people carrying them noticed each other and walked closer."
+end
+"The sunrise arrived in pieces: a bright doorstep here, a window there, a road no longer lonely. Together those pieces made a dawn more generous than any single star."
+"Back at the post office, Nima found a parcel waiting on her desk. Inside was the brass spoon Kettle had given her, polished and tied with a ribbon."
+"Attached was a note: FOR THE NEXT TIME A LITTLE SOUND NEEDS TO TRAVEL FAR."
+"Nima hung it beside the bell. Whenever she heard it ring, she went looking for someone who needed a courier."
+"The End."
