@@ -1188,9 +1188,8 @@ start_phase_seconds = 2.5
             "waypoints = [[0.1, 0.1], [0.9, 0.9]]\nframe_fps = 0.0",
             "waypoints = [[0.1, 0.1], [0.9, 0.9]]\nmode = \"teleport\"",
         ] {
-            match toml::from_str::<AmbientMotion>(bad) {
-                Ok(parsed) => assert!(parsed.validate().is_err(), "{bad}"),
-                Err(_) => {},
+            if let Ok(parsed) = toml::from_str::<AmbientMotion>(bad) {
+                assert!(parsed.validate().is_err(), "{bad}");
             }
         }
     }
