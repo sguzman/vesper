@@ -463,6 +463,37 @@ fn checked_file(root: &Path, relative: &str) -> Result<PathBuf, String> {
     Ok(canonical)
 }
 
+/// Validate the fixed PNG signature/IHDR and bound the image allocation
+/// before handing untrusted external panel art to Bevy's asynchronous loader.
+/// Full chunk decoding remains Bevy's job; a failed decode leaves the solid
+/// panel visible underneath instead of blocking the render thread.
+fn validate_panel_image(path: &Path, slice_border: f32) -> Result<(), String> {
+    use std::io::Read;
+    let mut file = fs::File::open(path)
+        .map_err(|error| format!("{}: {error}", path.display()))?;
+    let mut header = [0_u8; 24];
+    file.read_exact(&mut header)
+        .map_err(|error| format!("invalid PNG '{}': {error}", path.display()))?;
+    if &header[..8] != b"\\x89PNG\\r\\n\\x1a\\n"
+        || header[8..12] != [0, 0, 0, 13]
+        || &header[12..16] != b"IHDR"
+    {
+        return Err(format!("invalid PNG signature/IHDR: {}", path.display()));
+    }
+    let width = u32::from_be_bytes(header[16..20].try_into().expect("four width bytes"));
+    let height = u32::from_be_bytes(header[20..24].try_into().expect("four height bytes"));
+    if !(32..=4096).contains(&width)
+        || !(32..=4096).contains(&height)
+        || u64::from(width) * u64::from(height) > 8_388_608
+        || slice_border * 2.0 >= width.min(height) as f32
+    {
+        return Err(format!(
+            "panel PNG dimensions {width}x{height} or slice border {slice_border} are unsafe"
+        ));
+    }
+    Ok(())
+}
+
 impl Game {
     pub fn load(directory: impl AsRef<Path>) -> Result<Self, String> {
         let root = directory.as_ref().canonicalize().map_err(|error| {
@@ -524,6 +555,8 @@ impl Game {
             {
                 return Err(format!("panel skin '{name}' must be a PNG"));
             }
+            validate_panel_image(&file, skin.slice_border)
+                .map_err(|error| format!("panel skin '{name}': {error}"))?;
         }
         if let Some(file) = &theme.font.file {
             let path = checked_file(&root, file)?;
@@ -816,10 +849,21 @@ room = "assets/room.png"
         let fixture = Fixture::new("panel-skins");
         let manifest = fixture.root.join("game.toml");
         let base = fs::read_to_string(&manifest).unwrap();
+        // The general fixture uses a fake background header. Panel skins
+        // require a real bounded PNG, so use the externally authored sample.
+        fs::write(fixture.root.join("assets/room.png"),
+            include_bytes!("../../../examples/panel-showcase/assets/panels/notebook.png"))
+            .unwrap();
         let panel = "\n[panel_skins.notebook]\nimage = \"assets/room.png\"\ninsets = [36.0, 24.0, 42.0, 26.0]\nslice_border = 30.0\n";
         fs::write(&manifest, format!("{base}{panel}")).unwrap();
         let loaded = Game::load(&fixture.root).unwrap();
         assert_eq!(loaded.panel_skin("notebook").unwrap().insets[0], 36.0);
+        fs::write(fixture.root.join("assets/room.png"), b"bad PNG data").unwrap();
+        let error = Game::load(&fixture.root).unwrap_err();
+        assert!(error.contains("invalid PNG"), "{error}");
+        fs::write(fixture.root.join("assets/room.png"),
+            include_bytes!("../../../examples/panel-showcase/assets/panels/notebook.png"))
+            .unwrap();
         fs::write(fixture.root.join("scripts/story.vn"),
             "@scene opening\npanel notebook\n\"Writing\"\npanel default\n\"Plain\"\n").unwrap();
         assert!(Game::load(&fixture.root).is_ok());
