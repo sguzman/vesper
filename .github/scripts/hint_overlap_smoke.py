@@ -131,7 +131,7 @@ def invisible_theme(game: Path, section: str) -> None:
 
 
 def invisible_divider(game: Path) -> None:
-    """Hide only the 1px rule without changing flex geometry."""
+    """Hide only the thin separator without changing flex geometry."""
     path = game / "styles/lantern.toml"
     source = path.read_text()
     changed, count = re.subn(
