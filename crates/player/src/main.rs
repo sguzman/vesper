@@ -17,7 +17,7 @@ mod save_slots;
 mod panel_art;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
-use vesper_story::{Machine, Output, Visual};
+use vesper_story::{Machine, Output, Visual, rich_text::InlineSpan};
 
 #[derive(Resource)]
 struct Session {
@@ -330,6 +330,7 @@ struct Screen {
     hint: String,
     choices: bool,
     animated: bool,
+    spans: Vec<InlineSpan>,
 }
 
 impl Screen {
@@ -340,7 +341,14 @@ impl Screen {
             hint: "Enter/Space: continue   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu   Esc: quit".into(),
             choices: false,
             animated: true,
+            spans: Vec::new(),
         }
+    }
+
+    fn rich(speaker: String, body: String, spans: Vec<InlineSpan>) -> Self {
+        let mut screen = Self::normal(speaker, body);
+        screen.spans = spans;
+        screen
     }
 
     fn choices(_options: &[vesper_story::Choice], _selected: usize) -> Self {
@@ -351,6 +359,7 @@ impl Screen {
             hint: "Arrows: move   Enter/Number: choose   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu".into(),
             choices: true,
             animated: false,
+            spans: Vec::new(),
         }
     }
 
@@ -361,6 +370,7 @@ impl Screen {
             hint: "Up/Down: move   Enter: select   1-3: choose   R: replay   M: menu   Esc: quit".into(),
             choices: false,
             animated: false,
+            spans: Vec::new(),
         }
     }
 
@@ -577,7 +587,7 @@ fn main() {
                 advance_from_keyboard,
                 choices::sync_rows, choices::sync_row_style,
                 choices::scroll_selected, choices::sync_viewport,
-                choices::reserve_row_height, readout::tick,
+                choices::reserve_row_height, readout::tick, readout::sync_spans,
                 cinematics::tick, actors::tick, atmosphere::tick,
             ).chain(),
             (
@@ -798,6 +808,14 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
                 session.history.record(session.machine.scene(), &speaker, &text);
                 return Screen::normal(speaker, text);
             }
+            Ok(Output::RichDialogue { speaker, text, spans }) => {
+                if env::var_os("VESPER_TRACE_SCENES").is_some() {
+                    info!("Vesper scene dialogue: {}", session.machine.scene());
+                }
+                let speaker = speaker.unwrap_or_default();
+                session.history.record(session.machine.scene(), &speaker, &text);
+                return Screen::rich(speaker, text, spans);
+            }
             Ok(Output::Choices(options)) => {
                 session.choosing = true;
                 session.presentation.selected_choice = 0;
@@ -831,8 +849,10 @@ fn setup(
     let theme = effective_theme(&session);
     let font = text_font(&theme, &assets);
     let initial = next_screen(&mut session, &mut commands, &assets);
-    let initial_body = reading.begin(initial.body.clone(), initial.animated,
-        readout::speed(&session)).to_owned();
+    let initial_body = reading.begin_styled(
+        initial.body.clone(), initial.animated, readout::speed(&session),
+        &initial.spans,
+    ).to_owned();
     let panel = &theme.panel;
     let geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
     let background = panel.background;
@@ -927,10 +947,12 @@ fn update_screen(
     reading: &mut readout::ReadingState,
     reveal_speed: vesper_game::TextRevealSpeed,
 ) {
-    let visible = reading.begin(screen.body.clone(), screen.animated, reveal_speed).to_owned();
+    let visible = reading.begin_styled(
+        screen.body.clone(), screen.animated, reveal_speed, &screen.spans,
+    ).to_owned();
     for (mut text, mut font, mut color, slot) in texts.iter_mut() {
         text.0 = if matches!(slot, StoryText::Body) {
-            visible.clone()
+            if screen.spans.is_empty() { visible.clone() } else { String::new() }
         } else {
             screen.part(slot).to_owned()
         };
@@ -1587,6 +1609,8 @@ fn poll_completed_io(
                 let screen = match last {
                     Some(Output::Dialogue { speaker, text }) =>
                         Screen::normal(speaker.unwrap_or_default(), text),
+                    Some(Output::RichDialogue { speaker, text, spans }) =>
+                        Screen::rich(speaker.unwrap_or_default(), text, spans),
                     Some(Output::Choices(choices)) =>
                         Screen::choices(&choices, session.presentation.selected_choice),
                     Some(Output::End) => Screen::ending("The End".into()),

@@ -29,6 +29,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
           cargo run --locked -p vesper-cli -- check-game examples/dawn-post-office
           cargo run --locked -p vesper-cli -- check-game examples/panel-showcase
+          cargo run --locked -p vesper-cli -- check-game examples/inline-words
       - name: Verify all 23 original Dawn assets and their manifest hashes
         run: python3 .github/scripts/dawn_assets_check.py
       - name: Verify the external PCM audio assets
@@ -74,6 +75,16 @@ jobs:
         run: cargo build --locked -p vesper-player
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
+      - name: Verify QOL04 inline word styles at six sizes and high contrast
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/inline_spans_smoke.py
+      - name: Preserve QOL04 inline typography screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-inline-spans
+          path: /tmp/vesper-inline-spans-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verify QOL03 notebook/banner panels at six sizes, scene changes and high contrast
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/panel_skins_smoke.py
       - name: Preserve QOL03 diegetic panel screenshots
