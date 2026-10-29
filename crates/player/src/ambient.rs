@@ -141,9 +141,12 @@ mod tests {
         let mut actor = vesper_game::AmbientActor::default();
         assert!(scene_visible(&actor, "arrival", None));
         actor.scene = Some("arrival".into());
-        assert!(scene_visible(&actor, "arrival"));
+        assert!(scene_visible(&actor, "arrival", None));
         assert!(!scene_visible(&actor, "departure", None));
         actor.initially_visible = false;
-        assert!(!scene_visible(&actor, "arrival"));
+        assert!(!scene_visible(&actor, "arrival", None));
+        assert!(scene_visible(&actor, "arrival", Some(true)));
+        assert!(!scene_visible(&actor, "arrival", Some(false)));
+        assert!(!scene_visible(&actor, "departure", Some(true)));
     }
 }
