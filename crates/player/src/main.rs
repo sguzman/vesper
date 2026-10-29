@@ -157,8 +157,10 @@ fn fit_viewport(
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
     if size.x < 1.0 || size.y < 1.0 { return; }
     let m = viewport_metrics(size, session.game.theme.ui_scale);
-    let resolved = effective_theme(&session);
-    let panel = &resolved.panel;
+    // Player overrides change colors and text, never panel geometry.
+    // Borrow the authored geometry directly; do not clone/resolve a full
+    // Theme on every frame just to compute layout bounds.
+    let panel = &session.game.theme.panel;
     let panel_key = [
         panel.width_percent.to_bits(),
         panel.min_height.to_bits(),
