@@ -120,6 +120,10 @@ fn rich_root_prefix<'a>(visible: &'a str, segments: &[StyledSegment]) -> &'a str
     {
         return &visible[..visible.len().min(first.to)];
     }
+    // Bevy measures child TextSpans only after its parent establishes a text
+    // block. A zero-width anchor ensures a leading styled word is measurable
+    // without inserting visible whitespace or changing story/history text.
+    if !segments.is_empty() { return "\u{200B}"; }
     ""
 }
 

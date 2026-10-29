@@ -105,6 +105,21 @@ def verify(root: Path, label: str, recolor: bool, contrast: bool) -> Path:
                 call("xdotool", "windowsize", "--sync",
                      win, str(width), str(height))
                 capture(win, directory / f"{width}x{height}.png", width, height)
+            # A new line begins with an authored style, without an unstyled
+            # prefix. This catches zero-height Text roots hiding every span.
+            call("xdotool", "windowsize", "--sync", win, "1280", "720")
+            previous = log.read_text(errors="replace").count(
+                "Vesper inline text spans mounted")
+            call("xdotool", "key", "--clearmodifiers", "Return")
+            deadline = time.monotonic() + 15
+            while time.monotonic() < deadline:
+                if log.read_text(errors="replace").count(
+                        "Vesper inline text spans mounted") > previous:
+                    break
+                time.sleep(.1)
+            else:
+                raise AssertionError("styled-leading scene never mounted")
+            capture(win, directory / "leading-1280x720.png", 1280, 720)
             assert process.poll() is None, "styled dialogue player crashed"
             print(f"{label}: styled text rendered; high contrast={contrast}", flush=True)
         finally:
@@ -124,10 +139,18 @@ def main() -> None:
         # authored inline colors must change the actual text pixels.
         assert difference(a, b) > 50, (
             "style colors did not modify rendered word pixels")
+        assert difference(
+            OUT / "original/leading-1280x720.png",
+            OUT / "alternative/leading-1280x720.png"
+        ) > 50, "leading styled words did not render tinted pixels"
         c = verify(root, "contrast-original", False, True)
         d = verify(root, "contrast-alternative", True, True)
         assert difference(c, d) < 150, (
             "high contrast did not override externally authored text colors")
+        assert difference(
+            OUT / "contrast-original/leading-1280x720.png",
+            OUT / "contrast-alternative/leading-1280x720.png"
+        ) < 150, "leading styled words ignored high contrast"
     print("QOL04: named inline colors, six sizes, high-contrast precedence PASSED",
           flush=True)
 
