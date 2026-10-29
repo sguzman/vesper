@@ -134,6 +134,12 @@ pub fn sync(
         let saved = session.presentation.ambient_motion_elapsed.get(&visual.id).copied();
         if clock.configured != config.motion || clock.initial_phase != config.start_phase_seconds {
             *clock = MotionClock::new(config, &assets, saved);
+            // On removal or replacement of a flipbook, restore its base art.
+            // Otherwise the previous animated frame can remain stuck forever
+            // after a hot reload switches an actor back to static scenery.
+            sprite.image = assets.load(config.image.clone());
+            sprite.flip_x = false;
+            info!("Vesper ambient motion reconciled: {}", visual.id);
         } else if loaded || clock.restored_elapsed != saved {
             clock.elapsed = saved.unwrap_or(config.start_phase_seconds);
             clock.restored_elapsed = saved;
