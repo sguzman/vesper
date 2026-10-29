@@ -48,13 +48,23 @@ def image(win, target, width=1280, height=720):
         call("import", "-window", win, str(target))
         actual = call("identify", "-format", "%w %h", str(target)).stdout
         assert actual == f"{width} {height}", (target, actual)
-        # Not merely a UI outline rendered before the async background image.
+        # The scene must be rendered, not just a UI outline over unready art.
         top_colors = int(call("convert", str(target),
                               "-crop", f"{width//2}x{max(60,height//4)}+{width//4}+0",
                               "+repage", "-format", "%k", "info:").stdout)
-        if top_colors > 10:
+        # Xvfb/Mesa can briefly report a resized 1920x1080 X11 window while
+        # the Vulkan framebuffer still contains the old 1280x720 image.
+        # An image-size check or center palette check cannot detect that.
+        # The fixture's pink sky must cover a sampled *far-right* pixel at
+        # every supported size. Never silently archive a black 640px border.
+        edge = float(call("convert", str(target),
+                          "-crop", f"2x2+{width-5}+{height//3}",
+                          "+repage", "-format", "%[fx:mean]", "info:").stdout)
+        if top_colors > 10 and edge > .06:
             return target
-    raise AssertionError(f"unready picture: {target}")
+    raise AssertionError(
+        f"unready or stale-resize frame after 15s: {target}, "
+        f"{width}x{height}, palette={top_colors}, far-right luma={edge:.3f}")
 
 
 def crop(source, target, region):
