@@ -1,4 +1,4 @@
-# Two complete fairytales for Vesper
+# Three complete external visual novels for Vesper
 
 These are self-contained **external games**, not hard-coded engine demos. Every script, character, image, sound, and theme is loaded from its chosen game directory. No Rust recompilation is needed to switch novels.
 
@@ -43,14 +43,14 @@ cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
 cargo test --locked -p vesper-game --test fairy_tales
 ```
 
-CI additionally launches both examples under Linux/Xvfb, captures actual Bevy screenshots, validates separately authored warm and cool panel styles (including >=4.5:1 text contrast), verifies live accent reloading, ending-menu navigation, and saved ending restoration. The extended novel's graph test explores every reachable combination and rejects crashes, loops and missing endings. This automation checks *functionality*, not subjective illustration quality or audio on real speakers; a short human review on Hyprland is still worthwhile.
+CI additionally launches all three examples under Linux/Xvfb, captures actual Bevy screenshots, validates separately authored warm and cool panel styles (including >=4.5:1 text contrast), verifies live accent reloading, ending-menu navigation, and saved ending restoration. The extended novel's graph test explores every reachable combination and rejects crashes, loops and missing endings. This automation checks *functionality*, not subjective illustration quality or audio on real speakers; a short human review on Hyprland is still worthwhile.
 
 ### Artwork and audio
 
-Scenes use original procedurally drawn **pixel-style test artwork** (indexed PNG), intended to reveal layer, placement, background-swap and font/UI issues. The audio consists of original synthesized PCM tones and short motifs, for playback/load testing rather than finished orchestral music. Each game is fully portable with its assets. Neither novel embeds game-specific content in Rust.
+The first two examples use procedurally drawn **pixel-style test artwork** (indexed PNG) to stress layers, backgrounds and UI; the Dawn showcase instead uses original production cut-paper illustrations and three matching sets of character expressions. Audio is original synthesized PCM music and effects, with no borrowed recordings. Each game is fully portable with its assets. Neither novel embeds game-specific content in Rust.
 
 No new Vesper engine features are required for either story.
 
 ## No-compilation Linux showcase
 
-The CI Linux archive now includes both independent games and a separate launcher for each. Download the `vesper-linux-fairytale-showcase` artifact from the passing GitHub Actions run, unpack the `vesper-linux-x86_64.tar.gz` inside it, and run `./vesper/lantern` or `./vesper/moon`. These launchers work from any directory and use the same Vesper executable. As with the normal Linux bundle, compatible graphics/audio system libraries are required; the user does not need Rust or Cargo.
+The CI Linux archive includes all three independent games and a separate launcher for each. Download the `vesper-linux-fairytale-showcase` artifact from [passing final main-branch GitHub Actions run 40803672919](https://github.com/sguzman/vesper/actions/runs/40803672919), unpack the `vesper-linux-x86_64.tar.gz` inside it, and run `./vesper/lantern`, `./vesper/moon` or `./vesper/dawn`. These launchers work from any directory and use the same Vesper executable. As with the normal Linux bundle, compatible graphics/audio system libraries are required; the user does not need Rust or Cargo.

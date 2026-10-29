@@ -1,6 +1,6 @@
 # Vesper — Visual Experience Roadmap
 
-**Status:** in progress, **82 / 100 verified points** (VX01–VX09 verified; VX10 next). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
+**Status:** **100 / 100 verified points** (VX01–VX10 complete; final main-branch CI [40803672919](https://github.com/sguzman/vesper/actions/runs/40803672919) passed). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
 
 **Goal:** A lovely, expressive visual novel reader: readable, configurable dialogue; distinct choices; gentle cinematic staging; history and saves; accessible motion controls; and a complete original game that demonstrates all of them.
 
@@ -17,15 +17,15 @@
 | VX07 | 7 | ✨ Atmosphere and micro-interactions — verified ([CI run 40785668645](https://github.com/sguzman/vesper/actions/runs/40785668645)) | Provide a small, bounded data-driven library of 2D atmospheric presets such as drifting motes, gentle glow and vignette, with deterministic seeds and no mandatory shaders. |
 | VX08 | 7 | 📖 Reading history and polished saves — verified ([CI run 40789199729](https://github.com/sguzman/vesper/actions/runs/40789199729)) | A readable, scrollable dialogue backlog shows the current session's recent lines with speaker names and scene boundaries, with a documented bounded memory limit and no spoilers from future branches. |
 | VX09 | 8 | ♿ Accessibility and experience regression — verified ([CI run 40794656091](https://github.com/sguzman/vesper/actions/runs/40794656091)) | Readable defaults and player controls for high-contrast text, reduced motion, text speed/instant reveal, and safe font fallback are documented and tested. |
-| VX10 | 18 | 🌠 Original generated-asset showcase game | Create a self-contained examples/dawn-post-office/ with its own game.toml, authored .vn narrative, theme(s), asset manifest, README, artwork/audio directories and runnable Linux launcher; no game-specific Rust branches. |
+| VX10 | 18 | 🌠 Original generated-asset showcase game — verified ([CI run 40803672919](https://github.com/sguzman/vesper/actions/runs/40803672919)) | Create a self-contained examples/dawn-post-office/ with its own game.toml, authored .vn narrative, theme(s), asset manifest, README, artwork/audio directories and runnable Linux launcher; no game-specific Rust branches. |
 
 ## What players will control
 
-Players now have an engine-owned **Settings** screen (option 4 from pause and main menus). Its first-class controls include dialogue-box **opacity (60–100%)**, **text size (80–160% of the game theme)**, **font selection** among approved/installed choices, and **Reset to game defaults**. Changes have a live preview and persist to local preferences, not game source files. Later stages add **text reveal speed, instant text, reduced motion and high contrast**.
+Players now have an engine-owned **Settings** screen (option 4 from pause and main menus). Its first-class controls include dialogue-box **opacity (60–100%)**, **text size (80–160% of the game theme)**, **font selection** among approved/installed choices, and **Reset to game defaults**. Changes have a live preview and persist to local preferences, not game source files. Additional completed controls include **text reveal speed, instant text, reduced motion and high contrast**.
 
 There are two distinct authorities: game creators supply a default external TOML theme, and players may override presentation details locally. Theme hot reload still works for fields the player hasn't overridden. If a requested font disappears, the engine uses a readable fallback. Do not hide validation errors or corrupt story saves.
 
-## Presentation quality to build
+## Delivered presentation quality
 
 **Story UI:** real choice-option widgets rather than a giant concatenated Text node; speaker nameplate, themeable panel geometry, pointer/keyboard focus, clear selected state, an unobtrusive continue cue, typographic rhythm and safe wrapping.
 
@@ -37,7 +37,15 @@ There are two distinct authorities: game creators supply a default external TOML
 
 A tiny moth courier is given a letter addressed to a dawn that doesn't exist yet. In a whimsical airborne post office, she visits sky gardens, a teacup observatory and drifting cloud neighborhoods to discover whom the message is really for. Multiple decisions lead to at least **three endings**, using conditionals and meaningfully different scenes. Expect about **12–20 minutes** of reading, with **at least five illustrated locations, three characters, and nine expression images**.
 
-This must be a **real complete game**, not a feature-menu or static mockup. The work at **VX10** includes generating original, visually consistent backgrounds and transparent character art, creating/licensing permitted fonts, composing or procedurally synthesizing original audio, authoring external `.vn` and TOML files, packaging, and visually reviewing rendered story branches. All generation happens during production, not as a runtime service. The engine remains generic.
+This must be a **real complete game**, not a feature-menu or static mockup. **VX10 delivered** seven original backgrounds, nine transparent character expressions and seven synthesized audio cues, along with the authored `.vn`/TOML files, asset manifest, reproducible generation tool, portable packaging and reviewed real rendered playthrough evidence. All generation happens during production, not as a runtime service. The engine remains generic.
+
+## Verified delivery
+
+The completed game is at [`examples/dawn-post-office/`](../examples/dawn-post-office/), with [its own authoring and controls guide](../examples/dawn-post-office/README.md). Its 15 story scenes support 27 choice sequences, three endings and conditional narrative consequences. Its seven backgrounds, nine transparent expression portraits and seven audio tracks/effects are original external assets with manifest-backed provenance and deterministic local generation. There are no game-specific engine branches.
+
+On the final merged runtime commit `a2a5c46eec`, [main CI 40803672919](https://github.com/sguzman/vesper/actions/runs/40803672919) passed the narrative and Bevy suites, all existing regressions, screenshot glyph checks at six sizes, all three full Dawn routes and standalone Linux package/launcher tests. GitHub Actions retains [Dawn graphical screenshots](https://github.com/sguzman/vesper/actions/runs/40803672919/artifacts/12867992241) and the [ready-to-play Linux archive](https://github.com/sguzman/vesper/actions/runs/40803672919/artifacts/12867841575) for a limited retention period.
+
+Hardware-specific native Wayland, GPU drivers and audible speaker output are *not* certified by virtual-X11 CI. The scoped phase is complete; do not invent work after 100%.
 
 ## Acceptance protocol
 

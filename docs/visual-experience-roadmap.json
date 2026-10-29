@@ -13,9 +13,9 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 82,
-  "last_verified_commit": "ce4937e83ac5d35d00f18cc260a267e2be08f776",
-  "status": "in progress",
+  "verified_weight": 100,
+  "last_verified_commit": "a2a5c46eecf6cea29f5d4a5cc7c629c377127d41",
+  "status": "verified complete",
   "created_date": "2026-10-28",
   "rules": {
     "architecture": "All Rust/Bevy systems and widgets generic; narrative/assets/themes externally authored. Preserve backward compatibility for existing example directories and save schema or provide explicit migrations.",
@@ -274,10 +274,17 @@
         "Pass story/asset validation and all ending-path checks; capture and review actual Linux screenshots/video-frame sequences, verify game package runs without Rust installed, and update README with launch commands and controls.",
         "Final main-branch CI must be fully green and the user-facing playthrough must be coherent and visually reviewed; no declaration of 100% based solely on generated image count."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Original external Dawn Post Office showcase merged via PR #10 at c8d866a191b4dd37acd81ddd29b28f72bee35b97, with stable source under examples/dawn-post-office/ (manifest, authored 15-scene story, independent theme, generated assets, generator, provenance manifest and documentation). No game-specific Rust changes or runtime AI.",
+        "Full final merged-main CI run 40803672919 passed both narrative and Bevy jobs on source commit a2a5c46eecf6cea29f5d4a5cc7c629c377127d41. Rust story tests exhaustively exercised all 27 decision combinations and three distinct ending scenes, validating references, branches, characters, and conditional payoffs. Legacy tests and all VX01-VX09 graphical regressions also passed.",
+        "Asset manifest verifies original 7 painted backgrounds (960x540), 9 transparent RGBA character expression portraits (320x500), 4 synthesized PCM music cues and 3 synthesized PCM effects: 23 game-relative assets with exact Git blob hashes, dimensions, channels, PCM formats and provenance. Deterministic generator is in examples/dawn-post-office/tools/generate_assets.py; generation is production-time only.",
+        "Linux/Xvfb graphical acceptance in .github/scripts/dawn_showcase_smoke.py completed three full playthroughs and captured the six journey locations plus each ending in vesper-dawn-showcase artifact 12867992241 on main run 40803672919. Real Bevy screenshots were reviewed for coherent illustrated scenes, character consistency, layer composition and legible text. The six-size dialogue/choice/hint regression passed (artifact 12868140124); the merged-main false-mask capture race was repaired in PR #11 and retested.",
+        "Linux packaging run 40803672919 verified a relocatable standalone ./vesper/dawn launcher works without Cargo or Rust on PATH, alongside legacy examples, with artifact vesper-linux-fairytale-showcase ID 12867841575. Live Settings, high contrast, text reveal, choice focus, staging, pause/history/saves, hot reload, reduced motion and F5/F9 restoration across process restart passed their relevant automated checks.",
+        "Boundary: tests use virtual Linux X11/Xvfb software rendering and asset decoding; native Wayland fractional scaling, physical speaker output, GPU-driver variance, real-device performance and every player preference during a complete story were not independently hardware-certified. These are documented hardware limitations, not hidden test results."
+      ],
+      "status": "verified complete"
     }
   ],
-  "note": "VX01 (8 points) verified on successful branch CI 40710370402, implementation 45a26ce9. Next VX02 is the live in-game settings UI; no VX02 points credited.",
-  "next_milestone": "VX05"
+  "note": "All ten explicitly agreed visual-experience milestones have been verified and the scoped phase is closed. Original runtime and presentation-polish phases remain independently 100/100. Further feature scope requires new authorization.",
+  "next_milestone": null
 }
