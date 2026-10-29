@@ -86,6 +86,19 @@ def scenario(mode,reduced=False):
                 wait(log,"Vesper ambient actors spawned: 3")
                 time.sleep(.8)
                 first=shot(win,folder/"start.png")
+                if not reduced:
+                    # The pause overlay must freeze every ambient ECS clock.
+                    # Compare two frames with the same overlay, not a frame
+                    # against the unpaused UI.
+                    call("xdotool", "key", "--clearmodifiers", "p")
+                    wait(log, "Vesper story paused")
+                    pause_a=shot(win,folder/"paused-start.png")
+                    time.sleep(.9)
+                    pause_b=shot(win,folder/"paused-later.png")
+                    assert difference(pause_a,pause_b)<40, (
+                        "ambient animation changed while story was paused")
+                    call("xdotool", "key", "--clearmodifiers", "p")
+                    wait(log, "Vesper story resumed")
                 time.sleep(1.9)
                 middle=shot(win,folder/"middle.png")
                 if not reduced:
@@ -150,6 +163,6 @@ def main():
     OUT.mkdir(parents=True,exist_ok=True)
     scenario("moving")
     scenario("reduced-motion",reduced=True)
-    print("QOL07 moving actors, three paths, six sizes and reduced motion PASS",flush=True)
+    print("QOL07 moving actors, three paths, pause, mid-flight save, six sizes and reduced motion PASS",flush=True)
 
 if __name__=="__main__": main()
