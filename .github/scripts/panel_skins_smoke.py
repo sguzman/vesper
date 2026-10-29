@@ -101,7 +101,9 @@ def stop(process, stream):
 
 
 def verify(root: Path, contrast: bool):
-    process, stream, win, log, out = launch(root, contrast)
+    process, stream, win, log, _ = launch(root, contrast)
+    out = OUT / ("contrast" if contrast else "normal")
+    out.mkdir(parents=True, exist_ok=True)
     try:
         call("xdotool", "windowsize", "--sync", win, "1280", "720")
         opening = out / "notebook-opening.png"
