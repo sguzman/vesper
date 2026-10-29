@@ -110,6 +110,12 @@ pub fn apply_reload(
             return;
         }
     }
+    for id in session.presentation.ambient_visibility.keys() {
+        if !updated.manifest.ambient_actors.contains_key(id) {
+            warn!("Vesper hot reload rejected: active ambient actor '{id}' was removed");
+            return;
+        }
+    }
     if let Some(id) = &session.presentation.music {
         if let Err(error) = updated.music(id) {
             warn!("Vesper hot reload rejected: {error}");

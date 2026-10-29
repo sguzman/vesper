@@ -25,6 +25,10 @@ pub struct PresentationState {
     #[serde(default)]
     pub selected_choice: usize,
     pub characters: BTreeMap<String, CharacterPose>,
+    /// Optional author-command overrides, keyed by external ambient actor ID.
+    /// Legacy format-version 1 saves have no key and retain manifest defaults.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub ambient_visibility: BTreeMap<String, bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -61,6 +65,11 @@ impl SaveData {
         }
         if let Some(id) = &self.presentation.panel_skin {
             game.panel_skin(id)?;
+        }
+        for id in self.presentation.ambient_visibility.keys() {
+            if !game.manifest.ambient_actors.contains_key(id) {
+                return Err(format!("saved ambient actor '{id}' no longer exists"));
+            }
         }
         for (id, pose) in &self.presentation.characters {
             game.character_expression(id, &pose.expression)?;

@@ -1,0 +1,14 @@
+# Background bird is independent of any speaker/character.
+@scene dawn
+background sunrise
+"The morning bird is perched above the meadow."
+ambient hide bird
+"The bird hides behind the clouds."
+ambient show bird
+"The bird returns to the exact same position."
+* "Walk into the cabin" -> indoors
+* "Stay outside" -> dawn
+
+@scene indoors
+"The bird is outside. Even a previous show command cannot bypass its scene."
+"The End."
