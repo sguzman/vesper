@@ -1,9 +1,9 @@
-"""Regression for body text wrapping into the keyboard-hint footer.
+"""Regressions for body text approaching the separator or hint footer.
 
-Run the real Lantern scene at a compact viewport three times with identical
-geometry/art: normal, dialogue invisible, and hint invisible. Difference masks
-isolate body and footer glyphs. Their intersection must be empty: no OCR, no
-guesswork about line positions, and no test-only UI code in the engine.
+Run the real Lantern scene with identical geometry/art and variants hiding
+dialogue, hints, choices or the separator. Difference masks isolate real glyph
+bounds and the physical divider; assertions catch even near-misses. No OCR,
+layout guesses or test-only UI code are needed in the engine.
 """
 from __future__ import annotations
 
@@ -130,6 +130,19 @@ def invisible_theme(game: Path, section: str) -> None:
     path.write_text(source[:block.start()] + changed + source[block.end():])
 
 
+def invisible_divider(game: Path) -> None:
+    """Hide only the thin separator without changing flex geometry."""
+    path = game / "styles/lantern.toml"
+    source = path.read_text()
+    changed, count = re.subn(
+        r"(?m)^(divider = \[[^\]\n]*,\s*)[^\],\n]+(\])$",
+        r"\g<1>0.0\2",
+        source,
+    )
+    assert count == 1, "missing [panel] divider color"
+    path.write_text(changed)
+
+
 def mask(base: Path, invisible: Path, output: Path) -> int:
     run("convert", str(base), str(invisible), "-compose", "difference",
         "-composite", "-colorspace", "gray", "-threshold", "12%", str(output))
@@ -137,7 +150,7 @@ def mask(base: Path, invisible: Path, output: Path) -> int:
         "-format", "%[fx:mean*w*h]", "info:").stdout)))
 
 
-def check(size: tuple[int, int], base: Path) -> None:
+def check(size: tuple[int, int], base: Path, no_divider: Path) -> None:
     body = OUT / f"{size[0]}x{size[1]}-body-mask.png"
     hint = OUT / f"{size[0]}x{size[1]}-hint-mask.png"
     pixels_body = mask(base, OUT / f"{size[0]}x{size[1]}-no-body.png", body)
@@ -170,6 +183,31 @@ def check(size: tuple[int, int], base: Path) -> None:
     print(f"{size[0]}x{size[1]}: {pixels_body} body pixels, "
           f"{pixels_hint} hint pixels, {shared} overlap, {gap} px vertical gap", flush=True)
     assert shared <= 4, f"Wrapped text overlaps keyboard hint by {shared} pixels"
+
+    # The previous glyph/hint test misses the user's actual failure: the
+    # dialogue descenders can touch the horizontal rule while staying clear
+    # of the hint letters below it.
+    divider = OUT / f"{size[0]}x{size[1]}-divider-mask.png"
+    mask(base, no_divider, divider)
+    # A tiny animated continue cue occupies the panel's upper-right corner.
+    # Cross-process captures can catch different cue pulse phases, so isolate
+    # the central horizontal strip where only the full-width rule can appear.
+    center = OUT / f"{size[0]}x{size[1]}-divider-center-mask.png"
+    run("convert", str(divider), "-crop",
+        f"{size[0] // 2}x{size[1]}+{size[0] // 4}+0",
+        "+repage", str(center))
+    divider_pixels = int(round(float(run(
+        "convert", str(center), "-format", "%[fx:mean*w*h]", "info:"
+    ).stdout)))
+    assert divider_pixels > 100, f"{size}: separator wasn't rendered"
+    divider_top, _ = extent(center)
+    divider_gap = divider_top - bottom_body
+    assert divider_gap >= 8, (
+        f"{size}: last dialogue glyph ends at {bottom_body}, "
+        f"divider starts at {divider_top} (gap {divider_gap}px)"
+    )
+    print(f"{size[0]}x{size[1]}: dialogue/divider real-pixel gap "
+          f"{divider_gap}px", flush=True)
 
 
 def check_choices(size: tuple[int, int], images: dict[str, Path]) -> None:
@@ -213,18 +251,21 @@ def main() -> None:
             images = {}
             choice_images = {}
             for variant, hidden in (("normal", None), ("no-body", "dialogue"),
-                                    ("no-hint", "hint"), ("no-choices", "choices")):
+                                    ("no-hint", "hint"), ("no-choices", "choices"),
+                                    ("no-divider", "divider")):
                 folder = Path(temp) / f"{width}x{height}-{variant}"
                 shutil.copytree(SOURCE, folder)
                 long_choices(folder)
-                if hidden:
+                if hidden == "divider":
+                    invisible_divider(folder)
+                elif hidden:
                     invisible_theme(folder, hidden)
                 image = OUT / f"{width}x{height}-{variant}.png"
                 choice = OUT / f"{width}x{height}-{variant}-choices.png"
                 sample(folder, size, image, choice)
                 images[variant] = image
                 choice_images[variant] = choice
-            check(size, images["normal"])
+            check(size, images["normal"], images["no-divider"])
             check_choices(size, choice_images)
 
 
