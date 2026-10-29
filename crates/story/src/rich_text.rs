@@ -55,11 +55,11 @@ pub fn parse_inline(input: &str) -> Result<StyledText, String> {
             i += 3;
             continue;
         }
-        if rest.starts_with("[[") {
-            let Some(end) = rest[2..].find("]]") else {
+        if let Some(tag_body) = rest.strip_prefix("[[") {
+            let Some(end) = tag_body.find("]]") else {
                 return Err("unterminated inline style tag".into());
             };
-            let tag = &rest[2..2 + end];
+            let tag = &tag_body[..end];
             if let Some(id) = tag.strip_prefix("fx=") {
                 if !style_identifier(id) {
                     return Err(format!("invalid inline style identifier '{id}'"));
