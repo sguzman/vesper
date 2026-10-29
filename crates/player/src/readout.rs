@@ -6,6 +6,19 @@ use crate::text_reveal::{RevealBuffer, RevealSpeed};
 #[derive(Component)]
 pub struct ContinueCue;
 
+#[derive(Clone, Debug)]
+struct StyledSegment {
+    from: usize,
+    to: usize,
+    style: Option<String>,
+}
+
+#[derive(Component)]
+pub struct InlineUiSpan {
+    line_id: u64,
+    index: usize,
+}
+
 #[derive(Resource, Default)]
 pub struct ReadingState {
     buffer: Option<RevealBuffer>,
@@ -13,6 +26,9 @@ pub struct ReadingState {
     auto_elapsed: f32,
     pub autoplay_ready: bool,
     dirty: bool,
+    /// A single bounded segment plan is built when the story line changes.
+    segments: Vec<StyledSegment>,
+    line_id: u64,
 }
 
 pub fn speed(session: &Session) -> RevealSpeed {
@@ -27,6 +43,8 @@ impl ReadingState {
     /// A new story line starts its own progression; no execution of .vn is
     /// performed here. Existing save schema remains untouched.
     pub fn begin(&mut self, body: String, dialogue: bool, speed: RevealSpeed) -> &str {
+        self.segments.clear();
+        self.line_id = self.line_id.wrapping_add(1);
         self.showing_dialogue = dialogue;
         self.buffer = Some(RevealBuffer::new(
             body, if dialogue { speed } else { RevealSpeed::Instant }
@@ -35,6 +53,39 @@ impl ReadingState {
         self.autoplay_ready = false;
         self.dirty = true;
         self.buffer.as_ref().map_or("", RevealBuffer::visible_text)
+    }
+
+    pub fn begin_styled(
+        &mut self, body: String, dialogue: bool, speed: RevealSpeed,
+        spans: &[InlineSpan],
+    ) -> &str {
+        // All author offsets have already passed UTF-8/grapheme validation.
+        // Build the complete presentation plan once, never per frame.
+        let mut cursor = 0;
+        let mut plan = Vec::with_capacity(spans.len() * 2 + 1);
+        for span in spans {
+            if cursor < span.start {
+                plan.push(StyledSegment {
+                    from: cursor, to: span.start, style: None,
+                });
+            }
+            plan.push(StyledSegment {
+                from: span.start, to: span.end, style: Some(span.style.clone()),
+            });
+            cursor = span.end;
+        }
+        if !spans.is_empty() && cursor < body.len() {
+            plan.push(StyledSegment { from: cursor, to: body.len(), style: None });
+        }
+        self.begin(body, dialogue, speed);
+        self.segments = plan;
+        self.buffer.as_ref().map_or("", RevealBuffer::visible_text)
+    }
+
+    pub fn restore_completed_styled(
+        &mut self, body: String, dialogue: bool, spans: &[InlineSpan],
+    ) {
+        self.begin_styled(body, dialogue, RevealSpeed::Instant, spans);
     }
 
     /// A reloaded/loaded scene is already visible: never replay partial text.
@@ -58,6 +109,110 @@ impl ReadingState {
     pub fn full_body(&self) -> Option<&str> {
         self.buffer.as_ref().map(RevealBuffer::visible_text)
     }
+}
+
+/// Bevy's UI root Text must carry the leading unstyled section. The
+/// remaining styled sections live as child TextSpans, retaining a single
+/// wrapping/shaping block. A zero-width prefix supports a styled first word.
+fn rich_root_prefix<'a>(visible: &'a str, segments: &[StyledSegment]) -> &'a str {
+    if let Some(first) = segments.first()
+        && first.style.is_none() && first.from == 0
+    {
+        return &visible[..visible.len().min(first.to)];
+    }
+    ""
+}
+
+/// Keep the same single UI text block for wrapping while assigning each
+/// authored section its own TextSpan color/font. No fonts or markup are parsed
+/// during this update system; at most 129 already-validated sections exist.
+pub fn sync_spans(
+    mut commands: Commands,
+    session: Res<Session>,
+    state: Res<ReadingState>,
+    assets: Res<AssetServer>,
+    mut body: Query<(Entity, &StoryText, &mut Text)>,
+    mut children: Query<(Entity, &InlineUiSpan, &mut TextSpan, &mut TextFont, &mut TextColor)>,
+    mut previous: Local<Option<(u64, usize, bool)>>,
+) {
+    let text = state.full_body().unwrap_or("");
+    let color_mode = session.preferences.high_contrast.unwrap_or(false);
+    let marker = (state.line_id, text.len(), color_mode);
+    if *previous == Some(marker) && !session.is_changed() { return; }
+    let new_line = previous.is_none_or(|old| old.0 != state.line_id);
+    let theme = effective_theme(&session);
+    let root = body.iter_mut().find_map(|(id, slot, mut text)| {
+        if matches!(slot, StoryText::Body) {
+            if !state.segments.is_empty() {
+                let prefix = rich_root_prefix(state.full_body().unwrap_or(""), &state.segments);
+                if text.0 != prefix {
+                    text.0.clear();
+                    text.0.push_str(prefix);
+                }
+            }
+            Some(id)
+        } else { None }
+    });
+    let Some(root) = root else { return; };
+    if new_line {
+        for (entity, _, _, _, _) in &mut children {
+            commands.entity(entity).despawn();
+        }
+        if !state.segments.is_empty() {
+            let default_font = text_font(&theme, &assets);
+            commands.entity(root).with_children(|parent| {
+                // The leading unstyled segment is held by the root Text,
+                // not duplicated as a child of that same text block.
+                let first_is_root = state.segments.first()
+                    .is_some_and(|seg| seg.style.is_none() && seg.from == 0);
+                for (index, segment) in state.segments.iter().enumerate()
+                    .skip(usize::from(first_is_root))
+                {
+                    let upto = text.len().min(segment.to);
+                    let visible = if upto > segment.from { &text[segment.from..upto] } else { "" };
+                    let styled = segment.style.as_ref()
+                        .and_then(|name| theme.inline_styles.get(name));
+                    let palette = if color_mode { theme.dialogue.color }
+                        else { styled.map_or(theme.dialogue.color, |style| style.color) };
+                    let font = if !color_mode && session.preferences.font_family.is_none() {
+                        styled.and_then(|style| style.font_family.as_ref())
+                            .map_or_else(|| default_font.clone(),
+                                |family| FontSource::Family(family.clone().into()))
+                    } else { default_font.clone() };
+                    parent.spawn((
+                        InlineUiSpan { line_id: state.line_id, index },
+                        TextSpan::new(visible),
+                        TextFont { font, font_size: FontSize::Px(theme.dialogue.size), ..default() },
+                        text_color(palette),
+                    ));
+                }
+            });
+            info!("Vesper inline text spans mounted: {} (root prefix bytes: {})",
+                state.segments.len(), rich_root_prefix(text, &state.segments).len());
+        }
+    } else {
+        for (_, node, mut span, mut font, mut color) in &mut children {
+            if node.line_id != state.line_id { continue; }
+            let Some(segment) = state.segments.get(node.index) else { continue };
+            let upto = text.len().min(segment.to);
+            let visible = if upto > segment.from { &text[segment.from..upto] } else { "" };
+            if span.0 != visible { span.0.clear(); span.0.push_str(visible); }
+            if session.is_changed() {
+                let styled = segment.style.as_ref()
+                    .and_then(|name| theme.inline_styles.get(name));
+                let palette = if color_mode { theme.dialogue.color }
+                    else { styled.map_or(theme.dialogue.color, |style| style.color) };
+                *color = text_color(palette);
+                let default_font = text_font(&theme, &assets);
+                font.font = if !color_mode && session.preferences.font_family.is_none() {
+                    styled.and_then(|style| style.font_family.as_ref())
+                        .map_or(default_font, |family| FontSource::Family(family.clone().into()))
+                } else { default_font };
+                font.font_size = FontSize::Px(theme.dialogue.size);
+            }
+        }
+    }
+    *previous = Some(marker);
 }
 
 /// Guarded by preference validation; deterministic for simulated-clock tests.
@@ -95,8 +250,16 @@ pub fn tick(
         state.dirty = false;
         if let Some(text) = state.full_body().map(str::to_owned) {
             for (slot, mut body) in &mut bodies {
-                if matches!(slot, StoryText::Body) && body.0 != text {
-                    body.0.clone_from(&text);
+                if matches!(slot, StoryText::Body) {
+                    let replacement = if state.segments.is_empty() {
+                        text.as_str()
+                    } else {
+                        rich_root_prefix(&text, &state.segments)
+                    };
+                    if body.0 != replacement {
+                        body.0.clear();
+                        body.0.push_str(replacement);
+                    }
                 }
             }
         }
