@@ -143,9 +143,14 @@ def run_case(name, *, font=None, contrast=False, reduced=False, auto=False):
                     # persist and be visually different from the first page.
                     assert different(first, restored) > 3000, "F9 lost the banner panel"
                 elif auto:
-                    # Zero key presses: two dialogue lines must be seen with
-                    # exactly the reader's configured automatic 0.8 s delay.
-                    wait(log, "Vesper inline text spans mounted", previous=1, limit=12)
+                    # No key presses: the reader's configured 0.8 s delays
+                    # must progress through the plain second line and trigger
+                    # the authored ambient-hide event in the third line.
+                    # A later unstyled dialogue does not remount TextSpans.
+                    wait(log, "Vesper ambient actor bird: visible=false", limit=12)
+                    assert log.read_text(errors="replace").count(
+                        "Vesper auto-advance ready") >= 2, (
+                        "auto delay never armed for successive dialogue lines")
                     image(win, directory / "auto-advanced.png")
                 else:
                     time.sleep(1.1)
