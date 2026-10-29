@@ -111,6 +111,18 @@ impl ReadingState {
     }
 }
 
+/// Bevy's UI root Text must carry the leading unstyled section. The
+/// remaining styled sections live as child TextSpans, retaining a single
+/// wrapping/shaping block. A zero-width prefix supports a styled first word.
+fn rich_root_prefix<'a>(visible: &'a str, segments: &[StyledSegment]) -> &'a str {
+    if let Some(first) = segments.first()
+        && first.style.is_none() && first.from == 0
+    {
+        return &visible[..visible.len().min(first.to)];
+    }
+    ""
+}
+
 /// Keep the same single UI text block for wrapping while assigning each
 /// authored section its own TextSpan color/font. No fonts or markup are parsed
 /// during this update system; at most 129 already-validated sections exist.
@@ -131,7 +143,13 @@ pub fn sync_spans(
     let theme = effective_theme(&session);
     let root = body.iter_mut().find_map(|(id, slot, mut text)| {
         if matches!(slot, StoryText::Body) {
-            if !state.segments.is_empty() && !text.0.is_empty() { text.0.clear(); }
+            if !state.segments.is_empty() {
+                let prefix = rich_root_prefix(text, &state.segments);
+                if text.0 != prefix {
+                    text.0.clear();
+                    text.0.push_str(prefix);
+                }
+            }
             Some(id)
         } else { None }
     });
@@ -143,7 +161,13 @@ pub fn sync_spans(
         if !state.segments.is_empty() {
             let default_font = text_font(&theme, &assets);
             commands.entity(root).with_children(|parent| {
-                for (index, segment) in state.segments.iter().enumerate() {
+                // The leading unstyled segment is held by the root Text,
+                // not duplicated as a child of that same text block.
+                let first_is_root = state.segments.first()
+                    .is_some_and(|seg| seg.style.is_none() && seg.from == 0);
+                for (index, segment) in state.segments.iter().enumerate()
+                    .skip(usize::from(first_is_root))
+                {
                     let upto = text.len().min(segment.to);
                     let visible = if upto > segment.from { &text[segment.from..upto] } else { "" };
                     let styled = segment.style.as_ref()
@@ -163,7 +187,8 @@ pub fn sync_spans(
                     ));
                 }
             });
-            info!("Vesper inline text spans mounted: {}", state.segments.len());
+            info!("Vesper inline text spans mounted: {} (root prefix bytes: {})",
+                state.segments.len(), rich_root_prefix(text, &state.segments).len());
         }
     } else {
         for (_, node, mut span, mut font, mut color) in &mut children {
@@ -226,7 +251,11 @@ pub fn tick(
         if let Some(text) = state.full_body().map(str::to_owned) {
             for (slot, mut body) in &mut bodies {
                 if matches!(slot, StoryText::Body) {
-                    let replacement = if state.segments.is_empty() { text.as_str() } else { "" };
+                    let replacement = if state.segments.is_empty() {
+                        text.as_str()
+                    } else {
+                        rich_root_prefix(&text, &state.segments)
+                    };
                     if body.0 != replacement {
                         body.0.clear();
                         body.0.push_str(replacement);
