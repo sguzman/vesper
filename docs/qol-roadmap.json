@@ -16,10 +16,10 @@
     "docs/visual-experience-roadmap.json": 100
   },
   "scope_weight": 100,
-  "verified_weight": 72,
-  "status": "active: QOL01–QOL04 and QOL06 verified on merged main; QOL05 and QOL07 in progress",
-  "last_verified_commit": "550b03ef9532c1a30ff29f23741301a9ade3092c",
-  "next_milestone": "QOL05",
+  "verified_weight": 86,
+  "status": "active: QOL01–QOL06 verified on merged main; QOL07 motion and QOL08 final combined example in acceptance",
+  "last_verified_commit": "6516702317a6569f068d5c79a442e33206a2f2b0",
+  "next_milestone": "QOL07",
   "rules": {
     "execution": "Implementation ongoing under the project stewardship protocol; credit only after acceptance-specific CI and merged-main certification.",
     "architecture": "Rust + Bevy 0.20; pure Rust narrative parser; external game-relative .vn/TOML/images/audio/fonts; generic engine; no game-specific Rust branches.",
@@ -156,10 +156,14 @@
         "Set finite active span/glyph caps and measure the worst authored case; visual masks and unit tests cover multibyte glyphs, long wraps, color/contrast, animation frames and no per-frame I/O."
       ],
       "example": "A word glows/flickers like ember; a separate word looks darkened; reduced motion shows both clearly as static text.",
-      "status": "active",
+      "status": "verified complete",
       "evidence": [
-        "Draft implementation: https://github.com/sguzman/vesper/pull/21",
-        "Unverified: full branch CI and merged-main certification required before credit"
+        "PR #21 merged: https://github.com/sguzman/vesper/pull/21",
+        "Passing full integration push CI: https://github.com/sguzman/vesper/actions/runs/40965082816",
+        "Passing full integration PR CI: https://github.com/sguzman/vesper/actions/runs/40965094969",
+        "Passing full merged-main narrative and Bevy CI: https://github.com/sguzman/vesper/actions/runs/40968256027",
+        "Merged implementation commit: 6516702317a6569f068d5c79a442e33206a2f2b0",
+        "Real six-size ember/shadow/shimmer screenshots verified color changes, high-contrast suppression, reduced-motion freeze, Unicode layout safety and full legacy/packaging regressions."
       ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
@@ -232,8 +236,11 @@
         "Audit render-loop limits (no blocking scans/I/O, unbounded allocations or mandatory shaders); record physical Hyprland versus Xvfb limits; only then mark 100/100 verified."
       ],
       "example": "Run a combined scene with a paper notebook, fiery word, autonomous walkers, birds, and a plane.",
-      "status": "planned",
-      "evidence": [],
+      "status": "active",
+      "evidence": [
+        "Draft stacked integration PR: https://github.com/sguzman/vesper/pull/23",
+        "External Living Journal combines notebook, styled words, walker, bird, plane, reader system fonts and auto delay; full PR and merged-main certification still required; no QOL08 credit."
+      ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     }
   ]
