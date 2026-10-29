@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "game": "dawn-post-office",
+  "production_only": true,
+  "provenance": "Original deterministic cut-paper illustrations and oscillator-synthesized music/SFX authored for this Vesper example; no third-party art, music recording, online runtime, or copyrighted sample reuse.",
+  "asset_license": "MIT (repository LICENSE)",
+  "generator": "tools/generate_assets.py",
+  "reproduction_environment": "Python 3.12 and Pillow 12.0.0; standard-library wave for audio",
+  "hash_type": "Git SHA-1 blob identity",
+  "artwork_placement": "All media is external and game-relative; no engine-specific branches",
+  "assets": [
+    {
+      "path": "assets/audio/brass-bell.wav",
+      "kind": "original_synthesized_wav",
+      "bytes": 44844,
+      "git_blob_sha1": "fa7772010914c4974b948f5fd46a45aeaeb22243",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "pcm_bits": 16,
+      "duration_seconds": 1.4
+    },
+    {
+      "path": "assets/audio/cloud-waltz.wav",
+      "kind": "original_synthesized_wav",
+      "bytes": 256044,
+      "git_blob_sha1": "b92a3b0f006e19121706967eb2e68d29c4ed0b49",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "pcm_bits": 16,
+      "duration_seconds": 8
+    },
+    {
+      "path": "assets/audio/first-light.wav",
+      "kind": "original_synthesized_wav",
+      "bytes": 256044,
+      "git_blob_sha1": "bc3e2b25ac71949835249eb34eeb91d1df5ccb51",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "pcm_bits": 16,
+      "duration_seconds": 8
+    },
+    {
+      "path": "assets/audio/hanging-gardens.wav",
+      "kind": "original_synthesized_wav",
+      "bytes": 256044,
+      "git_blob_sha1": "4f44bafca25f3149ae9d9d301199f84ff9c644b9",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "pcm_bits": 16,
+      "duration_seconds": 8
+    },
+    {
+      "path": "assets/audio/morning-sorting.wav",
+      "kind": "original_synthesized_wav",
+      "bytes": 256044,
+      "git_blob_sha1": "191a91979dcb08807e9edcbba78f75b24b6183b2",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "pcm_bits": 16,
+      "duration_seconds": 8
+    },
+    {
+      "path": "assets/audio/teacup.wav",
+      "kind": "original_synthesized_wav",
+      "bytes": 22444,
+      "git_blob_sha1": "b11939cdb87173c911e2a6bff324d586ef82b77e",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "pcm_bits": 16,
+      "duration_seconds": 0.7
+    },
+    {
+      "path": "assets/audio/wing-flutter.wav",
+      "kind": "original_synthesized_wav",
+      "bytes": 20844,
+      "git_blob_sha1": "e694d28143501b6d50a95215950853b3b8d9c685",
+      "sample_rate_hz": 16000,
+      "channels": 1,
+      "pcm_bits": 16,
+      "duration_seconds": 0.65
+    },
+    {
+      "path": "assets/backgrounds/bell-roof.png",
+      "kind": "background",
+      "bytes": 70670,
+      "git_blob_sha1": "b65080c294c92441d4e39e198fb5781303bb5df6",
+      "size_px": [
+        960,
+        540
+      ]
+    },
+    {
+      "path": "assets/backgrounds/cloud-quarter.png",
+      "kind": "background",
+      "bytes": 80303,
+      "git_blob_sha1": "786ff16c589ae1f1ef62f225f55b6e41fb05a7ee",
+      "size_px": [
+        960,
+        540
+      ]
+    },
+    {
+      "path": "assets/backgrounds/horizon-gate.png",
+      "kind": "background",
+      "bytes": 74590,
+      "git_blob_sha1": "d721bee89c9c6e4751256831efffd8e3845ec079",
+      "size_px": [
+        960,
+        540
+      ]
+    },
+    {
+      "path": "assets/backgrounds/sky-garden.png",
+      "kind": "background",
+      "bytes": 68971,
+      "git_blob_sha1": "c751fdcc1dc3f4f168d50fc93716bddef7fd7431",
+      "size_px": [
+        960,
+        540
+      ]
+    },
+    {
+      "path": "assets/backgrounds/sorting-room.png",
+      "kind": "background",
+      "bytes": 62095,
+      "git_blob_sha1": "a5437e1012739bf6c027c21f032a1791789c6ebf",
+      "size_px": [
+        960,
+        540
+      ]
+    },
+    {
+      "path": "assets/backgrounds/sunrise.png",
+      "kind": "background",
+      "bytes": 68923,
+      "git_blob_sha1": "87a86c10f4f0ef636d2265a94387e630a5ab7d91",
+      "size_px": [
+        960,
+        540
+      ]
+    },
+    {
+      "path": "assets/backgrounds/teacup-observatory.png",
+      "kind": "background",
+      "bytes": 75704,
+      "git_blob_sha1": "60d8d231edb7a8120b40fbd8e0dac8cbbb6caab4",
+      "size_px": [
+        960,
+        540
+      ]
+    },
+    {
+      "path": "assets/characters/kettle-patient.png",
+      "kind": "character_expression",
+      "bytes": 40437,
+      "git_blob_sha1": "3ab22f67d427eb43b85ec36ad86b086c1fb923c4",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    },
+    {
+      "path": "assets/characters/kettle-sleepy.png",
+      "kind": "character_expression",
+      "bytes": 41090,
+      "git_blob_sha1": "04e329684a0dfa577e49442a4f6005b29f04ddaf",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    },
+    {
+      "path": "assets/characters/kettle-sparkle.png",
+      "kind": "character_expression",
+      "bytes": 42991,
+      "git_blob_sha1": "1f4cb891443196ada856c9693593890fb3bfe42a",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    },
+    {
+      "path": "assets/characters/nima-brave.png",
+      "kind": "character_expression",
+      "bytes": 55176,
+      "git_blob_sha1": "14bf12ac11f514dde833265b883586f11b4b414a",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    },
+    {
+      "path": "assets/characters/nima-curious.png",
+      "kind": "character_expression",
+      "bytes": 56201,
+      "git_blob_sha1": "66640a16808bed05d3a4c8114d1ba28d1a955129",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    },
+    {
+      "path": "assets/characters/nima-hopeful.png",
+      "kind": "character_expression",
+      "bytes": 55194,
+      "git_blob_sha1": "9f9c4b999960a691028fccb5205c6485d83a30fe",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    },
+    {
+      "path": "assets/characters/orin-warm.png",
+      "kind": "character_expression",
+      "bytes": 51957,
+      "git_blob_sha1": "59234fff5916553a46fdc108798ea089278a4934",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    },
+    {
+      "path": "assets/characters/orin-worried.png",
+      "kind": "character_expression",
+      "bytes": 52158,
+      "git_blob_sha1": "fea342d6a87b1ea3ae6458f7041a6102d2156d8e",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    },
+    {
+      "path": "assets/characters/orin-wry.png",
+      "kind": "character_expression",
+      "bytes": 51931,
+      "git_blob_sha1": "5e4b88585aabc6bcf1640c431ec1fd94f3f3b6ec",
+      "size_px": [
+        320,
+        500
+      ],
+      "alpha": "transparent_rgba"
+    }
+  ]
+}
