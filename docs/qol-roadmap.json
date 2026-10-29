@@ -16,10 +16,10 @@
     "docs/visual-experience-roadmap.json": 100
   },
   "scope_weight": 100,
-  "verified_weight": 42,
-  "status": "active: QOL01, QOL02 and QOL03 verified on merged main; QOL04 integration acceptance in progress",
-  "last_verified_commit": "fe11d1cf83558fcdf63412f125ac414d3aa0b4d0",
-  "next_milestone": "QOL04",
+  "verified_weight": 59,
+  "status": "active: QOL01–QOL04 verified on merged main; QOL05 dynamic effects and QOL06 ambient actors in separate draft PRs",
+  "last_verified_commit": "36d3a3d0e16ae4864fa12dd850a1621b332ba09d",
+  "next_milestone": "QOL05 and QOL06",
   "rules": {
     "execution": "Implementation ongoing under the project stewardship protocol; credit only after acceptance-specific CI and merged-main certification.",
     "architecture": "Rust + Bevy 0.20; pure Rust narrative parser; external game-relative .vn/TOML/images/audio/fonts; generic engine; no game-specific Rust branches.",
@@ -130,10 +130,13 @@
         "Unit tests cover quoted escapes, malformed/nested markup, ZWJ emoji, combining marks, multilingual dialogue, parser validation and six-size visual layout; unmarked stories render unchanged."
       ],
       "example": "Illustrative, not finalized syntax: \"The [[fx=ember]]fire[[/fx]] is waking.\"",
-      "status": "active",
+      "status": "verified complete",
       "evidence": [
-        "Integrated implementation under draft PR #19: https://github.com/sguzman/vesper/pull/19",
-        "Grammar, Unicode-safe spans, theme-defined colors, Bevy TextSpan rendering, F5/F9 and six-size visual checks implemented; full CI and merged-main acceptance pending; no QOL04 credit."
+        "PR #19 merged: https://github.com/sguzman/vesper/pull/19",
+        "Passing integrated narrative and Bevy CI: https://github.com/sguzman/vesper/actions/runs/40953872164",
+        "Passing full merged-main narrative + Bevy CI: https://github.com/sguzman/vesper/actions/runs/40957118616",
+        "Merged implementation commit: 36d3a3d0e16ae4864fa12dd850a1621b332ba09d",
+        "Xvfb six-size normal/high-contrast styled word screenshots, leading-style first-word test, Unicode grapheme boundaries and F5/F9 visual restoration passed."
       ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
@@ -153,8 +156,11 @@
         "Set finite active span/glyph caps and measure the worst authored case; visual masks and unit tests cover multibyte glyphs, long wraps, color/contrast, animation frames and no per-frame I/O."
       ],
       "example": "A word glows/flickers like ember; a separate word looks darkened; reduced motion shows both clearly as static text.",
-      "status": "planned",
-      "evidence": [],
+      "status": "active",
+      "evidence": [
+        "Draft implementation: https://github.com/sguzman/vesper/pull/21",
+        "Unverified: full branch CI and merged-main certification required before credit"
+      ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
     {
@@ -171,8 +177,11 @@
         "Bevy smoke screenshots verify correct layer order, lifecycle, scene switching, responsive cover/crop alignment, pause/reduced-motion behavior and no blocking update-thread I/O."
       ],
       "example": "Declare a bird flock as background scenery, not as a story character who speaks.",
-      "status": "planned",
-      "evidence": [],
+      "status": "active",
+      "evidence": [
+        "Draft implementation: https://github.com/sguzman/vesper/pull/20",
+        "Unverified: full branch CI and merged-main certification required before credit"
+      ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
     {
