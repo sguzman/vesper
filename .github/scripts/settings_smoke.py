@@ -147,6 +147,12 @@ def main() -> None:
 
                     key("Down")
                     key("Right")
+                    wait_log(log, "Vesper system font browser opened")
+                    # The browser starts on Game default; navigate to the
+                    # first generic option and commit via Enter.
+                    key("Down")
+                    key("Return")
+                    wait_log(log, "Vesper system font browser closed")
                     font = wait_prefs(prefs_path, lambda p:
                         p.get("font_family") == "sans-serif")
                     assert font["format_version"] == 1
@@ -156,7 +162,7 @@ def main() -> None:
                     # in the 1280x720 settings panel.
                     if game == "little-lantern":
                         previous_opacity = font["panel_opacity"]
-                        run("xdotool", "mousemove", "--window", win, "600", "145")
+                        run("xdotool", "mousemove", "--window", win, "600", "128")
                         time.sleep(.4)
                         run("xdotool", "click", "1")
                         mouse_change = wait_prefs(prefs_path, lambda p:
@@ -169,7 +175,7 @@ def main() -> None:
                     # white text override authored low-contrast colors.
                     # Pointer test selects row 0; keyboard-only path remains
                     # on the font row (index 2).
-                    for _ in range(6 if game == "little-lantern" else 4):
+                    for _ in range(7 if game == "little-lantern" else 5):
                         key("Down", .08)
                     key("Return", .12)
                     contrast = wait_prefs(prefs_path, lambda p:
@@ -226,8 +232,8 @@ def main() -> None:
                     key("p")
                     key("4")
                     wait_log(restart, "Vesper appearance settings opened")
-                    # VX09 high contrast precedes Reset (8th row).
-                    for _ in range(7):
+                    # VX09 high contrast and QOL02 delay precede Reset (9th row).
+                    for _ in range(8):
                         key("Down")
                     key("Return")
                     wait_prefs(prefs_path, lambda p:

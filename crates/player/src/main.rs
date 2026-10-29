@@ -4,6 +4,7 @@ use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*,
 use bevy::ecs::system::SystemParam;
 mod reload;
 mod settings;
+mod font_browser;
 mod choices;
 mod text_reveal;
 mod readout;
@@ -22,6 +23,8 @@ struct Session {
     game: Game,
     /// Player-owned overrides loaded once before entering Bevy's update loop.
     preferences: PlayerPreferences,
+    /// Cached installed system font families, enumerated once during startup.
+    font_families: Vec<String>,
     machine: Machine,
     choosing: bool,
     finished: bool,
@@ -368,6 +371,7 @@ fn effective_theme(session: &Session) -> vesper_game::Theme {
     let authored = &session.game.theme;
     session.preferences.resolve_theme(authored, |family| {
         generic_font_available(family)
+            || session.font_families.binary_search_by(|name| name.as_str().cmp(family)).is_ok()
             || authored.font.family.as_deref() == Some(family)
     })
 }
@@ -534,6 +538,8 @@ fn main() {
         .insert_resource(io_workers)
         .insert_resource(settings::SettingsState::default())
         .insert_resource(settings::SettingsClicks::default())
+        .insert_resource(font_browser::State::default())
+        .insert_resource(font_browser::Click::default())
         .insert_resource(MenuPointer::default())
         .insert_resource(choices::ChoiceUi::default())
         .insert_resource(choices::ChoiceClick::default())
@@ -546,7 +552,7 @@ fn main() {
         .insert_resource(save_slots::Click::default())
         .insert_resource(save_slots::Pending::default())
         .insert_resource(Session {
-            game, preferences, machine, choosing: false, finished: false,
+            game, preferences, font_families: Vec::new(), machine, choosing: false, finished: false,
             ending_selection: 0,
             paused: false, pause_overlay: None,
             pause_selection: 0,
@@ -556,17 +562,19 @@ fn main() {
             pending_audio: Vec::new(),
             history: history::HistoryLog::default(),
         })
-        .add_systems(Startup, (atmosphere::setup, setup).chain())
+        .add_systems(Startup, (font_browser::discover, atmosphere::setup, setup).chain())
         .add_systems(Update, (
             (
-                settings::pointer, advance_from_keyboard,
+                font_browser::wheel, font_browser::pointer, settings::pointer,
+                advance_from_keyboard,
                 choices::sync_rows, choices::sync_row_style,
                 choices::scroll_selected, choices::sync_viewport,
                 choices::reserve_row_height, readout::tick,
                 cinematics::tick, actors::tick, atmosphere::tick,
             ).chain(),
             (
-                settings::sync_visuals, reserve_story_text_height, trigger_save_load,
+                settings::sync_visuals, font_browser::sync,
+                reserve_story_text_height, trigger_save_load,
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
             ).chain(),
@@ -1069,6 +1077,7 @@ fn advance_from_keyboard(
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
     mut menu_exit: MessageWriter<AppExit>,
     mut settings_state: ResMut<settings::SettingsState>,
+    mut font_browser_state: ResMut<font_browser::State>,
     preference_writer: Res<settings::PreferencesWriter>,
     mut pointer: ResMut<MenuPointer>,
     mut choice_click: ResMut<choices::ChoiceClick>,
@@ -1079,8 +1088,13 @@ fn advance_from_keyboard(
     // Pointer activation must never survive a pause/menu or get replayed.
     let pointer_choice = choice_click.0.take();
     if settings_state.overlay.is_some() {
-        settings::keyboard(&input, &mut session, &mut settings_state,
-            &mut commands, &assets, &preference_writer);
+        if font_browser_state.overlay.is_some() {
+            font_browser::keyboard(&input, &mut session, &mut font_browser_state,
+                &mut commands, &preference_writer);
+        } else {
+            settings::keyboard(&input, &mut session, &mut settings_state,
+                &mut font_browser_state, &mut commands, &assets, &preference_writer);
+        }
         return;
     }
     // The backlog owns all input while visible; closing never advances the

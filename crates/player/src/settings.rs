@@ -3,10 +3,10 @@
 use super::*;
 use std::sync::mpsc::{self, Sender};
 
-pub const ITEMS: [&str; 9] = [
+pub const ITEMS: [&str; 10] = [
     "Dialogue opacity", "Text size", "Font family",
     "Reveal speed", "Reduced motion", "Auto advance",
-    "High contrast", "Reset to game defaults", "Back",
+    "Auto advance delay", "High contrast", "Reset to game defaults", "Back",
 ];
 
 #[derive(Resource)]
@@ -78,7 +78,7 @@ pub fn start_writer() -> (PreferencesWriter, WriterShutdown) {
         sender: Some(tx), thread: Some(thread),
     })
 }
-fn persist(session: &Session, writer: &PreferencesWriter) {
+pub(super) fn persist(session: &Session, writer: &PreferencesWriter) {
     if let Some(tx) = &writer.0 {
         if tx.send(Some(session.preferences.clone())).is_err() {
             error!("Vesper preference writer stopped unexpectedly");
@@ -86,19 +86,6 @@ fn persist(session: &Session, writer: &PreferencesWriter) {
     } else {
         warn!("Vesper preference storage unavailable; changes apply only this session");
     }
-}
-
-fn font_choices(session: &Session) -> Vec<String> {
-    let mut choices = vec![
-        "Game default".to_owned(), "sans-serif".to_owned(),
-        "serif".to_owned(), "monospace".to_owned(),
-    ];
-    if let Some(family) = &session.game.theme.font.family {
-        if !choices.iter().any(|choice| choice == family) {
-            choices.push(family.clone());
-        }
-    }
-    choices
 }
 
 fn label(session: &Session, index: usize) -> String {
@@ -113,11 +100,13 @@ fn label(session: &Session, index: usize) -> String {
                 || "Game default".to_owned(), |v| format!("{:.0}%", v * 100.0));
             format!("Text size   <  {value}  >")
         }
-        2 => format!("Font   <  {}  >", session.preferences.font_family.as_deref().unwrap_or("Game default")),
-        6 => format!("High contrast   <  {}  >",
+        2 => format!("Font browser   [ {} ]", session.preferences.font_family.as_deref().unwrap_or("Game default")),
+        6 => format!("Auto delay   <  {:.1} s  >",
+            session.preferences.auto_advance_delay.unwrap_or(1.5)),
+        7 => format!("High contrast   <  {}  >",
             if session.preferences.high_contrast.unwrap_or(false) { "On" } else { "Off" }),
-        7 => "Reset to game defaults".into(),
-        8 => "Back to menu".into(),
+        8 => "Reset to game defaults".into(),
+        9 => "Back to menu".into(),
         3 => {
             let speed = session.preferences.reveal_speed
                 .unwrap_or(session.game.theme.reveal_speed);
@@ -155,16 +144,14 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
             let base = next.text_scale.unwrap_or(1.0);
             next.text_scale = Some(step_scaled(base, delta, 0.80, 1.60, 0.10));
         }
-        2 => {
-            let fonts = font_choices(session);
-            let current = fonts.iter().position(|name|
-                next.font_family.as_deref().unwrap_or("Game default") == name
-            ).unwrap_or(0);
-            let target = (current as i32 + delta).rem_euclid(fonts.len() as i32) as usize;
-            next.font_family = (target != 0).then(|| fonts[target].clone());
+        // QOL01: font changes go through the searchable installed-font picker.
+        2 => {},
+        6 => {
+            let base = next.auto_advance_delay.unwrap_or(1.5);
+            next.auto_advance_delay = Some(step_scaled(base, delta, 0.5, 20.0, 0.5));
         }
-        6 => next.high_contrast = Some(!next.high_contrast.unwrap_or(false)),
-        7 => next.reset(),
+        7 => next.high_contrast = Some(!next.high_contrast.unwrap_or(false)),
+        8 => next.reset(),
         3 => {
             use vesper_game::TextRevealSpeed as Speed;
             let speeds = [Speed::Instant, Speed::Slow, Speed::Normal, Speed::Fast];
@@ -181,7 +168,7 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
 }
 
 pub fn change(session: &mut Session, index: usize, delta: i32, writer: &PreferencesWriter) {
-    if index == 8 || index >= ITEMS.len() { return; }
+    if index == 9 || index >= ITEMS.len() { return; }
     let next = edited(session, index, delta);
     if next == session.preferences { return; }
     if let Err(error) = next.validate() {
@@ -323,8 +310,9 @@ pub fn close(
 
 pub fn keyboard(
     input: &ButtonInput<KeyCode>, session: &mut Session,
-    state: &mut SettingsState, commands: &mut Commands,
-    assets: &AssetServer, writer: &PreferencesWriter,
+    state: &mut SettingsState, browser: &mut font_browser::State,
+    commands: &mut Commands, assets: &AssetServer,
+    writer: &PreferencesWriter,
 ) {
     if input.just_pressed(KeyCode::Escape) || input.just_pressed(KeyCode::KeyP)
         || input.just_pressed(KeyCode::KeyM)
@@ -335,11 +323,14 @@ pub fn keyboard(
     } else if input.just_pressed(KeyCode::ArrowUp) {
         state.selection = (state.selection + ITEMS.len() - 1) % ITEMS.len();
     } else if input.just_pressed(KeyCode::ArrowLeft) {
-        change(session, state.selection, -1, writer);
+        if state.selection == 2 { font_browser::open(session, browser, commands); }
+        else { change(session, state.selection, -1, writer); }
     } else if input.just_pressed(KeyCode::ArrowRight) {
-        change(session, state.selection, 1, writer);
+        if state.selection == 2 { font_browser::open(session, browser, commands); }
+        else { change(session, state.selection, 1, writer); }
     } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
-        if state.selection == 8 { close(session, state, commands, assets); }
+        if state.selection == 9 { close(session, state, commands, assets); }
+        else if state.selection == 2 { font_browser::open(session, browser, commands); }
         else { change(session, state.selection, 1, writer); }
     }
 }
@@ -350,14 +341,16 @@ pub fn pointer(
     writer: Res<PreferencesWriter>, mut commands: Commands,
     assets: Res<AssetServer>,
     mut clicks: ResMut<SettingsClicks>,
+    mut browser: ResMut<font_browser::State>,
 ) {
-    if state.overlay.is_none() {
+    if state.overlay.is_none() || browser.overlay.is_some() {
         clicks.0 = None;
         return;
     }
     if let Some(index) = clicks.0.take() {
         state.selection = index;
-        if index == 8 { close(&mut session, &mut state, &mut commands, &assets); }
+        if index == 9 { close(&mut session, &mut state, &mut commands, &assets); }
+        else if index == 2 { font_browser::open(&session, &mut browser, &mut commands); }
         else { change(&mut session, index, 1, &writer); }
     }
 }
@@ -439,6 +432,8 @@ mod tests {
         assert!((step_scaled(0.60, -1, 0.60, 1., 0.05) - 0.60).abs() < 0.001);
         assert!((step_scaled(0.95, 1, 0.60, 1., 0.05) - 1.).abs() < 0.001);
         assert!((step_scaled(10.60, 1, 0.80, 10.60, 0.10) - 10.60).abs() < 0.001);
-        assert_eq!(ITEMS.len(), 9);
+        assert_eq!(ITEMS.len(), 10);
+        assert_eq!(step_scaled(1.5, 1, 0.5, 20.0, 0.5), 2.0);
+        assert_eq!(step_scaled(20.0, 1, 0.5, 20.0, 0.5), 20.0);
     }
 }
