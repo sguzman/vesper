@@ -78,7 +78,7 @@ pub fn start_writer() -> (PreferencesWriter, WriterShutdown) {
         sender: Some(tx), thread: Some(thread),
     })
 }
-fn persist(session: &Session, writer: &PreferencesWriter) {
+pub(super) fn persist(session: &Session, writer: &PreferencesWriter) {
     if let Some(tx) = &writer.0 {
         if tx.send(Some(session.preferences.clone())).is_err() {
             error!("Vesper preference writer stopped unexpectedly");
@@ -86,19 +86,6 @@ fn persist(session: &Session, writer: &PreferencesWriter) {
     } else {
         warn!("Vesper preference storage unavailable; changes apply only this session");
     }
-}
-
-fn font_choices(session: &Session) -> Vec<String> {
-    let mut choices = vec![
-        "Game default".to_owned(), "sans-serif".to_owned(),
-        "serif".to_owned(), "monospace".to_owned(),
-    ];
-    if let Some(family) = &session.game.theme.font.family {
-        if !choices.iter().any(|choice| choice == family) {
-            choices.push(family.clone());
-        }
-    }
-    choices
 }
 
 fn label(session: &Session, index: usize) -> String {
@@ -113,7 +100,7 @@ fn label(session: &Session, index: usize) -> String {
                 || "Game default".to_owned(), |v| format!("{:.0}%", v * 100.0));
             format!("Text size   <  {value}  >")
         }
-        2 => format!("Font   <  {}  >", session.preferences.font_family.as_deref().unwrap_or("Game default")),
+        2 => format!("Font browser   [ {} ]", session.preferences.font_family.as_deref().unwrap_or("Game default")),
         6 => format!("High contrast   <  {}  >",
             if session.preferences.high_contrast.unwrap_or(false) { "On" } else { "Off" }),
         7 => "Reset to game defaults".into(),
@@ -155,14 +142,8 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
             let base = next.text_scale.unwrap_or(1.0);
             next.text_scale = Some(step_scaled(base, delta, 0.80, 1.60, 0.10));
         }
-        2 => {
-            let fonts = font_choices(session);
-            let current = fonts.iter().position(|name|
-                next.font_family.as_deref().unwrap_or("Game default") == name
-            ).unwrap_or(0);
-            let target = (current as i32 + delta).rem_euclid(fonts.len() as i32) as usize;
-            next.font_family = (target != 0).then(|| fonts[target].clone());
-        }
+        // QOL01: font changes go through the searchable installed-font picker.
+        2 => {},
         6 => next.high_contrast = Some(!next.high_contrast.unwrap_or(false)),
         7 => next.reset(),
         3 => {
@@ -323,8 +304,9 @@ pub fn close(
 
 pub fn keyboard(
     input: &ButtonInput<KeyCode>, session: &mut Session,
-    state: &mut SettingsState, commands: &mut Commands,
-    assets: &AssetServer, writer: &PreferencesWriter,
+    state: &mut SettingsState, browser: &mut font_browser::State,
+    commands: &mut Commands, assets: &AssetServer,
+    writer: &PreferencesWriter,
 ) {
     if input.just_pressed(KeyCode::Escape) || input.just_pressed(KeyCode::KeyP)
         || input.just_pressed(KeyCode::KeyM)
@@ -335,11 +317,14 @@ pub fn keyboard(
     } else if input.just_pressed(KeyCode::ArrowUp) {
         state.selection = (state.selection + ITEMS.len() - 1) % ITEMS.len();
     } else if input.just_pressed(KeyCode::ArrowLeft) {
-        change(session, state.selection, -1, writer);
+        if state.selection == 2 { font_browser::open(session, browser, commands); }
+        else { change(session, state.selection, -1, writer); }
     } else if input.just_pressed(KeyCode::ArrowRight) {
-        change(session, state.selection, 1, writer);
+        if state.selection == 2 { font_browser::open(session, browser, commands); }
+        else { change(session, state.selection, 1, writer); }
     } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
         if state.selection == 8 { close(session, state, commands, assets); }
+        else if state.selection == 2 { font_browser::open(session, browser, commands); }
         else { change(session, state.selection, 1, writer); }
     }
 }
@@ -350,14 +335,16 @@ pub fn pointer(
     writer: Res<PreferencesWriter>, mut commands: Commands,
     assets: Res<AssetServer>,
     mut clicks: ResMut<SettingsClicks>,
+    mut browser: ResMut<font_browser::State>,
 ) {
-    if state.overlay.is_none() {
+    if state.overlay.is_none() || browser.overlay.is_some() {
         clicks.0 = None;
         return;
     }
     if let Some(index) = clicks.0.take() {
         state.selection = index;
         if index == 8 { close(&mut session, &mut state, &mut commands, &assets); }
+        else if index == 2 { font_browser::open(&session, &mut browser, &mut commands); }
         else { change(&mut session, index, 1, &writer); }
     }
 }
