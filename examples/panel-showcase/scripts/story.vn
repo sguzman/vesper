@@ -1,0 +1,68 @@
+# Reader panel demonstration: nine choices exercise scroll and compact viewports.
+@scene notes
+panel notebook
+"Field notebook, day fourteen. An unexpected envelope arrived at dusk, sealed with a familiar copper emblem. Its ink seemed to shift whenever I turned the page."
+"Nine possible interpretations are written beneath the sketch. Which thread should we follow?"
+* "01 — Examine the envelope's faded postmark and weather-worn corners." -> ending_1
+* "02 — Compare the ink with the entries on the preceding pages." -> ending_2
+* "03 — Read the address beneath the folded paper with a lamp." -> ending_3
+* "04 — Investigate the unusual emblem stamped into the seal." -> ending_4
+* "05 — Consult the star charts tucked behind the notebook." -> ending_5
+* "06 — Listen for footsteps outside the abandoned station." -> ending_6
+* "07 — Follow the trail left by the courier through the garden." -> ending_7
+* "08 — Open the envelope carefully without disturbing its edges." -> ending_8
+* "09 — Put the message aside and sketch what has happened." -> ending_9
+
+@scene ending_1
+panel banner
+"Dispatch 01: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
+
+@scene ending_2
+panel banner
+"Dispatch 02: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
+
+@scene ending_3
+panel banner
+"Dispatch 03: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
+
+@scene ending_4
+panel banner
+"Dispatch 04: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
+
+@scene ending_5
+panel banner
+"Dispatch 05: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
+
+@scene ending_6
+panel banner
+"Dispatch 06: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
+
+@scene ending_7
+panel banner
+"Dispatch 07: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
+
+@scene ending_8
+panel banner
+"Dispatch 08: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
+
+@scene ending_9
+panel banner
+"Dispatch 09: The message belongs in the evening archive. This illustrated banner is an authored panel image, independent of the story text and its reader settings."
+panel default
+"The journal closes. The original solid panel returns without a restart."
