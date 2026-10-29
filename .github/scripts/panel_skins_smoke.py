@@ -43,10 +43,18 @@ def key(name: str, delay: float = .25) -> None:
 
 
 def shot(win: str, path: Path, width: int, height: int) -> None:
-    time.sleep(.5)
-    call("import", "-window", win, str(path))
-    got = call("identify", "-format", "%w %h", str(path)).stdout
-    assert got == f"{width} {height}", (path, got)
+    # The Bevy log can announce its scene before software Vulkan produces
+    # the first nonblank frame. Treat a flat X11 capture as not yet ready.
+    deadline = time.monotonic() + 12
+    while time.monotonic() < deadline:
+        time.sleep(.35)
+        call("import", "-window", win, str(path))
+        got = call("identify", "-format", "%w %h", str(path)).stdout
+        assert got == f"{width} {height}", (path, got)
+        palette = int(call("identify", "-format", "%k", str(path)).stdout)
+        if palette > 45:
+            return
+    raise AssertionError(f"blank or unrendered Bevy panel frame: {path}")
 
 
 def changed(before: Path, after: Path) -> int:

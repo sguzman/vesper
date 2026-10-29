@@ -9,7 +9,7 @@ Place author-created PNGs **inside the game directory**, e.g. `assets/panels/not
 ```toml
 [panel_skins.notebook]
 image = "assets/panels/notebook.png"
-insets = [35.0, 35.0, 26.0, 24.0]
+insets = [102.0, 35.0, 26.0, 24.0]
 slice_border = 26.0
 
 [panel_skins.banner]

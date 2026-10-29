@@ -3,15 +3,15 @@
 panel notebook
 "Field notebook, day fourteen. An unexpected envelope arrived at dusk, sealed with a familiar copper emblem. Its ink seemed to shift whenever I turned the page."
 "Nine possible interpretations are written beneath the sketch. Which thread should we follow?"
-* "01 — Examine the envelope's faded postmark and weather-worn corners." -> ending_1
-* "02 — Compare the ink with the entries on the preceding pages." -> ending_2
-* "03 — Read the address beneath the folded paper with a lamp." -> ending_3
-* "04 — Investigate the unusual emblem stamped into the seal." -> ending_4
-* "05 — Consult the star charts tucked behind the notebook." -> ending_5
-* "06 — Listen for footsteps outside the abandoned station." -> ending_6
-* "07 — Follow the trail left by the courier through the garden." -> ending_7
-* "08 — Open the envelope carefully without disturbing its edges." -> ending_8
-* "09 — Put the message aside and sketch what has happened." -> ending_9
+* "Examine the envelope's faded postmark and weather-worn corners." -> ending_1
+* "Compare the ink with the entries on the preceding pages." -> ending_2
+* "Read the address beneath the folded paper with a lamp." -> ending_3
+* "Investigate the unusual emblem stamped into the seal." -> ending_4
+* "Consult the star charts tucked behind the notebook." -> ending_5
+* "Listen for footsteps outside the abandoned station." -> ending_6
+* "Follow the trail left by the courier through the garden." -> ending_7
+* "Open the envelope carefully without disturbing its edges." -> ending_8
+* "Put the message aside and sketch what has happened." -> ending_9
 
 @scene ending_1
 panel banner
