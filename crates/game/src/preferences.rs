@@ -35,6 +35,10 @@ pub struct PlayerPreferences {
     pub reduced_motion: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub auto_advance: Option<bool>,
+    /// Seconds to hold completed dialogue when auto-advance is enabled.
+    /// None retains the original 1.5-second player default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_advance_delay: Option<f32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub high_contrast: Option<bool>,
 }
@@ -49,6 +53,7 @@ impl Default for PlayerPreferences {
             reveal_speed: None,
             reduced_motion: None,
             auto_advance: None,
+            auto_advance_delay: None,
             high_contrast: None,
         }
     }
@@ -75,6 +80,10 @@ impl PlayerPreferences {
         }
         if self.text_scale.is_some_and(|v| !v.is_finite() || !(0.80..=1.60).contains(&v)) {
             return Err("text_scale must be within 0.80..=1.60".into());
+        }
+        if self.auto_advance_delay.is_some_and(|delay|
+            !delay.is_finite() || !(0.5..=20.0).contains(&delay)) {
+            return Err("auto_advance_delay must be within 0.5..=20.0 seconds".into());
         }
         if self.font_family.as_ref().is_some_and(|font| {
             font.trim() != font || font.is_empty() || font.len() > 128
@@ -210,6 +219,28 @@ pub fn default_file() -> Result<PathBuf, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn auto_advance_delay_is_optional_bounded_and_backward_compatible() {
+        let previous = PlayerPreferences::decode(
+            br#"{"format_version":1,"auto_advance":true}"#,
+        ).unwrap();
+        assert_eq!(previous.auto_advance_delay, None);
+        for invalid in [-1.0, 0.0, 0.49, 20.5, f32::NAN, f32::INFINITY] {
+            let prefs = PlayerPreferences {
+                auto_advance_delay: Some(invalid), ..Default::default()
+            };
+            assert!(prefs.validate().is_err(), "accepted invalid delay {invalid}");
+        }
+        for valid in [0.5, 1.5, 4.5, 20.0] {
+            let prefs = PlayerPreferences {
+                auto_advance_delay: Some(valid), ..Default::default()
+            };
+            let bytes = prefs.encode().unwrap();
+            let restored = PlayerPreferences::decode(&bytes).unwrap();
+            assert_eq!(restored.auto_advance_delay, Some(valid));
+        }
+    }
+
     use crate::Theme;
     use std::time::{SystemTime, UNIX_EPOCH};
 
