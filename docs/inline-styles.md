@@ -46,6 +46,24 @@ Each color is normalized RGBA, with every component finite and in `0..=1`. A the
 - Reader high contrast overrides author colors with normal dialogue color, and the reader's selected font overrides optional author font families. Reduced motion does not require an exception for QOL04 because these are static styles. Animated fiery/wavy/dark effects are **future QOL05**, not part of this milestone.
 - Reloading game text/themes remains handled by the existing worker-based reload path. Ill-formed styles or removed definitions are rejected before changing the active game; a compatible story edit refreshes the current line without replaying side effects.
 
+## Dynamic effects (QOL05)
+
+An inline style can add an optional color-only animated effect:
+
+```toml
+[inline_styles.ember]
+color = [0.85, 0.49, 0.19, 1.0]
+effect = "ember"
+effect_amplitude = 0.25
+effect_rate_hz = 2.0
+```
+
+`effect` is one of `static` (default), `ember` (warm flicker), `shadow` (subtle dimming), or `shimmer` (cool color ripple). The amplitude is a finite fraction in `0.0..=0.35`; frequency is finite in `0.0..=6.0` Hz. Defaults are 0.18 and 1.5 Hz. Zero amplitude/rate disables animation. Effects use deterministic trigonometric color modulation, not randomness, and never move glyphs or alter text layout. All channels are clamped to RGBA bounds; source alpha stays constant.
+
+**Access and precedence:** high contrast disables authored dynamic effects and uses the standard readable text color. Reduced motion freezes effect colors at phase zero. The effects are limited to authored inline spans, not buttons, choices, history or the rest of the UI.
+
+The **shimmer effect is a color wave, not animated glyph positions**. Future true geometric waves would require a layout-preserving per-glyph shader and are not claimed by this implementation.
+
 ## Run and verify
 
 ```sh

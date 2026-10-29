@@ -1,0 +1,6 @@
+format_version = 1
+id = "word-effects"
+title = "The Luminous Page"
+story = "scripts/story.vn"
+entry = "opening"
+theme = "styles/words.toml"
