@@ -474,7 +474,7 @@ fn validate_panel_image(path: &Path, slice_border: f32) -> Result<(), String> {
     let mut header = [0_u8; 24];
     file.read_exact(&mut header)
         .map_err(|error| format!("invalid PNG '{}': {error}", path.display()))?;
-    if &header[..8] != b"\\x89PNG\\r\\n\\x1a\\n"
+    if &header[..8] != b"\x89PNG\r\n\x1a\n"
         || header[8..12] != [0, 0, 0, 13]
         || &header[12..16] != b"IHDR"
     {
