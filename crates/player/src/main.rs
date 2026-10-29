@@ -612,6 +612,20 @@ fn apply_visual(
     visual: Visual,
 ) -> Result<(), String> {
     match visual {
+        Visual::AmbientShow(id) => {
+            if !session.game.manifest.ambient_actors.contains_key(&id) {
+                return Err(format!("unknown ambient actor '{id}'"));
+            }
+            session.presentation.ambient_visibility.insert(id.clone(), true);
+            info!("Vesper ambient actor {id}: visible=true");
+        }
+        Visual::AmbientHide(id) => {
+            if !session.game.manifest.ambient_actors.contains_key(&id) {
+                return Err(format!("unknown ambient actor '{id}'"));
+            }
+            session.presentation.ambient_visibility.insert(id.clone(), false);
+            info!("Vesper ambient actor {id}: visible=false");
+        }
         Visual::Panel(id) => {
             session.presentation.panel_skin = if id == "default" {
                 None
@@ -1547,6 +1561,7 @@ fn poll_completed_io(
                 session.presentation = PresentationState::default();
                 session.presentation.selected_choice = state.selected_choice;
                 session.presentation.panel_skin = state.panel_skin;
+                session.presentation.ambient_visibility = state.ambient_visibility;
                 if let Some(id) = state.music {
                     if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Music(id)

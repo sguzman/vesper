@@ -702,6 +702,11 @@ impl Game {
                     if manifest.sounds.contains_key(&id) { None }
                     else { Some(format!("sound '{id}'")) }
                 }
+                vesper_story::Visual::AmbientShow(id)
+                | vesper_story::Visual::AmbientHide(id) => {
+                    if manifest.ambient_actors.contains_key(&id) { None }
+                    else { Some(format!("ambient actor '{id}'")) }
+                }
                 _ => None,
             };
             if let Some(reference) = missing {
