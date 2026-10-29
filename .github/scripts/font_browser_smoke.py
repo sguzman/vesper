@@ -116,13 +116,17 @@ def main() -> None:
                         )
                         # An unmatched search must show an empty-state message
                         # rather than preserve a stale result or selecting it.
-                        key("ctrl+a")
+                        # Backspace is deterministic under Xvfb: native
+                        # Ctrl+A selection can vary with focus/shortcut mapping.
+                        for _ in "DejaVu":
+                            key("BackSpace", .035)
                         run("xdotool", "type", "--clearmodifiers", "zzzz-no-such-font")
                         time.sleep(.5)
                         no_match = OUT / "no-match.png"
                         shot(win, no_match)
                         assert changed(search, no_match) > 150
-                        key("ctrl+a")
+                        for _ in "zzzz-no-such-font":
+                            key("BackSpace", .035)
                         run("xdotool", "type", "--clearmodifiers", "DejaVu")
                         time.sleep(.35)
                         key("Down")
