@@ -320,8 +320,10 @@ pub fn keyboard(
         close(session, state, commands, assets);
     } else if input.just_pressed(KeyCode::ArrowDown) {
         state.selection = (state.selection + 1) % ITEMS.len();
+        info!("Vesper appearance selection: {}", state.selection);
     } else if input.just_pressed(KeyCode::ArrowUp) {
         state.selection = (state.selection + ITEMS.len() - 1) % ITEMS.len();
+        info!("Vesper appearance selection: {}", state.selection);
     } else if input.just_pressed(KeyCode::ArrowLeft) {
         if state.selection == 2 { font_browser::open(session, browser, commands); }
         else { change(session, state.selection, -1, writer); }
