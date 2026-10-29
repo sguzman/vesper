@@ -16,10 +16,10 @@
     "docs/visual-experience-roadmap.json": 100
   },
   "scope_weight": 100,
-  "verified_weight": 86,
-  "status": "active: QOL01–QOL06 verified on merged main; QOL07 motion and QOL08 final combined example in acceptance",
-  "last_verified_commit": "6516702317a6569f068d5c79a442e33206a2f2b0",
-  "next_milestone": "QOL07",
+  "verified_weight": 95,
+  "status": "active: QOL01–QOL07 verified on merged main; QOL08 final combined showcase awaiting main certification",
+  "last_verified_commit": "84b32126599a127c1bcf335e7bb74ad011854bca",
+  "next_milestone": "QOL08",
   "rules": {
     "execution": "Implementation ongoing under the project stewardship protocol; credit only after acceptance-specific CI and merged-main certification.",
     "architecture": "Rust + Bevy 0.20; pure Rust narrative parser; external game-relative .vn/TOML/images/audio/fonts; generic engine; no game-specific Rust branches.",
@@ -207,10 +207,14 @@
         "Limit number of actors, path points, frames, speeds and texture usage; exclude pathfinding, collision physics, unlimited spawns or runtime image generation; screenshots capture start/middle/end and pause."
       ],
       "example": "An NPC crosses a bridge while a bird arcs overhead and a plane moves behind distant clouds.",
-      "status": "active",
+      "status": "verified complete",
       "evidence": [
-        "Draft motion implementation: https://github.com/sguzman/vesper/pull/22",
-        "Independent 3-actor six-size and reduced-motion graphical acceptance passed on earlier commit; expanded pause/save/hot-reload tests in CI; no QOL07 credit until full branch and merged-main CI."
+        "PR #22 merged: https://github.com/sguzman/vesper/pull/22",
+        "Passing QOL07 full branch push CI: https://github.com/sguzman/vesper/actions/runs/40968518727",
+        "Passing QOL07 full branch PR CI: https://github.com/sguzman/vesper/actions/runs/40968525827",
+        "Passing merged-main narrative + full Bevy CI: https://github.com/sguzman/vesper/actions/runs/40971296273",
+        "Merged implementation commit: 84b32126599a127c1bcf335e7bb74ad011854bca",
+        "Three actors (walker, bird, plane), six viewports, pause and reduced-motion freeze, one-shot and ping-pong, F5/F9 mid-flight clock persistence, hot reload and invalid edits, original full stories and Linux packaging verified."
       ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },

@@ -1,6 +1,6 @@
 # Vesper — Reader QoL & Expressive Authoring Roadmap
 
-**Status: 86 / 100 verified points — QOL01–QOL06 VERIFIED on merged main; QOL07/QOL08 ACTIVE.**
+**Status: 95 / 100 verified points — QOL01–QOL07 VERIFIED on merged main; QOL08 ACTIVE.**
 
 The preceding three phases (original MVP, Presentation Polish, Visual Experience) are independently **100 / 100 complete**. This is a new phase based on main commit `d90766f34a4d81be3064b1da5ee9ee4410aefca5`, created 2026-10-29.
 
@@ -16,7 +16,9 @@ The preceding three phases (original MVP, Presentation Polish, Visual Experience
 
 **QOL05 (14 points) is verified complete.** [PR #21](https://github.com/sguzman/vesper/pull/21) merged at `6516702317a6569f068d5c79a442e33206a2f2b0`. Both [full integration CI](https://github.com/sguzman/vesper/actions/runs/40965094969) and [merged-main CI](https://github.com/sguzman/vesper/actions/runs/40968256027) passed narrative and Bevy regression suites, including real per-word ember/shadow/shimmer colors, reduced-motion freezes, high-contrast overrides, all legacy stories, F5/F9 and Linux packaging.
 
-**QOL07 (9 points) is active, not verified.** [PR #22](https://github.com/sguzman/vesper/pull/22) adds autonomous paths, flipbook frames and pause/save/reload tests; final branch and merged-main acceptance remain outstanding.
+**QOL07 (9 points) is verified complete.** [PR #22](https://github.com/sguzman/vesper/pull/22) merged at `84b32126599a127c1bcf335e7bb74ad011854bca`. Both [branch CI](https://github.com/sguzman/vesper/actions/runs/40968525827) and [merged-main CI](https://github.com/sguzman/vesper/actions/runs/40971296273) passed all narrative and Bevy regressions, including walking NPC, bird, plane, six sizes, reduced-motion and pause freeze, F5/F9 in-flight restore, motion hot reload, complete old games and Linux packaging.
+
+**QOL08 (5 points) is active, not yet verified.** [PR #23](https://github.com/sguzman/vesper/pull/23) demonstrates all five capabilities in one external Living Journal example; both full branch CI runs [push](https://github.com/sguzman/vesper/actions/runs/40970633827) and [PR](https://github.com/sguzman/vesper/actions/runs/40970641201) passed. Merged-main certification remains required.
 
 ## Purpose
 
@@ -34,9 +36,9 @@ The per-word aesthetic is inspired conceptually by *Kentucky Route Zero*, *Celes
 | **QOL04 — ✍️ Inline style-span authoring foundation** | 17 | — | **Verified complete** |
 | **QOL05 — 🔥 Per-word dynamic flair library** | 14 | QOL04 | **Verified complete** |
 | **QOL06 — 🕊️ Independent ambient-scene actor infrastructure** | 13 | — | **Verified complete** |
-| **QOL07 — 🚶 Autonomous ambient motion and flipbook frames** | 9 | QOL06 | Active — certification pending |
+| **QOL07 — 🚶 Autonomous ambient motion and flipbook frames** | 9 | QOL06 | **Verified complete** |
 | **QOL08 — 🧪 Integration, authoring examples, final certification** | 5 | QOL01, QOL02, QOL03, QOL04, QOL05, QOL06, QOL07 | Active — certification pending |
-| **Total** | **100** | | **86 verified** |
+| **Total** | **100** | | **95 verified** |
 
 ### Delivery order
 
@@ -186,4 +188,4 @@ The final gate includes Xvfb renders at **946×511, 955×520, 800×600, 900×700
 
 **Source of truth:** [qol-roadmap.json](qol-roadmap.json). Prior completed phases: [MVP](roadmap.json) · [Polish](polish-roadmap.json) · [Visual Experience](visual-experience-roadmap.json).
 
-**Next:** Complete QOL07 [motion PR #22](https://github.com/sguzman/vesper/pull/22) and certify on merged main. Finish QOL08 [Living Journal PR #23](https://github.com/sguzman/vesper/pull/23) and full-game graphical audit, then perform final merged-main 100-point certification.
+**Next:** Merge [QOL08 Living Journal PR #23](https://github.com/sguzman/vesper/pull/23), inspect combined screenshot evidence and audit, then certify its full Bevy/narrative regressions on merged main. No 100/100 claim until that green run.
