@@ -13,7 +13,7 @@ pub struct CharacterPose {
     pub position: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PresentationState {
     pub background: Option<String>,
