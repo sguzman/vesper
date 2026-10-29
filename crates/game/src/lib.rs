@@ -68,6 +68,56 @@ pub struct AmbientActor {
     pub initially_visible: bool,
     /// Reserved deterministic phase for future QOL07 motion.
     pub start_phase_seconds: f32,
+    /// Optional motion/flipbook, authored separately from static placement.
+    pub motion: Option<AmbientMotion>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum AmbientMotionMode {
+    #[default]
+    Loop,
+    PingPong,
+    Once,
+}
+
+/// Deterministic, linear, clock-driven background motion. No physics engine.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct AmbientMotion {
+    /// Between 2 and 16 control points, normalized into the stage.
+    pub waypoints: Vec<[f32; 2]>,
+    pub period_seconds: f32,
+    pub mode: AmbientMotionMode,
+    pub flip_on_reverse: bool,
+    /// Optional flipbook of game-relative PNG images, including initial frame.
+    pub frames: Vec<String>,
+    pub frame_fps: f32,
+}
+impl Default for AmbientMotion {
+    fn default() -> Self {
+        Self {
+            waypoints: Vec::new(), period_seconds: 4.0,
+            mode: AmbientMotionMode::Loop, flip_on_reverse: false,
+            frames: Vec::new(), frame_fps: 8.0,
+        }
+    }
+}
+impl AmbientMotion {
+    pub fn validate(&self) -> Result<(), String> {
+        if !(2..=16).contains(&self.waypoints.len())
+            || self.waypoints.iter().flatten().any(|v|
+                !v.is_finite() || !(0.0..=1.0).contains(v))
+            || !self.period_seconds.is_finite()
+            || !(0.5..=120.0).contains(&self.period_seconds)
+            || self.frames.len() > 16
+            || !self.frame_fps.is_finite()
+            || !(1.0..=24.0).contains(&self.frame_fps)
+        {
+            return Err("ambient motion has invalid waypoints, period, frames or frame rate".into());
+        }
+        Ok(())
+    }
 }
 
 impl Default for AmbientActor {
@@ -81,6 +131,7 @@ impl Default for AmbientActor {
             scene: None,
             initially_visible: true,
             start_phase_seconds: 0.0,
+            motion: None,
         }
     }
 }
@@ -98,6 +149,9 @@ impl AmbientActor {
             || self.scene.as_ref().is_some_and(|scene| !id_valid(scene))
         {
             return Err("invalid ambient image, anchor, scale, opacity, depth, scene or phase".into());
+        }
+        if let Some(motion) = &self.motion {
+            motion.validate()?;
         }
         Ok(())
     }
@@ -696,6 +750,16 @@ impl Game {
                 return Err(format!("ambient actor '{name}': unknown scene '{scene}'"));
             }
             let path = checked_file(&root, &actor.image)?;
+            if let Some(motion) = &actor.motion {
+                for frame in &motion.frames {
+                    let file = checked_file(&root, frame)?;
+                    if !file.extension().and_then(|ext| ext.to_str())
+                        .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
+                    {
+                        return Err(format!("ambient actor '{name}': flipbook frame must be PNG"));
+                    }
+                }
+            }
             if !path.extension().and_then(|ext| ext.to_str())
                 .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
             {
@@ -1107,5 +1171,27 @@ start_phase_seconds = 2.5
         assert!(Game::load(&fixture.root).unwrap_err().contains("count"));
     }
 
+
+
+    #[test]
+    fn author_defined_motion_rejects_unbounded_waypoints_and_frame_rates() {
+        let valid: AmbientMotion = toml::from_str(
+            "waypoints = [[0.05, 0.6], [0.5, 0.4], [0.95, 0.6]]\nperiod_seconds = 8.0\nmode = \"ping_pong\"\nframe_fps = 12.0\n"
+        ).unwrap();
+        assert!(valid.validate().is_ok());
+        assert_eq!(valid.mode, AmbientMotionMode::PingPong);
+        for bad in [
+            "waypoints = [[0.1, 0.1]]",
+            "waypoints = [[0.0, 0.0], [1.5, 0.5]]",
+            "waypoints = [[0.1, 0.1], [0.9, 0.9]]\nperiod_seconds = 0.0",
+            "waypoints = [[0.1, 0.1], [0.9, 0.9]]\nframe_fps = 0.0",
+            "waypoints = [[0.1, 0.1], [0.9, 0.9]]\nmode = \"teleport\"",
+        ] {
+            match toml::from_str::<AmbientMotion>(bad) {
+                Ok(parsed) => assert!(parsed.validate().is_err(), "{bad}"),
+                Err(_) => {},
+            }
+        }
+    }
 
 }
