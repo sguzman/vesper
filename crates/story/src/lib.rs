@@ -26,6 +26,8 @@ pub struct Choice {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Visual {
     Background(String),
+    /// Change the externally authored dialogue surface. "default" resets it.
+    Panel(String),
     Show { character: String, expression: String, position: String },
     Hide(String),
     Music(String),
@@ -150,6 +152,7 @@ fn command(line: &str) -> Result<Command, String> {
     }
     for (prefix, kind) in [
         ("background ", 0), ("hide ", 1), ("music ", 2), ("sound ", 3),
+        ("panel ", 4),
     ] {
         if let Some(id) = line.strip_prefix(prefix) {
             if !identifier(id) { return Err("invalid asset or character identifier".into()); }
@@ -157,7 +160,8 @@ fn command(line: &str) -> Result<Command, String> {
                 0 => Visual::Background(id.into()),
                 1 => Visual::Hide(id.into()),
                 2 => Visual::Music(id.into()),
-                _ => Visual::Sound(id.into()),
+                3 => Visual::Sound(id.into()),
+                _ => Visual::Panel(id.into()),
             };
             return Ok(Command::Visual(item));
         }

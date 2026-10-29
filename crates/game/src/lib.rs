@@ -23,6 +23,9 @@ pub struct Manifest {
     pub theme: Option<String>,
     #[serde(default)]
     pub backgrounds: BTreeMap<String, String>,
+    /// Optional external dialogue surfaces. Never compiled into the engine.
+    #[serde(default)]
+    pub panel_skins: BTreeMap<String, PanelSkin>,
     #[serde(default)]
     pub music: BTreeMap<String, String>,
     #[serde(default)]
@@ -38,6 +41,34 @@ pub struct Character {
     /// Optional external stage styling. Existing manifests remain valid.
     #[serde(default)]
     pub stage: CharacterStage,
+}
+
+/// A validated, image-backed dialogue panel. Insets are logical pixels
+/// ordered left, right, top, bottom, added to theme.panel.padding.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct PanelSkin {
+    pub image: String,
+    pub insets: [f32; 4],
+    /// Texture pixels retained along each edge for nine-slice scaling.
+    pub slice_border: f32,
+}
+impl Default for PanelSkin {
+    fn default() -> Self {
+        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0 }
+    }
+}
+impl PanelSkin {
+    pub fn validate(&self) -> Result<(), String> {
+        if self.image.is_empty()
+            || self.insets.iter().any(|v| !v.is_finite() || !(0.0..=160.0).contains(v))
+            || !self.slice_border.is_finite()
+            || !(2.0..=160.0).contains(&self.slice_border)
+        {
+            return Err("panel skin image, content insets or slice border invalid".into());
+        }
+        Ok(())
+    }
 }
 
 /// Logical 1280x720 stage offsets, scale, depth and subtle appearance motion.
@@ -277,6 +308,8 @@ pub struct PanelStyle {
     pub accent: [f32; 4],
     /// Game-authored visual division between dialogue and hints.
     pub divider: [f32; 4],
+    /// Optional key into the game manifest's panel_skins table.
+    pub skin: Option<String>,
     pub width_percent: f32,
     pub min_height: f32,
     pub padding: f32,
@@ -296,6 +329,7 @@ impl Default for PanelStyle {
             background: [0.04, 0.05, 0.09, 0.96],
             accent: [0.96, 0.75, 0.40, 1.0],
             divider: [0.70, 0.76, 0.86, 0.34],
+            skin: None,
             width_percent: 90.0,
             min_height: 180.0,
             padding: 20.0,
@@ -380,6 +414,9 @@ impl Theme {
             {
                 return Err(format!("theme.{name} has invalid text size or color"));
             }
+        }
+        if panel.skin.as_ref().is_some_and(|id| id.is_empty() || !id_valid(id)) {
+            return Err("theme.panel.skin has an invalid identifier".into());
         }
         if self.font.file.is_some() && self.font.family.is_some() {
             return Err("theme.font specifies both file and family; select one".into());
@@ -471,6 +508,23 @@ impl Game {
             Theme::default()
         };
         theme.validate()?;
+        if let Some(id) = &theme.panel.skin {
+            if !manifest.panel_skins.contains_key(id) {
+                return Err(format!("theme.panel.skin references unknown skin '{id}'"));
+            }
+        }
+        for (name, skin) in &manifest.panel_skins {
+            if !id_valid(name) || name == "default" {
+                return Err(format!("invalid dialogue panel skin id '{name}'"));
+            }
+            skin.validate().map_err(|err| format!("panel skin '{name}': {err}"))?;
+            let file = checked_file(&root, &skin.image)?;
+            if !file.extension().and_then(|ext| ext.to_str())
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
+            {
+                return Err(format!("panel skin '{name}' must be a PNG"));
+            }
+        }
         if let Some(file) = &theme.font.file {
             let path = checked_file(&root, file)?;
             if !matches!(
@@ -517,6 +571,10 @@ impl Game {
                     if manifest.backgrounds.contains_key(&id) { None }
                     else { Some(format!("background '{id}'")) }
                 }
+                vesper_story::Visual::Panel(id) => {
+                    if id == "default" || manifest.panel_skins.contains_key(&id) { None }
+                    else { Some(format!("panel skin '{id}'")) }
+                }
                 vesper_story::Visual::Show { character, expression, .. } => {
                     if manifest.characters.get(&character)
                         .is_some_and(|entry| entry.expressions.contains_key(&expression)) {
@@ -551,6 +609,11 @@ impl Game {
     pub fn sound(&self, id: &str) -> Result<&str, String> {
         self.manifest.sounds.get(id).map(String::as_str)
             .ok_or_else(|| format!("unknown sound '{id}'"))
+    }
+
+    pub fn panel_skin(&self, id: &str) -> Result<&PanelSkin, String> {
+        self.manifest.panel_skins.get(id)
+            .ok_or_else(|| format!("unknown panel skin '{id}'"))
     }
 
     pub fn background(&self, id: &str) -> Result<&str, String> {

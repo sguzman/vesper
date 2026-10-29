@@ -17,6 +17,9 @@ pub struct CharacterPose {
 #[serde(deny_unknown_fields)]
 pub struct PresentationState {
     pub background: Option<String>,
+    /// Active per-scene panel override; None means game/theme default.
+    #[serde(default)]
+    pub panel_skin: Option<String>,
     #[serde(default)]
     pub music: Option<String>,
     #[serde(default)]
@@ -55,6 +58,9 @@ impl SaveData {
         }
         if let Some(background) = &self.presentation.background {
             game.background(background)?;
+        }
+        if let Some(id) = &self.presentation.panel_skin {
+            game.panel_skin(id)?;
         }
         for (id, pose) in &self.presentation.characters {
             game.character_expression(id, &pose.expression)?;
