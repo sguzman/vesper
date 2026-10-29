@@ -2,7 +2,7 @@
 
 A standalone, fully external game demonstrating **two independently authored image-backed dialogue panels**. No custom engine code, paid services, fonts, cloud dependencies, characters, or background art.
 
-- `notebook`: textured journal paper, ruled writing region, and retained spine, all with nine-slice scaling.
+- `notebook`: textured journal paper, ruled writing region, protected 160-pixel left writing inset, and retained spine, all with nine-slice scaling.
 - `banner`: high-contrast dark dispatch card with edge treatment.
 - `panel default`: removes the scene override, returning to the ordinary solid theme panel.
 - Nine lengthy choices stress layout and scrolling at compact windows; all paths exercise banner and solid-panel fallback.
