@@ -1013,7 +1013,8 @@ start_phase_seconds = 2.5
         assert!(!bird.initially_visible);
         assert_eq!(bird.scene.as_deref(), Some("opening"));
         assert_eq!(bird.start_phase_seconds, 2.5);
-        assert!(Game::load(Fixture::new("ambient-legacy").root).is_ok());
+        let legacy = Fixture::new("ambient-legacy");
+        assert!(Game::load(&legacy.root).is_ok());
 
         for (needle, replacement, expected) in [
             ("scale = 0.55", "scale = 0.0", "ambient"),
@@ -1028,7 +1029,7 @@ start_phase_seconds = 2.5
             assert!(err.contains(expected), "{needle}: {err}");
         }
         let many = (0..33).map(|index| format!(
-            "[ambient_actors.a{index}]\\nimage = \\"assets/room.png\\"\\n"
+            "[ambient_actors.a{index}]\nimage = \"assets/room.png\"\n"
         )).collect::<Vec<_>>().join("");
         fs::write(&file, format!("{baseline}{many}")).unwrap();
         assert!(Game::load(&fixture.root).unwrap_err().contains("count"));
