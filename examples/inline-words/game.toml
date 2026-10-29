@@ -1,0 +1,6 @@
+format_version = 1
+id = "inline-words"
+title = "The Ember Letter"
+story = "scripts/story.vn"
+entry = "opening"
+theme = "styles/words.toml"

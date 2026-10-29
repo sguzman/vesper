@@ -163,6 +163,7 @@ pub fn sync_spans(
                     ));
                 }
             });
+            info!("Vesper inline text spans mounted: {}", state.segments.len());
         }
     } else {
         for (_, node, mut span, mut font, mut color) in &mut children {
