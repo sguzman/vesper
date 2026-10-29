@@ -88,6 +88,18 @@ def scenario(mode,reduced=False):
                 first=shot(win,folder/"start.png")
                 time.sleep(1.9)
                 middle=shot(win,folder/"middle.png")
+                if not reduced:
+                    # Save while the plane is in mid-flight. The saved clock is
+                    # authoritative and proves the ECS phase was snapshotted.
+                    call("xdotool", "key", "--clearmodifiers", "F5")
+                    wait(log, "Vesper save written")
+                    files = list((root / "saves").rglob("*.json"))
+                    assert len(files) == 1, f"missing quicksave: {files}"
+                    saved = json.loads(files[0].read_text())
+                    phases = saved["presentation"]["ambient_motion_elapsed"]
+                    assert set(phases) == {"bird", "walker", "plane"}, phases
+                    assert 0.0 < phases["plane"] < 5.5, phases
+                    assert all(0.0 <= value <= 240.0 for value in phases.values())
                 time.sleep(2.1)
                 last=shot(win,folder/"end.png")
                 if not reduced:
@@ -107,6 +119,19 @@ def scenario(mode,reduced=False):
                     assert difference(
                         crop(middle,folder/"plane-mid2.png",regions["plane"]),
                         crop(last,folder/"plane-end.png",regions["plane"]))>40
+                    call("xdotool", "key", "--clearmodifiers", "F9")
+                    wait(log, "Vesper save restored")
+                    wait(log, "Vesper ambient motion clock restored: plane to")
+                    restored_match = re.search(
+                        r"Vesper ambient motion clock restored: plane to ([0-9.]+)s",
+                        log.read_text(errors="replace"))
+                    assert restored_match is not None, "loaded plane clock was not applied"
+                    assert abs(float(restored_match.group(1)) - phases["plane"]) < .005
+                    loaded=shot(win,folder/"after-quickload.png")
+                    loaded_plane=crop(
+                        loaded, folder/"plane-after-quickload.png", regions["plane"])
+                    assert difference(loaded_plane,folder/"plane-end.png") > 60, (
+                        "quickload did not move the plane back to its saved phase")
                     for width,height in SIZES:
                         call("xdotool","windowsize","--sync",win,str(width),str(height))
                         shot(win,folder/f"{width}x{height}.png",width,height)
