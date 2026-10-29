@@ -32,7 +32,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/inline-words
           cargo run --locked -p vesper-cli -- check-game examples/ambient-showcase
           cargo run --locked -p vesper-cli -- check-game examples/word-effects
-cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
+          cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
       - name: Verify all 23 original Dawn assets and their manifest hashes
         run: python3 .github/scripts/dawn_assets_check.py
       - name: Verify the external PCM audio assets
