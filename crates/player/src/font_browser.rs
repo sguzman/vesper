@@ -23,15 +23,15 @@ pub struct State {
 #[derive(Resource, Default)]
 pub struct Click(pub Option<usize>);
 #[derive(Component)]
-struct Search;
+pub(super) struct Search;
 #[derive(Component)]
-struct Row(usize);
+pub(super) struct Row(usize);
 #[derive(Component)]
-struct RowLabel(usize);
+pub(super) struct RowLabel(usize);
 #[derive(Component)]
-struct Specimen;
+pub(super) struct Specimen;
 #[derive(Component)]
-struct Count;
+pub(super) struct Count;
 
 /// Bevy's FontCx uses the same font database as FontSource::Family.
 /// Do this at startup, before the player UI and per-frame update begins.
