@@ -86,6 +86,7 @@ pub fn tick(
     server: Res<AssetServer>,
     keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands,
+    mut retained: Local<Vec<Entity>>,
     mut sprites: Query<(
         Entity, &CharacterVisual, &mut Sprite,
         Option<&mut ActorEntrance>, Option<&mut ActorExit>, &mut ActorIdle,
@@ -96,7 +97,9 @@ pub fn tick(
     let reduced = session.preferences.reduced_motion.unwrap_or(false);
     let dt = if active { time.delta_secs().clamp(0.0, 0.1) } else { 0.0 };
     let skip = reduced || (active && keys.just_pressed(KeyCode::KeyK));
-    let mut retained = Vec::new();
+    // Reuse scratch storage across frames instead of allocating on every
+    // expression transition. Capacity rises only if the authored stage grows.
+    retained.clear();
     for (entity, visual, _, entrance, _, _) in &mut sprites {
         if session.characters.get(&visual.character) == Some(&entity) {
             if let Some(entrance) = entrance {

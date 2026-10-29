@@ -165,6 +165,22 @@ def main() -> None:
                         mouse_screen = base / "settings-pointer.png"
                         screenshot(win, mouse_screen)
 
+                    # High contrast is player-owned, and its opaque panel and
+                    # white text override authored low-contrast colors.
+                    # Pointer test selects row 0; keyboard-only path remains
+                    # on the font row (index 2).
+                    for _ in range(6 if game == "little-lantern" else 4):
+                        key("Down", .08)
+                    key("Return", .12)
+                    contrast = wait_prefs(prefs_path, lambda p:
+                        p.get("high_contrast") is True)
+                    assert contrast["high_contrast"] is True
+                    high = base / "settings-high-contrast.png"
+                    screenshot(win, high)
+                    assert difference(bigger, high) > 120, (
+                        "high contrast did not visibly update the preview"
+                    )
+
                     # Real popup must fit every requested window; dimensions
                     # and screenshots are preserved for visual review.
                     if game == "little-lantern":
@@ -210,14 +226,15 @@ def main() -> None:
                     key("p")
                     key("4")
                     wait_log(restart, "Vesper appearance settings opened")
-                    # VX04 reading controls precede Reset (7th row).
-                    for _ in range(6):
+                    # VX09 high contrast precedes Reset (8th row).
+                    for _ in range(7):
                         key("Down")
                     key("Return")
                     wait_prefs(prefs_path, lambda p:
                         p.get("panel_opacity") is None and
                         p.get("text_scale") is None and
-                        p.get("font_family") is None)
+                        p.get("font_family") is None and
+                        p.get("high_contrast") is None)
                     key("Escape")
                     assert player.poll() is None
                     key("p")

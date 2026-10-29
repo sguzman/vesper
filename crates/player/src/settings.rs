@@ -3,10 +3,10 @@
 use super::*;
 use std::sync::mpsc::{self, Sender};
 
-pub const ITEMS: [&str; 8] = [
+pub const ITEMS: [&str; 9] = [
     "Dialogue opacity", "Text size", "Font family",
     "Reveal speed", "Reduced motion", "Auto advance",
-    "Reset to game defaults", "Back",
+    "High contrast", "Reset to game defaults", "Back",
 ];
 
 #[derive(Resource)]
@@ -24,6 +24,8 @@ impl Default for SettingsState {
 
 #[derive(Component)]
 pub struct SettingsRow(pub usize);
+#[derive(Component)]
+pub struct SettingsScroll;
 
 /// Completed pointer/button activations enter the normal validated settings
 /// input path. Transient Pressed markers are not reliable click events.
@@ -112,8 +114,10 @@ fn label(session: &Session, index: usize) -> String {
             format!("Text size   <  {value}  >")
         }
         2 => format!("Font   <  {}  >", session.preferences.font_family.as_deref().unwrap_or("Game default")),
-        6 => "Reset to game defaults".into(),
-        7 => "Back to menu".into(),
+        6 => format!("High contrast   <  {}  >",
+            if session.preferences.high_contrast.unwrap_or(false) { "On" } else { "Off" }),
+        7 => "Reset to game defaults".into(),
+        8 => "Back to menu".into(),
         3 => {
             let speed = session.preferences.reveal_speed
                 .unwrap_or(session.game.theme.reveal_speed);
@@ -159,7 +163,8 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
             let target = (current as i32 + delta).rem_euclid(fonts.len() as i32) as usize;
             next.font_family = (target != 0).then(|| fonts[target].clone());
         }
-        6 => next.reset(),
+        6 => next.high_contrast = Some(!next.high_contrast.unwrap_or(false)),
+        7 => next.reset(),
         3 => {
             use vesper_game::TextRevealSpeed as Speed;
             let speeds = [Speed::Instant, Speed::Slow, Speed::Normal, Speed::Fast];
@@ -176,7 +181,7 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
 }
 
 pub fn change(session: &mut Session, index: usize, delta: i32, writer: &PreferencesWriter) {
-    if index == 7 || index >= ITEMS.len() { return; }
+    if index == 8 || index >= ITEMS.len() { return; }
     let next = edited(session, index, delta);
     if next == session.preferences { return; }
     if let Err(error) = next.validate() {
@@ -215,11 +220,14 @@ pub fn open(
             Node {
                 width: percent(88.0), max_width: px(720.0),
                 max_height: percent(94.0),
-                padding: px(10.0).all(), row_gap: px(3.0),
+                overflow: Overflow::scroll_y(),
+                padding: px(8.0).all(), row_gap: px(2.0),
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
             BackgroundColor(Color::srgba(0.05, 0.07, 0.12, 0.98)),
+            SettingsScroll,
+            ScrollPosition(Vec2::ZERO),
         )).with_children(|panel| {
             panel.spawn((
                 Text::new("Appearance settings"),
@@ -240,7 +248,7 @@ pub fn open(
                         clicks.0 = Some(i);
                     }),
                     Node {
-                        width: percent(100.0), padding: px(4.0).all(),
+                        width: percent(100.0), padding: px(3.0).all(),
                         flex_shrink: 0.0, ..default()
                     },
                     BackgroundColor(Color::NONE),
@@ -331,7 +339,7 @@ pub fn keyboard(
     } else if input.just_pressed(KeyCode::ArrowRight) {
         change(session, state.selection, 1, writer);
     } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
-        if state.selection == 7 { close(session, state, commands, assets); }
+        if state.selection == 8 { close(session, state, commands, assets); }
         else { change(session, state.selection, 1, writer); }
     }
 }
@@ -349,7 +357,7 @@ pub fn pointer(
     }
     if let Some(index) = clicks.0.take() {
         state.selection = index;
-        if index == 7 { close(&mut session, &mut state, &mut commands, &assets); }
+        if index == 8 { close(&mut session, &mut state, &mut commands, &assets); }
         else { change(&mut session, index, 1, &writer); }
     }
 }
@@ -365,6 +373,7 @@ pub fn sync_visuals(
     mut previews: Query<(&Preview, &mut TextFont, &mut TextColor), (Without<StoryText>, Without<SettingsRowLabel>)>,
     mut labels: Query<(&SettingsRowLabel, &mut Text), (Without<Preview>, Without<StoryText>)>,
     mut rows: Query<(&SettingsRow, &mut BackgroundColor), (Without<StoryPanel>, Without<SettingsPreviewPanel>)>,
+    mut scrolling: Query<&mut ScrollPosition, With<SettingsScroll>>,
     mut last: Local<Option<PlayerPreferences>>,
 ) {
     // Never rediscover fonts or touch Bevy text entities every frame.
@@ -389,6 +398,9 @@ pub fn sync_visuals(
         *last = Some(session.preferences.clone());
     }
     if state.overlay.is_none() { return; }
+    for mut position in &mut scrolling {
+        position.0.y = state.selection.saturating_sub(4) as f32 * 31.0;
+    }
     let font = text_font(&theme, &assets);
     let p = theme.panel.background;
     for mut background in &mut preview_panels {
@@ -427,6 +439,6 @@ mod tests {
         assert!((step_scaled(0.60, -1, 0.60, 1., 0.05) - 0.60).abs() < 0.001);
         assert!((step_scaled(0.95, 1, 0.60, 1., 0.05) - 1.).abs() < 0.001);
         assert!((step_scaled(10.60, 1, 0.80, 10.60, 0.10) - 10.60).abs() < 0.001);
-        assert_eq!(ITEMS.len(), 8);
+        assert_eq!(ITEMS.len(), 9);
     }
 }
