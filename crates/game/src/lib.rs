@@ -106,6 +106,8 @@ pub struct Theme {
     pub dialogue: TextStyle,
     pub choices: TextStyle,
     pub hint: TextStyle,
+    /// Validated palette of named inline word styles, not scene-specific code.
+    pub inline_styles: BTreeMap<String, InlineTextStyle>,
 }
 
 /// Subtle shader-free visual atmosphere; Off keeps legacy games unchanged.
@@ -304,6 +306,21 @@ impl Default for PanelStyle {
     }
 }
 
+/// Optional named word style in an external theme. Inherit default font
+/// unless family is explicitly supplied and the reader has not overridden it.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct InlineTextStyle {
+    pub color: [f32; 4],
+    pub font_family: Option<String>,
+}
+
+impl Default for InlineTextStyle {
+    fn default() -> Self {
+        Self { color: [1.0, 0.76, 0.38, 1.0], font_family: None }
+    }
+}
+
 impl Default for TextStyle {
     fn default() -> Self {
         Self { size: 28.0, color: [1.0, 1.0, 1.0, 1.0] }
@@ -325,6 +342,7 @@ impl Default for Theme {
             dialogue: TextStyle { size: 28.0, color: [1.0, 1.0, 1.0, 1.0] },
             choices: TextStyle { size: 26.0, color: [0.88, 0.94, 1.0, 1.0] },
             hint: TextStyle { size: 16.0, color: [0.75, 0.78, 0.83, 1.0] },
+            inline_styles: BTreeMap::new(),
         }
     }
 }
@@ -379,6 +397,17 @@ impl Theme {
                 || !color_valid(style.color)
             {
                 return Err(format!("theme.{name} has invalid text size or color"));
+            }
+        }
+        if self.inline_styles.len() > 32 {
+            return Err("theme.inline_styles contains more than 32 named styles".into());
+        }
+        for (name, style) in &self.inline_styles {
+            if !id_valid(name) || !color_valid(style.color)
+                || style.font_family.as_ref()
+                    .is_some_and(|family| family.trim().is_empty() || family.len() > 128)
+            {
+                return Err(format!("theme.inline_styles.{name} has invalid name, color or font"));
             }
         }
         if self.font.file.is_some() && self.font.family.is_some() {
@@ -471,6 +500,14 @@ impl Game {
             Theme::default()
         };
         theme.validate()?;
+        for (line, style) in story.inline_style_references() {
+            if !theme.inline_styles.contains_key(&style) {
+                return Err(format!(
+                    "{}:{line}: undefined inline style '{style}' in external theme",
+                    script_path.display()
+                ));
+            }
+        }
         if let Some(file) = &theme.font.file {
             let path = checked_file(&root, file)?;
             if !matches!(
@@ -758,4 +795,34 @@ room = "assets/room.png"
         let err = Game::load(&sample.root).unwrap_err();
         assert!(err.contains("inside game directory"), "{err}");
     }
+    #[test]
+    fn inline_style_palette_and_unknown_story_reference_are_checked() {
+        let good: Theme = toml::from_str(
+            "[inline_styles.ember]\ncolor = [1.0, 0.4, 0.1, 1.0]\n"
+        ).unwrap();
+        assert!(good.validate().is_ok());
+        for bad in [
+            "[inline_styles.ember]\ncolor = [f32.nan, 0.5, 1.0, 1.0]",
+            "[inline_styles.ember]\ncolor = [1.2, 0.5, 1.0, 1.0]",
+            "[inline_styles.ember]\nfont_family = \"\"",
+        ] {
+            if let Ok(theme) = toml::from_str::<Theme>(bad) {
+                assert!(theme.validate().is_err(), "invalid inline style accepted: {bad}");
+            }
+        }
+        let fixture = Fixture::new("inline-style");
+        fs::write(fixture.root.join("scripts/story.vn"),
+            "@scene opening\n\"Watch [[fx=ember]]fire[[/fx]].\"\n").unwrap();
+        let error = Game::load(&fixture.root).unwrap_err();
+        assert!(error.contains("story.vn:2:") && error.contains("ember"), "{error}");
+        let theme = fixture.root.join("styles/word.toml");
+        fs::create_dir_all(theme.parent().unwrap()).unwrap();
+        fs::write(&theme, "[inline_styles.ember]\ncolor = [1.0, 0.4, 0.1, 1.0]\n").unwrap();
+        let manifest = fixture.root.join("game.toml");
+        let old = fs::read_to_string(&manifest).unwrap();
+        fs::write(&manifest, old.replace("entry = \"opening\"",
+            "entry = \"opening\"\ntheme = \"styles/word.toml\"")).unwrap();
+        assert!(Game::load(&fixture.root).is_ok());
+    }
+
 }

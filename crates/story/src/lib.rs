@@ -227,6 +227,20 @@ impl Story {
     /// Stable FNV-1a checksum of authored source bytes (not a security signature).
     pub fn fingerprint(&self) -> u64 { self.fingerprint }
     pub fn has_scene(&self, id: &str) -> bool { self.scenes.contains_key(id) }
+    /// Named inline text effects are validated against the external game theme.
+    /// The parser never resolves author style names inside the frame loop.
+    pub fn inline_style_references(&self) -> Vec<(usize, String)> {
+        self.scenes.values()
+            .flat_map(|scene| scene.instructions.iter())
+            .flat_map(|instruction| match &instruction.command {
+                Command::RichDialogue(_, rich) => rich.spans.iter().map(|span| {
+                    (instruction.line, span.style.clone())
+                }).collect::<Vec<_>>(),
+                _ => Vec::new(),
+            })
+            .collect()
+    }
+
     pub fn visual_references(&self) -> Vec<(usize, Visual)> {
         self.scenes.values()
             .flat_map(|scene| scene.instructions.iter())
