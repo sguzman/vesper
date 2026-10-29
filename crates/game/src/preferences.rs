@@ -35,6 +35,9 @@ pub struct PlayerPreferences {
     pub reduced_motion: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub auto_advance: Option<bool>,
+    /// Optional player-selected delay after the final grapheme appears.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_advance_delay_seconds: Option<f32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub high_contrast: Option<bool>,
 }
@@ -49,6 +52,7 @@ impl Default for PlayerPreferences {
             reveal_speed: None,
             reduced_motion: None,
             auto_advance: None,
+            auto_advance_delay_seconds: None,
             high_contrast: None,
         }
     }
@@ -75,6 +79,11 @@ impl PlayerPreferences {
         }
         if self.text_scale.is_some_and(|v| !v.is_finite() || !(0.80..=1.60).contains(&v)) {
             return Err("text_scale must be within 0.80..=1.60".into());
+        }
+        if self.auto_advance_delay_seconds.is_some_and(|seconds| {
+            !seconds.is_finite() || !(0.5..=20.0).contains(&seconds)
+        }) {
+            return Err("auto_advance_delay_seconds must be within 0.5..=20.0".into());
         }
         if self.font_family.as_ref().is_some_and(|font| {
             font.trim() != font || font.is_empty() || font.len() > 128
@@ -245,6 +254,31 @@ mod tests {
         assert_eq!(p, PlayerPreferences::default());
         p.write_atomic(&path).unwrap();
         assert_eq!(PlayerPreferences::read(&path).unwrap(), p);
+    }
+
+    #[test]
+    fn auto_delay_is_optional_bounded_and_legacy_preferences_remain_valid() {
+        let legacy = PlayerPreferences::decode(
+            br#"{"format_version":1,"auto_advance":true}"#
+        ).unwrap();
+        assert_eq!(legacy.auto_advance_delay_seconds, None);
+        let value = PlayerPreferences {
+            auto_advance: Some(true), auto_advance_delay_seconds: Some(4.5),
+            ..Default::default()
+        };
+        let restored = PlayerPreferences::decode(&value.encode().unwrap()).unwrap();
+        assert_eq!(restored.auto_advance_delay_seconds, Some(4.5));
+        for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, -1.0, 0.0, 20.5] {
+            let bad = PlayerPreferences {
+                auto_advance_delay_seconds: Some(invalid),
+                ..Default::default()
+            };
+            assert!(bad.validate().is_err(), "{invalid}");
+        }
+        for valid in [0.5, 1.5, 4.5, 20.0] {
+            assert!(PlayerPreferences { auto_advance_delay_seconds: Some(valid),
+                ..Default::default() }.validate().is_ok());
+        }
     }
 
     #[test]
