@@ -540,7 +540,6 @@ fn main() {
         .insert_resource(settings::SettingsClicks::default())
         .insert_resource(font_browser::State::default())
         .insert_resource(font_browser::Click::default())
-        .insert_resource(font_browser::Wheel::default())
         .insert_resource(MenuPointer::default())
         .insert_resource(choices::ChoiceUi::default())
         .insert_resource(choices::ChoiceClick::default())
@@ -566,7 +565,8 @@ fn main() {
         .add_systems(Startup, (font_browser::discover, atmosphere::setup, setup).chain())
         .add_systems(Update, (
             (
-                font_browser::pointer, settings::pointer, advance_from_keyboard,
+                font_browser::wheel, font_browser::pointer, settings::pointer,
+                advance_from_keyboard,
                 choices::sync_rows, choices::sync_row_style,
                 choices::scroll_selected, choices::sync_viewport,
                 choices::reserve_row_height, readout::tick,
