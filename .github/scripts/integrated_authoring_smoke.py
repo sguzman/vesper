@@ -184,7 +184,15 @@ def main():
     serif_words = crop(serif, OUT / "serif-body.png", "930x145+170+438")
     mono_words = crop(mono, OUT / "monospace-body.png", "930x145+170+438")
     assert different(serif_words, mono_words) > 150, (
-        "player font preferences did not affect the rendered font")
+        "installed player font preferences did not affect rendered text")
+    # The font picker also advertises generic serif/monospace choices. Their
+    # aliases must resolve to different installed fallback families.
+    alias_serif = run_case("generic-serif", font="serif", reduced=True)
+    alias_mono = run_case("generic-mono", font="monospace", reduced=True)
+    generic_a = crop(alias_serif, OUT / "generic-serif-body.png", "930x145+170+438")
+    generic_b = crop(alias_mono, OUT / "generic-mono-body.png", "930x145+170+438")
+    assert different(generic_a, generic_b) > 150, (
+        "generic font picker aliases resolved to identical fallback glyphs")
     contrast = run_case("high-contrast", contrast=True, reduced=True)
     assert different(serif, contrast) > 2000, (
         "high contrast failed to override decorative notebook styling")
