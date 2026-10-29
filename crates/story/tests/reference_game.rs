@@ -15,7 +15,8 @@ fn execute(choice: usize) -> (Vec<String>, Option<Value>) {
     for _ in 0..128 {
         match machine.advance().unwrap() {
             Output::Visual(_) => {}
-            Output::Dialogue { text, .. } => dialogue.push(text),
+            Output::Dialogue { text, .. } | Output::RichDialogue { text, .. } =>
+                dialogue.push(text),
             Output::Choices(options) => {
                 assert_eq!(options.len(), 2);
                 assert_eq!(count_choices, 0, "unexpected second choice node");

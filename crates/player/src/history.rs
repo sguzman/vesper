@@ -50,7 +50,8 @@ impl HistoryLog {
     pub fn reset_to_current(&mut self, scene: &str, last: Option<&Output>) {
         // Loading a prior branch must never retain later dialogue in history.
         self.reset();
-        if let Some(Output::Dialogue { speaker, text }) = last {
+        if let Some(Output::Dialogue { speaker, text }
+            | Output::RichDialogue { speaker, text, .. }) = last {
             self.record(scene, speaker.as_deref().unwrap_or(""), text);
         }
     }

@@ -1,8 +1,11 @@
 //! Deterministic narrative parser and interpreter, independent of graphics and frame rate.
 //! The .vn format is preliminary and will be stabilized before Vesper 1.0.
 
+pub mod rich_text;
+
 use std::{collections::BTreeMap, sync::Arc};
 use serde::{Deserialize, Serialize};
+use rich_text::{InlineSpan, StyledText};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Diagnostic {
@@ -37,6 +40,9 @@ pub enum Visual {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Output {
     Dialogue { speaker: Option<String>, text: String },
+    /// Only tagged dialogue uses this variant. Existing version-1 serialized
+    /// dialogue remains byte-for-byte compatible with previous save files.
+    RichDialogue { speaker: Option<String>, text: String, spans: Vec<InlineSpan> },
     Choices(Vec<Choice>),
     Visual(Visual),
     End,
@@ -45,6 +51,7 @@ pub enum Output {
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Command {
     Dialogue(Option<String>, String),
+    RichDialogue(Option<String>, StyledText),
     Choices(Vec<Choice>),
     Visual(Visual),
     Set(String, Assign, Value),
@@ -107,6 +114,31 @@ fn value(input: &str) -> Result<Value, String> {
         _ if input.starts_with('"') => quoted(input).map(Value::Text),
         _ => input.parse::<i64>().map(Value::Number)
             .map_err(|_| "expected an integer, boolean, or quoted string".into()),
+    }
+}
+
+/// Decode the .vn quoted literal once, validate author markup on the worker
+/// side, then expose plain readable text together with its tagged spans.
+fn dialogue_command(speaker: Option<String>, source: &str) -> Result<Command, String> {
+    let decoded = quoted(source)?;
+    let rich = rich_text::parse_inline(&decoded)?;
+    if rich.spans.is_empty() && rich.plain == decoded {
+        Ok(Command::Dialogue(speaker, decoded))
+    } else {
+        Ok(Command::RichDialogue(speaker, rich))
+    }
+}
+
+fn dialogue_output(command: &Command) -> Option<Output> {
+    match command {
+        Command::Dialogue(speaker, text) => Some(Output::Dialogue {
+            speaker: speaker.clone(), text: text.clone(),
+        }),
+        Command::RichDialogue(speaker, rich) => Some(Output::RichDialogue {
+            speaker: speaker.clone(), text: rich.plain.clone(),
+            spans: rich.spans.clone(),
+        }),
+        _ => None,
     }
 }
 
@@ -178,12 +210,12 @@ fn command(line: &str) -> Result<Command, String> {
         }));
     }
     if line.starts_with('"') {
-        return Ok(Command::Dialogue(None, quoted(line)?));
+        return dialogue_command(None, line);
     }
     if let Some((speaker, text)) = line.split_once(": ")
         && identifier(speaker)
     {
-        return Ok(Command::Dialogue(Some(speaker.into()), quoted(text)?));
+        return dialogue_command(Some(speaker.into()), text);
     }
     Err("unrecognized command or dialogue".into())
 }
@@ -199,6 +231,20 @@ impl Story {
     /// Stable FNV-1a checksum of authored source bytes (not a security signature).
     pub fn fingerprint(&self) -> u64 { self.fingerprint }
     pub fn has_scene(&self, id: &str) -> bool { self.scenes.contains_key(id) }
+    /// Named inline text effects are validated against the external game theme.
+    /// The parser never resolves author style names inside the frame loop.
+    pub fn inline_style_references(&self) -> Vec<(usize, String)> {
+        self.scenes.values()
+            .flat_map(|scene| scene.instructions.iter())
+            .flat_map(|instruction| match &instruction.command {
+                Command::RichDialogue(_, rich) => rich.spans.iter().map(|span| {
+                    (instruction.line, span.style.clone())
+                }).collect::<Vec<_>>(),
+                _ => Vec::new(),
+            })
+            .collect()
+    }
+
     pub fn visual_references(&self) -> Vec<(usize, Visual)> {
         self.scenes.values()
             .flat_map(|scene| scene.instructions.iter())
@@ -475,11 +521,12 @@ impl Machine {
             let previous = old_scene.instructions.get(self.cursor - 1);
             let replacement = new_scene.instructions.get(self.cursor - 1);
             match (previous.map(|i| &i.command), replacement.map(|i| &i.command)) {
-                (Some(Command::Dialogue(_, _)), Some(Command::Dialogue(speaker, text)))
-                    if matches!(last_output, Some(Output::Dialogue { .. })) => {
-                    last_output = Some(Output::Dialogue {
-                        speaker: speaker.clone(), text: text.clone(),
-                    });
+                (
+                    Some(Command::Dialogue(..) | Command::RichDialogue(..)),
+                    Some(replacement @ (Command::Dialogue(..) | Command::RichDialogue(..))),
+                ) if matches!(last_output,
+                    Some(Output::Dialogue { .. } | Output::RichDialogue { .. })) => {
+                    last_output = dialogue_output(replacement);
                 }
                 (Some(Command::Choices(old)), Some(Command::Choices(new)))
                     if pending.is_some()
@@ -538,6 +585,10 @@ impl Machine {
             match instruction {
                 Command::Dialogue(speaker, text) =>
                     return self.yield_output(Output::Dialogue { speaker, text }),
+                Command::RichDialogue(speaker, rich) =>
+                    return self.yield_output(Output::RichDialogue {
+                        speaker, text: rich.plain, spans: rich.spans,
+                    }),
                 Command::Choices(options) => {
                     self.pending = Some(options.clone());
                     return self.yield_output(Output::Choices(options));
@@ -805,4 +856,61 @@ end
             speaker: None, text: "日本語 مرحبا".into(),
         });
     }
+    #[test]
+    fn rich_dialogue_plain_text_spans_snapshot_and_live_rebind() {
+        let original = Story::parse(
+            "@scene entry\nella: \"The [[fx=ember]]fire[[/fx]] and [[fx=shadow]]night[[/fx]]\"\n"
+        ).unwrap();
+        let mut machine = Machine::new(&original, "entry").unwrap();
+        let output = machine.advance().unwrap();
+        let Output::RichDialogue { ref text, ref spans, ref speaker } = output else {
+            panic!("tagged narrative should carry separate plain text and spans");
+        };
+        assert_eq!(speaker.as_deref(), Some("ella"));
+        assert_eq!(text, "The fire and night");
+        assert_eq!(spans.len(), 2);
+        assert_eq!(&text[spans[0].start..spans[0].end], "fire");
+        assert_eq!(&text[spans[1].start..spans[1].end], "night");
+
+        let json = serde_json::to_string(&machine.snapshot()).unwrap();
+        let saved = serde_json::from_str(&json).unwrap();
+        let restored = Machine::restore(&original, saved).unwrap();
+        assert_eq!(restored.last_output(), Some(&output));
+
+        let edited = Story::parse(
+            "@scene entry\nella: \"The [[fx=ember]]flame[[/fx]] and [[fx=shadow]]night[[/fx]]\"\n"
+        ).unwrap();
+        let rebound = machine.rebind(&edited).unwrap();
+        assert!(matches!(rebound.last_output(),
+            Some(Output::RichDialogue { text, .. }) if text == "The flame and night"));
+        let plain = Story::parse("@scene entry\nella: \"Only plain text\"\n").unwrap();
+        let switched = machine.rebind(&plain).unwrap();
+        assert_eq!(switched.last_output(), Some(&Output::Dialogue {
+            speaker: Some("ella".into()), text: "Only plain text".into(),
+        }));
+    }
+
+    #[test]
+    fn malformed_inline_tags_have_story_source_line_diagnostics() {
+        for bad in [
+            "[[fx=ember]]unfinished", "[[fx=ember]]x[[fx=shadow]]nested[[/fx]][[/fx]]",
+            "[[mystery]]word", "e[[fx=glow]]\u{301}[[/fx]]",
+        ] {
+            let source = format!("@scene start\n\"{bad}\"\n");
+            let errors = Story::parse(&source).unwrap_err();
+            assert!(errors.iter().any(|e| e.line == 2), "{errors:?}");
+        }
+        let escaped = Story::parse(
+            r#"@scene start
+"The \\[[ markers stay literal."
+"#
+        ).unwrap();
+        let mut m = Machine::new(&escaped, "start").unwrap();
+        assert_eq!(m.advance().unwrap(), Output::RichDialogue {
+            speaker: None, text: "The [[ markers stay literal.".into(),
+            spans: Vec::new(),
+        });
+    }
+
+
 }
