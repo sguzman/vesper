@@ -208,20 +208,57 @@ def verify_controls(game):
         run("xdotool","windowsize",win,"946","511")
         time.sleep(.5)
         shot(win,folder/"settings-reading-946x511.png")
-        press("Down")  # High contrast (index 6)
-        press("Down")  # Reset to game defaults (index 7)
+        press("Down")  # New QOL02 auto delay (index 6)
+        press("Right") # Default 1.5s -> 2.0s
+        end=time.monotonic()+7
+        while time.monotonic()<end and load().get("auto_advance_delay_seconds")!=2.0:
+            time.sleep(.1)
+        assert load().get("auto_advance_delay_seconds")==2.0,load()
+        press("Down")  # High contrast (index 7)
+        press("Down")  # Reset to game defaults (index 8)
         press("Return")
         end=time.monotonic()+7
         while time.monotonic()<end and any(
-            key in load() for key in ("reveal_speed","reduced_motion","auto_advance")
+            key in load() for key in ("reveal_speed","reduced_motion",
+                                       "auto_advance","auto_advance_delay_seconds")
         ):
             time.sleep(.1)
-        assert not any(k in load() for k in ("reveal_speed","reduced_motion","auto_advance")),load()
-        press("Down") # Back (index 8)
+        assert not any(k in load() for k in ("reveal_speed","reduced_motion",
+                                           "auto_advance","auto_advance_delay_seconds")),load()
+        press("Down") # Back (index 9)
         press("Return")
         wait_for(log,"Vesper appearance settings closed")
         assert proc.poll() is None
         print("VX04 settings: speed, reduced motion, auto opt-in, reset, Back passed",flush=True)
+    finally:stop(proc,stream)
+
+
+def verify_custom_wait(game):
+    """A longer player wait must not advance at the old 1.5-second timeout."""
+    folder=OUT/"auto-custom-delay"
+    proc,stream,win,log=start(game,folder,{
+        "reveal_speed":"instant", "auto_advance":True,
+        "auto_advance_delay_seconds":4.5,
+    })
+    try:
+        wait_for(log,"Vesper scene dialogue: first_light",timeout=17)
+        # We wait for initial rendering before measuring; the eventual
+        # assertion is on narrative advancement, not an unrendered timer.
+        time.sleep(2.0)
+        before=log.read_text(errors="replace")
+        assert "Vesper auto-advance ready" not in before, (
+            "custom delay ignored; old 1.5s timer still active"
+        )
+        shot(win,folder/"custom-wait-not-advanced.png")
+        wait_for(log,"Vesper auto-advance ready",timeout=9)
+        # Application input loop advances the interpreter on the next frame.
+        time.sleep(.65)
+        after=log.read_text(errors="replace")
+        assert after.count("Vesper scene dialogue: first_light")>=2, (
+            "custom timer completed but interpreter did not advance"
+        )
+        shot(win,folder/"custom-wait-advanced.png")
+        print("QOL02: 4.5s post-reveal wait overrides legacy 1.5s timer",flush=True)
     finally:stop(proc,stream)
 
 
@@ -244,6 +281,7 @@ if __name__=="__main__":
         verify_manual(game)
         verify_instant(game)
         verify_auto(game)
+        verify_custom_wait(game)
         verify_controls(game)
         watch_game=Path(tmp)/"little-lantern-watch"
         shutil.copytree(game,watch_game)
