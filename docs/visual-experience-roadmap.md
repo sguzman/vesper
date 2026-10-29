@@ -1,6 +1,6 @@
 # Vesper — Visual Experience Roadmap
 
-**Status:** in progress, **74 / 100 verified points** (VX01–VX08 verified; VX09 next). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
+**Status:** in progress, **82 / 100 verified points** (VX01–VX09 verified; VX10 next). This is a **new** phase; the original MVP and prior presentation-polish ledgers remain independently complete at 100 / 100.
 
 **Goal:** A lovely, expressive visual novel reader: readable, configurable dialogue; distinct choices; gentle cinematic staging; history and saves; accessible motion controls; and a complete original game that demonstrates all of them.
 
@@ -16,7 +16,7 @@
 | VX06 | 10 | 🎭 Character staging and expression polish — verified ([CI run 40775856131](https://github.com/sguzman/vesper/actions/runs/40775856131)) | Externally declared sprite anchors/scale/depth and expression-crossfades work for multiple characters without engine references to specific games. |
 | VX07 | 7 | ✨ Atmosphere and micro-interactions — verified ([CI run 40785668645](https://github.com/sguzman/vesper/actions/runs/40785668645)) | Provide a small, bounded data-driven library of 2D atmospheric presets such as drifting motes, gentle glow and vignette, with deterministic seeds and no mandatory shaders. |
 | VX08 | 7 | 📖 Reading history and polished saves — verified ([CI run 40789199729](https://github.com/sguzman/vesper/actions/runs/40789199729)) | A readable, scrollable dialogue backlog shows the current session's recent lines with speaker names and scene boundaries, with a documented bounded memory limit and no spoilers from future branches. |
-| VX09 | 8 | ♿ Accessibility and experience regression | Readable defaults and player controls for high-contrast text, reduced motion, text speed/instant reveal, and safe font fallback are documented and tested. |
+| VX09 | 8 | ♿ Accessibility and experience regression — verified ([CI run 40794656091](https://github.com/sguzman/vesper/actions/runs/40794656091)) | Readable defaults and player controls for high-contrast text, reduced motion, text speed/instant reveal, and safe font fallback are documented and tested. |
 | VX10 | 18 | 🌠 Original generated-asset showcase game | Create a self-contained examples/dawn-post-office/ with its own game.toml, authored .vn narrative, theme(s), asset manifest, README, artwork/audio directories and runnable Linux launcher; no game-specific Rust branches. |
 
 ## What players will control
