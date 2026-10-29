@@ -508,10 +508,10 @@ impl Game {
             Theme::default()
         };
         theme.validate()?;
-        if let Some(id) = &theme.panel.skin {
-            if !manifest.panel_skins.contains_key(id) {
-                return Err(format!("theme.panel.skin references unknown skin '{id}'"));
-            }
+        if let Some(id) = &theme.panel.skin
+            && !manifest.panel_skins.contains_key(id)
+        {
+            return Err(format!("theme.panel.skin references unknown skin '{id}'"));
         }
         for (name, skin) in &manifest.panel_skins {
             if !id_valid(name) || name == "default" {
