@@ -175,9 +175,10 @@ pub fn apply_reload(
     let font = text_font(&theme, &assets);
     let last = session.machine.last_output().cloned();
     let screen = match last {
-        Some(Output::Dialogue { speaker, text }
-            | Output::RichDialogue { speaker, text, .. }) =>
+        Some(Output::Dialogue { speaker, text }) =>
             Screen::normal(speaker.unwrap_or_default(), text),
+        Some(Output::RichDialogue { speaker, text, spans }) =>
+            Screen::rich(speaker.unwrap_or_default(), text, spans),
         Some(Output::Choices(choices)) =>
             Screen::choices(&choices, session.presentation.selected_choice),
         Some(Output::End) => Screen::ending("The End".into()),
@@ -185,9 +186,15 @@ pub fn apply_reload(
     };
     // Hot reload preserves the already-presented line as complete, even if
     // its text changes. Never replay a partial line or reexecute the machine.
-    reading.restore_completed(screen.body.clone(), screen.animated);
+    reading.restore_completed_styled(
+        screen.body.clone(), screen.animated, &screen.spans,
+    );
     for (mut text, mut text_font, mut color, slot) in &mut texts {
-        text.0 = screen.part(slot).to_owned();
+        text.0 = if matches!(slot, StoryText::Body) && !screen.spans.is_empty() {
+            String::new()
+        } else {
+            screen.part(slot).to_owned()
+        };
         let style = match slot {
             StoryText::Speaker => &theme.speaker,
             StoryText::Body if screen.choices => &theme.choices,
