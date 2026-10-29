@@ -1023,9 +1023,8 @@ room = "assets/room.png"
             "[inline_styles.ember]\neffect_rate_hz = -1.0",
             "[inline_styles.ember]\neffect_rate_hz = 10.0",
         ] {
-            match toml::from_str::<Theme>(invalid) {
-                Ok(theme) => assert!(theme.validate().is_err(), "accepted: {invalid}"),
-                Err(_) => {},
+            if let Ok(theme) = toml::from_str::<Theme>(invalid) {
+                assert!(theme.validate().is_err(), "accepted: {invalid}");
             }
         }
     }
