@@ -29,7 +29,7 @@ pub struct PresentationState {
     /// Legacy format-version 1 saves have no key and retain manifest defaults.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub ambient_visibility: BTreeMap<String, bool>,
-    /// Optional normalized phase for moving actors; missing in legacy saves.
+    /// Optional elapsed seconds for moving actors; missing in legacy saves.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub ambient_motion_elapsed: BTreeMap<String, f32>,
 }
@@ -212,6 +212,48 @@ mod tests {
         let old = json.replace("    \"panel_skin\": null,\n", "");
         let decoded = SaveData::decode(old.as_bytes()).unwrap();
         assert_eq!(decoded.presentation.panel_skin, None);
+    }
+
+    #[test]
+    fn ambient_motion_clock_persists_and_legacy_saves_remain_compatible() {
+        let fixture = Fixture::new();
+        fs::write(fixture.0.join("bird.png"), b"external test art").unwrap();
+        let manifest = fixture.0.join("game.toml");
+        let mut source = fs::read_to_string(&manifest).unwrap();
+        source.push_str(
+            "\n[ambient_actors.bird]\nimage = \"bird.png\"\n\
+             [ambient_actors.bird.motion]\nwaypoints = [[0.1,0.5],[0.9,0.5]]\n\
+             period_seconds = 5.0\nmode = \"loop\"\n"
+        );
+        fs::write(&manifest, source).unwrap();
+        let game = Game::load(&fixture.0).unwrap();
+        let machine = Machine::new(&game.story, &game.manifest.entry).unwrap();
+        let mut state = PresentationState::default();
+        state.ambient_motion_elapsed.insert("bird".into(), 2.25);
+        let current = SaveData::new(&game, &machine, state);
+        let json = current.encode().unwrap();
+        let decoded = SaveData::decode(&json).unwrap();
+        assert_eq!(decoded.presentation.ambient_motion_elapsed["bird"], 2.25);
+        assert!(decoded.restore(&game).is_ok());
+
+        // Old version-one saves omit the clock field entirely.
+        let mut legacy = serde_json::from_slice::<serde_json::Value>(&json).unwrap();
+        legacy["presentation"].as_object_mut().unwrap()
+            .remove("ambient_motion_elapsed");
+        let legacy_bytes = serde_json::to_vec(&legacy).unwrap();
+        let old = SaveData::decode(&legacy_bytes).unwrap();
+        assert!(old.presentation.ambient_motion_elapsed.is_empty());
+        assert!(old.restore(&game).is_ok());
+
+        for invalid in [-0.01, 240.1, f32::NAN, f32::INFINITY] {
+            let mut tampered = decoded.clone();
+            tampered.presentation.ambient_motion_elapsed.insert("bird".into(), invalid);
+            assert!(tampered.restore(&game).unwrap_err().contains("ambient motion clock"));
+        }
+        let mut missing_actor = decoded.clone();
+        missing_actor.presentation.ambient_motion_elapsed
+            .insert("unknown".into(), 1.0);
+        assert!(missing_actor.restore(&game).is_err());
     }
 
     #[test]
