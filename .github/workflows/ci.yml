@@ -30,6 +30,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/dawn-post-office
           cargo run --locked -p vesper-cli -- check-game examples/panel-showcase
           cargo run --locked -p vesper-cli -- check-game examples/inline-words
+          cargo run --locked -p vesper-cli -- check-game examples/ambient-showcase
           cargo run --locked -p vesper-cli -- check-game examples/word-effects
       - name: Verify all 23 original Dawn assets and their manifest hashes
         run: python3 .github/scripts/dawn_assets_check.py
@@ -94,6 +95,26 @@ jobs:
         with:
           name: vesper-inline-spans
           path: /tmp/vesper-inline-spans-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Verify QOL06 ambient scene actors across six windows and save/restore
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/ambient_actors_smoke.py
+      - name: Preserve ambient actor sprite/screenshots evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-ambient-actors
+          path: /tmp/vesper-ambient-actors-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Verify ambient hot reload add, remove, reconfigure and invalid rejection
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/ambient_reload_smoke.py
+      - name: Preserve ambient hot reload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-ambient-reload
+          path: /tmp/vesper-ambient-reload-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
       - name: Verify QOL03 notebook/banner panels at six sizes, scene changes and high contrast

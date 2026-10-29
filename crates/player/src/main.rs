@@ -15,6 +15,7 @@ mod feedback;
 mod history;
 mod save_slots;
 mod panel_art;
+mod ambient;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual, rich_text::InlineSpan};
@@ -580,7 +581,7 @@ fn main() {
             pending_audio: Vec::new(),
             history: history::HistoryLog::default(),
         })
-        .add_systems(Startup, (font_browser::discover, atmosphere::setup, setup).chain())
+        .add_systems(Startup, (font_browser::discover, atmosphere::setup, setup, ambient::spawn).chain())
         .add_systems(Update, (
             (
                 font_browser::wheel, font_browser::pointer, settings::pointer,
@@ -596,6 +597,7 @@ fn main() {
                 reserve_story_text_height, trigger_save_load,
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
+                ambient::sync,
             ).chain(),
         ).chain());
     if let Some(inbox) = inbox {
@@ -621,6 +623,20 @@ fn apply_visual(
     visual: Visual,
 ) -> Result<(), String> {
     match visual {
+        Visual::AmbientShow(id) => {
+            if !session.game.manifest.ambient_actors.contains_key(&id) {
+                return Err(format!("unknown ambient actor '{id}'"));
+            }
+            session.presentation.ambient_visibility.insert(id.clone(), true);
+            info!("Vesper ambient actor {id}: visible=true");
+        }
+        Visual::AmbientHide(id) => {
+            if !session.game.manifest.ambient_actors.contains_key(&id) {
+                return Err(format!("unknown ambient actor '{id}'"));
+            }
+            session.presentation.ambient_visibility.insert(id.clone(), false);
+            info!("Vesper ambient actor {id}: visible=false");
+        }
         Visual::Panel(id) => {
             session.presentation.panel_skin = if id == "default" {
                 None
@@ -1568,6 +1584,7 @@ fn poll_completed_io(
                 session.presentation = PresentationState::default();
                 session.presentation.selected_choice = state.selected_choice;
                 session.presentation.panel_skin = state.panel_skin;
+                session.presentation.ambient_visibility = state.ambient_visibility;
                 if let Some(id) = state.music {
                     if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Music(id)

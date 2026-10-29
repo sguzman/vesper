@@ -35,6 +35,9 @@ pub enum Visual {
     Hide(String),
     Music(String),
     Sound(String),
+    /// Non-speaking scene sprites declared by the external manifest.
+    AmbientShow(String),
+    AmbientHide(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -181,6 +184,16 @@ fn command(line: &str) -> Result<Command, String> {
             }
         }
         return Err("assignment syntax: set variable = literal".into());
+    }
+    for (prefix, visible) in [("ambient show ", true), ("ambient hide ", false)] {
+        if let Some(id) = line.strip_prefix(prefix) {
+            if !identifier(id) { return Err("invalid ambient actor id".into()); }
+            return Ok(Command::Visual(if visible {
+                Visual::AmbientShow(id.into())
+            } else {
+                Visual::AmbientHide(id.into())
+            }));
+        }
     }
     for (prefix, kind) in [
         ("background ", 0), ("hide ", 1), ("music ", 2), ("sound ", 3),
@@ -780,6 +793,18 @@ end
             if options[0].label == "New"));
         bound.choose(0).unwrap();
         assert!(matches!(bound.advance().unwrap(), Output::Dialogue { .. }));
+    }
+
+    #[test]
+    fn ambient_scene_commands_parse_without_touching_character_states() {
+        let story = Story::parse(
+            "@scene start\nambient hide bird\nambient show bird\n\"Done\"\n"
+        ).unwrap();
+        let mut machine = Machine::new(&story, "start").unwrap();
+        assert_eq!(machine.advance().unwrap(), Output::Visual(Visual::AmbientHide("bird".into())));
+        assert_eq!(machine.advance().unwrap(), Output::Visual(Visual::AmbientShow("bird".into())));
+        assert!(matches!(machine.advance().unwrap(), Output::Dialogue { .. }));
+        assert!(Story::parse("@scene start\nambient show bad/path").is_err());
     }
 
     #[test]

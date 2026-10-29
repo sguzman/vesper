@@ -22,7 +22,7 @@ Or download the compiled **vesper-linux-fairytale-showcase** artifact from [fina
 
 ## Reader QoL and illustrated dialogue panels (in development)
 
-The latest [Reader QoL roadmap](docs/qol-roadmap.md) covers searchable installed fonts, configurable auto-advance, diegetic dialogue art, inline word styling and autonomous scenery. The font browser and auto-delay implementation is certified in [PR #16](https://github.com/sguzman/vesper/pull/16). QOL03's [illustrated-panel PR #17](https://github.com/sguzman/vesper/pull/17) is merged, awaiting merged-main certification. QOL04's [inline word styles](https://github.com/sguzman/vesper/pull/19) are under combined acceptance, **not yet credited**.
+The latest [Reader QoL roadmap](docs/qol-roadmap.md) covers searchable installed fonts, configurable auto-advance, diegetic dialogue art, inline word styling and autonomous scenery. The font browser and auto-delay implementation is certified in [PR #16](https://github.com/sguzman/vesper/pull/16); QOL03 [illustrated panels](https://github.com/sguzman/vesper/pull/17) and QOL04 [inline word styling](https://github.com/sguzman/vesper/pull/19) have passed full merged-main certification. This phase is **72/100 verified**; QOL06 [ambient actors](https://github.com/sguzman/vesper/pull/20) have passed full merged-main certification, while [QOL05 effects](https://github.com/sguzman/vesper/pull/21) and [QOL07 motion](https://github.com/sguzman/vesper/pull/22) remain under acceptance.
 
 [The Field Notebook](examples/panel-showcase/) is a self-contained **authoring fixture**, not a fourth full-length novel. It exercises notebook-style PNG dialogue art, banner replacement, nine long choices, quicksave restoration and the original solid UI on the same unchanged executable:
 
@@ -30,11 +30,13 @@ The latest [Reader QoL roadmap](docs/qol-roadmap.md) covers searchable installed
 cargo run --locked -p vesper-player -- examples/panel-showcase
 ```
 
-See [diegetic panel authoring](docs/diegetic-panels.md) for schema, safety, text margins, theme defaults, high contrast and graphical tests. QOL03's source is merged; roadmap credit still requires its merged-main CI to pass.
+See [diegetic panel authoring](docs/diegetic-panels.md) for schema, safety, text margins, theme defaults, high contrast and graphical tests. QOL03 is verified in full merged-main graphical and narrative CI.
 
-[The Ember Letter](examples/inline-words/) is a separate authoring fixture for **QOL04**, with independently styled words, multilingual text, and native Bevy `TextSpan` rendering. Try `cargo run --locked -p vesper-player -- examples/inline-words`. Read [inline text style authoring](docs/inline-styles.md) for the grammar, external theme palette, accessibility priority, and limits. QOL04 remains in development until both merged-main and visual certification.
+[The Ember Letter](examples/inline-words/) is a separate authoring fixture for **QOL04**, with independently styled words, multilingual text, and native Bevy `TextSpan` rendering. Try `cargo run --locked -p vesper-player -- examples/inline-words`. Read [inline text style authoring](docs/inline-styles.md) for the grammar, external theme palette, accessibility priority, and limits. QOL04 is verified in the full merged-main graphical and narrative CI.
 
-[The Luminous Page](examples/word-effects/) is the external QOL05 fixture for ember, shadow and shimmer word flairs. The reader's high-contrast and reduced-motion choices override authored animation. QOL05 remains unverified until full CI and merged-main acceptance.
+[Morning at the Perch](examples/ambient-showcase/) is an external QOL06 static ambient-actor authoring fixture with a bird sprite, scene-visible show/hide commands and persistent overrides. Run `cargo run --locked -p vesper-player -- examples/ambient-showcase`; see the [ambient actor authoring guide](docs/ambient-actors.md) for controls, safe bounds and tests. **QOL06 is in draft; autonomous NPC/bird/plane motion belongs to the unimplemented QOL07.**
+
+[The Luminous Page](examples/word-effects/) is the external QOL05 fixture for ember, shadow and shimmer word flairs. The reader's high-contrast and reduced-motion choices override authored animation. QOL05 is implemented and has passed full branch CI; merged-main certification remains pending.
 
 ## Presentation polish (completed phase)
 

@@ -57,6 +57,9 @@ fn play(game: &Game, decisions: &[usize]) -> ResultState {
                     }
                 }
                 Visual::Hide(_) => {}
+                Visual::AmbientShow(id) | Visual::AmbientHide(id) => {
+                    assert!(game.manifest.ambient_actors.contains_key(&id));
+                }
                 Visual::Music(id) => {
                     game.music(&id).unwrap();
                     trace.music.insert(id);

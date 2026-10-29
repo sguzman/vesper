@@ -32,6 +32,9 @@ pub struct Manifest {
     pub sounds: BTreeMap<String, String>,
     #[serde(default)]
     pub characters: BTreeMap<String, Character>,
+    /// Background/non-speaking scene sprites; independent from named speakers.
+    #[serde(default)]
+    pub ambient_actors: BTreeMap<String, AmbientActor>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -41,6 +44,63 @@ pub struct Character {
     /// Optional external stage styling. Existing manifests remain valid.
     #[serde(default)]
     pub stage: CharacterStage,
+}
+
+/// Static ambient-scene declaration; movement paths and flipbooks belong to
+/// QOL07. All positions are on the same normalized 1280x720 canvas as the
+/// background stage, independent of character expression/speaker slots.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct AmbientActor {
+    /// Safe, game-root-relative PNG path, read/decoded via Bevy assets.
+    pub image: String,
+    /// Normalized canvas coordinate: x/y in 0..=1.
+    pub anchor: [f32; 2],
+    /// Scale multiplier, not texture dimensions.
+    pub scale: f32,
+    /// Draw alpha: 0 invisible, 1 opaque.
+    pub opacity: f32,
+    /// Background composition ordering, behind foreground characters.
+    pub depth: f32,
+    /// None means all scenes. Some selects an existing named scene only.
+    pub scene: Option<String>,
+    /// Author-controlled initial state; per-scene visibility may be overridden.
+    pub initially_visible: bool,
+    /// Reserved deterministic phase for future QOL07 motion.
+    pub start_phase_seconds: f32,
+}
+
+impl Default for AmbientActor {
+    fn default() -> Self {
+        Self {
+            image: String::new(),
+            anchor: [0.5, 0.5],
+            scale: 1.0,
+            opacity: 1.0,
+            depth: 0.0,
+            scene: None,
+            initially_visible: true,
+            start_phase_seconds: 0.0,
+        }
+    }
+}
+
+impl AmbientActor {
+    pub fn validate(&self) -> Result<(), String> {
+        if self.image.is_empty()
+            || self.anchor.iter().any(|coord|
+                !coord.is_finite() || !(0.0..=1.0).contains(coord))
+            || !self.scale.is_finite() || !(0.1..=3.0).contains(&self.scale)
+            || !self.opacity.is_finite() || !(0.0..=1.0).contains(&self.opacity)
+            || !self.depth.is_finite() || !(-8.0..=8.0).contains(&self.depth)
+            || !self.start_phase_seconds.is_finite()
+            || !(0.0..=120.0).contains(&self.start_phase_seconds)
+            || self.scene.as_ref().is_some_and(|scene| !id_valid(scene))
+        {
+            return Err("invalid ambient image, anchor, scale, opacity, depth, scene or phase".into());
+        }
+        Ok(())
+    }
 }
 
 /// A validated, image-backed dialogue panel. Insets are logical pixels
@@ -647,6 +707,26 @@ impl Game {
                 }
             }
         }
+        if manifest.ambient_actors.len() > 32 {
+            return Err("ambient actor count exceeds 32".into());
+        }
+        for (name, actor) in &manifest.ambient_actors {
+            if !id_valid(name) {
+                return Err(format!("invalid ambient actor id '{name}'"));
+            }
+            actor.validate().map_err(|error| format!("ambient actor '{name}': {error}"))?;
+            if let Some(scene) = &actor.scene
+                && !story.has_scene(scene)
+            {
+                return Err(format!("ambient actor '{name}': unknown scene '{scene}'"));
+            }
+            let path = checked_file(&root, &actor.image)?;
+            if !path.extension().and_then(|ext| ext.to_str())
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
+            {
+                return Err(format!("ambient actor '{name}' requires a PNG image"));
+            }
+        }
         for (name, character) in &manifest.characters {
             if !id_valid(name) || character.expressions.is_empty() {
                 return Err(format!("invalid character '{name}' or missing expressions"));
@@ -683,6 +763,11 @@ impl Game {
                 vesper_story::Visual::Sound(id) => {
                     if manifest.sounds.contains_key(&id) { None }
                     else { Some(format!("sound '{id}'")) }
+                }
+                vesper_story::Visual::AmbientShow(id)
+                | vesper_story::Visual::AmbientHide(id) => {
+                    if manifest.ambient_actors.contains_key(&id) { None }
+                    else { Some(format!("ambient actor '{id}'")) }
                 }
                 _ => None,
             };
@@ -1003,6 +1088,53 @@ room = "assets/room.png"
 
 
     #[test]
+    fn ambient_actors_validate_external_assets_and_scene_associations() {
+        let fixture = Fixture::new("ambient");
+        let file = fixture.root.join("game.toml");
+        let baseline = fs::read_to_string(&file).unwrap();
+        let actor = r#"
+[ambient_actors.bird]
+image = "assets/room.png"
+anchor = [0.75, 0.20]
+scale = 0.55
+opacity = 0.85
+depth = 1.25
+scene = "opening"
+initially_visible = false
+start_phase_seconds = 2.5
+"#;
+        fs::write(&file, format!("{baseline}{actor}")).unwrap();
+        let loaded = Game::load(&fixture.root).unwrap();
+        let bird = &loaded.manifest.ambient_actors["bird"];
+        assert_eq!(bird.anchor, [0.75, 0.20]);
+        assert!(!bird.initially_visible);
+        assert_eq!(bird.scene.as_deref(), Some("opening"));
+        assert_eq!(bird.start_phase_seconds, 2.5);
+        let legacy = Fixture::new("ambient-legacy");
+        assert!(Game::load(&legacy.root).is_ok());
+
+        for (needle, replacement, expected) in [
+            ("scale = 0.55", "scale = 0.0", "ambient"),
+            ("depth = 1.25", "depth = 1000", "ambient"),
+            ("opacity = 0.85", "opacity = 1.1", "ambient"),
+            ("anchor = [0.75, 0.20]", "anchor = [1.5, 0.20]", "ambient"),
+            ("scene = \"opening\"", "scene = \"absent\"", "unknown scene"),
+            ("image = \"assets/room.png\"", "image = \"../outside.png\"", "unsafe"),
+        ] {
+            fs::write(&file, format!("{baseline}{}", actor.replace(needle, replacement))).unwrap();
+            let err = Game::load(&fixture.root).unwrap_err();
+            assert!(err.contains(expected), "{needle}: {err}");
+        }
+        let many = (0..33).map(|index| format!(
+            "[ambient_actors.a{index}]\nimage = \"assets/room.png\"\n"
+        )).collect::<Vec<_>>().join("");
+        fs::write(&file, format!("{baseline}{many}")).unwrap();
+        assert!(Game::load(&fixture.root).unwrap_err().contains("count"));
+    }
+
+
+
+    #[test]
     fn inline_effects_validate_static_and_bounded_dynamic_parameters() {
         let sample: Theme = toml::from_str(
             "[inline_styles.ember]\neffect = \"ember\"\neffect_amplitude = 0.28\neffect_rate_hz = 4.0\n\
@@ -1028,5 +1160,6 @@ room = "assets/room.png"
             }
         }
     }
+
 
 }
