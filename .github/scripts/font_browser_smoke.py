@@ -98,9 +98,14 @@ def main() -> None:
                     key("p")
                     key("4")
                     wait_log(log, "Vesper appearance settings opened")
+                    # A log line precedes the actual first UI frame. Rendering
+                    # under software Vulkan can drop very short synthetic
+                    # Down/up pairs while the menu is being mounted.
+                    time.sleep(.85)
+                    shot(win, OUT / f"{stage}-settings-visible.png")
                     for _ in range(2):
-                        key("Down", .08)
-                    key("Return")
+                        key("Down", .32)
+                    key("Return", .35)
                     wait_log(log, "Vesper system font browser opened")
                     time.sleep(.45)
                     initial = OUT / f"{stage}-browser.png"
