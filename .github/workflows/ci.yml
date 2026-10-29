@@ -440,6 +440,16 @@ jobs:
             /tmp/vesper-fairytale-qa/*.log
           if-no-files-found: ignore
           retention-days: 14
+      - name: Render all three Dawn Post Office endings in the unchanged player
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/dawn_showcase_smoke.py
+      - name: Preserve original Dawn artwork and three-ending screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-dawn-showcase
+          path: /tmp/vesper-dawn-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Restore F5 save with F9 across process restart
         run: |
           mkdir -p /tmp/vesper-save-test
