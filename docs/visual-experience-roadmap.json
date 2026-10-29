@@ -13,8 +13,8 @@
   },
   "baseline_commit": "9555a49db6a4cbf4ab9eaec9a75f089bb7e419c5",
   "scope_weight": 100,
-  "verified_weight": 74,
-  "last_verified_commit": "6edb00f22d90e5bd013b2cd57863a2e7b7f3bb4f",
+  "verified_weight": 82,
+  "last_verified_commit": "ce4937e83ac5d35d00f18cc260a267e2be08f776",
   "status": "in progress",
   "created_date": "2026-10-28",
   "rules": {
@@ -248,8 +248,14 @@
         "Check that visual polish introduces no blocking asset/file operations on the render thread and no unbounded per-frame allocation/asset spawning; record qualitative graphical artifact review separately from automated checks.",
         "Linux/Wayland-first operation and free tooling are retained; hardware-specific audio/driver behavior is not falsely certified by Xvfb."
       ],
-      "evidence": [],
-      "status": "pending"
+      "evidence": [
+        "Full source CI run 40794656091 passed both narrative and Bevy jobs on implementation commit ce4937e83ac5d35d00f18cc260a267e2be08f776. End-to-end regression includes all VX01–VX08 graphical suites, keyboard/pointer focus, appearance preferences and persistence, reduced motion and text reveal, save/load/backlog, hot reload, transition interruptions, both authored fairy-tale playthroughs and relocatable compiler-free Linux packaging.",
+        "Six-size screenshot glyph certification passed on the final head in .github/scripts/hint_overlap_smoke.py. Body-to-hint gaps: 946x511=13px, 955x520=12px, 800x600=6px, 900x700=12px, 1280x720=43px, 1920x1080=115px. Isolated nine-option glyph-to-hint gaps: 82, 82, 62, 78, 157 and 325px respectively; shared pixels zero. The test uses real glyph difference masks/bounding boxes at their original screenshot coordinates, not merely intersecting white pixels. Evidence retained in GitHub Actions artifact vesper-hint-overlap (prior reviewed artifact ID 12862037969, rerun artifact published by run 40794656091).",
+        "High-contrast player-owned preference uses opaque dark panel and white dialogue/speaker/choice/hint colors, with a calculated nominal 20.37:1 white-panel contrast. Settings keyboard/pointer operation, persistence, restart, Reset and old preference JSON compatibility passed in both reference games. Qualitative screenshot review confirmed legible compact layouts and visible preview change, while avoiding unsupported blanket WCAG conformance claims.",
+        "Source audit and regression verified no new blocking file/asset operations on Bevy Update or render systems. Bounded runtime: <=32 atmosphere sprites, one 128x128 64KiB glow mask generated at startup, <=80 backlog entries at <=2048 graphemes, and three manual save slots plus legacy F5/F9. VX09 removed per-frame Theme cloning from viewport layout and reused Local<Vec<Entity>> transition scratch storage; unchanged geometry and scenes passed full CI. Detailed report: docs/accessibility-certification.md.",
+        "CI uses Linux Xvfb/X11 software rendering, not native Wayland: actual compositor fractional scaling, hardware-specific GPU/audio driver operation, input devices and performance measurements on physical machines are explicitly not certified. Free Linux-first tooling and build/package workflow preserved."
+      ],
+      "status": "verified complete"
     },
     {
       "id": "VX10",
