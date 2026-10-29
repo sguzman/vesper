@@ -28,6 +28,8 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/little-lantern
           cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
           cargo run --locked -p vesper-cli -- check-game examples/dawn-post-office
+      - name: Verify all 23 original Dawn assets and their manifest hashes
+        run: python3 .github/scripts/dawn_assets_check.py
       - name: Verify the external PCM audio assets
         run: |
           python3 - <<'PY'
