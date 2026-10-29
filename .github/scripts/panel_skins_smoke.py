@@ -128,12 +128,20 @@ def verify(root: Path, contrast: bool):
         wait(log, 'Vesper dialogue panel: Some("banner")')
         banner = out / "banner.png"
         shot(win, banner, 1280, 720)
+        key("F5")
+        wait(log, "Vesper save written")
         key("Return")
         wait(log, "Vesper dialogue panel: None")
         solid = out / "solid-default.png"
         shot(win, solid, 1280, 720)
         assert changed(banner, solid) > 2500, (
             "switching from banner image to solid panel did not redraw")
+        key("F9")
+        wait(log, "Vesper save restored")
+        restored = out / "banner-after-quickload.png"
+        shot(win, restored, 1280, 720)
+        assert changed(banner, restored) < 5000, (
+            "quickload did not restore the author-selected banner panel")
         assert process.poll() is None, "panel-showcase player exited unexpectedly"
         print(f"QOL03 high_contrast={contrast}: six sizes, nine choices,"
               " banner scene and default restored", flush=True)
