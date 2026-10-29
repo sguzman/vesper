@@ -1,0 +1,18 @@
+format_version = 1
+id = "ambient-showcase"
+title = "Morning at the Perch"
+story = "scripts/story.vn"
+entry = "dawn"
+
+[backgrounds]
+sunrise = "assets/sunrise.png"
+
+[ambient_actors.bird]
+image = "assets/bird.png"
+anchor = [0.75, 0.28]
+scale = 2.0
+opacity = 1.0
+depth = 1.0
+scene = "dawn"
+initially_visible = true
+start_phase_seconds = 0.0
