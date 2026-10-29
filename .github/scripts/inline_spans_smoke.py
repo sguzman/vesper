@@ -119,7 +119,32 @@ def verify(root: Path, label: str, recolor: bool, contrast: bool) -> Path:
                 time.sleep(.1)
             else:
                 raise AssertionError("styled-leading scene never mounted")
-            capture(win, directory / "leading-1280x720.png", 1280, 720)
+            leading = directory / "leading-1280x720.png"
+            capture(win, leading, 1280, 720)
+            # F5/F9 must preserve both the text and its styled spans. Verify
+            # visible pixels as well as the async save/load trace; a plain
+            # fallback line must not quietly pass the palette comparison.
+            call("xdotool", "key", "--clearmodifiers", "F5")
+            wait(log, "Vesper save written")
+            mounted = log.read_text(errors="replace").count(
+                "Vesper inline text spans mounted")
+            time.sleep(.15)
+            call("xdotool", "key", "--clearmodifiers", "Return")
+            deadline = time.monotonic() + 15
+            while time.monotonic() < deadline:
+                if log.read_text(errors="replace").count(
+                        "Vesper inline text spans mounted") > mounted:
+                    break
+                time.sleep(.1)
+            else:
+                raise AssertionError("third dialogue line not mounted")
+            time.sleep(.15)
+            call("xdotool", "key", "--clearmodifiers", "F9")
+            wait(log, "Vesper save restored")
+            restored = directory / "leading-after-quickload.png"
+            capture(win, restored, 1280, 720)
+            assert difference(leading, restored) < 1500, (
+                "F9 did not visually restore the saved styled dialogue line")
             assert process.poll() is None, "styled dialogue player crashed"
             print(f"{label}: styled text rendered; high contrast={contrast}", flush=True)
         finally:
