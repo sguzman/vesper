@@ -404,13 +404,14 @@ fn story_text_node(slot: &StoryText) -> Node {
 }
 
 /// The footer separator is its own flex child. Reserve deliberate space
-/// *above* it: the shaped bottom glyphs can otherwise touch the 1px rule,
+/// *above* it: the shaped bottom glyphs can otherwise touch the rule,
 /// especially at fractional UI scales and during progressive text reveal.
 /// This belongs in the common player, not in an individual story's theme.
 fn story_separator_node() -> Node {
     Node {
         width: percent(100.0),
-        height: px(1.0),
+        // A 1px UI node can rasterize to zero pixels at 0.6x fractional scale.
+        height: px(2.0),
         flex_shrink: 0.0,
         margin: UiRect::top(px(16.0)),
         ..default()
@@ -1652,7 +1653,7 @@ mod tests {
     fn divider_has_its_own_minimum_breathing_room() {
         let separator = super::story_separator_node();
         assert_eq!(separator.flex_shrink, 0.0);
-        assert!(matches!(separator.height, bevy::ui::Val::Px(1.0)));
+        assert!(matches!(separator.height, bevy::ui::Val::Px(2.0)));
         // Measured text reservation alone is insufficient when font glyphs
         // descend below their nominal content bounds.
         assert!(matches!(separator.margin.top, bevy::ui::Val::Px(value) if value >= 16.0));
