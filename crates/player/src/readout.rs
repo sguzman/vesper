@@ -6,6 +6,8 @@ use crate::text_reveal::{RevealBuffer, RevealSpeed};
 #[derive(Component)]
 pub struct ContinueCue;
 
+const DEFAULT_AUTO_ADVANCE_DELAY: f32 = 1.5;
+
 #[derive(Resource, Default)]
 pub struct ReadingState {
     buffer: Option<RevealBuffer>,
@@ -55,6 +57,22 @@ impl ReadingState {
         was_partial
     }
 
+    /// A player may change timing without changing dialogue state. A paused,
+    /// hidden, choice or ending screen cannot retain a stale ready event.
+    fn step_auto_clock(&mut self, delta: f32, eligible: bool, wait: f32) {
+        if !eligible {
+            self.auto_elapsed = 0.0;
+            self.autoplay_ready = false;
+            return;
+        }
+        let was_ready = self.autoplay_ready;
+        self.auto_elapsed = (self.auto_elapsed + delta.max(0.0)).min(60.0);
+        if self.auto_elapsed >= wait {
+            self.autoplay_ready = true;
+            if !was_ready { info!("Vesper auto-advance ready"); }
+        }
+    }
+
     pub fn full_body(&self) -> Option<&str> {
         self.buffer.as_ref().map(RevealBuffer::visible_text)
     }
@@ -97,16 +115,10 @@ pub fn tick(
     }
 
     let cue_active = active && showing_dialogue && complete;
-    if cue_active && session.preferences.auto_advance.unwrap_or(false) {
-        state.auto_elapsed = (state.auto_elapsed + time.delta_secs()).min(60.0);
-        if state.auto_elapsed >= 1.5 && !state.autoplay_ready {
-            state.autoplay_ready = true;
-            info!("Vesper auto-advance ready");
-        }
-    } else {
-        state.auto_elapsed = 0.0;
-        state.autoplay_ready = false;
-    }
+    let wait = session.preferences.auto_advance_delay_seconds
+        .unwrap_or(DEFAULT_AUTO_ADVANCE_DELAY);
+    state.step_auto_clock(time.delta_secs(),
+        cue_active && session.preferences.auto_advance.unwrap_or(false), wait);
     let theme = effective_theme(&session);
     // The cue uses the authored panel accent, separate from the keyboard hint.
     let base_alpha = theme.panel.accent[3];
@@ -135,6 +147,27 @@ pub fn tick(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn auto_clock_wait_boundaries_pause_and_reenable() {
+        let mut state = ReadingState::default();
+        state.step_auto_clock(0.49, true, 0.5);
+        assert!(!state.autoplay_ready);
+        state.step_auto_clock(0.01, true, 0.5);
+        assert!(state.autoplay_ready);
+        state.step_auto_clock(10.0, false, 0.5);
+        assert!(!state.autoplay_ready);
+        assert_eq!(state.auto_elapsed, 0.0);
+        state.step_auto_clock(1.5, true, 4.5);
+        assert!(!state.autoplay_ready);
+        state.step_auto_clock(3.0, true, 4.5);
+        assert!(state.autoplay_ready);
+        state.step_auto_clock(0.1, false, 4.5);
+        state.step_auto_clock(19.9, true, 20.0);
+        assert!(!state.autoplay_ready);
+        state.step_auto_clock(0.1, true, 20.0);
+        assert!(state.autoplay_ready);
+    }
+
     #[test]
     fn restore_is_immediate_and_skip_does_not_execute_narrative() {
         let mut state = ReadingState::default();
