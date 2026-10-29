@@ -389,13 +389,55 @@ impl Screen {
 
 /// Compute the presentation effective at this instant. The authored game
 /// theme remains untouched, so --watch picks up unoverridden changes.
+/// Generic font picker aliases are not literal installed family names.
+/// Prefer an actual discovered matching family so serif/monospace choices are
+/// visually distinct on headless/fontconfig-backed Linux installations.
+fn installed_generic_family<'a>(alias: &str, available: &'a [String]) -> Option<&'a str> {
+    let candidates: &[&str] = match alias {
+        "serif" => &["DejaVu Serif", "Liberation Serif", "Noto Serif", "FreeSerif"],
+        "monospace" => &["DejaVu Sans Mono", "Liberation Mono", "Noto Sans Mono", "FreeMono"],
+        "sans-serif" => &["DejaVu Sans", "Liberation Sans", "Noto Sans", "FreeSans"],
+        _ => return None,
+    };
+    candidates.iter().find_map(|candidate| {
+        available.binary_search_by(|name| name.as_str().cmp(candidate))
+            .ok().map(|index| available[index].as_str())
+    })
+}
+
 fn effective_theme(session: &Session) -> vesper_game::Theme {
     let authored = &session.game.theme;
-    session.preferences.resolve_theme(authored, |family| {
+    let mut theme = session.preferences.resolve_theme(authored, |family| {
         generic_font_available(family)
             || session.font_families.binary_search_by(|name| name.as_str().cmp(family)).is_ok()
             || authored.font.family.as_deref() == Some(family)
-    })
+    });
+    // Only map an explicit reader override. Do not reinterpret authored
+    // typography or alter old games with no reader-selected font.
+    if let Some(alias) = session.preferences.font_family.as_deref()
+        && let Some(installed) = installed_generic_family(alias, &session.font_families)
+    {
+        theme.font.file = None;
+        theme.font.family = Some(installed.to_owned());
+    }
+    theme
+}
+
+#[cfg(test)]
+mod generic_font_tests {
+    use super::*;
+    #[test]
+    fn generic_picker_aliases_use_distinct_installed_system_families() {
+        let catalog = vec![
+            "DejaVu Sans".to_owned(), "DejaVu Sans Mono".to_owned(),
+            "DejaVu Serif".to_owned(), "Liberation Serif".to_owned()
+        ];
+        assert_eq!(installed_generic_family("serif", &catalog), Some("DejaVu Serif"));
+        assert_eq!(installed_generic_family("monospace", &catalog), Some("DejaVu Sans Mono"));
+        assert_eq!(installed_generic_family("sans-serif", &catalog), Some("DejaVu Sans"));
+        assert_eq!(installed_generic_family("Courier New", &catalog), None);
+        assert_eq!(installed_generic_family("serif", &[]), None);
+    }
 }
 
 fn text_font(theme: &vesper_game::Theme, assets: &AssetServer) -> FontSource {
