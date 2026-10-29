@@ -78,6 +78,7 @@ pub fn sync(
     let mut present = std::collections::BTreeSet::new();
     for (entity, mut visual, mut sprite, mut transform, mut visibility) in &mut visuals {
         let Some(config) = session.game.manifest.ambient_actors.get(&visual.id) else {
+            info!("Vesper ambient actor reconciled removed entity: {}", visual.id);
             commands.entity(entity).despawn();
             continue;
         };
@@ -114,6 +115,7 @@ pub fn sync(
             placement(size, config),
             if visible { Visibility::Visible } else { Visibility::Hidden },
         ));
+        info!("Vesper ambient actor reconciled new entity: {id}");
     }
     prior.0 = size;
     prior.1 = scene.to_owned();

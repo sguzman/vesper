@@ -85,6 +85,16 @@ jobs:
           path: /tmp/vesper-ambient-actors-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
+      - name: Verify ambient hot reload add, remove, reconfigure and invalid rejection
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/ambient_reload_smoke.py
+      - name: Preserve ambient hot reload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-ambient-reload
+          path: /tmp/vesper-ambient-reload-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verify QOL03 notebook/banner panels at six sizes, scene changes and high contrast
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/panel_skins_smoke.py
       - name: Preserve QOL03 diegetic panel screenshots
