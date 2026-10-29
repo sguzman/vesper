@@ -113,7 +113,13 @@ def run_case(name, *, font=None, contrast=False, reduced=False, auto=False):
                     later = image(win, directory / "later.png")
                     stage_a = crop(first, directory / "stage-start.png", "1280x170+0+0")
                     stage_b = crop(later, directory / "stage-later.png", "1280x170+0+0")
-                    assert different(stage_a, stage_b) > 60, "ambient actors never moved"
+                    assert different(stage_a, stage_b) > 60, "bird and plane never moved"
+                    # The authored walker belongs in the visible meadow above
+                    # the notebook, not entirely behind its decorative PNG.
+                    walker_a = crop(first, directory / "walker-start.png", "1280x175+0+260")
+                    walker_b = crop(later, directory / "walker-later.png", "1280x175+0+260")
+                    assert different(walker_a, walker_b) > 80, (
+                        "walker was obscured by the illustrated dialogue panel")
                     word_a = crop(first, directory / "words-start.png", "1000x165+115+430")
                     word_b = crop(later, directory / "words-later.png", "1000x165+115+430")
                     assert different(word_a, word_b) > 20, "authored word effect did not animate"
