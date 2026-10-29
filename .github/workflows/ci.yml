@@ -27,6 +27,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game game-alternate
           cargo run --locked -p vesper-cli -- check-game examples/little-lantern
           cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
+          cargo run --locked -p vesper-cli -- check-game examples/dawn-post-office
       - name: Verify the external PCM audio assets
         run: |
           python3 - <<'PY'
@@ -380,6 +381,11 @@ jobs:
           test -f /tmp/vesper-install/vesper/game/game.toml
           test -x /tmp/vesper-install/vesper/lantern
           test -x /tmp/vesper-install/vesper/moon
+          test -x /tmp/vesper-install/vesper/dawn
+          test -f /tmp/vesper-install/vesper/examples/dawn-post-office/game.toml
+          test -f /tmp/vesper-install/vesper/examples/dawn-post-office/assets/backgrounds/sorting-room.png
+          test -f /tmp/vesper-install/vesper/examples/dawn-post-office/assets/characters/nima-hopeful.png
+          test -f /tmp/vesper-install/vesper/examples/dawn-post-office/assets/audio/first-light.wav
           test -f /tmp/vesper-install/vesper/examples/little-lantern/game.toml
           test -f /tmp/vesper-install/vesper/examples/clockwork-moon/game.toml
           cd /tmp
@@ -391,6 +397,17 @@ jobs:
           cat /tmp/vesper-package.log
           test "$result" -eq 124
           grep -F "Creating new window Vesper Demonstration" /tmp/vesper-package.log
+      - name: Verify standalone Dawn launcher without a Rust toolchain
+        run: |
+          cd /tmp
+          set +e
+          PATH=/usr/bin:/bin LIBGL_ALWAYS_SOFTWARE=1 timeout --signal=TERM 18s \
+            xvfb-run -a /tmp/vesper-install/vesper/dawn > /tmp/vesper-dawn-package.log 2>&1
+          result=$?
+          set -e
+          cat /tmp/vesper-dawn-package.log
+          test "$result" -eq 124
+          grep -F "Creating new window The Post Office at the Edge of Dawn" /tmp/vesper-dawn-package.log
       - name: Upload ready-to-play Linux fairytale showcase
         uses: actions/upload-artifact@v4
         with:
