@@ -1,6 +1,6 @@
 # Vesper — Reader QoL & Expressive Authoring Roadmap
 
-**Status: 42 / 100 verified points — QOL01, QOL02 and QOL03 VERIFIED on merged main; QOL04 ACTIVE.**
+**Status: 59 / 100 verified points — QOL01–QOL04 VERIFIED on merged main; QOL05/QOL06 ACTIVE.**
 
 The preceding three phases (original MVP, Presentation Polish, Visual Experience) are independently **100 / 100 complete**. This is a new phase based on main commit `d90766f34a4d81be3064b1da5ee9ee4410aefca5`, created 2026-10-29.
 
@@ -10,7 +10,9 @@ The preceding three phases (original MVP, Presentation Polish, Visual Experience
 
 **QOL03 (17 points) is verified complete.** [PR #17](https://github.com/sguzman/vesper/pull/17) merged at `fe11d1cf83558fcdf63412f125ac414d3aa0b4d0`; [PR CI](https://github.com/sguzman/vesper/actions/runs/40948246555) and [merged-main CI](https://github.com/sguzman/vesper/actions/runs/40951501022) both passed narrative and full Bevy graphical suites. The independent Field Notebook example verifies authored nine-slice notebook/banner art, protected writing margins, six window sizes, high contrast, scene switching, and F5/F9 panel recovery.
 
-**QOL04 (17 points) is active but not verified.** [Integration PR #19](https://github.com/sguzman/vesper/pull/19) carries Unicode-safe styled-word authoring and Bevy TextSpan rendering on top of merged QOL03. Six-size palette/high-contrast and quickload acceptance are under CI; the full integrated branch and merged-main gate must pass before its 17 points are awarded.
+**QOL04 (17 points) is verified complete.** [PR #19](https://github.com/sguzman/vesper/pull/19) merged at `36d3a3d0e16ae4864fa12dd850a1621b332ba09d`. Both the [integration CI](https://github.com/sguzman/vesper/actions/runs/40953872164) and [merged-main CI](https://github.com/sguzman/vesper/actions/runs/40957118616) passed narrative and the full Bevy regression suite, including six-size styled word/first-word palette and high-contrast comparisons, Unicode safety, F5/F9 restore, all original stories and Linux packaging.
+
+**QOL05 and QOL06 are active but unverified.** [PR #21](https://github.com/sguzman/vesper/pull/21) adds bounded color-only ember/shadow/shimmer word flair with accessibility precedence. [PR #20](https://github.com/sguzman/vesper/pull/20) adds independent ambient scene actors, show/hide, save/reload and graphical evidence. Neither milestone earns credit until its full branch and merged-main certification passes.
 
 ## Purpose
 
@@ -25,12 +27,12 @@ The per-word aesthetic is inspired conceptually by *Kentucky Route Zero*, *Celes
 | **QOL01 — 🔤 Searchable installed-font browser** | 15 | — | **Verified complete** |
 | **QOL02 — ⏱️ Player-controlled auto-advance wait** | 10 | — | **Verified complete** |
 | **QOL03 — 📓 Custom image-backed dialogue panels** | 17 | — | **Verified complete** |
-| **QOL04 — ✍️ Inline style-span authoring foundation** | 17 | — | Active — full certification pending |
-| **QOL05 — 🔥 Per-word dynamic flair library** | 14 | QOL04 | Planned |
-| **QOL06 — 🕊️ Independent ambient-scene actor infrastructure** | 13 | — | Planned |
+| **QOL04 — ✍️ Inline style-span authoring foundation** | 17 | — | **Verified complete** |
+| **QOL05 — 🔥 Per-word dynamic flair library** | 14 | QOL04 | Active — graphical acceptance pending |
+| **QOL06 — 🕊️ Independent ambient-scene actor infrastructure** | 13 | — | Active — full CI pending |
 | **QOL07 — 🚶 Autonomous ambient motion and flipbook frames** | 9 | QOL06 | Planned |
 | **QOL08 — 🧪 Integration, authoring examples, final certification** | 5 | QOL01, QOL02, QOL03, QOL04, QOL05, QOL06, QOL07 | Planned |
-| **Total** | **100** | | **42 verified** |
+| **Total** | **100** | | **59 verified** |
 
 ### Delivery order
 
@@ -180,4 +182,4 @@ The final gate includes Xvfb renders at **946×511, 955×520, 800×600, 900×700
 
 **Source of truth:** [qol-roadmap.json](qol-roadmap.json). Prior completed phases: [MVP](roadmap.json) · [Polish](polish-roadmap.json) · [Visual Experience](visual-experience-roadmap.json).
 
-**Next:** QOL04 — [integrated inline style-span PR #19](https://github.com/sguzman/vesper/pull/19), full graphical regression and merged-main certification. QOL06's separate ambient-actor foundation is in development without verified credit.
+**Next:** Complete QOL05 effect graphical certification and QOL06 ambient regression; after those merge, certify the next milestones on main. QOL07 autonomous paths/motion and QOL08 final examples remain planned.

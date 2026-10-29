@@ -22,7 +22,7 @@ Or download the compiled **vesper-linux-fairytale-showcase** artifact from [fina
 
 ## Reader QoL and illustrated dialogue panels (in development)
 
-The latest [Reader QoL roadmap](docs/qol-roadmap.md) covers searchable installed fonts, configurable auto-advance, diegetic dialogue art, inline word styling and autonomous scenery. The font browser and auto-delay implementation is certified in [PR #16](https://github.com/sguzman/vesper/pull/16). QOL03's [illustrated-panel PR #17](https://github.com/sguzman/vesper/pull/17) is merged, awaiting merged-main certification. QOL04's [inline word styles](https://github.com/sguzman/vesper/pull/19) are under combined acceptance, **not yet credited**.
+The latest [Reader QoL roadmap](docs/qol-roadmap.md) covers searchable installed fonts, configurable auto-advance, diegetic dialogue art, inline word styling and autonomous scenery. The font browser and auto-delay implementation is certified in [PR #16](https://github.com/sguzman/vesper/pull/16); QOL03 [illustrated panels](https://github.com/sguzman/vesper/pull/17) and QOL04 [inline word styling](https://github.com/sguzman/vesper/pull/19) have passed full merged-main certification. This phase is **59/100 verified**; [QOL05 dynamic word effects](https://github.com/sguzman/vesper/pull/21) and [QOL06 ambient actors](https://github.com/sguzman/vesper/pull/20) are still under acceptance.
 
 [The Field Notebook](examples/panel-showcase/) is a self-contained **authoring fixture**, not a fourth full-length novel. It exercises notebook-style PNG dialogue art, banner replacement, nine long choices, quicksave restoration and the original solid UI on the same unchanged executable:
 
@@ -30,9 +30,9 @@ The latest [Reader QoL roadmap](docs/qol-roadmap.md) covers searchable installed
 cargo run --locked -p vesper-player -- examples/panel-showcase
 ```
 
-See [diegetic panel authoring](docs/diegetic-panels.md) for schema, safety, text margins, theme defaults, high contrast and graphical tests. QOL03's source is merged; roadmap credit still requires its merged-main CI to pass.
+See [diegetic panel authoring](docs/diegetic-panels.md) for schema, safety, text margins, theme defaults, high contrast and graphical tests. QOL03 is verified in full merged-main graphical and narrative CI.
 
-[The Ember Letter](examples/inline-words/) is a separate authoring fixture for **QOL04**, with independently styled words, multilingual text, and native Bevy `TextSpan` rendering. Try `cargo run --locked -p vesper-player -- examples/inline-words`. Read [inline text style authoring](docs/inline-styles.md) for the grammar, external theme palette, accessibility priority, and limits. QOL04 remains in development until both merged-main and visual certification.
+[The Ember Letter](examples/inline-words/) is a separate authoring fixture for **QOL04**, with independently styled words, multilingual text, and native Bevy `TextSpan` rendering. Try `cargo run --locked -p vesper-player -- examples/inline-words`. Read [inline text style authoring](docs/inline-styles.md) for the grammar, external theme palette, accessibility priority, and limits. QOL04 is verified in the full merged-main graphical and narrative CI.
 
 ## Presentation polish (completed phase)
 
