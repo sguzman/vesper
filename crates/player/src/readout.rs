@@ -60,12 +60,18 @@ impl ReadingState {
     }
 }
 
+/// Guarded by preference validation; deterministic for simulated-clock tests.
+fn auto_delay_elapsed(elapsed: f32, delay: f32) -> bool {
+    elapsed >= delay && delay.is_finite() && (0.5..=20.0).contains(&delay)
+}
+
 pub fn tick(
     time: Res<Time>,
     session: Res<Session>,
     settings: Res<settings::SettingsState>,
     saves: Res<save_slots::SaveUi>,
     mut state: ResMut<ReadingState>,
+    mut previous_delay: Local<Option<f32>>,
     mut bodies: Query<(&StoryText, &mut Text), Without<ContinueCue>>,
     mut cues: Query<(&mut Node, &mut TextColor, &mut TextFont), With<ContinueCue>>,
     assets: Res<AssetServer>,
@@ -97,9 +103,17 @@ pub fn tick(
     }
 
     let cue_active = active && showing_dialogue && complete;
+    let delay = session.preferences.auto_advance_delay.unwrap_or(1.5);
+    // A changed wait period always begins a fresh countdown rather than
+    // unexpectedly skipping the current line when a reader shortens it.
+    if *previous_delay != Some(delay) {
+        *previous_delay = Some(delay);
+        state.auto_elapsed = 0.0;
+        state.autoplay_ready = false;
+    }
     if cue_active && session.preferences.auto_advance.unwrap_or(false) {
         state.auto_elapsed = (state.auto_elapsed + time.delta_secs()).min(60.0);
-        if state.auto_elapsed >= 1.5 && !state.autoplay_ready {
+        if auto_delay_elapsed(state.auto_elapsed, delay) && !state.autoplay_ready {
             state.autoplay_ready = true;
             info!("Vesper auto-advance ready");
         }
@@ -135,6 +149,16 @@ pub fn tick(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn configurable_auto_delay_exact_boundary_and_legacy_default() {
+        assert!(!auto_delay_elapsed(1.49, 1.5));
+        assert!(auto_delay_elapsed(1.5, 1.5));
+        assert!(!auto_delay_elapsed(4.49, 4.5));
+        assert!(auto_delay_elapsed(4.5, 4.5));
+        assert!(auto_delay_elapsed(20.0, 20.0));
+        assert!(!auto_delay_elapsed(2.0, f32::NAN));
+        assert!(!auto_delay_elapsed(3.0, 0.0));
+    }
     #[test]
     fn restore_is_immediate_and_skip_does_not_execute_narrative() {
         let mut state = ReadingState::default();

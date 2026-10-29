@@ -147,6 +147,16 @@ jobs:
           retention-days: 10
       - name: Verify grapheme-safe text reveal, skip-once, reduced motion and opt-in auto
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/readout_smoke.py
+      - name: Verify configurable auto-advance wait and live preference
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/auto_delay_smoke.py
+      - name: Preserve QOL02 auto-delay visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-auto-delay
+          path: /tmp/vesper-auto-delay-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Preserve VX04 visual text pacing evidence
         if: always()
         uses: actions/upload-artifact@v4

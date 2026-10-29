@@ -208,8 +208,9 @@ def verify_controls(game):
         run("xdotool","windowsize",win,"946","511")
         time.sleep(.5)
         shot(win,folder/"settings-reading-946x511.png")
-        press("Down")  # High contrast (index 6)
-        press("Down")  # Reset to game defaults (index 7)
+        press("Down")  # Auto delay (index 6)
+        press("Down")  # High contrast (index 7)
+        press("Down")  # Reset to game defaults (index 8)
         press("Return")
         end=time.monotonic()+7
         while time.monotonic()<end and any(
@@ -217,7 +218,7 @@ def verify_controls(game):
         ):
             time.sleep(.1)
         assert not any(k in load() for k in ("reveal_speed","reduced_motion","auto_advance")),load()
-        press("Down") # Back (index 8)
+        press("Down") # Back (index 9)
         press("Return")
         wait_for(log,"Vesper appearance settings closed")
         assert proc.poll() is None
