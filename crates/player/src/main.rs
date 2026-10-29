@@ -413,7 +413,7 @@ fn story_separator_node() -> Node {
         // A 1px UI node can rasterize to zero pixels at 0.6x fractional scale.
         height: px(2.0),
         flex_shrink: 0.0,
-        margin: UiRect::top(px(16.0)),
+        margin: UiRect::top(px(24.0)),
         ..default()
     }
 }
@@ -1656,7 +1656,7 @@ mod tests {
         assert!(matches!(separator.height, bevy::ui::Val::Px(2.0)));
         // Measured text reservation alone is insufficient when font glyphs
         // descend below their nominal content bounds.
-        assert!(matches!(separator.margin.top, bevy::ui::Val::Px(value) if value >= 16.0));
+        assert!(matches!(separator.margin.top, bevy::ui::Val::Px(value) if value >= 24.0));
     }
 
     #[test]
