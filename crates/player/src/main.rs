@@ -40,6 +40,9 @@ struct Session {
     music: Option<Entity>,
     characters: BTreeMap<String, Entity>,
     presentation: PresentationState,
+    /// Incremented only for a successful manual/quick load. Lets ambient
+    /// clocks reset even when an older save omits the motion field entirely.
+    ambient_restore_epoch: u64,
     pending_audio: Vec<(String, Handle<AudioSource>)>,
     history: history::HistoryLog,
 }
@@ -578,6 +581,7 @@ fn main() {
             menu_overlay: None, menu_selection: 0,
             background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
+            ambient_restore_epoch: 0,
             pending_audio: Vec::new(),
             history: history::HistoryLog::default(),
         })
@@ -1586,6 +1590,7 @@ fn poll_completed_io(
                 session.presentation.panel_skin = state.panel_skin;
                 session.presentation.ambient_visibility = state.ambient_visibility;
                 session.presentation.ambient_motion_elapsed = state.ambient_motion_elapsed;
+                session.ambient_restore_epoch = session.ambient_restore_epoch.wrapping_add(1);
                 if let Some(id) = state.music {
                     if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Music(id)

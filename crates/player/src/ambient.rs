@@ -109,12 +109,14 @@ pub fn sync(
     windows: Query<&Window, With<PrimaryWindow>>,
     mut visuals: Query<(Entity, &mut AmbientVisual, &mut MotionClock, &mut Sprite, &mut Transform, &mut Visibility)>,
     mut prior: Local<(Vec2, String)>,
+    mut last_restore_epoch: Local<u64>,
 ) {
     let Ok(window) = windows.single() else { return };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
     if size.x <= 0.0 || size.y <= 0.0 { return; }
     let scene = session.machine.scene();
-    if !session.is_changed() && prior.0 == size && prior.1 == scene {
+    let loaded = *last_restore_epoch != session.ambient_restore_epoch;
+    if !loaded && !session.is_changed() && prior.0 == size && prior.1 == scene {
         return;
     }
     let mut present = std::collections::BTreeSet::new();
@@ -132,9 +134,13 @@ pub fn sync(
         let saved = session.presentation.ambient_motion_elapsed.get(&visual.id).copied();
         if clock.configured != config.motion || clock.initial_phase != config.start_phase_seconds {
             *clock = MotionClock::new(config, &assets, saved);
-        } else if clock.restored_elapsed != saved {
+        } else if loaded || clock.restored_elapsed != saved {
             clock.elapsed = saved.unwrap_or(config.start_phase_seconds);
             clock.restored_elapsed = saved;
+            if loaded {
+                info!("Vesper ambient motion clock restored: {} to {:.3}s",
+                    visual.id, clock.elapsed);
+            }
         }
         let color = Color::srgba(1.0, 1.0, 1.0, config.opacity);
         if sprite.color != color { sprite.color = color; }
@@ -170,6 +176,7 @@ pub fn sync(
     }
     prior.0 = size;
     prior.1 = scene.to_owned();
+    *last_restore_epoch = session.ambient_restore_epoch;
 }
 
 /// Frame-by-frame path position from a cached, bounded clock.
