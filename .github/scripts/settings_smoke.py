@@ -147,6 +147,12 @@ def main() -> None:
 
                     key("Down")
                     key("Right")
+                    wait_log(log, "Vesper system font browser opened")
+                    # The browser starts on Game default; navigate to the
+                    # first generic option and commit via Enter.
+                    key("Down")
+                    key("Return")
+                    wait_log(log, "Vesper system font browser closed")
                     font = wait_prefs(prefs_path, lambda p:
                         p.get("font_family") == "sans-serif")
                     assert font["format_version"] == 1
