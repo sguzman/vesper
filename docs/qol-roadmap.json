@@ -16,10 +16,10 @@
     "docs/visual-experience-roadmap.json": 100
   },
   "scope_weight": 100,
-  "verified_weight": 59,
-  "status": "active: QOL01–QOL04 verified on merged main; QOL05 dynamic effects and QOL06 ambient actors in separate draft PRs",
-  "last_verified_commit": "36d3a3d0e16ae4864fa12dd850a1621b332ba09d",
-  "next_milestone": "QOL05 and QOL06",
+  "verified_weight": 72,
+  "status": "active: QOL01–QOL04 and QOL06 verified on merged main; QOL05 and QOL07 in progress",
+  "last_verified_commit": "550b03ef9532c1a30ff29f23741301a9ade3092c",
+  "next_milestone": "QOL05",
   "rules": {
     "execution": "Implementation ongoing under the project stewardship protocol; credit only after acceptance-specific CI and merged-main certification.",
     "architecture": "Rust + Bevy 0.20; pure Rust narrative parser; external game-relative .vn/TOML/images/audio/fonts; generic engine; no game-specific Rust branches.",
@@ -177,10 +177,13 @@
         "Bevy smoke screenshots verify correct layer order, lifecycle, scene switching, responsive cover/crop alignment, pause/reduced-motion behavior and no blocking update-thread I/O."
       ],
       "example": "Declare a bird flock as background scenery, not as a story character who speaks.",
-      "status": "active",
+      "status": "verified complete",
       "evidence": [
-        "Draft implementation: https://github.com/sguzman/vesper/pull/20",
-        "Unverified: full branch CI and merged-main certification required before credit"
+        "PR #20 merged: https://github.com/sguzman/vesper/pull/20",
+        "Passing full PR CI: https://github.com/sguzman/vesper/actions/runs/40958095908",
+        "Passing full merged-main narrative and Bevy CI: https://github.com/sguzman/vesper/actions/runs/40961574567",
+        "Merged implementation commit: 550b03ef9532c1a30ff29f23741301a9ade3092c",
+        "Six-viewport static actor screenshot tests, scene show/hide, F5/F9 persistence, hot reload add/remove/reconfigure and invalid-source rejection passed."
       ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
@@ -200,8 +203,11 @@
         "Limit number of actors, path points, frames, speeds and texture usage; exclude pathfinding, collision physics, unlimited spawns or runtime image generation; screenshots capture start/middle/end and pause."
       ],
       "example": "An NPC crosses a bridge while a bird arcs overhead and a plane moves behind distant clouds.",
-      "status": "planned",
-      "evidence": [],
+      "status": "active",
+      "evidence": [
+        "Draft motion implementation: https://github.com/sguzman/vesper/pull/22",
+        "Independent 3-actor six-size and reduced-motion graphical acceptance passed on earlier commit; expanded pause/save/hot-reload tests in CI; no QOL07 credit until full branch and merged-main CI."
+      ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
     {

@@ -1,6 +1,6 @@
 # Vesper — Reader QoL & Expressive Authoring Roadmap
 
-**Status: 59 / 100 verified points — QOL01–QOL04 VERIFIED on merged main; QOL05/QOL06 ACTIVE.**
+**Status: 72 / 100 verified points — QOL01–QOL04 and QOL06 VERIFIED on merged main; QOL05/QOL07 ACTIVE.**
 
 The preceding three phases (original MVP, Presentation Polish, Visual Experience) are independently **100 / 100 complete**. This is a new phase based on main commit `d90766f34a4d81be3064b1da5ee9ee4410aefca5`, created 2026-10-29.
 
@@ -12,7 +12,11 @@ The preceding three phases (original MVP, Presentation Polish, Visual Experience
 
 **QOL04 (17 points) is verified complete.** [PR #19](https://github.com/sguzman/vesper/pull/19) merged at `36d3a3d0e16ae4864fa12dd850a1621b332ba09d`. Both the [integration CI](https://github.com/sguzman/vesper/actions/runs/40953872164) and [merged-main CI](https://github.com/sguzman/vesper/actions/runs/40957118616) passed narrative and the full Bevy regression suite, including six-size styled word/first-word palette and high-contrast comparisons, Unicode safety, F5/F9 restore, all original stories and Linux packaging.
 
-**QOL05 and QOL06 are active but unverified.** [PR #21](https://github.com/sguzman/vesper/pull/21) adds bounded color-only ember/shadow/shimmer word flair with accessibility precedence. [PR #20](https://github.com/sguzman/vesper/pull/20) adds independent ambient scene actors, show/hide, save/reload and graphical evidence. Neither milestone earns credit until its full branch and merged-main certification passes.
+**QOL06 (13 points) is verified complete.** [PR #20](https://github.com/sguzman/vesper/pull/20) merged at `550b03ef9532c1a30ff29f23741301a9ade3092c`. Both [full PR CI](https://github.com/sguzman/vesper/actions/runs/40958095908) and [merged-main CI](https://github.com/sguzman/vesper/actions/runs/40961574567) passed narrative and Bevy tests: responsive ambient actor placement, show/hide and scene scope, F5/F9 visibility restoration, hot reload add/remove/invalid-source protection, original stories and compiler-free Linux packaging.
+
+**QOL05 (14 points) is active, not yet verified.** [PR #21](https://github.com/sguzman/vesper/pull/21) provides bounded ember/shadow/shimmer word flairs; full branch CI passed, but merged-main certification is pending.
+
+**QOL07 (9 points) is active, not verified.** [PR #22](https://github.com/sguzman/vesper/pull/22) adds autonomous paths, flipbook frames and pause/save/reload tests; final branch and merged-main acceptance remain outstanding.
 
 ## Purpose
 
@@ -29,10 +33,10 @@ The per-word aesthetic is inspired conceptually by *Kentucky Route Zero*, *Celes
 | **QOL03 — 📓 Custom image-backed dialogue panels** | 17 | — | **Verified complete** |
 | **QOL04 — ✍️ Inline style-span authoring foundation** | 17 | — | **Verified complete** |
 | **QOL05 — 🔥 Per-word dynamic flair library** | 14 | QOL04 | Active — graphical acceptance pending |
-| **QOL06 — 🕊️ Independent ambient-scene actor infrastructure** | 13 | — | Active — full CI pending |
-| **QOL07 — 🚶 Autonomous ambient motion and flipbook frames** | 9 | QOL06 | Planned |
+| **QOL06 — 🕊️ Independent ambient-scene actor infrastructure** | 13 | — | **Verified complete** |
+| **QOL07 — 🚶 Autonomous ambient motion and flipbook frames** | 9 | QOL06 | Active — certification pending |
 | **QOL08 — 🧪 Integration, authoring examples, final certification** | 5 | QOL01, QOL02, QOL03, QOL04, QOL05, QOL06, QOL07 | Planned |
-| **Total** | **100** | | **59 verified** |
+| **Total** | **100** | | **72 verified** |
 
 ### Delivery order
 
@@ -182,4 +186,4 @@ The final gate includes Xvfb renders at **946×511, 955×520, 800×600, 900×700
 
 **Source of truth:** [qol-roadmap.json](qol-roadmap.json). Prior completed phases: [MVP](roadmap.json) · [Polish](polish-roadmap.json) · [Visual Experience](visual-experience-roadmap.json).
 
-**Next:** Complete QOL05 effect graphical certification and QOL06 ambient regression; after those merge, certify the next milestones on main. QOL07 autonomous paths/motion and QOL08 final examples remain planned.
+**Next:** Merge passing QOL05 PR #21 and certify on main; complete QOL07 motion regressions. QOL08 combined external authoring showcase remains planned.
