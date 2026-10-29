@@ -244,8 +244,9 @@ pub fn keyboard(input: &ButtonInput<KeyCode>,
     session: &mut Session, state: &mut State, commands: &mut Commands,
     writer: &settings::PreferencesWriter,
 ) {
-    if input.just_pressed(KeyCode::Escape) || input.just_pressed(KeyCode::KeyP)
-        || input.just_pressed(KeyCode::KeyM) {
+    // P and M are ordinary characters when typing a font family query;
+    // only Escape closes the browser without changing the user's selection.
+    if input.just_pressed(KeyCode::Escape) {
         close(state, commands);
     } else if input.just_pressed(KeyCode::ArrowDown) {
         move_selection(state, 1);
