@@ -89,6 +89,16 @@ jobs:
           retention-days: 14
       - name: Verify QOL07 background walker, bird and plane paths across six sizes
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/ambient_motion_smoke.py
+      - name: Verify QOL07 live motion removal, restart and invalid edit rejection
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/ambient_motion_reload_smoke.py
+      - name: Preserve QOL07 motion hot reload screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-ambient-motion-reload
+          path: /tmp/vesper-ambient-motion-reload-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Preserve QOL07 motion start/mid/end screenshots
         if: always()
         uses: actions/upload-artifact@v4
