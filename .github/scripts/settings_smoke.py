@@ -169,7 +169,7 @@ def main() -> None:
                     # white text override authored low-contrast colors.
                     # Pointer test selects row 0; keyboard-only path remains
                     # on the font row (index 2).
-                    for _ in range(6 if game == "little-lantern" else 4):
+                    for _ in range(7 if game == "little-lantern" else 5):
                         key("Down", .08)
                     key("Return", .12)
                     contrast = wait_prefs(prefs_path, lambda p:
@@ -226,8 +226,8 @@ def main() -> None:
                     key("p")
                     key("4")
                     wait_log(restart, "Vesper appearance settings opened")
-                    # VX09 high contrast precedes Reset (8th row).
-                    for _ in range(7):
+                    # VX09 high contrast and QOL02 auto delay precede Reset (9th row).
+                    for _ in range(8):
                         key("Down")
                     key("Return")
                     wait_prefs(prefs_path, lambda p:
