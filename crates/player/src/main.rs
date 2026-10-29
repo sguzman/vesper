@@ -14,6 +14,7 @@ mod atmosphere;
 mod feedback;
 mod history;
 mod save_slots;
+mod panel_art;
 use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, Output, Visual};
@@ -154,7 +155,7 @@ fn fit_viewport(
         Option<&actors::ActorIdle>,
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
-    mut previous: Local<(Vec2, [u32; 4])>,
+    mut previous: Local<(Vec2, [u32; 8])>,
 ) {
     let Ok(window) = windows.single() else { return; };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
@@ -164,11 +165,15 @@ fn fit_viewport(
     // Borrow the authored geometry directly; do not clone/resolve a full
     // Theme on every frame just to compute layout bounds.
     let panel = &session.game.theme.panel;
+    let insets = panel_art::active_skin(&session)
+        .map_or([0.0; 4], |skin| skin.insets);
     let panel_key = [
         panel.width_percent.to_bits(),
         panel.min_height.to_bits(),
         panel.padding.to_bits(),
         panel.gap.to_bits(),
+        insets[0].to_bits(), insets[1].to_bits(),
+        insets[2].to_bits(), insets[3].to_bits(),
     ];
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
     // reflowed only after a viewport or external theme-geometry change.
@@ -176,6 +181,9 @@ fn fit_viewport(
         let geometry = panel_metrics(size, panel);
         for mut node in &mut panels {
             apply_panel_metrics(&mut node, panel, geometry);
+            if let Some(padding) = panel_art::skin_padding(&session, size) {
+                node.padding = padding;
+            }
         }
         previous.1 = panel_key;
     }
@@ -573,7 +581,7 @@ fn main() {
                 cinematics::tick, actors::tick, atmosphere::tick,
             ).chain(),
             (
-                settings::sync_visuals, font_browser::sync,
+                settings::sync_visuals, font_browser::sync, panel_art::sync,
                 reserve_story_text_height, trigger_save_load,
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
@@ -602,6 +610,16 @@ fn apply_visual(
     visual: Visual,
 ) -> Result<(), String> {
     match visual {
+        Visual::Panel(id) => {
+            session.presentation.panel_skin = if id == "default" {
+                None
+            } else {
+                session.game.panel_skin(&id)?;
+                Some(id)
+            };
+            info!("Vesper dialogue panel: {:?}",
+                session.presentation.panel_skin);
+        }
         Visual::Background(id) => {
             let path = session.game.background(&id)?.to_owned();
             let config = &session.game.theme.cinematic;
@@ -842,6 +860,18 @@ fn setup(
             StoryPanel,
         ))
         .with_children(|parent| {
+            parent.spawn((
+                Name::new("External dialogue panel image"),
+                panel_art::StoryPanelArt,
+                ImageNode::default(),
+                Node {
+                    display: Display::None,
+                    position_type: PositionType::Absolute,
+                    left: px(0.0), top: px(0.0),
+                    width: percent(100.0), height: percent(100.0),
+                    ..default()
+                },
+            ));
             parent.spawn((
                 StoryAccent,
                 Node { width: percent(100), height: px(3.0), flex_shrink: 0.0, ..default() },
@@ -1514,6 +1544,7 @@ fn poll_completed_io(
                 }
                 session.presentation = PresentationState::default();
                 session.presentation.selected_choice = state.selected_choice;
+                session.presentation.panel_skin = state.panel_skin;
                 if let Some(id) = state.music {
                     if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Music(id)

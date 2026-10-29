@@ -60,6 +60,7 @@ pub fn apply_reload(
     mut session: ResMut<Session>,
     mut commands: Commands,
     assets: Res<AssetServer>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     mut ui_scale: ResMut<UiScale>,
     mut panels: Query<(&mut Node, &mut BackgroundColor), With<StoryPanel>>,
     mut accents: Query<&mut BackgroundColor, (With<StoryAccent>, Without<StorySeparator>, Without<StoryPanel>)>,
@@ -91,6 +92,12 @@ pub fn apply_reload(
         }
     };
     // Any live asset that is removed must not leave a partially updated scene.
+    if let Some(id) = &session.presentation.panel_skin {
+        if let Err(error) = updated.panel_skin(id) {
+            warn!("Vesper hot reload rejected: {error}");
+            return;
+        }
+    }
     if let Some(id) = &session.presentation.background {
         if let Err(error) = updated.background(id) {
             warn!("Vesper hot reload rejected: {error}");
@@ -151,12 +158,16 @@ pub fn apply_reload(
         }
     }
 
+    let viewport = windows.single().map(|window|
+        Vec2::new(window.resolution.width(), window.resolution.height()))
+        .unwrap_or(Vec2::new(1280.0, 720.0));
     for (mut node, mut background) in &mut panels {
         let p = &theme.panel;
         node.left = percent((100. - p.width_percent) / 2.);
         node.width = percent(p.width_percent);
         node.min_height = px(p.min_height);
-        node.padding = px(p.padding).all();
+        node.padding = panel_art::skin_padding(&session, viewport)
+            .unwrap_or_else(|| px(p.padding).all());
         node.row_gap = px(p.gap);
         *background = BackgroundColor(Color::srgba(
             p.background[0], p.background[1], p.background[2], p.background[3]

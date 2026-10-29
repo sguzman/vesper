@@ -17,6 +17,9 @@ pub struct CharacterPose {
 #[serde(deny_unknown_fields)]
 pub struct PresentationState {
     pub background: Option<String>,
+    /// Active per-scene panel override; None means game/theme default.
+    #[serde(default)]
+    pub panel_skin: Option<String>,
     #[serde(default)]
     pub music: Option<String>,
     #[serde(default)]
@@ -55,6 +58,9 @@ impl SaveData {
         }
         if let Some(background) = &self.presentation.background {
             game.background(background)?;
+        }
+        if let Some(id) = &self.presentation.panel_skin {
+            game.panel_skin(id)?;
         }
         for (id, pose) in &self.presentation.characters {
             game.character_expression(id, &pose.expression)?;
@@ -173,6 +179,19 @@ mod tests {
         assert_eq!(restored.advance().unwrap(), Output::Dialogue {
             speaker: None, text: "End".into(),
         });
+    }
+
+    #[test]
+    fn old_save_schema_without_skin_stays_compatible() {
+        let fixture = Fixture::new();
+        let game = Game::load(&fixture.0).unwrap();
+        let machine = Machine::new(&game.story, &game.manifest.entry).unwrap();
+        let current = SaveData::new(&game, &machine, PresentationState::default());
+        let json = String::from_utf8(current.encode().unwrap()).unwrap();
+        assert!(json.contains("panel_skin"));
+        let old = json.replace("    \"panel_skin\": null,\n", "");
+        let decoded = SaveData::decode(old.as_bytes()).unwrap();
+        assert_eq!(decoded.presentation.panel_skin, None);
     }
 
     #[test]

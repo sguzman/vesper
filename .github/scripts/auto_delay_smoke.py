@@ -120,10 +120,23 @@ def main() -> None:
             key("m")
             key("4")
             wait(log, "Vesper appearance settings opened")
-            # New 7th row (index 6): auto-advance delay.
-            for _ in range(6):
-                key("Down", .10)
-            key("Right")
+            # Navigate to the 7th row with an acknowledgement for each
+            # Bevy input event. Under software rendering, rapid XTest presses
+            # can land entirely between update frames and silently disappear.
+            for index in range(1, 7):
+                for attempt in range(4):
+                    key("Down", .30)
+                    try:
+                        wait(log, f"Vesper appearance selection: {index}", seconds=.7)
+                        break
+                    except AssertionError:
+                        if attempt == 3:
+                            raise AssertionError(
+                                f"Down failed to focus row {index}; "
+                                f"last log: {log.read_text(errors='replace')[-1000:]}"
+                            )
+            key("Right", .30)
+            wait(log, "Vesper settings applied: Auto advance delay")
             end = time.monotonic() + 10
             while time.monotonic() < end:
                 current = json.loads(path.read_text())
