@@ -20,6 +20,18 @@ cargo run --locked -p vesper-player -- examples/dawn-post-office
 
 Or download the compiled **vesper-linux-fairytale-showcase** artifact from [final verified Linux CI](https://github.com/sguzman/vesper/actions/runs/40803672919). Unpack its inner `vesper-linux-x86_64.tar.gz`, then use `./vesper/lantern`, `./vesper/moon` or `./vesper/dawn` without Rust or Cargo. [Example guide, controls, and visual QA](examples/README.md).
 
+## Reader QoL and illustrated dialogue panels (in development)
+
+The latest [Reader QoL roadmap](docs/qol-roadmap.md) covers searchable installed fonts, configurable auto-advance, diegetic dialogue art, inline word styling and autonomous scenery. The combined font browser and auto-delay implementation is merged in [PR #16](https://github.com/sguzman/vesper/pull/16); the separate [QOL03 panel feature](https://github.com/sguzman/vesper/pull/17) is still under acceptance.
+
+[The Field Notebook](examples/panel-showcase/) is a self-contained **authoring fixture**, not a fourth full-length novel. It exercises notebook-style PNG dialogue art, banner replacement, nine long choices, quicksave restoration and the original solid UI on the same unchanged executable:
+
+```sh
+cargo run --locked -p vesper-player -- examples/panel-showcase
+```
+
+See [diegetic panel authoring](docs/diegetic-panels.md) for schema, safety, text margins, theme defaults, high contrast and graphical tests. QOL03 has no verified roadmap credit until complete CI and visual acceptance.
+
 ## Presentation polish (completed phase)
 
 The original MVP remains verified 100%. The separate [weighted presentation-polish roadmap](docs/polish-roadmap.json) is also **100/100 verified**, on [passing main-branch graphical and narrative CI](https://github.com/sguzman/vesper/actions/runs/40617751211); both milestone ledgers remain independent. **P** opens a keyboard-navigable pause menu (P again resumes), **M** opens the main menu during play, and **R** restarts after an ending. Main-menu commands start a new playthrough, continue the in-memory session, or quit. Pause-menu commands resume, open the main menu, or quit. Both menus use dedicated Bevy UI option rows with independently highlighted selection (no string-generated menu); Up/Down moves focus without respawning the overlay, and Enter or number keys 1–4 activate a pause/main action; ending actions remain 1–3. Ending actions use the same row-based selection system. External games still launch directly into gameplay. Completed games now display an explicit, keyboard-selectable **Play again / Main menu / Quit** ending screen; Up/Down, Enter, 1–3, R and M work without a dead-end. The Little Lantern intentionally contains no audio; The Clockwork Moon uses external WAV assets.
