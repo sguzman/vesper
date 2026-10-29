@@ -2,6 +2,7 @@
 //! FontCx is queried once during Startup; there are no font scans in Update.
 use super::*;
 use bevy::{
+    input::mouse::MouseWheel,
     input_focus::AutoFocus,
     text::{EditableText, FontCx, TextCursorStyle},
     ui_widgets::TextInput,
@@ -21,8 +22,6 @@ pub struct State {
 
 #[derive(Resource, Default)]
 pub struct Click(pub Option<usize>);
-#[derive(Resource, Default)]
-pub struct Wheel(pub i32);
 #[derive(Component)]
 struct Search;
 #[derive(Component)]
@@ -36,7 +35,7 @@ struct Count;
 
 /// Bevy's FontCx uses the same font database as FontSource::Family.
 /// Do this at startup, before the player UI and per-frame update begins.
-pub fn discover(mut session: ResMut<Session>, cx: ResMut<FontCx>) {
+pub fn discover(mut session: ResMut<Session>, mut cx: ResMut<FontCx>) {
     let mut families: Vec<_> = cx.context.collection.family_names()
         .filter(|name| safe_family(name))
         .map(ToOwned::to_owned)
@@ -187,9 +186,6 @@ pub fn open(session: &Session, state: &mut State, commands: &mut Commands) {
                         ));
                     });
                 }
-            }).observe(|scroll: On<Pointer<Scroll>>, mut wheel: ResMut<Wheel>| {
-                wheel.0 += if scroll.y < 0.0 { 3 } else if scroll.y > 0.0 { -3 } else { 0 };
-                wheel.0 = wheel.0.clamp(-30, 30);
             });
             panel.spawn((
                 Text::new("LIVE FONT PREVIEW"),
@@ -266,16 +262,12 @@ pub fn keyboard(input: &ButtonInput<KeyCode>,
 
 pub fn pointer(
     mut session: ResMut<Session>, mut state: ResMut<State>,
-    mut clicks: ResMut<Click>, mut wheel: ResMut<Wheel>,
+    mut clicks: ResMut<Click>,
     mut commands: Commands, writer: Res<settings::PreferencesWriter>,
 ) {
     if state.overlay.is_none() {
-        clicks.0 = None; wheel.0 = 0;
+        clicks.0 = None;
         return;
-    }
-    if wheel.0 != 0 {
-        move_selection(&mut state, wheel.0);
-        wheel.0 = 0;
     }
     if let Some(slot) = clicks.0.take() {
         let index = start_index(&state) + slot;
@@ -283,6 +275,22 @@ pub fn pointer(
             state.selected = index;
             apply(&mut session, &mut state, &mut commands, &writer);
         }
+    }
+}
+
+/// Keyboard paging works everywhere; wheel navigation is only consumed when
+/// the browser is actually open. Event history is drained even when closed.
+pub fn wheel(
+    mut events: MessageReader<MouseWheel>,
+    mut state: ResMut<State>,
+) {
+    let mut steps = 0;
+    for event in events.read() {
+        if event.y < 0.0 { steps += 3; }
+        else if event.y > 0.0 { steps -= 3; }
+    }
+    if state.overlay.is_some() && steps != 0 {
+        move_selection(&mut state, steps.clamp(-30, 30));
     }
 }
 
@@ -298,9 +306,9 @@ pub fn sync(
 ) {
     if state.overlay.is_none() { return; }
     if let Ok(text) = search.single()
-        && state.filter != text.value() {
+        && state.filter != text.value().to_string() {
         let old_selected = selected_font(&state).map(str::to_owned);
-        state.filter = text.value().to_owned();
+        state.filter = text.value().to_string();
         state.results = filtered(&choices(&session), &state.filter);
         state.selected = old_selected.and_then(|name|
             state.results.iter().position(|family| family == &name))
