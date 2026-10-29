@@ -37,7 +37,7 @@ This source audit is distinct from a runtime profiler:
 - **Layout:** VX09 removes a full `Theme` clone/resolve from the per-frame viewport system, borrowing unchanged author-owned panel geometry directly. Existing geometry and user override semantics are preserved. Character transition scratch storage is reused across frames with a Bevy `Local<Vec<Entity>>`, rather than allocating a new vector every frame.
 - **Animation:** motes and actors have bounded update clocks, normalized positions, and reusable ECS entities. Choice rows rebuild only when the story's actual options change. The audit found no mandatory render-thread image generation, file parsing, or unlimited per-frame spawning path.
 
-The last two layout/scratch optimizations were committed **after** run `40791505152`; their exact head requires a separate green full CI run before final VX09 certification.
+The layout/scratch optimizations have now passed **full CI run `40794656091` on source commit `ce4937e83ac5d35d00f18cc260a267e2be08f776`**. Both narrative and Bevy jobs passed; all six glyph and choice/hint gaps were identical to the prior measured values. This is a source inspection and functional regression certification, not a hardware frame-time benchmark.
 
 ## What CI does *not* certify
 
@@ -45,10 +45,11 @@ Xvfb is an X11 virtual display, **not** a native Wayland compositor. These resul
 
 ## Evidence links
 
-- [Latest pre-audit full green CI (40791505152)](https://github.com/sguzman/vesper/actions/runs/40791505152)
+- [Final VX09 full green CI (40794656091)](https://github.com/sguzman/vesper/actions/runs/40794656091)
+- [Pre-audit graphical artifact baseline (40791505152)](https://github.com/sguzman/vesper/actions/runs/40791505152)
 - [Visual Experience Roadmap](visual-experience-roadmap.md)
 - [Player-owned preferences](../crates/game/src/preferences.rs)
 - [Six-size glyph-mask regression](../.github/scripts/hint_overlap_smoke.py)
 - [Live settings regression](../.github/scripts/settings_smoke.py)
 
-Only after the final head's full CI passes should VX09's eight points be awarded, and only after merge should `main` display **82/100** verified.
+**Verification status:** VX09's implementation passed both full CI jobs on commit `ce4937e8` and qualifies for **8 weighted points**, subject only to recording the evidence in the roadmap and merging the PR. The documented physical-Wayland and device-specific limitations remain outside CI's scope.
