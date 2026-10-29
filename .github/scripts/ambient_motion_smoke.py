@@ -34,7 +34,13 @@ def shot(win, where, width=1280, height=720):
         call("import", "-window", win, str(where))
         got=call("identify","-format","%w %h",str(where)).stdout
         assert got==f"{width} {height}",(got,width,height)
-        if int(call("identify","-format","%k",str(where)).stdout)>40:
+        # A Bevy scene can expose UI text before its asynchronous background
+        # texture has drawn. Require a real multi-color backdrop above the UI.
+        # Otherwise reduced-motion comparisons mistake asset arrival for motion.
+        top = call("convert", str(where),
+                   "-crop", f"{width//2}x{max(60,height//4)}+{width//4}+0",
+                   "+repage", "-format", "%k", "info:").stdout
+        if int(top) > 10:
             return where
     raise AssertionError(f"unrendered ambient motion frame: {where}")
 
