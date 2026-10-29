@@ -34,9 +34,11 @@ See [diegetic panel authoring](docs/diegetic-panels.md) for schema, safety, text
 
 [The Ember Letter](examples/inline-words/) is a separate authoring fixture for **QOL04**, with independently styled words, multilingual text, and native Bevy `TextSpan` rendering. Try `cargo run --locked -p vesper-player -- examples/inline-words`. Read [inline text style authoring](docs/inline-styles.md) for the grammar, external theme palette, accessibility priority, and limits. QOL04 is verified in the full merged-main graphical and narrative CI.
 
-[Morning at the Perch](examples/ambient-showcase/) is an external QOL06 static ambient-actor authoring fixture with a bird sprite, scene-visible show/hide commands and persistent overrides. Run `cargo run --locked -p vesper-player -- examples/ambient-showcase`; see the [ambient actor authoring guide](docs/ambient-actors.md) for controls, safe bounds and tests. **QOL06 is in draft; autonomous NPC/bird/plane motion belongs to the unimplemented QOL07.**
+[Morning at the Perch](examples/ambient-showcase/) is an external QOL06 static ambient-actor authoring fixture with a bird sprite, scene-visible show/hide commands and persistent overrides. Run `cargo run --locked -p vesper-player -- examples/ambient-showcase`; see the [ambient actor authoring guide](docs/ambient-actors.md) for controls, safe bounds and tests. **QOL06 is verified complete; autonomous NPC/bird/plane movement is being certified in QOL07.**
 
 [The Luminous Page](examples/word-effects/) is the external QOL05 fixture for ember, shadow and shimmer word flairs. The reader's high-contrast and reduced-motion choices override authored animation. QOL05 is implemented and has passed full branch CI; merged-main certification remains pending.
+
+[The Moving Meadow](examples/moving-meadow/) demonstrates QOL07's independently walking NPC, looping bird and one-shot plane, authored entirely in a game manifest. See the [ambient motion authoring guide](docs/ambient-motion.md) for waypoint/flipbook limits, reduced-motion precedence and graphical QA. QOL07 is under acceptance, **not verified**.
 
 ## Presentation polish (completed phase)
 

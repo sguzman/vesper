@@ -1,0 +1,48 @@
+format_version = 1
+id = "moving-meadow"
+title = "The Moving Meadow"
+story = "scripts/story.vn"
+entry = "meadow"
+
+[backgrounds]
+sunrise = "assets/sunrise.png"
+
+[ambient_actors.walker]
+image = "assets/tess-curious.png"
+anchor = [0.15, 0.73]
+scale = 1.5
+opacity = 1.0
+depth = 2.0
+start_phase_seconds = 0.0
+[ambient_actors.walker.motion]
+waypoints = [[0.15, 0.73], [0.69, 0.73]]
+period_seconds = 6.0
+mode = "ping_pong"
+flip_on_reverse = true
+frames = ["assets/tess-curious.png", "assets/tess-determined.png"]
+frame_fps = 2.0
+
+[ambient_actors.bird]
+image = "assets/bird.png"
+anchor = [0.11, 0.25]
+scale = 1.9
+opacity = 1.0
+depth = 3.0
+start_phase_seconds = 1.2
+[ambient_actors.bird.motion]
+waypoints = [[0.11, 0.25], [0.48, 0.16], [0.86, 0.30]]
+period_seconds = 5.0
+mode = "loop"
+flip_on_reverse = true
+
+[ambient_actors.plane]
+image = "assets/plane.png"
+anchor = [0.05, 0.11]
+scale = 1.5
+opacity = 1.0
+depth = 1.0
+start_phase_seconds = 0.0
+[ambient_actors.plane.motion]
+waypoints = [[0.05, 0.11], [0.95, 0.13]]
+period_seconds = 5.5
+mode = "once"
