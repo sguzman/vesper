@@ -144,7 +144,7 @@ pub fn sync_spans(
     let root = body.iter_mut().find_map(|(id, slot, mut text)| {
         if matches!(slot, StoryText::Body) {
             if !state.segments.is_empty() {
-                let prefix = rich_root_prefix(text, &state.segments);
+                let prefix = rich_root_prefix(state.full_body().unwrap_or(""), &state.segments);
                 if text.0 != prefix {
                     text.0.clear();
                     text.0.push_str(prefix);
