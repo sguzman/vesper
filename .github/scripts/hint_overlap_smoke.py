@@ -188,9 +188,19 @@ def check(size: tuple[int, int], base: Path, no_divider: Path) -> None:
     # dialogue descenders can touch the horizontal rule while staying clear
     # of the hint letters below it.
     divider = OUT / f"{size[0]}x{size[1]}-divider-mask.png"
-    divider_pixels = mask(base, no_divider, divider)
+    mask(base, no_divider, divider)
+    # A tiny animated continue cue occupies the panel's upper-right corner.
+    # Cross-process captures can catch different cue pulse phases, so isolate
+    # the central horizontal strip where only the full-width rule can appear.
+    center = OUT / f"{size[0]}x{size[1]}-divider-center-mask.png"
+    run("convert", str(divider), "-crop",
+        f"{size[0] // 2}x{size[1]}+{size[0] // 4}+0",
+        "+repage", str(center))
+    divider_pixels = int(round(float(run(
+        "convert", str(center), "-format", "%[fx:mean*w*h]", "info:"
+    ).stdout)))
     assert divider_pixels > 100, f"{size}: separator wasn't rendered"
-    divider_top, _ = extent(divider)
+    divider_top, _ = extent(center)
     divider_gap = divider_top - bottom_body
     assert divider_gap >= 8, (
         f"{size}: last dialogue glyph ends at {bottom_body}, "
