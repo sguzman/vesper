@@ -10,7 +10,9 @@ use bevy::{
 
 const PAGE_ROWS: usize = 8;
 const MAX_FAMILIES: usize = 4096;
-const SPECIMEN: &str = "Aa Bb Cc 0123456789  ¡Hola!  こんにちは  ✨";
+// Use a universally legible specimen. Complex-script font fallback is tested
+// separately instead of forcing unavailable ICU segmentation data every frame.
+const SPECIMEN: &str = "Aa Bb Cc 0123456789  ¡Hola!  The quick brown fox.";
 
 #[derive(Resource, Default)]
 pub struct State {
