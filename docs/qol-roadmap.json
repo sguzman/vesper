@@ -16,12 +16,12 @@
     "docs/visual-experience-roadmap.json": 100
   },
   "scope_weight": 100,
-  "verified_weight": 0,
-  "status": "planned; no implementation begun",
-  "last_verified_commit": null,
-  "next_milestone": "QOL01",
+  "verified_weight": 25,
+  "status": "active: QOL01 and QOL02 verified on merged main; QOL03 implementation and visual acceptance in progress",
+  "last_verified_commit": "6e936f036300aefa9602d974813db092bd54a925",
+  "next_milestone": "QOL03",
   "rules": {
-    "execution": "Planning only in this request. Begin implementation under the existing project stewardship protocol when the user says continue or otherwise authorizes execution. Do not invent new scope after the roadmap is verified.",
+    "execution": "Implementation ongoing under the project stewardship protocol; credit only after acceptance-specific CI and merged-main certification.",
     "architecture": "Rust + Bevy 0.20; pure Rust narrative parser; external game-relative .vn/TOML/images/audio/fonts; generic engine; no game-specific Rust branches.",
     "performance": "Never block UI/render with font/file discovery, disk I/O, image generation, parsing or unbounded per-frame allocations. Cache or worker-load slow data; cap animated spans, texture resources and ECS entities.",
     "safety": "Validate untrusted game paths against root, including traversal/symlinks; reject invalid numeric values and malformed markup with useful diagnostics.",
@@ -31,8 +31,8 @@
     "verification": "Earn weight only on tests plus appropriate visual evidence and a green source commit; final complete requires both jobs green on main, not a plan."
   },
   "design_notes": [
-    "The existing font UI cycles through Game default, sans-serif, serif, monospace and authored family; new browser discovers installed families and validates selections.",
-    "The existing auto-advance delay is hard-coded at 1.5 seconds in crates/player/src/readout.rs.",
+    "QOL01: searchable installed-font picker now merged, with cached discovery, incremental filter, preview and persistence.",
+    "QOL02: 0.5–20.0-second configurable auto-advance delay now merged; 1.5 seconds remains the default.",
     "Bevy 0.20 has official system-font discovery and TextSpan; TextSpan supports per-span style but not automatically per-glyph offset animation.",
     "Proposed text syntax is illustrative only until the QOL04 grammar is specified; authored effects must preserve a plain accessible text stream.",
     "Ambient actors are finite author-directed stage motion, not pathfinding or AI.",
@@ -60,8 +60,13 @@
         "Bevy input/screenshot QA proves search, preview, selection, restart persistence, missing-font fallback, long/Unicode names and unchanged old-game behavior."
       ],
       "example": "Search 'DejaVu', preview matching fonts immediately, select one, and keep it on restart.",
-      "status": "planned",
-      "evidence": [],
+      "status": "verified complete",
+      "evidence": [
+        "PR #16: https://github.com/sguzman/vesper/pull/16",
+        "Passing integration CI (narrative + Bevy): https://github.com/sguzman/vesper/actions/runs/40940541014",
+        "Passing merged-main source certification (narrative + Bevy, all graphical and packaging steps): https://github.com/sguzman/vesper/actions/runs/40943723370",
+        "Merged source commit: 6e936f036300aefa9602d974813db092bd54a925"
+      ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
     {
@@ -78,8 +83,13 @@
         "New optional preference validates finite bounded values; legacy preferences and v1 story saves still load; deterministic clock tests plus GUI and cross-restart regressions pass."
       ],
       "example": "With auto advance enabled and delay 4.5s, a line remains fully visible for 4.5s before moving on.",
-      "status": "planned",
-      "evidence": [],
+      "status": "verified complete",
+      "evidence": [
+        "PR #16: https://github.com/sguzman/vesper/pull/16",
+        "Passing integration CI (narrative + Bevy): https://github.com/sguzman/vesper/actions/runs/40940541014",
+        "Passing merged-main source certification (narrative + Bevy, all graphical and packaging steps): https://github.com/sguzman/vesper/actions/runs/40943723370",
+        "Merged source commit: 6e936f036300aefa9602d974813db092bd54a925"
+      ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
     {
@@ -96,8 +106,11 @@
         "Reject traversal/symlinks/invalid images and unsafe sizing; ship both notebook and banner examples; test wrapped dialogue and nine choices at all six certified window sizes."
       ],
       "example": "A diary's illustrated spine and page edge stay intact while the text sits inside its ruled writing area.",
-      "status": "planned",
-      "evidence": [],
+      "status": "active",
+      "evidence": [
+        "Implementation in draft PR #17: https://github.com/sguzman/vesper/pull/17",
+        "Artwork, authoring example and six-size graphical smoke test committed; full CI certification pending. No points earned."
+      ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
     {

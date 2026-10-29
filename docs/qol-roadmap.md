@@ -1,8 +1,14 @@
 # Vesper — Reader QoL & Expressive Authoring Roadmap
 
-**Status: 0 / 100 verified points — PLANNED, NOT IMPLEMENTED.**
+**Status: 25 / 100 verified points — QOL01 and QOL02 COMPLETE on merged main, QOL03 ACTIVE.**
 
 The preceding three phases (original MVP, Presentation Polish, Visual Experience) are independently **100 / 100 complete**. This is a new phase based on main commit `d90766f34a4d81be3064b1da5ee9ee4410aefca5`, created 2026-10-29.
+
+## Current implementation and certification
+
+**QOL01 (15 points) and QOL02 (10 points) are verified complete.** The installed-font browser and configurable auto-advance controls were integrated in [PR #16](https://github.com/sguzman/vesper/pull/16), merged at `6e936f036300aefa9602d974813db092bd54a925`. The [integration run](https://github.com/sguzman/vesper/actions/runs/40940541014) and [merged-main run](https://github.com/sguzman/vesper/actions/runs/40943723370) both passed all narrative and Bevy jobs. CI includes native graphical font search/preview/persistence, timing and settings smoke tests, regression screenshots, the complete Dawn branches, and Linux packaging.
+
+**QOL03 (17 points) is active and NOT verified.** A separate [draft PR #17](https://github.com/sguzman/vesper/pull/17) introduces external notebook/banner dialogue panel art, strict path/image validation, scene-selectable panel overrides, and a six-size/higher-contrast graphical acceptance test. The draft awaits passing Bevy CI and merged-main certification. No extra 17 points have been claimed.
 
 ## Purpose
 
@@ -14,15 +20,15 @@ The per-word aesthetic is inspired conceptually by *Kentucky Route Zero*, *Celes
 
 | Milestone | Points | Dependencies | Status |
 | --- | ---: | --- | --- |
-| **QOL01 — 🔤 Searchable installed-font browser** | 15 | — | Planned |
-| **QOL02 — ⏱️ Player-controlled auto-advance wait** | 10 | — | Planned |
-| **QOL03 — 📓 Custom image-backed dialogue panels** | 17 | — | Planned |
+| **QOL01 — 🔤 Searchable installed-font browser** | 15 | — | **Verified complete** |
+| **QOL02 — ⏱️ Player-controlled auto-advance wait** | 10 | — | **Verified complete** |
+| **QOL03 — 📓 Custom image-backed dialogue panels** | 17 | — | Active — visual certification pending |
 | **QOL04 — ✍️ Inline style-span authoring foundation** | 17 | — | Planned |
 | **QOL05 — 🔥 Per-word dynamic flair library** | 14 | QOL04 | Planned |
 | **QOL06 — 🕊️ Independent ambient-scene actor infrastructure** | 13 | — | Planned |
 | **QOL07 — 🚶 Autonomous ambient motion and flipbook frames** | 9 | QOL06 | Planned |
 | **QOL08 — 🧪 Integration, authoring examples, final certification** | 5 | QOL01, QOL02, QOL03, QOL04, QOL05, QOL06, QOL07 | Planned |
-| **Total** | **100** | | **0 verified** |
+| **Total** | **100** | | **25 verified** |
 
 ### Delivery order
 
@@ -172,4 +178,4 @@ The final gate includes Xvfb renders at **946×511, 955×520, 800×600, 900×700
 
 **Source of truth:** [qol-roadmap.json](qol-roadmap.json). Prior completed phases: [MVP](roadmap.json) · [Polish](polish-roadmap.json) · [Visual Experience](visual-experience-roadmap.json).
 
-**Next:** QOL01 — searchable installed-font browser. No implementation has begun.
+**Next:** QOL03 — image-backed dialogue panel graphical acceptance and merged-main certification. [Draft PR #17](https://github.com/sguzman/vesper/pull/17); no QOL03 credit yet.
