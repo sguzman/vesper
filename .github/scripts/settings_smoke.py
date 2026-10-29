@@ -152,11 +152,11 @@ def main() -> None:
                     assert font["format_version"] == 1
 
                     # Click a real Bevy settings control with the pointer.
-                    # The first opacity row is centered near x=600, y=145
-                    # in the 1280x720 settings panel.
+                    # With the extra delay row, the settings panel is taller:
+                    # the first opacity row is now near x=600, y=128.
                     if game == "little-lantern":
                         previous_opacity = font["panel_opacity"]
-                        run("xdotool", "mousemove", "--window", win, "600", "145")
+                        run("xdotool", "mousemove", "--window", win, "600", "128")
                         time.sleep(.4)
                         run("xdotool", "click", "1")
                         mouse_change = wait_prefs(prefs_path, lambda p:
