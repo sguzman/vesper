@@ -22,6 +22,17 @@ cargo run --locked -p vesper-player -- examples/clockwork-moon --watch
 
 Controls: **Enter/Space** advance dialogue, **Up/Down** move through choices, **1–9** choose directly, **F5** save, **F9** load, **R** restart after the ending, **P** pause (P again resumes), **M** main menu, **Escape** quit. At the ending, a visible menu lets you select **Play again**, **Main menu**, or **Quit** using Up/Down and Enter or keys 1–3. Menus use Up/Down, Enter or number keys 1–3. Pressing Space while paused does not advance dialogue. Saves use a separate game ID for each example and do not modify authoring files.
 
+## The Post Office at the Edge of Dawn — original showcase
+
+Path: `examples/dawn-post-office/`. A 12–20-minute original story of Nima the moth courier delivering a letter addressed to a morning that has not happened yet. **27 story paths**, **three endings**, seven illustrated locations, three characters with nine transparent expressions, four musical cues and three sound effects. All original artwork/audio generated for this game with the checked-in `tools/generate_assets.py` authoring utility; **no image generation or external services at runtime**. The visual presentation demonstrates themed cinematic backgrounds, actor staging and expressions, moonlit atmosphere, choice highlights, dialogue pacing, player appearance settings, reading history, save/load and reduced motion.
+
+```sh
+cargo run --locked -p vesper-cli -- check-game examples/dawn-post-office
+cargo run --locked -p vesper-player -- examples/dawn-post-office
+```
+
+The portable Linux archive includes the new `./vesper/dawn` launcher, usable from any directory without Cargo/Rust on the target machine. [Game-specific story, provenance and generation guide](dawn-post-office/README.md).
+
 ## Verification
 
 Run without the graphics stack:

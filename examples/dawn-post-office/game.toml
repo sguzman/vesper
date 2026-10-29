@@ -1,0 +1,77 @@
+format_version = 1
+id = "dawn-post-office"
+title = "The Post Office at the Edge of Dawn"
+story = "scripts/story.vn"
+entry = "sorting_room"
+theme = "styles/dawn.toml"
+
+[backgrounds]
+sorting_room = "assets/backgrounds/sorting-room.png"
+sky_garden = "assets/backgrounds/sky-garden.png"
+teacup_observatory = "assets/backgrounds/teacup-observatory.png"
+cloud_quarter = "assets/backgrounds/cloud-quarter.png"
+bell_roof = "assets/backgrounds/bell-roof.png"
+horizon_gate = "assets/backgrounds/horizon-gate.png"
+sunrise = "assets/backgrounds/sunrise.png"
+
+[music]
+morning_sorting = "assets/audio/morning-sorting.wav"
+hanging_gardens = "assets/audio/hanging-gardens.wav"
+cloud_waltz = "assets/audio/cloud-waltz.wav"
+first_light = "assets/audio/first-light.wav"
+
+[sounds]
+brass_bell = "assets/audio/brass-bell.wav"
+teacup = "assets/audio/teacup.wav"
+wing_flutter = "assets/audio/wing-flutter.wav"
+
+[characters.nima.expressions]
+hopeful = "assets/characters/nima-hopeful.png"
+curious = "assets/characters/nima-curious.png"
+brave = "assets/characters/nima-brave.png"
+
+[characters.nima.stage]
+offset_x = 0.0
+offset_y = 0.0
+scale = 0.88
+depth = 3.0
+crossfade_seconds = 0.65
+enter_seconds = 0.45
+exit_seconds = 0.38
+slide_pixels = 15.0
+idle_pixels = 2.0
+idle_period_seconds = 4.7
+
+[characters.orin.expressions]
+wry = "assets/characters/orin-wry.png"
+worried = "assets/characters/orin-worried.png"
+warm = "assets/characters/orin-warm.png"
+
+[characters.orin.stage]
+offset_x = 15.0
+offset_y = 2.0
+scale = 0.94
+depth = 2.0
+crossfade_seconds = 0.65
+enter_seconds = 0.55
+exit_seconds = 0.42
+slide_pixels = 12.0
+idle_pixels = 1.5
+idle_period_seconds = 6.0
+
+[characters.kettle.expressions]
+sleepy = "assets/characters/kettle-sleepy.png"
+patient = "assets/characters/kettle-patient.png"
+sparkle = "assets/characters/kettle-sparkle.png"
+
+[characters.kettle.stage]
+offset_x = -5.0
+offset_y = -10.0
+scale = 0.86
+depth = 2.5
+crossfade_seconds = 0.60
+enter_seconds = 0.45
+exit_seconds = 0.32
+slide_pixels = 10.0
+idle_pixels = 2.5
+idle_period_seconds = 5.3

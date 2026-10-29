@@ -1,0 +1,57 @@
+# Dawn Post Office: lilac predawn, ink-blue UI, copper postal brass,
+# apricot sunrise accents. Independent from the reusable player binary.
+ui_scale = 1.0
+fade_seconds = 0.6
+reveal_speed = "normal"
+
+[font]
+family = "DejaVu Sans"
+
+[panel]
+background = [0.034, 0.044, 0.10, 0.96]
+accent = [0.99, 0.72, 0.42, 1.0]
+divider = [0.77, 0.61, 0.82, 0.72]
+width_percent = 90.0
+min_height = 222.0
+padding = 18.0
+gap = 7.0
+
+[speaker]
+size = 23.0
+color = [1.0, 0.84, 0.64, 1.0]
+
+[dialogue]
+size = 24.0
+color = [0.97, 0.97, 1.0, 1.0]
+
+[choices]
+size = 22.0
+color = [0.91, 0.94, 1.0, 1.0]
+
+[hint]
+size = 15.0
+color = [0.77, 0.83, 0.94, 1.0]
+
+[cinematic]
+transition = "crossfade"
+seconds = 1.15
+through_color = [0.12, 0.08, 0.19, 1.0]
+slide_pixels = 28.0
+motion_seconds = 18.0
+motion_zoom = 1.08
+motion_pan = [0.012, -0.006]
+
+[atmosphere]
+preset = "moonlit"
+seed = 23711
+count = 10
+speed = 5.0
+radius = 2.0
+opacity = 0.11
+color = [0.96, 0.82, 1.0, 1.0]
+
+[feedback]
+focus_seconds = 0.17
+confirm_seconds = 0.16
+cue_opacity = 0.36
+cue_color = [1.0, 0.76, 0.42, 1.0]

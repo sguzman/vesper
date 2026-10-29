@@ -53,5 +53,14 @@ exec "$here/vesper-player" "$here/examples/clockwork-moon" "$@"
 MOON
   chmod 755 "$tmp/vesper/moon"
 fi
+if [[ -d "$tmp/vesper/examples/dawn-post-office" ]]; then
+  cat > "$tmp/vesper/dawn" <<'DAWN'
+#!/usr/bin/env sh
+set -eu
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec "$here/vesper-player" "$here/examples/dawn-post-office" "$@"
+DAWN
+  chmod 755 "$tmp/vesper/dawn"
+fi
 tar --owner=0 --group=0 --numeric-owner -czf "$output" -C "$tmp" vesper
 echo "Created Linux bundle: $output"
