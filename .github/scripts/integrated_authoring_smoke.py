@@ -165,8 +165,10 @@ def run_case(name, *, font=None, contrast=False, reduced=False, auto=False):
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     normal = run_case("normal")
-    serif = run_case("serif", font="serif", reduced=True)
-    mono = run_case("monospace", font="monospace", reduced=True)
+    # Real installed families are required for visual discrimination.
+    # Generic aliases may resolve to the same fallback on headless runners.
+    serif = run_case("serif", font="DejaVu Serif", reduced=True)
+    mono = run_case("monospace", font="DejaVu Sans Mono", reduced=True)
     # Compare only the notebook dialogue region while both animations freeze.
     serif_words = crop(serif, OUT / "serif-body.png", "930x145+170+438")
     mono_words = crop(mono, OUT / "monospace-body.png", "930x145+170+438")
