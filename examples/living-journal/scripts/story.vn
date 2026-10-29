@@ -1,0 +1,17 @@
+# Every image, effect, animation and scene is authored outside Rust.
+@scene meadow
+background sunrise
+panel notebook
+"Dear diary: [[fx=ember]]embers[[/fx]] lit the sky, [[fx=shadow]]shadows[[/fx]] covered the path, and [[fx=shimmer]]starlight[[/fx]] crossed the page."
+"Outside this illustrated journal, a walker, a bird, and a plane move on their own."
+ambient hide bird
+"The bird vanished behind the clouds. The other two actors keep moving."
+ambient show bird
+"Now the bird returns, and the story remains readable. Buenas noches, おやすみ."
+* "Turn the journal page" -> last_page
+* "Continue watching the meadow" -> meadow
+
+@scene last_page
+panel banner
+"Last page: the diary turns into a letter, while [[fx=ember]]fire[[/fx]] and [[fx=shadow]]night[[/fx]] meet beyond the window."
+"The End."

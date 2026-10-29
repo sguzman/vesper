@@ -1,0 +1,59 @@
+format_version = 1
+id = "living-journal"
+title = "The Living Journal"
+story = "scripts/story.vn"
+entry = "meadow"
+theme = "styles/journal.toml"
+
+[backgrounds]
+sunrise = "assets/sunrise.png"
+
+[panel_skins.notebook]
+image = "assets/panels/notebook.png"
+insets = [160.0, 35.0, 26.0, 24.0]
+slice_border = 26.0
+
+[panel_skins.banner]
+image = "assets/panels/banner.png"
+insets = [25.0, 25.0, 20.0, 20.0]
+slice_border = 22.0
+
+[ambient_actors.walker]
+image = "assets/tess-curious.png"
+anchor = [0.15, 0.73]
+scale = 1.5
+opacity = 1.0
+depth = 2.0
+start_phase_seconds = 0.0
+[ambient_actors.walker.motion]
+waypoints = [[0.15, 0.73], [0.69, 0.73]]
+period_seconds = 6.0
+mode = "ping_pong"
+flip_on_reverse = true
+frames = ["assets/tess-curious.png", "assets/tess-determined.png"]
+frame_fps = 2.0
+
+[ambient_actors.bird]
+image = "assets/bird.png"
+anchor = [0.11, 0.25]
+scale = 1.9
+opacity = 1.0
+depth = 3.0
+start_phase_seconds = 1.2
+[ambient_actors.bird.motion]
+waypoints = [[0.11, 0.25], [0.48, 0.16], [0.86, 0.30]]
+period_seconds = 5.0
+mode = "loop"
+flip_on_reverse = true
+
+[ambient_actors.plane]
+image = "assets/plane.png"
+anchor = [0.05, 0.11]
+scale = 1.5
+opacity = 1.0
+depth = 1.0
+start_phase_seconds = 0.0
+[ambient_actors.plane.motion]
+waypoints = [[0.05, 0.11], [0.95, 0.13]]
+period_seconds = 5.5
+mode = "once"
