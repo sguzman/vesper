@@ -41,8 +41,10 @@ pub fn discover(mut session: ResMut<Session>, cx: ResMut<FontCx>) {
         .filter(|name| safe_family(name))
         .map(ToOwned::to_owned)
         .collect();
-    families.sort_unstable_by_key(|name| name.to_lowercase());
-    families.dedup_by(|a, b| a.eq_ignore_ascii_case(b));
+    // Plain lexical sorting also matches the allocation-free binary search
+    // used by effective_theme when resolving a persisted family name.
+    families.sort_unstable();
+    families.dedup();
     if families.len() > MAX_FAMILIES {
         warn!("Vesper font catalog truncated to {MAX_FAMILIES} families");
         families.truncate(MAX_FAMILIES);
@@ -289,9 +291,9 @@ pub fn pointer(
 pub fn sync(
     mut state: ResMut<State>, search: Query<&EditableText, With<Search>>,
     mut rows: Query<(&Row, &mut Node, &mut BackgroundColor)>,
-    mut labels: Query<(&RowLabel, &mut Text)>,
-    mut specimen: Query<(&mut Text, &mut TextFont), With<Specimen>>,
-    mut counts: Query<&mut Text, (With<Count>, Without<Specimen>)>,
+    mut labels: Query<(&RowLabel, &mut Text), (With<RowLabel>, Without<Specimen>, Without<Count>)>,
+    mut specimen: Query<(&mut Text, &mut TextFont), (With<Specimen>, Without<RowLabel>, Without<Count>)>,
+    mut counts: Query<&mut Text, (With<Count>, Without<Specimen>, Without<RowLabel>)>,
     session: Res<Session>,
 ) {
     if state.overlay.is_none() { return; }
