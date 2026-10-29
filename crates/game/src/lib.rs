@@ -462,11 +462,32 @@ impl Default for PanelStyle {
 pub struct InlineTextStyle {
     pub color: [f32; 4],
     pub font_family: Option<String>,
+    /// Entirely visual; preserves glyph shapes, position and reveal offsets.
+    pub effect: InlineEffect,
+    /// Fractional brightness modulation. Never exceeds 0.35.
+    pub effect_amplitude: f32,
+    /// Stable periodic animation; zero means an authored static effect.
+    pub effect_rate_hz: f32,
+}
+
+/// Three GPU-independent time-varying visual flairs and a static fallback.
+/// Dynamic effects change only TextColor, never layout/shaping or text bytes.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum InlineEffect {
+    #[default]
+    Static,
+    Ember,
+    Shadow,
+    Shimmer,
 }
 
 impl Default for InlineTextStyle {
     fn default() -> Self {
-        Self { color: [1.0, 0.76, 0.38, 1.0], font_family: None }
+        Self {
+            color: [1.0, 0.76, 0.38, 1.0], font_family: None,
+            effect: InlineEffect::Static, effect_amplitude: 0.18, effect_rate_hz: 1.5,
+        }
     }
 }
 
@@ -555,8 +576,12 @@ impl Theme {
             if !id_valid(name) || !color_valid(style.color)
                 || style.font_family.as_ref()
                     .is_some_and(|family| family.trim().is_empty() || family.len() > 128)
+                || !style.effect_amplitude.is_finite()
+                || !(0.0..=0.35).contains(&style.effect_amplitude)
+                || !style.effect_rate_hz.is_finite()
+                || !(0.0..=6.0).contains(&style.effect_rate_hz)
             {
-                return Err(format!("theme.inline_styles.{name} has invalid name, color or font"));
+                return Err(format!("theme.inline_styles.{name} has invalid name, color, font or effect parameters"));
             }
         }
         if panel.skin.as_ref().is_some_and(|id| id.is_empty() || !id_valid(id)) {
@@ -1170,6 +1195,35 @@ start_phase_seconds = 2.5
         )).collect::<Vec<_>>().join("");
         fs::write(&file, format!("{baseline}{many}")).unwrap();
         assert!(Game::load(&fixture.root).unwrap_err().contains("count"));
+    }
+
+
+
+    #[test]
+    fn inline_effects_validate_static_and_bounded_dynamic_parameters() {
+        let sample: Theme = toml::from_str(
+            "[inline_styles.ember]\neffect = \"ember\"\neffect_amplitude = 0.28\neffect_rate_hz = 4.0\n\
+             [inline_styles.shadow]\neffect = \"shadow\"\neffect_rate_hz = 0.75\n\
+             [inline_styles.wave]\neffect = \"shimmer\"\neffect_amplitude = 0.10\n"
+        ).unwrap();
+        assert_eq!(sample.inline_styles["ember"].effect, InlineEffect::Ember);
+        assert_eq!(sample.inline_styles["shadow"].effect, InlineEffect::Shadow);
+        assert_eq!(sample.inline_styles["wave"].effect, InlineEffect::Shimmer);
+        assert!(sample.validate().is_ok());
+        let legacy: Theme = toml::from_str("[inline_styles.legacy]\ncolor = [1.0,0.0,0.0,1.0]").unwrap();
+        assert_eq!(legacy.inline_styles["legacy"].effect, InlineEffect::Static);
+        assert!(legacy.validate().is_ok());
+        for invalid in [
+            "[inline_styles.ember]\neffect = \"wavefront\"",
+            "[inline_styles.ember]\neffect_amplitude = -0.1",
+            "[inline_styles.ember]\neffect_amplitude = 0.9",
+            "[inline_styles.ember]\neffect_rate_hz = -1.0",
+            "[inline_styles.ember]\neffect_rate_hz = 10.0",
+        ] {
+            if let Ok(theme) = toml::from_str::<Theme>(invalid) {
+                assert!(theme.validate().is_err(), "accepted: {invalid}");
+            }
+        }
     }
 
 

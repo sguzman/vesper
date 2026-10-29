@@ -219,6 +219,117 @@ pub fn sync_spans(
     *previous = Some(marker);
 }
 
+/// A fixed-cost color-only flourish. It never changes opacity of the panel,
+/// glyph geometry, the readable source string, or span/grapheme boundaries.
+/// Disabled for high contrast; reduced motion freezes the effect at t=0.
+pub fn effect_palette(
+    base: [f32; 4], effect: vesper_game::InlineEffect,
+    amplitude: f32, rate_hz: f32, seconds: f32, index: usize,
+) -> [f32; 4] {
+    use std::f32::consts::TAU;
+    use vesper_game::InlineEffect;
+    if effect == InlineEffect::Static || amplitude == 0.0 || rate_hz == 0.0 {
+        return base;
+    }
+    let phase = seconds.max(0.0) * rate_hz * TAU + index as f32 * 1.618;
+    let (a, b) = (phase.sin(), (phase * 2.7 + 0.83).sin());
+    let mut color = base;
+    match effect {
+        InlineEffect::Ember => {
+            // Warm, nonrandom double-frequency flame shimmer.
+            let flicker = (a * 0.72 + b * 0.28) * amplitude;
+            color[0] = (base[0] * (1.0 + flicker)).clamp(0.0, 1.0);
+            color[1] = (base[1] * (1.0 + flicker * 0.75)).clamp(0.0, 1.0);
+            color[2] = (base[2] * (1.0 - flicker * 0.35)).clamp(0.0, 1.0);
+        }
+        InlineEffect::Shadow => {
+            // Gentle dimming, not invisible text. Preserve authored alpha.
+            let dim = amplitude * (0.5 + a * 0.5);
+            for channel in color.iter_mut().take(3) {
+                *channel = (*channel * (1.0 - dim)).clamp(0.0, 1.0);
+            }
+        }
+        InlineEffect::Shimmer => {
+            // Hue-tinted periodic ripple along a word; no text movement/reflow.
+            let sweep = amplitude * a;
+            color[0] = (base[0] * (1.0 + sweep * 0.45)).clamp(0.0, 1.0);
+            color[1] = (base[1] * (1.0 - sweep * 0.35)).clamp(0.0, 1.0);
+            color[2] = (base[2] * (1.0 + sweep)).clamp(0.0, 1.0);
+        }
+        InlineEffect::Static => {},
+    }
+    color
+}
+
+/// Only authored dynamic TextColor values are updated. No reads from disk,
+/// no allocations or string shaping and no changes to Text/TextFont/Node.
+/// At most 64 authored style spans are traversed per player update.
+pub fn animate_inline_effects(
+    time: Res<Time>,
+    session: Res<Session>,
+    state: Res<ReadingState>,
+    mut spans: Query<(&InlineUiSpan, &mut TextColor)>,
+) {
+    let styles = &session.game.theme.inline_styles;
+    if state.segments.is_empty()
+        || !styles.values().any(|style| style.effect != vesper_game::InlineEffect::Static)
+    {
+        return;
+    }
+    // Reduced motion freezes both the periodic phase and the text's appearance.
+    // High contrast always takes precedence and restores the normal text color
+    // in sync_spans whenever the setting changes.
+    if session.preferences.high_contrast.unwrap_or(false) { return; }
+    let elapsed = if session.preferences.reduced_motion.unwrap_or(false) {
+        0.0
+    } else {
+        time.elapsed_secs()
+    };
+    for (node, mut tint) in &mut spans {
+        if node.line_id != state.line_id { continue; }
+        let Some(segment) = state.segments.get(node.index) else { continue };
+        let Some(style) = segment.style.as_ref().and_then(|name| styles.get(name)) else { continue };
+        if style.effect == vesper_game::InlineEffect::Static { continue; }
+        let value = effect_palette(style.color, style.effect,
+            style.effect_amplitude, style.effect_rate_hz, elapsed, node.index);
+        let target = text_color(value);
+        if *tint != target { *tint = target; }
+    }
+}
+
+#[cfg(test)]
+mod effect_tests {
+    use super::*;
+    use vesper_game::InlineEffect;
+
+    #[test]
+    fn dynamic_colors_change_with_time_and_stay_bounded_without_reflow() {
+        let base = [0.71, 0.58, 0.32, 0.8];
+        for effect in [InlineEffect::Ember, InlineEffect::Shadow, InlineEffect::Shimmer] {
+            let first = effect_palette(base, effect, 0.25, 1.0, 0.0, 0);
+            let next = effect_palette(base, effect, 0.25, 1.0, 0.23, 0);
+            assert_ne!(first, next, "{effect:?} never animated");
+            for color in [first, next] {
+                assert!(color.iter().all(|v| v.is_finite() && (0.0..=1.0).contains(v)));
+                assert_eq!(color[3], base[3], "effect must preserve text opacity");
+            }
+            assert_eq!(effect_palette(base, effect, 0.25, 1.0, 0.0, 0),
+                first, "same frame and author settings must be deterministic");
+        }
+    }
+
+    #[test]
+    fn zero_amplitude_zero_rate_and_static_preserve_author_colors() {
+        let base = [0.6, 0.7, 0.8, 0.9];
+        for effect in [InlineEffect::Static, InlineEffect::Ember, InlineEffect::Shadow,
+                       InlineEffect::Shimmer] {
+            assert_eq!(effect_palette(base, effect, 0.0, 4.0, 7.0, 4), base);
+            assert_eq!(effect_palette(base, effect, 0.2, 0.0, 7.0, 4), base);
+        }
+        assert_eq!(effect_palette(base, InlineEffect::Static, 0.25, 4.0, 7.0, 4), base);
+    }
+}
+
 /// Guarded by preference validation; deterministic for simulated-clock tests.
 fn auto_delay_elapsed(elapsed: f32, delay: f32) -> bool {
     elapsed >= delay && delay.is_finite() && (0.5..=20.0).contains(&delay)

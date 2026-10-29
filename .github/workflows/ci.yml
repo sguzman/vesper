@@ -31,7 +31,8 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/panel-showcase
           cargo run --locked -p vesper-cli -- check-game examples/inline-words
           cargo run --locked -p vesper-cli -- check-game examples/ambient-showcase
-          cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
+          cargo run --locked -p vesper-cli -- check-game examples/word-effects
+cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
       - name: Verify all 23 original Dawn assets and their manifest hashes
         run: python3 .github/scripts/dawn_assets_check.py
       - name: Verify the external PCM audio assets
@@ -77,6 +78,16 @@ jobs:
         run: cargo build --locked -p vesper-player
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
+      - name: Verify QOL05 dynamic word effects, high contrast and reduced motion
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/word_effects_smoke.py
+      - name: Preserve QOL05 dynamic word screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-word-effects
+          path: /tmp/vesper-word-effects-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verify QOL04 inline word styles at six sizes and high contrast
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/inline_spans_smoke.py
       - name: Preserve QOL04 inline typography screenshots
