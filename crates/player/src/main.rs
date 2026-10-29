@@ -588,6 +588,7 @@ fn main() {
                 choices::sync_rows, choices::sync_row_style,
                 choices::scroll_selected, choices::sync_viewport,
                 choices::reserve_row_height, readout::tick, readout::sync_spans,
+                readout::animate_inline_effects,
                 cinematics::tick, actors::tick, atmosphere::tick,
             ).chain(),
             (
