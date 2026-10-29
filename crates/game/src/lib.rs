@@ -811,6 +811,50 @@ room = "assets/room.png"
         }
     }
 
+    #[test]
+    fn skin_validation_scene_selection_and_default_are_safe() {
+        let fixture = Fixture::new("panel-skins");
+        let manifest = fixture.root.join("game.toml");
+        let base = fs::read_to_string(&manifest).unwrap();
+        let panel = "\n[panel_skins.notebook]\nimage = \"assets/room.png\"\ninsets = [36.0, 24.0, 42.0, 26.0]\nslice_border = 30.0\n";
+        fs::write(&manifest, format!("{base}{panel}")).unwrap();
+        let loaded = Game::load(&fixture.root).unwrap();
+        assert_eq!(loaded.panel_skin("notebook").unwrap().insets[0], 36.0);
+        fs::write(fixture.root.join("scripts/story.vn"),
+            "@scene opening\npanel notebook\n\"Writing\"\npanel default\n\"Plain\"\n").unwrap();
+        assert!(Game::load(&fixture.root).is_ok());
+        fs::write(fixture.root.join("scripts/story.vn"),
+            "@scene opening\npanel missing\n").unwrap();
+        assert!(Game::load(&fixture.root).unwrap_err().contains("panel skin 'missing'"));
+        fs::write(fixture.root.join("scripts/story.vn"),
+            "@scene opening\npanel notebook\n").unwrap();
+        for bad in ["../escape.png", "/etc/hosts"] {
+            let invalid = panel.replace("assets/room.png", bad);
+            fs::write(&manifest, format!("{base}{invalid}")).unwrap();
+            assert!(Game::load(&fixture.root).is_err(), "unsafe skin {bad}");
+        }
+        for bad in ["slice_border = -1.0", "slice_border = 700.0",
+                    "insets = [-1.0, 0.0, 0.0, 0.0]"] {
+            let invalid = if bad.starts_with("insets") {
+                panel.replace("insets = [36.0, 24.0, 42.0, 26.0]", bad)
+            } else {
+                panel.replace("slice_border = 30.0", bad)
+            };
+            fs::write(&manifest, format!("{base}{invalid}")).unwrap();
+            assert!(Game::load(&fixture.root).is_err(), "accepted invalid {bad}");
+        }
+        fs::write(&manifest, format!("{base}{panel}")).unwrap();
+        let theme = fixture.root.join("styles/diegetic.toml");
+        fs::create_dir_all(theme.parent().unwrap()).unwrap();
+        fs::write(&theme, "[panel]\nskin = \"notebook\"\n").unwrap();
+        let with_theme = base.replace("entry = \"opening\"",
+            "entry = \"opening\"\ntheme = \"styles/diegetic.toml\"");
+        fs::write(&manifest, format!("{with_theme}{panel}")).unwrap();
+        assert!(Game::load(&fixture.root).is_ok());
+        fs::write(&theme, "[panel]\nskin = \"missing\"\n").unwrap();
+        assert!(Game::load(&fixture.root).unwrap_err().contains("unknown skin"));
+    }
+
     #[cfg(unix)]
     #[test]
     fn rejects_symlinks_outside_game_folder() {

@@ -779,6 +779,23 @@ end
     }
 
     #[test]
+    fn optional_scene_panel_commands_are_strict_and_stay_external() {
+        let story = Story::parse(
+            "@scene a\npanel notebook\n\"Write here.\"\npanel default\n\"Reset.\"\n",
+        ).unwrap();
+        let mut machine = Machine::new(&story, "a").unwrap();
+        assert_eq!(machine.advance().unwrap(),
+            Output::Visual(Visual::Panel("notebook".into())));
+        assert!(matches!(machine.advance().unwrap(), Output::Dialogue { .. }));
+        assert_eq!(machine.advance().unwrap(),
+            Output::Visual(Visual::Panel("default".into())));
+        assert_eq!(machine.advance().unwrap(), Output::Dialogue {
+            speaker: None, text: "Reset.".into(),
+        });
+        assert!(Story::parse("@scene a\npanel bad/name").is_err());
+    }
+
+    #[test]
     fn visuals_and_unicode_remain_external_data() {
         let story = Story::parse("@scene a\nbackground room\nshow elena happy at center\n\"日本語 مرحبا\"").unwrap();
         let mut machine = Machine::new(&story, "a").unwrap();

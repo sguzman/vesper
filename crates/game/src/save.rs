@@ -182,6 +182,19 @@ mod tests {
     }
 
     #[test]
+    fn old_save_schema_without_skin_stays_compatible() {
+        let fixture = Fixture::new();
+        let game = Game::load(&fixture.0).unwrap();
+        let machine = Machine::new(&game.story, &game.manifest.entry).unwrap();
+        let current = SaveData::new(&game, &machine, PresentationState::default());
+        let json = String::from_utf8(current.encode().unwrap()).unwrap();
+        assert!(json.contains("panel_skin"));
+        let old = json.replace("    \"panel_skin\": null,\n", "");
+        let decoded = SaveData::decode(old.as_bytes()).unwrap();
+        assert_eq!(decoded.presentation.panel_skin, None);
+    }
+
+    #[test]
     fn rejects_incompatible_or_invalid_saves() {
         let fixture = Fixture::new();
         let game = Game::load(&fixture.0).unwrap();
