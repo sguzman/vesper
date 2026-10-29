@@ -1,0 +1,10 @@
+# Inline word styles are optional and authored entirely outside Rust.
+[dialogue]
+size = 30.0
+color = [0.96, 0.96, 0.96, 1.0]
+
+[inline_styles.ember]
+color = [1.0, 0.43, 0.12, 1.0]
+
+[inline_styles.shadow]
+color = [0.34, 0.64, 0.94, 1.0]
