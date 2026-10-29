@@ -404,9 +404,9 @@ fn story_text_node(slot: &StoryText) -> Node {
 }
 
 /// The footer separator is its own flex child. Reserve deliberate space
- // *above* it: the shaped bottom glyphs can otherwise touch the 1px rule,
- // especially at fractional UI scales and during progressive text reveal.
- // This belongs in the common player, not in an individual story's theme.
+/// *above* it: the shaped bottom glyphs can otherwise touch the 1px rule,
+/// especially at fractional UI scales and during progressive text reveal.
+/// This belongs in the common player, not in an individual story's theme.
 fn story_separator_node() -> Node {
     Node {
         width: percent(100.0),
