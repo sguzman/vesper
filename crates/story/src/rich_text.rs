@@ -13,10 +13,11 @@
 //! least one full extended grapheme cluster.
 
 use unicode_segmentation::UnicodeSegmentation;
+use serde::{Serialize, Deserialize};
 
 /// Half-open UTF-8 byte range in \`StyledText::plain\`, always aligned to
 /// extended grapheme boundaries. Styling must never affect source text.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InlineSpan {
     pub style: String,
     pub start: usize,

@@ -772,7 +772,8 @@ fn finish_story(session: &mut Session, message: String) -> Screen {
 fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetServer) -> Screen {
     for _ in 0..128 {
         match session.machine.advance() {
-            Ok(Output::Dialogue { speaker, text }) => {
+            Ok(Output::Dialogue { speaker, text }
+                | Output::RichDialogue { speaker, text, .. }) => {
                 if env::var_os("VESPER_TRACE_SCENES").is_some() {
                     info!("Vesper scene dialogue: {}", session.machine.scene());
                 }
@@ -1554,7 +1555,8 @@ fn poll_completed_io(
                 session.finished = matches!(last, Some(Output::End));
                 session.ending_selection = 0;
                 let screen = match last {
-                    Some(Output::Dialogue { speaker, text }) =>
+                    Some(Output::Dialogue { speaker, text }
+                        | Output::RichDialogue { speaker, text, .. }) =>
                         Screen::normal(speaker.unwrap_or_default(), text),
                     Some(Output::Choices(choices)) =>
                         Screen::choices(&choices, session.presentation.selected_choice),

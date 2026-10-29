@@ -175,7 +175,8 @@ pub fn apply_reload(
     let font = text_font(&theme, &assets);
     let last = session.machine.last_output().cloned();
     let screen = match last {
-        Some(Output::Dialogue { speaker, text }) =>
+        Some(Output::Dialogue { speaker, text }
+            | Output::RichDialogue { speaker, text, .. }) =>
             Screen::normal(speaker.unwrap_or_default(), text),
         Some(Output::Choices(choices)) =>
             Screen::choices(&choices, session.presentation.selected_choice),

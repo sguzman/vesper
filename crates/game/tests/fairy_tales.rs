@@ -37,7 +37,7 @@ fn play(game: &Game, decisions: &[usize]) -> ResultState {
     for _ in 0..512 {
         trace.scenes.insert(machine.scene().to_owned());
         match machine.advance().expect("runtime story must execute without an error") {
-            Output::Dialogue { text, .. } => {
+            Output::Dialogue { text, .. } | Output::RichDialogue { text, .. } => {
                 assert!(!text.trim().is_empty());
                 trace.dialogues.push(text);
             }
