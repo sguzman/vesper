@@ -83,7 +83,7 @@ pub enum AmbientMotionMode {
 }
 
 /// Deterministic, linear, clock-driven background motion. No physics engine.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct AmbientMotion {
     /// Between 2 and 16 control points, normalized into the stage.

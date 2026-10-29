@@ -29,6 +29,9 @@ pub struct PresentationState {
     /// Legacy format-version 1 saves have no key and retain manifest defaults.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub ambient_visibility: BTreeMap<String, bool>,
+    /// Optional normalized phase for moving actors; missing in legacy saves.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub ambient_motion_elapsed: BTreeMap<String, f32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,6 +68,14 @@ impl SaveData {
         }
         if let Some(id) = &self.presentation.panel_skin {
             game.panel_skin(id)?;
+        }
+        for (id, elapsed) in &self.presentation.ambient_motion_elapsed {
+            if !elapsed.is_finite() || !(0.0..=240.0).contains(elapsed)
+                || !game.manifest.ambient_actors.get(id)
+                    .is_some_and(|actor| actor.motion.is_some())
+            {
+                return Err(format!("invalid saved ambient motion clock '{id}'"));
+            }
         }
         for id in self.presentation.ambient_visibility.keys() {
             if !game.manifest.ambient_actors.contains_key(id) {

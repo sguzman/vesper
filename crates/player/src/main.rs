@@ -596,7 +596,7 @@ fn main() {
                 reserve_story_text_height, trigger_save_load,
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
-                ambient::sync,
+                ambient::sync, ambient::tick_motion,
             ).chain(),
         ).chain());
     if let Some(inbox) = inbox {
@@ -1400,6 +1400,7 @@ fn trigger_save_load(
     session: Res<Session>,
     completed: Res<CompletedIo>,
     workers: Res<IoWorkers>,
+    motions: Query<(&ambient::AmbientVisual, &ambient::MotionClock)>,
     mut pending: ResMut<save_slots::Pending>,
     slot_ui: Res<save_slots::SaveUi>,
 ) {
@@ -1444,7 +1445,7 @@ fn trigger_save_load(
                 Err(error)=>{error!("Vesper slot save path error: {error}");return;}
             };
             let save=SaveData::new(&session.game,&session.machine,
-                session.presentation.clone());
+                ambient::snapshot_presentation(&session, &motions));
             std::thread::spawn(move || {
                 let result=save.write_atomic(&path);
                 let succeeded=result.is_ok();
@@ -1482,7 +1483,7 @@ fn trigger_save_load(
             };
             if quick_save {
                 let save=SaveData::new(&session.game,&session.machine,
-                    session.presentation.clone());
+                    ambient::snapshot_presentation(&session, &motions));
                 std::thread::spawn(move || {
                     let result=save.write_atomic(&path);
                     if let Ok(mut messages)=queue.lock() {
@@ -1584,6 +1585,7 @@ fn poll_completed_io(
                 session.presentation.selected_choice = state.selected_choice;
                 session.presentation.panel_skin = state.panel_skin;
                 session.presentation.ambient_visibility = state.ambient_visibility;
+                session.presentation.ambient_motion_elapsed = state.ambient_motion_elapsed;
                 if let Some(id) = state.music {
                     if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Music(id)
