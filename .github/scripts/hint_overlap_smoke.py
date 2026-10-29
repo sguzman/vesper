@@ -56,13 +56,30 @@ def sample(game: Path, size: tuple[int, int], path: Path, choices: Path) -> None
             for key in ("Return", "Return", "Return"):
                 run("xdotool", "key", "--clearmodifiers", key)
                 time.sleep(.35)
-            # Select the ninth long choice so the scroll region has to keep
-            # option glyphs clear of the hint in a compact window.
+            # Take *all four variant masks* from the same deterministic
+            # initial selection and scroll offset. Previously the rapid eight
+            # Down presses occasionally landed on different rows under slow
+            # software rendering; comparing those offset screenshots created
+            # fake glyph collisions (e.g. 1920x1080 on main).
+            time.sleep(.65)
+            run("import", "-window", win, str(choices))
+            # Verify scrolling separately, without subtracting screenshots
+            # whose selected row may differ across independent launches.
             for _ in range(8):
                 run("xdotool", "key", "--clearmodifiers", "Down")
-                time.sleep(.10)
-            time.sleep(.55)
-            run("import", "-window", win, str(choices))
+                time.sleep(.20)
+            time.sleep(.75)
+            selected_last = choices.with_name(
+                f"{choices.stem}-selected-last.png"
+            )
+            run("import", "-window", win, str(selected_last))
+            scroll_pixels = mask(
+                choices, selected_last,
+                choices.with_name(f"{choices.stem}-scroll-difference.png"),
+            )
+            assert scroll_pixels > 100, (
+                f"{size}: navigating nine long choices did not move focus/scroll"
+            )
             for key in ("1", "Return"):
                 run("xdotool", "key", "--clearmodifiers", key)
                 time.sleep(.35)
@@ -173,6 +190,12 @@ def check_choices(size: tuple[int, int], images: dict[str, Path]) -> None:
 
     top_hint, _ = vertical_bounds(hint)
     _, bottom_choice = vertical_bounds(glyph)
+    # If choice text leaks into the hint mask, fail with a precise diagnostic
+    # rather than reporting a bogus overlap. The hint is a footer in this UI.
+    assert top_hint >= int(size[1] * .55), (
+        f"{size}: hint difference mask starts at y={top_hint}; "
+        "captured variant states differ outside the footer"
+    )
     gap = top_hint - bottom_choice
     assert gap >= 5, (
         f"{size}: option glyphs end at {bottom_choice}; "
