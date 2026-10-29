@@ -163,3 +163,64 @@ fn the_clockwork_moon_explores_all_36_branch_combinations() {
     assert!(passages.iter().any(|text| text.contains("おやすみ")));
     assert!(passages.iter().any(|text| text.len() > 140));
 }
+
+
+#[test]
+fn dawn_post_office_explores_all_27_combinations_without_skipped_scenes() {
+    let game = game("dawn-post-office");
+    assert_eq!(game.manifest.backgrounds.len(), 7);
+    assert_eq!(game.manifest.characters.len(), 3);
+    assert_eq!(game.manifest.music.len(), 4);
+    assert_eq!(game.manifest.sounds.len(), 3);
+
+    let mut queue = VecDeque::from([Vec::<usize>::new()]);
+    let mut completed = 0;
+    let mut scenes = BTreeSet::new();
+    let mut backgrounds = BTreeSet::new();
+    let mut expressions = BTreeSet::new();
+    let mut music = BTreeSet::new();
+    let mut sounds = BTreeSet::new();
+    let mut endings = BTreeSet::new();
+    let mut best_path_lines = 0;
+
+    while let Some(decisions) = queue.pop_front() {
+        assert!(decisions.len() <= 3, "unexpected fourth choice");
+        match play(&game, &decisions) {
+            ResultState::MoreChoices(count) => {
+                assert_eq!(count, 3, "all three authored decisions offer three choices");
+                for selected in 0..count {
+                    let mut next = decisions.clone();
+                    next.push(selected);
+                    queue.push_back(next);
+                }
+            }
+            ResultState::End(trace) => {
+                assert_eq!(decisions.len(), 3, "premature ending");
+                assert!(trace.dialogues.len() >= 55, "showcase route is too short");
+                best_path_lines = best_path_lines.max(trace.dialogues.len());
+                for field in ["kindness", "courage", "wonder", "promise", "route"] {
+                    assert!(trace.variables.contains_key(field), "missing narrative variable {field}");
+                }
+                completed += 1;
+                scenes.extend(trace.scenes);
+                backgrounds.extend(trace.backgrounds);
+                expressions.extend(trace.expressions);
+                music.extend(trace.music);
+                sounds.extend(trace.effects);
+                endings.insert(trace.ending);
+            }
+        }
+        assert!(completed <= 27, "choice expansion exceeded intended story graph");
+    }
+
+    assert_eq!(completed, 27);
+    assert_eq!(scenes.len(), 15, "a designed scene is unreachable");
+    assert_eq!(backgrounds.len(), 7, "not all authored locations are visited");
+    assert_eq!(expressions.len(), 9, "not all generated character expressions are used");
+    assert_eq!(music.len(), 4, "not all original music tracks are used");
+    assert_eq!(sounds.len(), 3, "not all original sound effects are used");
+    assert_eq!(endings, [
+        "ending_homecoming", "ending_questions", "ending_lanterns",
+    ].into_iter().map(str::to_owned).collect());
+    assert!(best_path_lines >= 60, "showcase should have extended reading depth");
+}
