@@ -16,10 +16,10 @@
     "docs/visual-experience-roadmap.json": 100
   },
   "scope_weight": 100,
-  "verified_weight": 25,
-  "status": "active: QOL01 and QOL02 verified on merged main; QOL03 implementation and visual acceptance in progress",
-  "last_verified_commit": "6e936f036300aefa9602d974813db092bd54a925",
-  "next_milestone": "QOL03",
+  "verified_weight": 42,
+  "status": "active: QOL01, QOL02 and QOL03 verified on merged main; QOL04 integration acceptance in progress",
+  "last_verified_commit": "fe11d1cf83558fcdf63412f125ac414d3aa0b4d0",
+  "next_milestone": "QOL04",
   "rules": {
     "execution": "Implementation ongoing under the project stewardship protocol; credit only after acceptance-specific CI and merged-main certification.",
     "architecture": "Rust + Bevy 0.20; pure Rust narrative parser; external game-relative .vn/TOML/images/audio/fonts; generic engine; no game-specific Rust branches.",
@@ -106,10 +106,13 @@
         "Reject traversal/symlinks/invalid images and unsafe sizing; ship both notebook and banner examples; test wrapped dialogue and nine choices at all six certified window sizes."
       ],
       "example": "A diary's illustrated spine and page edge stay intact while the text sits inside its ruled writing area.",
-      "status": "active",
+      "status": "verified complete",
       "evidence": [
-        "Implementation in draft PR #17: https://github.com/sguzman/vesper/pull/17",
-        "Artwork, authoring example and six-size graphical smoke test committed; full CI certification pending. No points earned."
+        "PR #17 merged: https://github.com/sguzman/vesper/pull/17",
+        "Full passing PR CI narrative + Bevy: https://github.com/sguzman/vesper/actions/runs/40948246555",
+        "Full passing merged-main CI narrative + Bevy: https://github.com/sguzman/vesper/actions/runs/40951501022",
+        "Merged source commit: fe11d1cf83558fcdf63412f125ac414d3aa0b4d0",
+        "Six-size normal/high-contrast Bevy screenshots and F5/F9 return to scene-authored panel in vesper-panel-skins CI artifact."
       ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
@@ -127,8 +130,11 @@
         "Unit tests cover quoted escapes, malformed/nested markup, ZWJ emoji, combining marks, multilingual dialogue, parser validation and six-size visual layout; unmarked stories render unchanged."
       ],
       "example": "Illustrative, not finalized syntax: \"The [[fx=ember]]fire[[/fx]] is waking.\"",
-      "status": "planned",
-      "evidence": [],
+      "status": "active",
+      "evidence": [
+        "Integrated implementation under draft PR #19: https://github.com/sguzman/vesper/pull/19",
+        "Grammar, Unicode-safe spans, theme-defined colors, Bevy TextSpan rendering, F5/F9 and six-size visual checks implemented; full CI and merged-main acceptance pending; no QOL04 credit."
+      ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     },
     {
