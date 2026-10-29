@@ -74,7 +74,10 @@ mod tests {
         let m=motion(AmbientMotionMode::PingPong);
         let a=sample(&m,2.0);
         let b=sample(&m,18.0);
-        assert_eq!(a.anchor,b.anchor);
+        for (left, right) in a.anchor.into_iter().zip(b.anchor) {
+            assert!((left-right).abs() < 1.0e-6,
+                "reverse traversal should agree within f32 interpolation precision");
+        }
         assert!(!a.facing_left);
         assert!(b.facing_left);
         assert_eq!(sample(&m,10.0).anchor,[0.9,0.5]);
