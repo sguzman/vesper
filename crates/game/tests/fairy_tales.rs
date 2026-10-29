@@ -51,6 +51,11 @@ fn play(game: &Game, decisions: &[usize]) -> ResultState {
                     assert!(["left", "center", "right"].contains(&position.as_str()));
                     trace.expressions.insert(format!("{character}.{expression}"));
                 }
+                Visual::Panel(id) => {
+                    if id != "default" {
+                        game.panel_skin(&id).expect("panel event uses a declared skin");
+                    }
+                }
                 Visual::Hide(_) => {}
                 Visual::Music(id) => {
                     game.music(&id).unwrap();
