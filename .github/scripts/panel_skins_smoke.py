@@ -52,7 +52,7 @@ def shot(win: str, path: Path, width: int, height: int) -> None:
 def changed(before: Path, after: Path) -> int:
     result = call("compare", "-metric", "AE", str(before), str(after),
                   "null:", check=False)
-    match = re.match(r"^\\d+", result.stderr.strip())
+    match = re.match(r"^\d+", result.stderr.strip())
     assert match, result.stderr
     return int(match.group())
 
