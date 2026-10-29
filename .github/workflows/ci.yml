@@ -33,6 +33,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/ambient-showcase
           cargo run --locked -p vesper-cli -- check-game examples/word-effects
           cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
+          cargo run --locked -p vesper-cli -- check-game examples/living-journal
       - name: Verify all 23 original Dawn assets and their manifest hashes
         run: python3 .github/scripts/dawn_assets_check.py
       - name: Verify the external PCM audio assets
@@ -96,6 +97,16 @@ jobs:
         with:
           name: vesper-inline-spans
           path: /tmp/vesper-inline-spans-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Verify QOL08 combined reader and author features in one game
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/integrated_authoring_smoke.py
+      - name: Preserve QOL08 full example screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-integrated-qa
+          path: /tmp/vesper-integrated-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
       - name: Verify QOL07 background walker, bird and plane paths across six sizes
