@@ -8,9 +8,9 @@ The game is **entirely external to Vesper's Rust player**. Its `.vn` source, ima
 
 ## What is included
 
-- **39 scenes**, **25 choice options**, four complete endings and many persistent variable-dependent paragraphs. A graph enumerator verifies **8,748** possible walks through named branches; these are combinations of authored choices, *not* 8,748 separately authored narratives.
-- About **20,000 words across all route variants**, with roughly **11,000 words per representative playthrough**. This is a complete novella-length visual novel rather than a conventional full-length print novel.
-- **14 1280×720 scene treatments** of the bespoke high-resolution painted observatory original: warm sunset, night, storm, library close-up, distant coast, memory-city, altered lens, hidden market, first dawn, and more. They are **graded/cropped variants of one original illustration**, not 14 independent image generations.
+- **42 scenes**, **25 choice options**, four complete endings and many persistent variable-dependent paragraphs. A graph enumerator verifies **8,748** possible walks through named branches; these are combinations of authored choices, *not* 8,748 separately authored narratives.
+- About **28,000 words in editable source across all route variants**, with approximately **18,000 words per complete playthrough**. This is now a longer branching novella, still not a full-length novel. This is a complete novella-length visual novel rather than a conventional full-length print novel.
+- **15 authored 1280×720 backgrounds: the original observatory grades plus eight distinct location studies of Bellwether, a moonlit coast, aerial harbor, hidden market, enchanted name garden, archive, memory realm and shattered world. The new studies are extracted from an original concept board and are not yet full-resolution location originals.
 - **Two original AI-assisted painterly character illustrations**, each with three lighting/expression treatments on transparent PNG, and a bespoke gold/navy illuminated-manuscript dialogue frame.
 - **Seven original, procedurally synthesized ambient music cues and two original sound effects**, stored as uncompressed 16 kHz, mono PCM WAV. No pre-existing tracks or paid APIs used.
 - Live ambient light motion, character staging/idle/crossfades, cinematic transitions, reader font/auto-advance controls, save/restore, reduced-motion and high-contrast handling.
@@ -33,9 +33,9 @@ Enter/Space progresses; Up/Down or number keys choose; P pauses; P then 4 opens 
 
 ## Production media
 
-`assets/source/` preserves the original four generated image sources from this work. The **finished** game uses pre-rendered files under `assets/backgrounds/`, `assets/characters/` and `assets/panels/` and does **not** run any media generator. To reproduce the graded/cropped variants or deterministic audio offline, install Pillow and NumPy and run `python tools/build_media.py` in this game directory. This is production tooling, not a player requirement. A font file is **not** included or distributed; Vesper uses the reader's installed fonts and fallback.
+`assets/source/` preserves the original character, panel and observatory sources plus the losslessly split location concept board. The **finished** game uses pre-rendered files under `assets/backgrounds/`, `assets/characters/` and `assets/panels/` and does **not** run any media generator. To regenerate location studies offline, install Pillow and run `python tools/extract_locations.py`; `tools/build_media.py` also reconstitutes the full set with Pillow and NumPy. This is production tooling, not a player requirement. A font file is **not** included or distributed; Vesper uses the reader's installed fonts and fallback.
 
-The audio is intentionally gentle and synthetic rather than recorded orchestral music. It showcases playable audio pipelines but should not be mistaken for a professionally recorded score. The artwork is high-resolution and painterly; the scene variety is achieved primarily through composition/lighting treatments of a single generated location.
+The audio is intentionally gentle and synthetic rather than recorded orchestral music. It showcases playable audio pipelines but should not be mistaken for a professionally recorded score. The original observatory and gold/navy dialogue panel are high-resolution. The independent location paintings are first-pass concept-board exports, not yet final native-resolution illustrations.
 
 ## Verification status
 
