@@ -1,0 +1,87 @@
+format_version = 1
+id = "atlas-unwritten-skies"
+title = "The Atlas of Unwritten Skies"
+story = "scripts/story.vn"
+entry = "prologue"
+theme = "styles/atlas.toml"
+
+[backgrounds]
+observatory_evening = "assets/backgrounds/observatory_evening.png"
+observatory_close = "assets/backgrounds/observatory_close.png"
+observatory_night = "assets/backgrounds/observatory_night.png"
+observatory_dawn = "assets/backgrounds/observatory_dawn.png"
+observatory_storm = "assets/backgrounds/observatory_storm.png"
+lens_corridor = "assets/backgrounds/lens_corridor.png"
+lost_city = "assets/backgrounds/lost_city.png"
+cloud_coast = "assets/backgrounds/cloud_coast.png"
+archive_fire = "assets/backgrounds/archive_fire.png"
+name_garden = "assets/backgrounds/name_garden.png"
+undersea_lens = "assets/backgrounds/undersea_lens.png"
+hidden_market = "assets/backgrounds/hidden_market.png"
+shattered_lens = "assets/backgrounds/shattered_lens.png"
+first_morning = "assets/backgrounds/first_morning.png"
+
+[music]
+archive = "assets/audio/archive.wav"
+threshold = "assets/audio/threshold.wav"
+mystery = "assets/audio/mystery.wav"
+memory = "assets/audio/memory.wav"
+journey = "assets/audio/journey.wav"
+storm = "assets/audio/storm.wav"
+dawn = "assets/audio/dawn.wav"
+
+[sounds]
+page = "assets/audio/page.wav"
+bell = "assets/audio/bell.wav"
+
+[characters.mira.expressions]
+open = "assets/characters/mira_open.png"
+troubled = "assets/characters/mira_troubled.png"
+luminous = "assets/characters/mira_luminous.png"
+
+[characters.mira.stage]
+offset_x = -70.0
+offset_y = -15.0
+scale = 0.84
+depth = 3.0
+crossfade_seconds = 0.7
+enter_seconds = 0.7
+exit_seconds = 0.5
+slide_pixels = 25.0
+idle_pixels = 1.5
+idle_period_seconds = 5.8
+
+[characters.cael.expressions]
+steady = "assets/characters/cael_steady.png"
+wary = "assets/characters/cael_wary.png"
+resolved = "assets/characters/cael_resolved.png"
+
+[characters.cael.stage]
+offset_x = 70.0
+offset_y = -12.0
+scale = 0.88
+depth = 2.0
+crossfade_seconds = 0.65
+enter_seconds = 0.75
+exit_seconds = 0.55
+slide_pixels = 21.0
+idle_pixels = 2.0
+idle_period_seconds = 6.1
+
+[panel_skins.parchment]
+image = "assets/panels/celestial_dialogue.png"
+insets = [108.0, 70.0, 38.0, 34.0]
+slice_border = 28.0
+
+[ambient_actors.spark]
+image = "assets/ambient/spark.png"
+anchor = [0.13, 0.12]
+scale = 1.2
+opacity = 0.74
+depth = 1.8
+initially_visible = false
+start_phase_seconds = 0.0
+[ambient_actors.spark.motion]
+waypoints = [[0.14, 0.10], [0.21, 0.18], [0.29, 0.11], [0.35, 0.19]]
+period_seconds = 15.0
+mode = "ping_pong"
