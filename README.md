@@ -9,7 +9,7 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 - **[The Little Lantern](examples/little-lantern/)** — the smallest complete visual novel: a little fox, one background, two choices and a shared ending.
 - **[The Clockwork Moon](examples/clockwork-moon/)** — an extended, fully branched children's adventure with 18 scenes, 36 possible choice sequences, four endings, seven locations, music, audio cues, sprite expressions, story variables, save/load, and externally editable themes.
 - **[The Post Office at the Edge of Dawn](examples/dawn-post-office/)** — the original 12–20-minute showcase, with 27 routes, three endings, seven illustrated locations, three characters, original music and a cut-paper storybook style.
-- **[The Atlas of Unwritten Skies](examples/atlas-unwritten-skies/)** — an illustrated, 47-scene branching visual novella with four endings and original audio. It is a substantial reference game, but not yet the full-length novel described in [the expansion goal](https://github.com/sguzman/vesper/issues/29).
+- **[The Atlas of Unwritten Skies](examples/atlas-unwritten-skies/)** — an illustrated, 53-scene branching visual novella with four endings and original audio. It is a substantial reference game, but not yet the full-length novel described in [the expansion goal](https://github.com/sguzman/vesper/issues/29).
 
 These are **separate game directories**, never compiled into the engine. Run them with:
 

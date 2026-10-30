@@ -138,6 +138,94 @@ She read the paragraph twice. At the third reading she noticed a different lette
 
 Mira did not answer. She folded the letter along its old crease and put it beside the atlas, where two histories of her father could disagree in plain sight.
 
+## The Letters Never Sent
+
+The envelope lay between them, its blue wax broken and the edges of the paper worn thin by the fingers of people who had tried not to read it. Mira had expected a single confession.
+
+Now the letter seemed less like an answer than a key to a room whose existence had been deliberately concealed. She turned it toward the lamp and saw a second set of marks impressed beneath the ink. They were not visible letters.
+
+They were the pressure of letters that had been written on a page above it and then torn away.
+
+Cael found a soft piece of charcoal in the drawer where Mira kept her instruments. She asked where he had learned the technique.
+
+He said he had once traveled with a woman who repaired old documents for a living, and that she had shown him how to make hidden impressions visible without cutting the paper. He could not remember her name.
+
+He remembered that she hated when people called the work magic, because magic was what they named a skill when they did not wish to learn how it was done.
+
+They laid the envelope over a clean sheet and rubbed charcoal lightly across its surface. Words appeared in a narrow column: AsterVale, eastern passage, authorized messenger, last opportunity. Beneath them was a date and a line in the handwriting of Mira's mother.
+
+The sentence was incomplete. It began: IF THE COUNCIL FORGETS THE CHILDREN, THE CHILDREN MUST...
+
+Mira stared at the unfinished line. She had thought of her mother as a person who made tea, folded paper stars, and corrected the astronomers when their instruments contradicted the sky. She had never imagined her mother writing in the margins of Council correspondence.
+
+For seventeen years the absence of her parents had belonged to one story: her father vanished into the western storm; her mother died before Mira was old enough to understand the meaning of death.
+
+Now the paper suggested they had both been involved in a struggle the official history had never admitted existed.
+
+**Mira:** She knew something. My mother knew about the agreement.
+
+**Cael:** Perhaps she knew enough to be afraid of it.
+
+**Mira:** She didn't tell me.
+
+**Cael:** You were seven.
+
+**Mira:** That is not an answer. It is the beginning of every answer adults gave when they wanted me to stop asking.
+
+She was angry at her mother for dying before the question could be asked, angry at her father for leaving behind an apology instead of an explanation, and angry at herself for wanting the letter to restore a childhood that had never been as
+
+simple as she remembered. The anger made her hands shake. She set down the charcoal before she damaged the page.
+
+Cael moved to the window. Below the observatory, clouds passed through a valley where the Council's old maps showed open sea. He told her about the first letter he had ever carried as a courier.
+
+It had been written by a woman who wanted her brother to forgive her for leaving their family's farm. The address was nearly illegible. The ship's captain had advised him to throw the letter away.
+
+Cael had traveled an extra day to find the place, only to learn that the brother had moved to another island. He had followed the new address and arrived two weeks later with the letter crumpled and smelling of salt.
+
+The brother read it in silence, then asked whether Cael could carry a reply. The reply was only two sentences. Cael remembered the first clearly: THE DOOR IS STILL OPEN. He could not remember the second.
+
+He had been troubled by that for years, because he feared the forgotten words were the ones the sister most needed to hear.
+
+**Mira:** You did what you could. The words weren't yours to keep forever.
+
+**Cael:** I know. That is easier to say when there is a person at the other end who can remember them.
+
+He took a small packet from his satchel. It contained three letters that had lost their destinations. One was addressed to a grandmother whose name had faded.
+
+Another began with a child's drawing of a fish and ended with a request for a birthday cake. The third was written on blue paper, and the only legible words were: I HAVE NOT STOPPED LOOKING.
+
+He said he carried them because someone had to decide what to do with an undeliverable message, and he had never found a rule that satisfied him.
+
+Mira unfolded the child's letter. The drawing was uneven but enthusiastic, a fish with too many fins and an eye almost as large as its body.
+
+She remembered making similar drawings in her mother's kitchen while waiting for the weather to clear enough to visit Bellwether. The memory came with a smell of burned sugar. She could not recall whether the cake had been good.
+
+She could recall being loved by the person who had made it.
+
+They opened the observatory's box for undelivered correspondence. It was an old wooden chest with a brass plate reading RETURN TO SENDER, though the clerks had rarely been able to find a sender for the items deposited there.
+
+Inside lay receipts, love letters, notices of death, invoices for repairs, and the first pages of books abandoned before they were finished. Each item had a practical reason for being kept.
+
+Together they felt like a record of the small bridges people built between rooms they could not occupy at the same time.
+
+Mira found a letter addressed to the observatory itself. Its writer had been a carpenter who wanted permission to repair the western staircase after it began opening onto places that did not exist.
+
+The Council had refused because the staircase was considered a historical feature. The carpenter's final sentence read: A BUILDING IS NOT MORE IMPORTANT THAN THE PEOPLE WHO FALL DOWN ITS STAIRS. Mira smiled despite herself.
+
+She made a note to find the carpenter's family if the staircase ever became a normal staircase again.
+
+Cael asked whether she wanted to keep the packet of letters. She said they should stay together until they knew more. She added her father's envelope, then stopped. The letter had been addressed to her.
+
+It belonged to her even if the Council had once considered its contents a matter of state. She took it back out. The distinction was small, but it mattered. Recovering the truth did not require every private grief to become a public document.
+
+The blue spark on the table moved toward the letters and paused over the child's drawing. For a moment the fish seemed to swim beneath the paper. A second spark emerged from the atlas, then a third.
+
+They arranged themselves above the envelope in the shape of a constellation that had not appeared in any observatory chart. Mira reached for her instrument, then put it down. She wanted to see what happened before she tried to measure it.
+
+The sparks rose toward the great globe. The brass rings turned without being touched. A soft light gathered over the place where Bellwether should have been. Cael stepped back, the packet of letters held against his chest as though they might escape.
+
+Mira watched the atlas open and realized that the letters were not the only messages being carried through the world. The machine had been speaking for years. They had only just begun to notice the language it used.
+
 ## Atlas Wakes
 
 The atlas opened of its own accord. Its brass clasps lifted like hands recoiling from hot iron. Across the blank region where Bellwether belonged, pale lettering gathered and dissolved: a street, a garden, the beginning of a person's surname.
@@ -436,6 +524,84 @@ Cael looked away. The telescopes reflected silver on his lashes. For a moment he
 
 They laughed without much sound. Somewhere above them the atlas turned another page. The laughter remained between them, and neither one tried to explain it away.
 
+## The Hour That Went Missing
+
+The first symptom was the missing hour on the clock. Mira glanced at the long hand and saw it move backward from eleven to ten without passing through the intervening minutes. She checked the small clock in the stairwell. It agreed with the first.
+
+On the wall near the library, a third clock had stopped entirely, its hands caught between numbers that looked as if they were being erased one at a time. The observatory had begun changing its own record of time.
+
+She looked at Cael. He was standing beside the eastern corridor with a confused expression, the kind a person wore when entering a room to find an object and discovering that the room was not the one expected.
+
+He asked her why they had come upstairs. She answered that they were searching for the truth about the first agreement. He nodded. A moment later he asked again.
+
+**Mira:** What do you remember?
+
+**Cael:** We came through the west door. You had an instrument in your hand. There was a letter. After that ... I know what we found, but I can't remember how we found it.
+
+Mira showed him the ledger, the railway ticket, or the notes from the coast. He read them carefully, then said the names of the places aloud. The facts returned more quickly than the feelings.
+
+He could describe a street he had walked along but not the smell of the rain. He could remember warning Mira about the passage but not what had frightened him. The machine was not removing knowledge at random.
+
+It seemed to be taking the memories most likely to make him return to the people he had lost.
+
+A loud crack sounded above them. The clock nearest the stair fell from its bracket and broke on the floor. Mira knelt among the pieces and found that the face was made from two layers of glass.
+
+Between them was a thin strip of blue paper covered in names. Some had been crossed out. Others were still being written by an invisible hand. The last name was Cael Vey.
+
+Cael watched her read it. He did not ask whether it was his name. He already knew. He asked how long the machine had been writing.
+
+**Mira:** Long enough to make the clocks into part of its records. We have to interrupt the process.
+
+**Cael:** Can you do it without breaking every clock in the building?
+
+**Mira:** I can try. The clocks have survived worse experiments than mine.
+
+They found the master regulator in a room behind the star library. It was a brass cabinet connected by fine wires to every timekeeping instrument in the observatory. A label on the door instructed operators not to open it during an active continuity event.
+
+Mira examined the label and found that the word continuity had been stamped over an older word. The older word was correction.
+
+Someone had taken a device built to synchronize clocks and given it authority over the order in which memories were permitted to exist.
+
+Inside, a wheel turned against a spring that should have held it in place. A sequence of blue sparks traveled along the wires, each one carrying a name toward the eastern lens.
+
+Mira took a pair of insulated pliers and cut the wire marked with the Council's seal. The sparks stopped.
+
+Then the master clock began to tick in two directions at once, a rapid clicking that filled the room with the sound of a hundred small insects.
+
+Cael pressed his hand against the cabinet. The scar on his wrist answered with a faint light. The wheel slowed. Mira understood that the system was using him as a reference point.
+
+His body held a memory of the machine's first calibration, even if his mind had lost the circumstances. The idea made her angry enough that she almost pulled his hand away.
+
+But the wheel was slowing, and Cael was looking at her with the determination of someone who had chosen to stay in the room even after learning how he was being used.
+
+**Mira:** You can stop. I can find another way.
+
+**Cael:** I know. Keep working.
+
+She reached the regulating spring and loosened it one notch. The wheel shifted into alignment. The clocks fell silent. In the corridor, the hands of the broken clock stopped moving. Cael took his hand away and stared at his palm.
+
+He said he could remember an evening on a ship when someone had told him that he would have to choose between keeping a person safe and letting that person travel without him. He did not know whom the choice concerned.
+
+He remembered that he had been afraid to answer.
+
+Mira closed the cabinet. The machine would resume its attempt to synchronize the memories if the Council ordered it. She could not destroy the whole network from this room.
+
+But she had given Cael a little time in which the names would remain where he could find them.
+
+They sat on the stairs beside the broken clock while the observatory settled. Mira took out her ledger and asked him to tell her what he still remembered.
+
+He began with the practical things: how to tie a knot, how to read a cloud shelf, how to repair a torn sail with thread borrowed from a coat. Then he told her about the things he could not name: a woman laughing on
+
+a wet deck, a room with two cups, a child who had once stolen a brass whistle and refused to admit it, a song sung so softly that he could hear only the spaces between the words.
+
+Mira listened without correcting him. When he became silent, she told him about her mother and the paper constellations, the smell of burned sugar, and a childhood argument over whether a star could belong to more than one person.
+
+She could not recover his missing memories, but she could make a place in which the memories he still had were received without suspicion. They sat together until the sky outside the windows changed from violet to dark blue.
+
+At last Cael stood. He asked whether she still wanted to enter the eastern corridor. She said yes. He looked at the damaged clock and smiled faintly. He suggested they go before it remembered how to steal another hour.
+
+Mira laughed, then stopped because the laugh sounded so ordinary in a place where almost nothing else did. They took the evidence and went upstairs.
+
 ## Ledger Of Absences
 
 The observatory's night watch had been abolished years earlier, but its bells still rang the rounds.
@@ -623,6 +789,98 @@ Keeper: I remember those whom the Council did not ask. I cannot decide for them.
 Keeper: In the heart of the instrument. Where all erased names go until the world learns to speak them again.
 
 Mira carried the bell's small silver clapper back to the lens. She had found a witness, but not the words of the bargain or the citizens' names. The omission felt dangerous. It was also the shape of a hope.
+
+## The School Of Other Names
+
+The passage beyond the records chamber opened onto a garden in which every tree carried a name. The names were written in silver on the bark, not carved into it, and they changed as the leaves moved. Some belonged to people Mira had met.
+
+Others were unfamiliar. A few appeared to be the names of streets, storms, and small villages.
+
+The garden had no visible wall, but whenever Mira walked toward the horizon she found herself returning to the same stone path beneath a row of pale flowering trees.
+
+At the center stood a schoolhouse with an open door. Inside, children were sitting at long wooden desks, copying words from a board. The teacher was an elderly woman whose hair had gone entirely white.
+
+She did not seem surprised when Mira and Cael entered. She told them to sit, handed each a sheet of paper, and asked them to write the name of a person they would not wish to forget. Cael took the paper and hesitated.
+
+Mira wrote her mother's name, then her father's, then crossed out neither.
+
+The teacher glanced at the names. She said she had been asked to teach this lesson for so many years that she no longer remembered who had written the curriculum. Every child who entered the room eventually had to leave. Some returned.
+
+Most did not. The names they wrote were stored in a cabinet behind the board. The cabinet was almost full.
+
+**Mira:** What happens when there is no room left?
+
+Teacher: We make another cabinet. That is the only part of the lesson the Council has never tried to prevent.
+
+One child raised a hand. He wanted to know why some names stayed on the board longer than others.
+
+The teacher said the machine could remove an entry from a register but had not yet learned to remove a question from a person who kept asking it. The child seemed dissatisfied with the answer.
+
+He asked why the machine was allowed to make such a rule in the first place. The teacher smiled and told him that was the next lesson.
+
+After class, Mira examined the cabinet. It contained drawers of folded papers, each labeled with a year. The earliest drawers were filled with names written in large, uncertain letters.
+
+Later drawers held names accompanied by descriptions: the person with the red scarf, the woman who made bread, the man who repaired clocks, the neighbor who sang at the window. As the years passed, the descriptions became longer.
+
+The pupils had learned to describe people by the acts that made them important to others, not merely by the spellings that could be removed from a list.
+
+Cael found a paper near the back of the oldest drawer. The handwriting was small and careful. It read: MY SISTER ELIAN, WHO CANNOT WHISTLE BUT ALWAYS PRETENDS SHE CAN. He stared at it for a long time.
+
+The memory of the girl arrived not as a picture but as a sound: a breathy attempt at a tune, followed by laughter from someone who had already forgotten the melody. He pressed the paper against his chest.
+
+**Cael:** I wrote this.
+
+**Mira:** Do you remember when?
+
+**Cael:** No. But I remember trying to teach her. She was furious that I could do it without thinking.
+
+The teacher said the school had once been part of AsterVale. When the boundary closed, the Council had removed the building from the city's official plans because it did not know how to classify a place that existed partly in memory.
+
+The children continued to come. Some arrived as dreams. Others stepped through ordinary doors on their way to school and discovered that they had entered a classroom that did not belong to the day outside.
+
+The teacher had never been certain which children were real. She had decided to teach them all.
+
+Mira sat at an empty desk and examined the exercise book left there. On one page a child had drawn a map of the garden.
+
+Every tree was marked with a small star, and at the edge of the page a path led toward a door labeled WHEN YOU ARE READY. The path did not correspond to any gate in the garden.
+
+It was the kind of map a child might draw to remember a feeling rather than a place. Mira closed the book gently.
+
+A blue spark drifted down from the ceiling and settled on the board. The names written there rearranged themselves into a sentence: NO ONE IS SAVED BY BEING MADE UNKNOWABLE.
+
+The teacher looked at it with the expression of a person who had expected the world to reveal a truth in a less dramatic way. She wiped the board clean and asked the children to write the sentence again in their own words.
+
+The room filled with the sound of chalk.
+
+A young girl approached Mira after the lesson. She carried a torn sleeve and asked whether Mira knew how to sew. Mira admitted that she was poor at it but willing to try. The girl sat beside her while she made a clumsy repair.
+
+When it was finished, the stitches were visible and uneven. The girl examined them and said she liked being able to see where someone had helped her. Mira thought of Cael's story about colored thread in a sail.
+
+She smiled and tied off the knot.
+
+The teacher showed them a room behind the school where objects that had lost their owners were kept. There were shoes, toys, broken cups, a bundle of letters, and a small brass bell. The bell had no clapper.
+
+The teacher said it had belonged to a witness who could call people back from the boundary by speaking their names. When the witness disappeared, the bell remained. The Council had asked for it repeatedly.
+
+The teacher refused to surrender it because the school was not required to return every object to the institution that had lost it.
+
+Mira understood that the witness's bell might be connected to the records they had already taken. She asked whether they could borrow it.
+
+The teacher said they could, provided they promised to bring it back when the children had finished learning what it was for. Mira hesitated. She did not want to promise something she might be unable to do.
+
+The teacher nodded, as if the hesitation were the correct answer, and told her that promises could be made with an honest statement of uncertainty.
+
+They took the bell. Its metal was warm. Cael held it in both hands and listened for a sound that did not come. Mira asked whether he could remember his sister's voice. He said he could remember the attempt at whistling, not the words.
+
+It was enough to make him want to keep looking.
+
+At the garden gate, the teacher gave Mira a small packet of seeds. She said they came from a tree whose name had been lost during the first catastrophe. The tree continued to grow. It had not waited for anyone to restore its label.
+
+Mira put the seeds beside the brass whistle and the scraps of evidence in her satchel. The packet was a reminder that not every living thing required a complete history in order to have a future.
+
+The garden path returned them to the eastern corridor. Behind them the schoolhouse door closed gently. Mira could still hear the children repeating names. She had entered the garden believing the records were evidence about a machine.
+
+She left knowing that the people who lived under the machine's rules had been making their own records all along, in the shapes of lessons, gardens, and ordinary acts of care.
 
 ## Chamber Of Measures
 
@@ -928,6 +1186,102 @@ Before them lay AsterVale. It was neither paradise nor prison in the theatrical 
 
 A woman scolded them for getting under the wheels. The driver thanked them anyway. A city that could still be irritated about onions, Mira thought, had not entirely surrendered to the terms of its captivity.
 
+## The Train With No Destination
+
+The tramline beyond the boundary had been laid long before AsterVale disappeared from the official maps.
+
+Its rails were made of dark blue metal that did not rust, and its stations were marked by bells whose notes were tuned to different parts of the city.
+
+Travelers once identified their stops by sound as well as by name, a convenience for those who could not read. Now the bells rang at unpredictable intervals and the route maps showed stations that had been removed from the world.
+
+A tram waited at the nearest platform with its doors open and no driver at the controls.
+
+Mira examined the timetable. It listed departures at every hour of the day, but the destinations were blank. Someone had pasted a note beneath the schedule: IF YOU KNOW WHERE YOU ARE GOING, PLEASE TELL THE CONDUCTOR.
+
+She laughed, then found she could not laugh for long. A child stood at the far end of the platform holding a bouquet of flowers. The flowers were fresh.
+
+The child looked at the empty space beyond the rails as though waiting for someone to arrive from a place nobody would name.
+
+Cael approached the tram. Its windows were fogged on the inside, and beneath the fog he could see the outlines of passengers.
+
+They were sitting in ordinary positions: a man reading a newspaper, a woman carrying a basket, two children leaning against each other in sleep. When Cael touched the doorframe, the figures vanished. The seats remained warm.
+
+The tram had been carrying the memory of a journey even after the people who made it were no longer present.
+
+**Mira:** We should walk. This could be part of the machine's accounting system.
+
+**Cael:** Or it could be the only way people here have to reach the market.
+
+The conductor appeared at the rear door. He was old, with a uniform that had been repaired so many times it was more patches than cloth. He asked for tickets.
+
+Mira showed him the railway ticket from Bellwether if she carried it, or the note from her ledger if she did not. He studied the paper and nodded. It did not matter what she had shown him.
+
+He said he accepted any evidence that a traveler had somewhere she wished to go.
+
+They boarded. The conductor closed the doors and pulled a lever. The tram moved without a sound. Outside the windows, the city passed through several versions of itself. In one, the streets were crowded with festival banners.
+
+In another, rain fell on houses whose doors had been boarded shut. In a third, a line of people waited outside a hospital, holding blankets over their heads while the sky glowed blue with a light that did not belong to the sun.
+
+The conductor said the tram had always taken passengers through the city's memories. The Council had forbidden it because the route made it difficult to maintain a single approved account of the catastrophe.
+
+Cael watched the platforms pass. He recognized one from childhood: a narrow stop beside a clock that ran backward. He had stood there with his sister waiting for a train that would take them to the upper docks.
+
+She had been angry because he would not let her carry the ticket. He had told her the ticket was important, and she had replied that she was more important than the ticket. He remembered the argument now with a painful clarity.
+
+He had never imagined the memory would survive while her face disappeared.
+
+**Cael:** I should have given her the ticket.
+
+**Mira:** You were a child.
+
+**Cael:** So was she. That didn't make her less right.
+
+The tram passed a schoolhouse where a woman stood at the door with a bell in her hand. The pupils were filing inside, each carrying a book bound in a different color. Mira saw her mother's face among the adults.
+
+The image lasted only an instant. She rose from her seat so quickly that the conductor put out his hand to steady her. The schoolhouse was gone. Beyond the next window lay a canal lined with lanterns.
+
+Mira sat down again and pressed her fingers against the glass.
+
+**Mira:** I saw her.
+
+**Cael:** Your mother?
+
+**Mira:** She was standing at the door. I don't know whether it was a memory or something the tram wanted me to see.
+
+The conductor told them that the route did not manufacture memories. It carried the impressions left by people who had traveled through the city, preserved in the metal of the rails and the wood of the carriages.
+
+The impressions could be incomplete or misleading, but they were not invented. He had spent forty years trying to explain this to officials who wanted a timetable that could be filed under one heading. He had finally stopped explaining and continued driving.
+
+At the next stop, a woman carrying a basket of pears boarded. She looked at Mira with a brief expression of recognition, then took a seat beside the window. Her coat was red.
+
+The star embroidered on its collar had been repaired with blue thread. Mira wanted to ask whether she knew the child whose name had disappeared from the coast. Before she could speak, the woman opened her basket and offered a pear to the conductor.
+
+He accepted it, thanked her by a name Mira did not hear, and continued down the aisle.
+
+Mira followed the woman with her eyes. The seat beside her was empty, but an indentation in the cushion suggested that someone had been sitting there moments before. Mira could feel the question rising in her throat. She stopped it.
+
+The woman had come to ride the tram, not to become evidence in a stranger's investigation. Mira waited until the next stop, then asked whether the embroidered star had been made by someone she loved. The woman touched it and smiled sadly.
+
+She said yes. She did not say more. Mira thanked her and returned to her seat.
+
+The tram crossed a bridge suspended above a city that could be seen only from one direction. The towers below were built of pale stone and copper roofs, and the streets glowed with warm light. Cael leaned forward.
+
+He recognized the market where he had once bought pastries with Elian. The memory came without warning and without the ache of being taken away.
+
+For a moment he was simply a brother remembering a day on which his sister had laughed at the crumbs on his coat.
+
+The conductor rang the bell. He announced the next stop as ASTERVALE MARKET, VIA THE LONG WAY HOME. The passengers began gathering their belongings. Some had not been visible when the journey began. Others had become clearer with each station.
+
+A little boy ran down the aisle carrying a paper airplane. The conductor caught it before it struck the window, folded its wings more carefully, and returned it. The boy thanked him.
+
+The ordinary kindness made Mira more hopeful than any vision the tram had shown.
+
+They stepped onto the platform. The conductor handed Mira a ticket stamped with the date of their arrival. It was not a magical object. It was a piece of paper bearing the name of a city.
+
+Mira put it in her ledger beside the other evidence. The tram moved away, its windows reflecting the market lamps. She could not tell whether the passengers inside were real or remembered.
+
+She knew the conductor had stopped when they needed him to stop, and that the ticket gave her a place to begin asking questions.
+
 ## Threshold Market
 
 The hidden city began where the eastern lens ended. Its central market occupied a wide circle beneath towers built from gold limestone, each connected to its neighbor by a bridge of dark blue metal. Lanterns hung from cables above the stalls.
@@ -1083,6 +1437,106 @@ Mira added a line to her ledger: the children of AsterVale are not a rescue proj
 Cael and Elian sat together by the window. They spoke softly of an old river and a red kite. Mira could not hear the words. She did not need to.
 
 She had begun to trust that a world might contain joy even while it was breaking.
+
+## The Couriers Oath
+
+Elian had asked Cael to meet her after the family hearings in a narrow courtyard behind the bakery. She had chosen the place because it was where they used to sit as children when the summer heat made their home unbearable.
+
+The courtyard was smaller than Cael remembered. A fig tree filled most of it, and its roots had lifted the paving stones into uneven steps. On the wall someone had painted the outline of a ship with blue sails.
+
+Cael recognized the ship but not the hand that had painted it.
+
+Elian arrived carrying a small wooden box. She set it between them and opened the lid. Inside were objects that had survived the erasures because their owners had hidden them in places the Council's clerks did not know to search: a tin whistle, a
+
+pair of mismatched gloves, a sailor's knot tied in red cord, and a photograph of two children standing beside a broken clock. Cael knew the boy was himself. The girl was Elian.
+
+The knowledge arrived before the feeling, as though he were reading a caption beneath a stranger's portrait.
+
+Elian: You promised to teach me to tie that knot.
+
+**Cael:** I did teach you. I remember the knot. I don't remember the lesson.
+
+Elian: You made me do it twenty times until I could do it with my eyes closed. Then you told me not to tell anyone because you'd have to invent a harder knot for me to learn next.
+
+He laughed. The story sounded like something he might have said. He could not remember saying it. Elian seemed to notice the difference between recognition and memory. She did not demand that he pretend otherwise.
+
+She placed the red cord in his hand and waited while he tried to tie the knot.
+
+The first attempt failed. His fingers knew the movements, but the cord slipped. He tried again, slowly, letting the motion carry him through a sequence his mind could not name. On the third attempt the knot held. Elian's face changed.
+
+For a moment she was the younger sister who had waited by the dock for his return, then the adult woman who had lived through years without him, then both at once. She took the knot and pulled it tight.
+
+Elian: I wanted you to come back because I was angry. I thought if you came back I could tell you exactly what it had been like to wait. Now you're here, and I don't know where to begin.
+
+**Cael:** You can begin anywhere. I don't deserve a special order.
+
+She shook her head. She said she had spent years hearing people explain why the absence had been necessary, why the city must be kept hidden, why the people who left could not return.
+
+Every explanation had made the loss sound like an administrative result. She had wanted to be angry at a person.
+
+Cael's return had given her a person to look at, and the anger had become tangled with relief in a way she did not know how to describe.
+
+Mira stood at the courtyard gate and listened to the sounds from the market. She had offered to leave them alone, but Elian had asked her to stay. The request made Mira uneasy. She had known Cael only a short time.
+
+She was not his family, and she did not wish to become a witness who claimed authority over a history she had not lived.
+
+Yet Elian seemed to want a third person present to remember the conversation afterward, in case the machine took another piece of it from one of them.
+
+Elian took out the photograph. On the back someone had written a date and a place name that neither sibling recognized. Below it was a sentence in the handwriting of their father: WHEN THE SKY BREAKS, FIND THE ONE WHO KNOWS THE WAY HOME.
+
+Cael read it twice. He remembered their father as a man who worked the upper docks and repaired ships, but he could not remember why the sentence would have been written on a family photograph.
+
+**Cael:** I thought he died in the northern storm.
+
+Elian: That's what the Council told us. The truth is that he disappeared after refusing to sign the first agreement. I found the records years later. They called it a voluntary absence.
+
+Cael lowered the photograph. For years he had carried guilt for failing to return to a sister whose name he could not remember. Now he learned that their father had been taken by the same system. The knowledge did not remove his guilt.
+
+It changed the shape of it. He had not been the only person who failed to come home. The boundary had made home into a place that could be denied to people who most needed it.
+
+Mira examined the handwriting and recognized the same blue ink used in the early Council petitions. She could not prove that the siblings' father had worked with her own father, but the dates overlapped.
+
+She told them what she knew and what she did not. Elian asked whether the records could be made public. Mira said yes, if the witnesses consented and the documents were preserved without editing out the disagreements.
+
+Elian looked relieved that the answer contained a condition she could understand.
+
+Cael reached for Mira's hand. The gesture was brief, almost accidental, but it told Elian that her brother had not been traveling entirely alone. Elian smiled at Mira in a way that was both grateful and faintly mischievous.
+
+Mira felt herself blush and resented the fact that her face had made a statement she had not chosen to make. Cael pretended not to notice. The pretense was kind.
+
+Elian asked whether Cael still carried the watch their mother had given him. He took it from his coat. Its face was blank, its hands removed. She told him that the watch had never kept time properly.
+
+Their mother had given it to him because he was always late and said a broken watch would at least be honest about the problem. Cael remembered the joke then, not as words but as a warm sound in a kitchen.
+
+His eyes filled with tears. Elian looked away to give him a moment in which the feeling could belong to him.
+
+They spent the rest of the afternoon telling small stories. Elian described the winter when the canal froze and children skated beneath the bridges. Cael remembered the smell of the bakery after rain.
+
+Mira told them about the first time she saw Bellwether's harbor, standing beside her father on a tram platform. The stories did not fit into a single history. Some contradicted one another. Elian insisted that the clock in the courtyard had always run backward.
+
+Cael said it had broken only after the boundary closed. Mira found a newspaper clipping suggesting both were partly right. They laughed and kept talking.
+
+As evening approached, Elian returned the objects to the box. She gave Cael the red cord and the photograph. He asked whether she was certain. She said she had kept them for years because she hoped he would need them. Now he did.
+
+She kept the tin whistle, though it no longer made a sound. She said their mother had once tried to teach her to play it and that she intended to finish the lesson when she could find someone who remembered the tune.
+
+Elian: I don't want you to promise never to leave again. I know you have a life outside these walls.
+
+**Cael:** I can promise to tell you when I go, and where I think I'm going.
+
+Elian: And if you forget the way back?
+
+**Cael:** Then I hope you'll be allowed to come looking for me.
+
+They embraced. It was not the reunion Cael had imagined when he first began to remember her name. It contained anger, confusion, affection, and the knowledge that neither could recover the years taken from them.
+
+Mira watched from the gate and understood that returning a person to the world did not return the time they had lost. The work of being family would have to begin again, in the present, where both siblings had changed.
+
+When they left the courtyard, the market lamps were being lit. Elian walked with them as far as the assembly square, then turned back to help the baker carry bread to the meeting. Cael watched her go.
+
+He tied the red cord around his wrist above the compass scar. Mira thought of the old courier's promise: to deliver what had been entrusted to him, to return when he could, and to tell the truth when he could not.
+
+The promise had been broken by the machine. It could be made again by the people who survived it.
 
 ## Night Before Vote
 
@@ -1485,6 +1939,96 @@ Cael spoke the second. The trades' delegate spoke the third. Other people took u
 Nobody objected.
 
 They reached the observatory side carrying imperfect instructions, frightened people, and a box of drawings that a machine had never been built to understand. The assembly was over. The work it had begun was not.
+
+## The Road Before Morning
+
+The passage back to the observatory was no longer a stable corridor. Its edges had begun to fray into light, and the objects suspended along its sides moved as though the wind of a different world were blowing through them.
+
+Mira could see the market behind her, the library ahead, and between them a narrow road made from fragments of streets that had once connected the cities. Some fragments were real stone; others were remembered cobbles, transparent enough to show the clouds below.
+
+The delegates crossed slowly, carrying their instructions and the child's box of drawings.
+
+At the midpoint a section of road vanished. The families' representative had just stepped onto it. Cael caught her arm before she fell, but the book of names slipped from her hands and opened in the air. Pages scattered across the passage.
+
+Mira reached for the nearest, then stopped. The road was breaking at a pace that would not allow them to gather everything. She had to choose between the paper and the person. The choice should have been obvious.
+
+The machine had trained her to fear the loss of records so deeply that for one terrible second she felt the temptation to reach for the book first.
+
+She caught the representative's other hand. Cael pulled them both onto solid stone. The pages drifted away, each carrying a name toward the pale sky. The child with the drawings began reciting the names she knew. The trades' delegate joined her. Others followed.
+
+The pages stopped falling. They hung in the air and turned, one after another, toward the voices that called them.
+
+Mira realized that the machine's hold on written memory was weakening when living people refused to let the writing become the only place a name could exist.
+
+**Mira:** Keep speaking. Don't try to make the names perfect. Just say the ones you know.
+
+**Cael:** The road is forming under us. Every time someone speaks, another stone comes back.
+
+They crossed by moving from one restored stone to the next. The families' representative wept as she recovered the book. She said she had been afraid that losing the pages would mean losing the people.
+
+Mira told her that the pages mattered, but the names were not owned by the paper. The representative nodded and held the book against her chest. The lesson had cost them more fear than Mira wished it had.
+
+She could not pretend it was therefore less valuable.
+
+At the far end of the corridor stood the Keeper of the Threshold, the small figure in the silver coat. Its face had aged since Mira last saw it. Fine lines crossed its cheeks, and its hands trembled when it reached for the doorframe.
+
+The Keeper said that the system was exhausting the memories from which it had been built. It could no longer hold the old agreement in place without taking more from the living. The Council's revisions had delayed the collapse but could not prevent it.
+
+The time for a choice had arrived.
+
+Mira asked whether the Keeper had ever wanted to leave the passage. The figure considered the question. It said it had not been designed to want anything.
+
+Then it added that it remembered watching people cross the boundary and sometimes wishing they would turn back before the toll was taken. The admission seemed to surprise it. Its hands became still.
+
+Perhaps the machinery had not anticipated a witness capable of recognizing that a person ought to be warned even when warning was not part of the instructions.
+
+The Keeper led them to a door made from pieces of different buildings. One panel came from a ship's cabin, another from a schoolroom, another from a house whose address had been erased. The handle was a brass star.
+
+Mira recognized the design from her mother's paper constellations. She had thought the star was a private symbol invented for a child.
+
+Now she wondered whether it had been a sign used by people who had tried to create passages the Council could not control.
+
+Cael touched the handle. His scar answered with a blue pulse. The door opened onto the observatory's western gallery, where the floor had begun tilting toward the lens. A few librarians were moving books away from the lower shelves.
+
+They looked up when the delegates entered and immediately began asking where the city representatives should be seated. The ordinary concern for chairs made Mira almost laugh.
+
+The world was at risk of being rewritten, and someone was still trying to arrange a meeting properly.
+
+She asked the librarians to bring a table into the center of the gallery and lay the evidence upon it. The delegates placed their instructions beside the atlas. The child set her box of drawings in the empty space.
+
+Cael put the old watch down near the edge and looked at Mira. He said they had collected enough paper to build a second library.
+
+Mira told him they would probably need a second library once the cities were connected again, because nobody should be able to hide the records of the first in a single room.
+
+The Keeper remained at the door. It said that the machine would soon stop recognizing any authority except the one last entered into its core. Mira understood that Orsol had prepared for this.
+
+The Chancellor would attempt to make the existing agreement permanent by using the emergency to end the possibility of revision. The system had been designed to treat such a command as lawful if it came from the correct seal.
+
+The people standing in the gallery would have to answer with a different kind of authority before the bell finished ringing.
+
+Mira found the missing clause from the first agreement in the documents they had carried. She placed it at the top of the pile, where anyone entering the room would see it before the calculations. It was not a dramatic gesture.
+
+It was a decision about the order in which evidence should be read. For the first time she understood how much power lay in the arrangement of a table.
+
+The child with the drawings asked whether she could help. Mira gave her the brass whistle recovered from the old archive and asked her to carry it to the delegates. She did not tell the child it would save the world.
+
+She told her that it belonged to someone whose name had been lost and that keeping it safe for one more hour would be useful.
+
+The child accepted the responsibility with a solemnity that made Mira wish adults were as careful about what they asked children to do.
+
+Cael walked to the window. Outside, the clouds had begun moving in several directions at once. A bridge appeared between two floating islands, then vanished. The stars were visible through the storm, their positions shifting as the lens recalculated the world.
+
+Cael said he had seen weather like this only once before, on the voyage that took him away from AsterVale. The difference was that he now knew where he wanted to return.
+
+Mira joined him. She could hear the bell beginning to ring in the eastern chamber, each note stretching longer than the last.
+
+She thought of her father standing at the same window seventeen years earlier, believing he could make a decision so perfect it would never need to be questioned. She had spent her life trying to become a better version of his certainty.
+
+The night had taught her to want something else: the courage to be corrected by people whose lives she could not fully understand.
+
+They turned from the window and went toward the lens. Behind them the librarians continued moving books, the delegates continued discussing their instructions, and the child continued guarding the box of drawings. The world was still full of ordinary work.
+
+Mira hoped it would remain so after the bell stopped.
 
 ## Return To Lens
 
