@@ -13,6 +13,7 @@ cargo run --locked -p vesper-player -- examples/atlas-unwritten-skies
 - [ ] **Art and motion.** Observe sunset/storm/night/dawn backgrounds, ambient blue light in the prologue, character entry/exit and smooth crossfade. Reduced motion should freeze optional animation.
 - [ ] **Branching and persistence.** Complete one route, save with F5, reload with F9, and inspect H backlog. Choices in the courier, atlas, record, city, and endgame chapters should work.
 - [ ] **Audio.** Confirm the atmospheric score plays on your speakers and page/bell sounds fire. Avoid confusing no soundtrack with muted OS audio.
+- [ ] **Two new chapters.** Read The Library of Lost Afternoons and navigate The Ferry of Blue Glass; verify their dialogue and narrative continuity on every ending path.
 - [ ] **Four conclusions.** Replay the final choice for The Open Sky, The Living Witness, The Solstice Covenant and The Unbound World. Each should lead to a narrative epilogue and game ending, not a missing scene.
 - [ ] **No new engine changes.** Run one earlier example (Living Journal or Dawn Post Office) to ensure the packaged game has not modified or replaced any engine files.
 

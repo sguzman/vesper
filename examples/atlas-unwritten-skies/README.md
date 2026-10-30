@@ -8,8 +8,8 @@ The game is **entirely external to Vesper's Rust player**. Its `.vn` source, ima
 
 ## What is included
 
-- **53 scenes**, **25 choice options**, four complete endings and many persistent variable-dependent paragraphs. A graph enumerator verifies **8,748** possible walks through named branches; these are combinations of authored choices, *not* 8,748 separately authored narratives.
-- About **47,000 words in editable source across all branches**, and **33,000–34,000 words per complete route**, including four distinct long epilogues. The full-length narrative is still being expanded. This is a complete novella-length visual novel rather than a conventional full-length print novel.
+- **55 scenes**, **25 choice options**, four complete endings and many persistent variable-dependent paragraphs. A graph enumerator verifies **8,748** possible walks through named branches; these are combinations of authored choices, *not* 8,748 separately authored narratives.
+- About **51,452 words in editable source across all branches**, and **37,000–38,600 words per complete route**, including four distinct long epilogues. The latest chapters—*The Library of Lost Afternoons* and *The Ferry of Blue Glass*—explore Mira’s mother, Cael’s erased family history, and an unrecorded passage into AsterVale. The full-length narrative is still being expanded. This is a complete novella-length visual novel rather than a conventional full-length print novel.
 - **15 authored 1280×720 backgrounds: the original observatory grades plus eight distinct location studies of Bellwether, a moonlit coast, aerial harbor, hidden market, enchanted name garden, archive, memory realm and shattered world. The new studies are extracted from an original concept board and are not yet full-resolution location originals.
 - **Two original AI-assisted painterly character illustrations**, each with three lighting/expression treatments on transparent PNG, and a bespoke gold/navy illuminated-manuscript dialogue frame.
 - **Seven original, procedurally synthesized ambient music cues and two original sound effects**, stored as uncompressed 16 kHz, mono PCM WAV. No pre-existing tracks or paid APIs used.
