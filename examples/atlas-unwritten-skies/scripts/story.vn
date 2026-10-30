@@ -1050,7 +1050,7 @@ mira: "She was standing at the door. I don't know whether it was a memory or som
 jump the_ferry_of_blue_glass
 
 @scene the_ferry_of_blue_glass
-background journey_port
+background blue_glass_ferry
 music journey
 show mira open at left
 show cael wary at right

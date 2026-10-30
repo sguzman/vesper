@@ -693,7 +693,7 @@ They stepped onto the platform. The conductor handed Mira a ticket stamped with 
 !jump the_ferry_of_blue_glass
 
 @scene the_ferry_of_blue_glass
-!background journey_port
+!background blue_glass_ferry
 !music journey
 !show mira open at left
 !show cael wary at right
