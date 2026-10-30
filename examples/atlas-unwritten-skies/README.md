@@ -8,8 +8,8 @@ The game is **entirely external to Vesper's Rust player**. Its `.vn` source, ima
 
 ## What is included
 
-- **42 scenes**, **25 choice options**, four complete endings and many persistent variable-dependent paragraphs. A graph enumerator verifies **8,748** possible walks through named branches; these are combinations of authored choices, *not* 8,748 separately authored narratives.
-- About **28,000 words in editable source across all route variants**, with approximately **18,000 words per complete playthrough**. This is now a longer branching novella, still not a full-length novel. This is a complete novella-length visual novel rather than a conventional full-length print novel.
+- **47 scenes**, **25 choice options**, four complete endings and many persistent variable-dependent paragraphs. A graph enumerator verifies **8,748** possible walks through named branches; these are combinations of authored choices, *not* 8,748 separately authored narratives.
+- About **35,000 words in the editable source across branches**, with approximately **25,000 words per complete playthrough**. The full-length novel expansion remains underway. This is a complete novella-length visual novel rather than a conventional full-length print novel.
 - **15 authored 1280×720 backgrounds: the original observatory grades plus eight distinct location studies of Bellwether, a moonlit coast, aerial harbor, hidden market, enchanted name garden, archive, memory realm and shattered world. The new studies are extracted from an original concept board and are not yet full-resolution location originals.
 - **Two original AI-assisted painterly character illustrations**, each with three lighting/expression treatments on transparent PNG, and a bespoke gold/navy illuminated-manuscript dialogue frame.
 - **Seven original, procedurally synthesized ambient music cues and two original sound effects**, stored as uncompressed 16 kHz, mono PCM WAV. No pre-existing tracks or paid APIs used.

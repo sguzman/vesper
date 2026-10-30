@@ -246,6 +246,104 @@ As they climbed back toward the observatory, Mira understood that the erased wer
 
 Whatever machine could make a daughter disappear had not learned to erase a mother's habit of setting the table.
 
+## Keepers Of The Weather
+
+The route back to the observatory crossed a shelf of cloud where the wind sounded like a hundred people whispering through their teeth. Mira had known the shelf from maps since childhood.
+
+On paper it was a pale strip between two safe crossings, with a warning that travelers should take the northern path during a storm.
+
+In reality it was a place of torn banners, old rope bridges, and bells strung between poles so far apart that no hand could have rung them. Travelers listened to the bells to determine where the air remained solid enough to carry their weight.
+
+Cael noticed first that one of the bells had stopped ringing. He took the telescope from his belt and searched the horizon. Far out along a line of broken stone stood a small weather station, its roof sloping away toward the cloudbank.
+
+A signal lamp flashed from a window. Twice, then once, then twice again. The sequence meant distress. The nearest safe pier was almost an hour away, but the old service path ran beneath the station.
+
+It was a narrow bridge of brass grating, worn smooth by generations of maintenance crews who had crossed it carrying more confidence than equipment.
+
+**Mira:** We should send word. Someone will have a rescue line.
+
+**Cael:** Someone may have had a rescue line when the station was built. Look at the posts. The cables have been cut and rewound.
+
+Mira looked again. The rope was weathered on one side and new on the other, a repair made by a person who had wanted it to pass an inspection without doing the work.
+
+Cael tied his own climbing cord around the nearest post, tested it twice, and gave her the free end. He did not say the path was safe. He asked whether she knew how to belay a rope. She said she knew the theory.
+
+He gave her a brief lesson that involved more practical advice and less reverence for the theory than she was accustomed to hearing.
+
+They crossed one at a time. The clouds below the grating moved in the wrong direction, rising toward them as if the sky were breathing. At the midpoint the bell nearest the station began to ring despite the absence of wind.
+
+A figure appeared in the window and waved both arms. It was a girl of perhaps twelve, wearing a weather observer's coat much too large for her. The sleeves had been rolled up to the elbows.
+
+She shouted that her supervisor had gone down to the engine room and not returned. The engine had stopped at dawn. Since then, the station had been sliding away from the rest of the world.
+
+Inside, a kettle rattled on a cold stove. The wall charts had become transparent in places. A calendar showed yesterday's date beneath tomorrow's weather forecast, but the forecast contained names rather than descriptions of cloud.
+
+The girl's own name was written in a row of careful capital letters around the doorframe, repeated so often that the ink darkened the wood. She said her name was Tessa.
+
+She had begun writing it after her supervisor disappeared, because she was afraid the station would forget her next.
+
+**Mira:** How long have you been alone?
+
+Tessa: I don't know. The clocks disagree. One says three hours. The other stopped the day my mother died. I don't remember putting that clock there.
+
+Cael knelt by the stalled engine and opened the inspection plate. It was not an engine in the usual sense. It measured wind pressure, yes, but beneath the ordinary gears lay a ring of blue glass with the Council's eight-pointed mark.
+
+Someone had attached the weather station to the same network that was swallowing Bellwether. Its power ran through the station's old instruments, using the weather readings to conceal an accounting system that recorded the names of people passing through the cloud shelf.
+
+The supervisor had noticed the alteration. His notebook lay beside the plate, its last entry written with such force that the pen had torn the page: THE WIND IS ONLY THE PART THEY LET US MEASURE.
+
+Beneath it, a column of names ended with Tessa's. A small circle had been drawn around her name, and the next line was blank.
+
+**Mira:** He came down here to stop the machine from taking the next person. He left the chart for whoever followed him.
+
+**Cael:** Can you stop it?
+
+**Mira:** I can stop it making this station part of the agreement. I don't know whether the station will remain connected to the sky afterward.
+
+Tessa had been listening from the doorway. She asked whether Mira's work would bring the supervisor back. Mira said no. Then, because the first answer had been cruelly small, she said she did not know what happened to a person taken by the network.
+
+She would not promise something that the machine had already taught her to fear.
+
+They removed the blue-glass ring with a pair of rusted pliers and a piece of insulated wire. The moment it came free, every bell along the shelf sounded at once. The station lurched.
+
+A crack appeared across the window and widened into a line of white light. Outside, the grating bridge began to come apart at the joints. Cael shouted for Tessa to take the rope and run. She refused until Mira picked up the supervisor's notebook.
+
+The refusal cost them a few precious seconds. It also taught Mira something about the girl she would not have learned from a chart of her likely survival.
+
+They reached the bridge as the station slid away. Cael crossed first and secured the rope to the far post. Mira tied the notebook to Tessa's coat and sent her after him. Then the grating beneath Mira's feet twisted.
+
+She lost her footing and struck the rail with her shoulder. Her atlas opened in the wind.
+
+For one impossible moment its pages held the scattered pieces of the bridge in the air as though a picture of a place could persuade the place not to fall. Cael caught her wrist and pulled.
+
+She landed on the safe side as the station vanished into cloud.
+
+They watched the torn roof go. There was no explosion, only the soft noise of a book closing. Tessa's name remained legible on the notebook. The girl's hands shook so violently that she could not turn its pages.
+
+Mira wrapped her own coat around her and did not ask whether she was brave. Tessa had been brave. She was also cold, frightened, and furious with the world. Calling her brave would not have made any of those things disappear.
+
+Mira told Tessa she could stay at the observatory until they found her relatives. The girl asked whether the observatory was safe. Mira answered that it was not, but it had people who would try to keep her alive. Tessa considered this, then nodded.
+
+She seemed to regard a truthful danger as less frightening than a promise she could not test.
+
+At the safe pier, Tessa asked them to write the supervisor's name on a slip of paper. She said she wanted to carry it separately from the notebook in case the ink disappeared. Mira helped her form the letters. The name was Tomas Rell.
+
+She wrote it once, then again. Cael suggested they tie the slips to different places, the way sailors tie spare lines in separate lockers so one flood cannot take them all.
+
+Tessa gave one to Mira, one to Cael, and kept the third tucked beneath her collar.
+
+The pier's caretaker arrived with blankets and hot soup. She knew Tessa's coat but not Tessa, which frightened the girl until the woman explained that all apprentice observers wore the same faded green. They went inside to eat.
+
+Mira stood for a moment at the window and watched the empty cloud shelf. Its bells were ringing again, but without the station they sounded like a warning that had no one left to warn.
+
+**Cael:** We cannot save every station along the route.
+
+**Mira:** I know.
+
+**Cael:** Then don't let the ones we cannot save become a reason not to remember this one.
+
+She held the slip of paper between two fingers. The name TOMAS RELL was still there. They returned to the observatory carrying one more piece of evidence and one more person whose future could not be reduced to a number in a ledger.
+
 ## Second Chapter
 
 By midnight the observatory had acquired a second weather. Outside, thunder rolled along the cloud shelf. Inside, a pale fog gathered on the polished marble and retreated whenever Mira spoke a name that the atlas still recognized.
@@ -525,6 +623,102 @@ Keeper: I remember those whom the Council did not ask. I cannot decide for them.
 Keeper: In the heart of the instrument. Where all erased names go until the world learns to speak them again.
 
 Mira carried the bell's small silver clapper back to the lens. She had found a witness, but not the words of the bargain or the citizens' names. The omission felt dangerous. It was also the shape of a hope.
+
+## Chamber Of Measures
+
+The three records converged on a room beneath the eastern lens. Its ceiling was made of curved glass, and above the glass something that resembled water moved slowly against gravity. Tiny points of blue light drifted through it.
+
+Mira knew the technical explanation: the chamber was a pressure-balancing cavity connected to the lens. Her father had designed it to demonstrate that a sealed system could hold a force without allowing the force to escape. The resemblance to an ocean was a coincidence.
+
+It frightened her anyway.
+
+The room contained twelve chairs and a long table. Each chair bore the name of a Council minister on a brass plaque. The names were still present; nobody had tried to erase them.
+
+The table was marked with a grid of numbers, one for every place the machine had been ordered to preserve. Mira ran her hand across the grid and found that some squares were warmer than others.
+
+In the warmer squares were tiny paper slips, folded so tightly she had to use the tip of her instrument to open them.
+
+They listed costs: an orchard exchanged for a bridge, a row of houses for a hospital wing, a railway platform for a winter without famine. At the bottom of each slip was a signature.
+
+**Cael:** They made the losses look like payments.
+
+**Mira:** Payments made by people who were never told they owed anything.
+
+She unfolded the oldest slip. It concerned a fishing village whose inhabitants had been moved inland during a storm. The Council's report said the transfer had saved everyone. An annotation beneath the number of survivors described the cost as a minor displacement.
+
+Mira turned the paper over. On the back, in an unfamiliar hand, someone had written that the village's graveyard had remained on the coast, and the families had been forbidden to return to it. The Council counted lives saved.
+
+The families counted the names of their dead. Both numbers were true. Only one had been permitted to govern what happened next.
+
+Cael examined the empty place at the end of the table. There was no chair there, only a circle cut into the floor where something heavy had once rested. The groove was wide enough to hold a person.
+
+A brass rail ran from the circle to the lens above. He recognized the arrangement from the old courier stations, where a message could be sent through a vacuum tube by placing it inside a sealed carrier.
+
+The Council had built a carrier large enough for a human body.
+
+He put one boot on the circle and felt the scar on his wrist grow hot. The glass above them brightened. A voice came from the water, quiet and precise: SUBJECT RECOGNIZED. TRANSIT AUTHORITY INCOMPLETE.
+
+Mira pulled him back before he could step farther in. The circle went dark, but the voice had told them something no ledger contained. Cael had been registered as a traveler whose permission was required for the system to operate.
+
+His forgetting had not made his authority disappear. It had simply made him unable to exercise it.
+
+**Mira:** You were not only a messenger. They made you part of the mechanism.
+
+**Cael:** Then why do I remember only the journeys?
+
+**Mira:** Because someone needed you to keep traveling, not to understand why.
+
+He sat in the nearest chair, a minister's name beneath his hands. Mira wanted to tell him this made him important. She recognized the cruelty of that comfort before she spoke. It meant he had been used.
+
+His place in the machine was not proof that the people who built it valued him. It was proof that they valued what they could make him do.
+
+They found a cabinet of sealed testimony. Each drawer contained a statement given during the first months after the catastrophe. Some witnesses described an extraordinary storm. Others described the smell of bread in a city they could no longer reach.
+
+One person said the boundary had been erected to protect children from a disease; another said the disease had appeared only after the boundary. The statements contradicted one another in details. They agreed about the fear.
+
+The Council's published account had removed the contradictions and all mention of the Council's own uncertainty.
+
+**Mira:** If we take this to the city, they will disagree about what it proves.
+
+**Cael:** They already disagree. The difference is that they might finally be allowed to disagree about the evidence instead of about the rumor of it.
+
+The glass ceiling shuddered. A dark figure appeared beyond the blue water, too distant for them to see its face. It raised one hand. A line of text formed across the lens: THE SYSTEM HAS NEVER CLAIMED TO BE JUST.
+
+The figure lowered its hand. Another line appeared: IT CLAIMS TO PREVENT A WORSE OUTCOME. Mira stared until the letters began to drift apart. It was the defense the Council had offered for every action whose consequences it wished to conceal.
+
+A blue spark passed through the ceiling and settled on the testimony from a child who had described the storm as a living animal. For one instant the ink stood upright on the page like grass.
+
+Mira could read a sentence that had been scratched out: IT WAS ASKING US TO REMEMBER. She did not know whether the child's testimony had been literal.
+
+She knew a machine that required forgetting might have reasons to fear a child who described the world differently.
+
+Cael held out his hand. Mira took it. He had no useful memory to offer her, no technical knowledge that would repair the mechanism in a single inspired gesture.
+
+What he could offer was the willingness to remain present in a room designed to make his presence an instrument. For a moment the scar dimmed. The carrier circle did not recognize the gesture as an authorized command. Mira found that she was glad.
+
+At the far wall hung a framed map of Bellwether made from hundreds of narrow metal strips. Each strip carried the name of a road.
+
+The strips could be moved to simulate the city under different conditions: a flood, a fire, a population increase, a damaged bridge. Mira had studied the model in her childhood and admired its precision.
+
+Now she noticed that no strip represented the people who lived along those roads. The city was modeled as a set of routes through which supplies could pass. It had no room for a person sitting beside a window while waiting for a friend.
+
+She began removing the strips. Cael helped without asking what pattern she intended to make. They laid the metal on the floor in the order of the stories they had heard: the bakery with the blue door, the station whose platform ended in the
+
+sea, the garden with the crooked sticks, the ferry operator who had wanted a safe landing, the woman who had sent a letter through a broken passage. The new arrangement was not a map a navigator could use.
+
+It was a map of reasons people might want to return.
+
+As the last strip fell into place, the light behind the ceiling shifted. The water became clear. For one heartbeat they could see AsterVale beneath it: not an image projected by the lens but a real city observed from an impossible angle.
+
+A person leaned out of a window to call a child home. The call sounded distant and imperfect, and neither Mira nor Cael could understand the name. They listened until the image vanished.
+
+Mira knew she could not carry the whole table, all the testimony, and the metal strips into the chamber above. She chose the few pieces that showed how the calculation had been made and the stories it had excluded.
+
+Cael put the remaining testimony in the center of the table where it would be visible to whoever entered next. He turned every minister's chair toward it. It was a small act of impertinence. Mira thought her mother would have approved.
+
+They climbed the narrow stair toward the storm. Above them, the glass continued to hold its impossible ocean, but the currents had changed direction. The chamber was beginning to respond to a map on which people occupied more space than the machine had intended.
+
+Mira could not decide whether the change meant they were succeeding or whether they had awakened something that had been sleeping for seventeen years. She went upward anyway.
 
 ## Fourth Chapter
 
@@ -988,6 +1182,106 @@ Several younger people disagreed with both and refused to stand with either fact
 
 The machine would have preferred one answer. The square was full of people preparing to give many. Mira watched the lamps being lit one by one and felt something she had not expected: not confidence, not relief, but a kind of readiness to listen.
 
+## The Beacon Watch
+
+The assembly lamps had not yet been lit when the canal began to rise. At first the water moved only an inch, enough to make the floating candles brush the underside of the bridge. Then the current reversed.
+
+Barges that had been moored against the east bank pulled toward the west, their ropes tightening until the posts groaned. A fish seller shouted that the canal had done this once before, on the night the boundary closed.
+
+Someone ran to fetch the waterworks engineer. Someone else began carrying crates to higher ground. The market changed from an argument into a place where people had to keep each other alive.
+
+Mira watched the surface for several seconds before recognizing the pattern. The water was not flooding from a river. It was moving toward the lens, drawn by the same pressure that had begun pulling the observatory out of its foundations.
+
+The city's walls were being asked to absorb a force they had never been designed to hold.
+
+The Council's agreement had kept the pressure hidden for so long that the people who lived beside the canal had come to think the water's strange habits were ordinary weather.
+
+Ilya appeared with her arms full of printed notices. Her proofs were wet. She handed the driest copies to children, who carried them door to door and shouted directions to the high streets.
+
+The carpenter from the previous evening organized a line of people passing sandbags from the warehouse to the low bridge. A baker brought warm loaves and broke them into pieces because those working on the wall had no time to sit down.
+
+Nobody had elected a leader for the work. Several people began giving orders at once, and the orders were sometimes contradictory, but the wall rose because the workers could see the water and amend the instructions as it moved.
+
+**Mira:** The pressure is going to find the weakest part of the boundary. We need to know where that is.
+
+**Cael:** The eastern sluice. It was built for a much smaller current. If it fails, the hospital district will flood before anyone can move the patients.
+
+Mira asked how he knew. He said he had sailed the canal before the boundary closed. The memory had returned with the smell of wet rope, incomplete but useful. She did not ask him to prove it.
+
+They ran toward the sluice with three volunteers and a coil of cable borrowed from the theater, where it had held a painted moon above a stage for twenty seasons.
+
+The eastern gate was already bending. Water pressed against the iron plates, and blue light shone through the rivets. A woman in a dark green apron stood ankle-deep in the current with a wrench in one hand.
+
+She introduced herself as Adra, keeper of the pumps. Her assistant had gone to the hospital. She had been trying to release the emergency counterweight, but the controls were older than any engineer still alive. She had a manual.
+
+It was written in the same legal vocabulary that governed the lens. She had spent a lifetime repairing the city's water and had never been taught that the instructions for her oldest machine were a kind of contract.
+
+Mira took the manual while Cael secured the cable to the gate. The emergency release required an operator to state the purpose of the waterworks and designate a permitted recipient of the redirected flow.
+
+The first field had been filled with a single word: CONTINUITY. The second was blank. The system would release water only if the operator agreed that the lives below the sluice could be used to preserve the structures above it.
+
+The blank was not an oversight. The blank was the place where an authority had expected to write the name of a district it was willing to sacrifice.
+
+Adra: Can you make it open without filling that in?
+
+**Mira:** I can refuse the old instruction. I don't know whether it will accept a new one.
+
+Adra slammed her wrench against the iron until sparks rose. She said that if the machine refused to recognize a city whose people were drowning, then the machine could be made to open by force. Cael examined the bolts.
+
+He told her which would fail first and which were supporting the entire gate. The three of them began work. A city that was already tearing itself apart did not owe them the luxury of waiting for a philosophical solution.
+
+The first bolt came free. Water struck the wall above it in a spray of blue droplets. Mira found the manual's page for emergency pressure relief and tore it out. She did not do this out of contempt for books.
+
+She did it because the page had been written so no one could change the instructions without destroying the document that made them binding.
+
+She fed the page into the current, and as it dissolved she spoke the words from memory, replacing the blank field with the names of the districts whose residents had come to help.
+
+The counterweight moved. Not far; perhaps the length of a hand. But enough for Adra to wedge a bar beneath the plate. Cael swung his weight against the cable.
+
+On the third pull the gate opened and the water surged into an unused holding basin. The basin filled with a sound like a hundred doors slamming. The canal dropped by half a foot.
+
+Across the city, people on the sandbag line began to shout that the wall was holding.
+
+A boy ran from the hospital with a message written on the back of a prescription. The patients had been moved upstairs. The water had reached the lower steps but gone no farther. The doctors needed blankets and clean drinking water.
+
+Adra sent her assistant to the public baths, where the reserve boilers could be brought into service.
+
+Ilya handed out the remaining dry copies of her notices and added a line in thick ink: THE EASTERN GATE WAS OPENED BY ITS KEEPERS AND THE PEOPLE WHO CAME TO HELP THEM.
+
+Cael leaned against the wall, his hands bleeding where the cable had cut them. Mira took a strip of cloth from her sleeve and tied it around his palm. He protested that the wound was small.
+
+She said that smaller wounds were the ones people neglected until they became more troublesome than larger ones. He accepted the bandage without pretending it was unnecessary.
+
+**Cael:** You didn't ask the machine for permission.
+
+**Mira:** I asked it a different question.
+
+**Cael:** It seemed to dislike the question.
+
+**Mira:** Then it has something in common with the Council.
+
+He laughed, quiet and surprised. The sound made the ruined gate feel for one moment like a place where a future might begin. Neither spoke of what would happen to them when the last bell rang.
+
+They had been given a small interval of time, and they used it to sit beside each other and breathe.
+
+Mira examined the manual more carefully after the crisis. The pages were numbered with the same cipher as the Council's hidden calculations. She copied the diagram of the gate and its release mechanism into her ledger.
+
+The instrument in the observatory would obey only certain forms of language, but the waterworks had just demonstrated that physical changes could create room for new language to be recognized.
+
+It was evidence that the final choice might not be limited to the Council's four permitted endings.
+
+The water receded. People began returning tools to their owners, although in the confusion nobody remembered who had brought some of them. The carpenter said they could keep the extra cable for the next flood.
+
+Adra said the sluice was no longer the same machine it had been that morning. It had broken a little and become more useful. Mira felt an unexpected affection for the bent iron gate.
+
+It would never qualify for the Council's definition of an elegant solution. It had saved the hospital district.
+
+When the assembly bell sounded, the workers left the wall in shifts. Some went to the square still wearing wet clothes. Others stayed to watch the basin. A few declined to attend because their children needed supper.
+
+No one accused them of failing to participate in history. Mira crossed the bridge with Ilya's revised notice in her hand.
+
+It was smudged and poorly aligned, and it told the truth about something the people had done together before anyone had agreed on what should happen next.
+
 ## Assembly
 
 The Emergency Assembly met beneath the open sky, because the Council chamber had become a place where people expected lies to be spoken in comfortable chairs. It was a disorderly meeting.
@@ -1108,6 +1402,90 @@ They returned through the lens carrying the elected delegation's instructions an
 
 The sky was full of grand instruments. None of them could tell her whether anyone would remember the next birthday.
 
+## The People At The Gate
+
+After the assembly, the delegates did not immediately follow Mira to the lens. They had households to inform, tools to collect, and arguments still being made in the streets.
+
+The people had agreed on the right to decide; they had not agreed on every consequence of their decision. The mayor asked whether they could take another hour.
+
+Mira could see the pale ring over the city closing by degrees and knew the machine was unlikely to grant one. She said they could take the time needed to make the instructions truthful, but that no delay would be free of risk.
+
+The mayor thanked her for not calling the risk imaginary.
+
+Three delegates had been chosen, and each came to the gate carrying something different. The families' representative carried a book of names with blank lines left for people who had not yet been found.
+
+The representative of the city's trades brought a list of food stores, medicines, ships, and working machinery, because a city returned to the world would need more than the right to exist.
+
+The child chosen by the children carried a small tin box of drawings. One showed the observatory as a house built on clouds. Another showed AsterVale as a circle surrounded by doors.
+
+The last contained no picture at all, only a sentence written with great care: PLEASE DO NOT MAKE US PROMISE TO BE BRAVE.
+
+Mira read it twice. She thought of Tessa from the weather station, of children in the hospital, of the boy who had tried to make the backward clock run again.
+
+Adults were fond of demanding courage from children after making the conditions in which courage became necessary. She folded the drawing and put it back in its box. The child watched until she had closed the lid.
+
+At the boundary, a line of Council officials waited under a canopy of blue silk. Their leader was a man Mira had seen at public lectures, where he introduced the Chancellor with speeches about responsible governance. He carried an order bearing Orsol's seal.
+
+By authority of the first agreement, he declared, no citizen was permitted to leave the hidden city while the system remained unstable. The order used the same words with which the Council had once described the original confinement as voluntary.
+
+The families' delegate stepped forward. She asked whether the official had received permission from the people who lived in AsterVale. He said that the agreement had been made before the birth of most current residents.
+
+She asked whether the people who had been born under it were permitted to reject it. He replied that such matters were beyond his jurisdiction.
+
+Then, with the expression of a man who believed he had said something decisive, he asked them to return to their homes.
+
+**Cael:** You have come to a place where the people are arguing about their own future. You may join the argument. You cannot end it by pointing at a paper no one here was allowed to read.
+
+The official looked at Cael's scar and paled. He recognized a mark he had never expected to see outside a Council archive. He demanded that Cael submit to an inspection.
+
+Cael held out his hand, not in surrender but to make the mark visible to everyone. Several people in the crowd stepped closer. They wanted to know what it meant that a courier had been made part of the machinery of their captivity.
+
+The official's answer was a long explanation about custodial authority. Someone laughed. The laughter spread, not because the subject was amusing, but because the language was so far removed from the lives it claimed to govern.
+
+The official ordered his guards to block the passage. They hesitated. One guard had grown up in the hidden city and recognized the woman standing beside the families' delegate as his aunt.
+
+Another saw the hospital workers carrying blankets through the crowd and stepped out of their way. The order had been written for men who would act like pieces on a board.
+
+The men were human beings standing in a street where other human beings knew their names.
+
+Mira took the old agreement from her satchel. She did not tear it up.
+
+She read its most important clause aloud, including the portion the Council had never published, the clause that said the people benefiting from the bargain need not be informed of the losses. She let the words settle over the crowd.
+
+The official's face remained composed, but he had to lower his eyes to the seal in his hand. The seal was still valid under the rules of the machine. It was no longer convincing to the people standing in front of him.
+
+**Mira:** You may take this paper back to the Chancellor. Tell her the city has read it. Tell her the people whose names it did not include have something to add.
+
+The guard who had recognized his aunt moved aside. Others followed. The official said they were disobeying a lawful order. The aunt said she had a lawful duty to return a borrowed kettle and that the guard could come to supper afterward.
+
+The absurdity broke the remaining tension. The passage cleared a little at a time, not because someone had defeated the Council but because enough people refused to make the Council's authority the only thing in the street.
+
+Elian appeared beside Cael. She had brought a piece of the blue scarf from the bakery, the one that held a memory of him returning for her when they were children.
+
+She asked him whether he would remember her after he crossed the lens again. He told her that he did not know. Then he took the scarf and tied it around his wrist above the compass scar.
+
+**Cael:** If I forget, this will be the beginning of the story when you tell it to me again.
+
+Elian: And if the story changes?
+
+**Cael:** Then you can tell me what I got wrong. I would like to be corrected by someone who was there.
+
+She touched his bandaged hand. For a moment Mira saw the two siblings not as symbols of the passage's cruelty but as people recovering the ordinary awkwardness of having grown older without each other. Elian asked whether Cael still hated pears.
+
+He said he had never liked them. She laughed and told him he had once eaten six in a row to win a bet. He could not remember the wager. He accepted the humiliation with more grace than he had accepted the Council's seal.
+
+The delegates stepped into the passage. The city moved behind them: lanterns being put away, water being pumped from the lower streets, children arguing about whether the sky on the other side would contain the same stars. Not everyone followed.
+
+Many stayed to tend the places they had built. Mira understood that their decision to remain was as important as the delegates' decision to leave. The right to return had to include the right not to be moved against one's will.
+
+The passage trembled. AsterVale's lamps blurred against the blue glass. For one dreadful instant the families' book became transparent, and the written names shone through its pages like fish beneath ice. Mira pressed her hand against the cover and spoke the first name aloud.
+
+Cael spoke the second. The trades' delegate spoke the third. Other people took up the recitation until the book grew solid again. The child with the tin box listened, then began saying the names of her classmates. Some of the names were repeated.
+
+Nobody objected.
+
+They reached the observatory side carrying imperfect instructions, frightened people, and a box of drawings that a machine had never been built to understand. The assembly was over. The work it had begun was not.
+
 ## Return To Lens
 
 The observatory was no longer stable. Its floors had developed a slow inclination toward the eastern lens, as if the building had begun sliding down a slope no architect had calculated. Doors opened on rooms they did not lead to.
@@ -1225,6 +1603,104 @@ She gave Cael enough time to look at the floor before she told Elian the risks h
 The group crossed back to the observatory. The floor shook beneath their feet. In the east wing, Orsol's guards had formed a line across the staircase. The delegates asked whether the guards had been elected to represent the city. None could answer.
 
 The line broke, not because the guards were frightened, but because their orders contained no language for a question that was impossible to evade.
+
+## The Last Unwritten Clause
+
+The eastern lens had grown so large that the machinery around it looked like scaffolding built by children. Its brass rings rotated in opposite directions, and between them the air was full of torn instructions.
+
+Mira could read fragments as they passed: CONTINUITY, NECESSITY, ACCEPTABLE LOSS, PRESERVATION OF THE WHOLE. The words were not lies in themselves. They became lies when the machine treated them as complete sentences and refused to name the people on whom their completion depended.
+
+The Council's Chancellor stood on the far platform. Orsol had removed the ceremonial coat she wore for public appearances. Beneath it she looked older and more tired than the image projected over AsterVale's market. Her sleeves were rolled to the elbows.
+
+A thin line of blood crossed one wrist where the control ring had cut her. She was still holding the official seal, though its blue light had dimmed until it resembled a dying ember.
+
+Orsol: I hoped you would come to negotiate. I see you have brought witnesses.
+
+**Mira:** I brought people. They came because the decision concerns them.
+
+Orsol: People are poor instruments for determining what must be done in a crisis.
+
+**Mira:** Then perhaps the crisis should not have been designed around the needs of an instrument.
+
+Orsol did not answer immediately. She looked past Mira to Cael's scarf and to the delegation standing behind them. The child held her box of drawings against her chest.
+
+Orsol appeared to notice it, and for a moment her expression changed into something like recognition. She asked the child why she had come. The child said that the adults had already made too many decisions without asking what children wished to remember.
+
+Orsol said memory could be dangerous. The child replied that forgetting had not made any of them safe.
+
+The lens responded to the exchange with a low vibration. It had recognized the voices but not their authority. Its grammar was old and precise. To change a world, it wanted to know who was authorized to speak for that world.
+
+The first agreement had given an answer that no living citizen could challenge. Mira's father's unfinished ring had been an attempt to make that answer revisable.
+
+The last empty slot waited beside the control table, shaped like a space where an object should have been laid but never was.
+
+Mira opened her ledger. She put the names of the missing on one side and the Council's calculations on the other. The pages lifted in the wind. She spoke a sentence describing the harm done by the original agreement.
+
+The machine answered by showing the disasters that the agreement had prevented: storms held at the boundary, floods diverted from cities, plagues stopped before they spread. The images were real enough to frighten her. The Council had not invented the danger.
+
+It had used the danger to claim a permission nobody had granted.
+
+**Cael:** We are not saying the danger was imaginary.
+
+Orsol: Then what will you do with the people who die if you remove the wall?
+
+**Cael:** We will remember them. And we will tell the living what we know before we ask them to bear the risk.
+
+Orsol shook her head. She said remembrance was not a defense against suffering. Cael agreed. The simple answer seemed to strike her harder than an argument. She had been trained to meet accusations of cruelty with an account of necessity.
+
+She had not prepared for people who could acknowledge necessity and still refuse the secrecy with which she had wrapped it.
+
+The control platform shook. One of the brass rings cracked along a line of old repairs. Mira saw the dates stamped into the metal: the first test at the ferry landing, the vanished school, the garden, the northern catastrophe, Bellwether, AsterVale.
+
+The system had been patched repeatedly without anyone returning to ask whether its first premise remained defensible. Every repair had made the machinery larger. Every repair had made the people affected by it more distant from the people authorized to operate it.
+
+She thought of the water gate in the city. Adra had not waited for the old instructions to become just. She had turned the bolts and found a way to keep the hospital standing.
+
+The lesson was not that machines could always be made harmless. It was that a person who understood a machine could refuse to let the machine's existing rules exhaust the possibilities for action.
+
+**Mira:** The empty slot is not meant for a new ruler. It is meant for a condition.
+
+Orsol: Which condition?
+
+**Mira:** That no agreement can be made permanent merely by making its victims unable to remember that it exists.
+
+The words hung in the air. The lens attempted to parse them. It showed an error: CONDITION REQUIRES AN AUTHORITY. Mira turned to the delegates.
+
+She asked them to speak the names of the people who had instructed them, not as a spell but as a record of whom they could answer to afterward. The families' representative began with the missing.
+
+The trades' representative named the workers who would have to repair the city. The child named the children who had asked her to carry their drawings. Cael added his own name and Elian's. Mira spoke her father's name, then her mother's, then her own.
+
+The ring moved. One of the old instructions fell away like a flake of burnt paper. Across the glass appeared the outline of a doorway whose frame was made from the names being spoken.
+
+Beyond it, Mira could see a shore under an ordinary sky. The machine had found a way to represent a choice made by people rather than one imposed upon them. It had not yet found a way to ensure the choice would end safely.
+
+The Chancellor approached. She said that if Mira opened the passage, she would be responsible for the suffering that followed.
+
+Mira answered that she would be responsible for the part she chose, including the decision to leave others free to make choices of their own. She would not accept responsibility for every disaster the Council had hidden beneath the word safety.
+
+Neither would she claim innocence merely because she had acted with good intentions.
+
+Orsol looked at the control ring. Her hand was trembling. She had spent the better part of a lifetime believing the world would end if the agreement were changed.
+
+The possibility that the world could survive her loss of authority seemed to frighten her almost as much as the storms. She did not hand over the seal. She did not attempt to stop Mira from approaching the empty slot.
+
+For the first time that evening, she allowed the instrument to wait while someone else spoke.
+
+Mira could feel the choices gathering behind the lens. They were not four easy futures. Each would ask something different of the people who had survived the long concealment. One would open the sky to danger and reunite the cities.
+
+One would require a living witness to keep the passage from closing. One would make a public bargain that could be revised. One would tear up the agreement and leave the world to govern its own broken mechanisms. The machine could show consequences.
+
+It could not decide which consequences a free people ought to choose.
+
+The child with the drawings stepped beside Mira. She placed her tin box on the table and opened it to the picture of AsterVale surrounded by doors.
+
+Beneath the drawing she had written another sentence, smaller than the first: SOME DOORS SHOULD BE HARD TO CLOSE. Mira took the picture and laid it in the empty slot. The brass ring brightened.
+
+A sentence appeared across the lens in letters large enough for the people on both sides to read: THE AGREEMENT MAY BE CHANGED BY THOSE WHO MUST LIVE UNDER IT.
+
+The floor stopped moving for one heartbeat. Mira knew the pause would not last. The old machinery was still failing, the storms still gathering, and the people on both sides still afraid. But the machine had recognized a clause it had never recognized before.
+
+There was now a space in its language where a choice could be made without first erasing the person who would have to live with it.
 
 ## Final Engine
 
