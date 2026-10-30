@@ -16,6 +16,8 @@ cargo run --locked -p vesper-player -- examples/atlas-unwritten-skies
 - [ ] **Two new chapters.** Read The Library of Lost Afternoons and navigate The Ferry of Blue Glass; verify their dialogue and narrative continuity on every ending path.
 - [ ] **Underwater chapter.** Verify The Room Beneath the Weather transitions from the undersea lens to the storm, plays the bell, and changes Mira/Cael expressions without clipping the illustrated dialogue panel.
 - [ ] **Novel-length chapters and five environments.** Confirm The Garden Where Bells Were Planted, An Inventory of Small Mercies, The Quay of Unreturned Things, The Hall of Open Questions, and The Station for Things Not Yet Lost display their own new artwork and remain legible under the illustrated panel; finish all four 41-scene routes.
+- [ ] **Eight repainted locations.** Inspect Bellwether, the coast, market, name garden, archive, undersea lens, shattered lens and airship port. Check each 1280×720 image is distinct, crisp, correctly associated with the authored scene, and legible behind the ornate custom dialogue panel.
+- [ ] **Art-direction consistency.** Confirm the cleaner storybook backgrounds blend acceptably with Mira/Cael’s detailed sprites and the custom high-detail panel; record any remaining mismatches instead of silently declaring all illustration finished.
 - [ ] **Four conclusions.** Replay the final choice for The Open Sky, The Living Witness, The Solstice Covenant and The Unbound World. Each should lead to a narrative epilogue and game ending, not a missing scene.
 - [ ] **No new engine changes.** Run one earlier example (Living Journal or Dawn Post Office) to ensure the packaged game has not modified or replaced any engine files.
 
