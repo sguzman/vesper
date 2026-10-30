@@ -89,6 +89,10 @@ scenes={
 for key,im in scenes.items():
     im.save(BG/f'{key}.png',compress_level=9)
 
+# Restore individual concept-location paintings after base observatory grades.
+from extract_locations import render_locations
+render_locations()
+
 # Original source illustration silhouettes are preserved. Lighting grades are
 # deliberately subtle so portrait compositions do not jump during crossfades.
 for name,modes in [('mira',{'open':((255,255,255),0,.99), 'troubled':((25,35,70),.16,.89), 'luminous':((253,214,126),.20,1.08)}),('cael',{'steady':((255,255,255),0,1.), 'wary':((30,50,100),.13,.89), 'resolved':((249,186,107),.18,1.08)})]:

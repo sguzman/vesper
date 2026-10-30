@@ -10,6 +10,28 @@ Its vellum shone like a shallow pond at sunrise, its coastlines remained fine as
 
 But where the city of Bellwether should have stood, someone had rubbed away the fact that a city had ever existed.
 
+The observatory had always insisted that the sky was legible. Every instrument had a purpose, every shelf a number, and every mistake a procedure for correction. That morning, before Cael arrived, Mira had discovered a different kind of mistake in the oldest catalog.
+
+The book contained an index for eight hundred and twelve entries, but between the headings for tides and translation there were seven empty pages, each numbered in a careful copper hand. The missing entries occupied space. They had not left their subjects behind.
+
+She had held the book up to the window and seen impressions in the paper where someone had pressed a pen hard enough to mark the leaves beneath.
+
+On page three, a sentence was still partly visible: A HOUSE IS A KIND OF PROMISE MADE BY A STREET. On page four, in a different script: DO NOT LET THE MINISTERS CALL IT WEATHER.
+
+The next impression was the shape of a child's hand, traced around five fingers. She copied the marks into her own ledger, knowing that writing them might preserve their shapes but not what they meant.
+
+Her first impulse had been to report the discovery to the Council. The Council kept records, employed archivists, maintained centuries of observations, and paid Mira's salary when it remembered to pay anyone.
+
+Yet she could name three researchers who had sent warnings to the Council and become the subjects of warnings themselves. They were not in prison. That would at least have left a place where letters might be sent.
+
+Their rooms had been reassigned, their names removed from the rosters, and their colleagues trained to say that the vacancies were administrative matters. The Council had developed a remarkably efficient vocabulary for turning human beings into scheduling problems.
+
+Mira set the ledger beside the atlas. She imagined the city as its inhabitants must have last seen it: morning bread cooling on a sill, a window opened for the smell of rain, an argument paused because someone had to leave for work.
+
+A disappearance was easy to think about when it belonged to a map. She was learning to think about the breakfast that went uneaten and the person who would never return to finish the argument. That was why she had stopped sleeping.
+
+It was also why she could not stop counting.
+
 Mira Vale had known Bellwether in the ordinary way people know places they hope to return to.
 
 She remembered wet pavement and a window full of pears, an argument about whether the sea was green or blue, and her father's hand holding hers so she would not cross when the tram bell sounded.
@@ -169,6 +191,40 @@ They had an evening, perhaps two, before the erased region reached the observato
 They descended by the old lift to the cloudline, where the upper winds were cold enough to sing through the cables. From above, Bellwether's missing quarter had looked like a neat absence.
 
 From below it was a broken street ending in open sky, a church bell hanging without a tower, a stairwell rising to a landing where a door had never been built.
+
+At the transfer platform below the observatory, an airship was being lashed to a pier that had no water beneath it. The dockmaster kept a ledger of arrivals and departures with the solemnity of a priest keeping a record of souls.
+
+He had learned not to erase any name, even after the passenger failed to appear. The missing travelers had accumulated across the pages until they outnumbered the living by three to one.
+
+Cael ran his finger down the oldest column. Here was a pilot who had once taught him how to turn into a headwind without tearing the sail.
+
+Here was a cook who used to leave an extra bowl by the stove because she believed bad luck could be distracted by hospitality.
+
+Here was a woman named Nera who had climbed the tower every morning to see whether her son was among the returning ships. The letters of her name were beginning to thin.
+
+Cael asked for a pencil and darkened them until the paper grew rough.
+
+**Mira:** Will that help?
+
+**Cael:** I don't know. But he should not find his mother absent from the list if he comes home.
+
+For a while they stood under the canvas awnings and watched stevedores pass a crate from hand to hand. None of them knew the destination marked on it.
+
+The crate contained shoes, winter coats, a child's patched scarf, and three books tied together with a ribbon. The address had disappeared but the objects had not. The dockmaster said this happened every week.
+
+People continued sending parcels to places that the world no longer admitted were real.
+
+Mira realized that the dock was a museum of uncompleted acts of care. A knitted sleeve could not tell its story, but someone had made it to keep another person warm.
+
+The evidence was everywhere once she knew how to look: a bowl saved from breaking, a seat left empty, a familiar song that everyone knew the melody of but nobody could remember learning. The Council could erase the recipients from its ledgers.
+
+It could not yet erase the shape of the effort people had spent on them.
+
+They boarded a weather skiff whose pilot was missing the right side of his memory.
+
+He knew how to steer, how to read the winds, how to navigate in darkness by the vibration of the rigging, but he could not remember where he had learned any of it.
+
+He spoke to Cael like a former friend and to Mira like a stranger. Cael accepted both forms of greeting without correction. The skiff leaned into the cloudbank, and the pier vanished behind a curtain of vapor.
 
 A woman in a red coat stood beside a vegetable stall. She was selling pears to people whose coins no longer bore the faces of any king. She spoke to Mira without asking who she was.
 
@@ -476,6 +532,50 @@ The hidden city began where the eastern lens ended. Its central market occupied 
 
 Every lantern contained the name of a person who had left the city, as if the people had tried to send their absent loved ones a light without knowing whether a light could cross the boundary.
 
+Mira entered the market by following the smell of oranges. It surprised her that the smell was ordinary. She had expected the air of a hidden city to feel enchanted or poisoned or at least different in a way a careful observer could describe.
+
+Instead the fruit was a little bruised, the stalls were badly balanced, and a man with a remarkable mustache had arranged his oranges in a pyramid that was already leaning toward collapse. One fell.
+
+A girl caught it, tossed it back, and received an insult from the vendor that made them both laugh. Life had not become more symbolic simply because someone had made it secret.
+
+A printer's shop stood under the southern bridge. Its owner, a woman named Ilya, was setting type for a newspaper that could not leave the city. Every day she printed a page headed WHAT WE STILL KNOW.
+
+Under the heading were corrections, births, deaths, the locations of newly opened clinics, and a column for memories people were afraid of losing. The column had once held notices about lost umbrellas and broken engagements. Now it took up most of the page.
+
+A parent described the smell of a baby's hair; an apprentice recorded the sound his master's cough made when a joke was particularly bad; a musician wrote that the third note of her mother's favorite tune should be played a fraction too early.
+
+Ilya told Mira that she had been accused of sentimentalism by the city government. She pointed to the wall of proofs behind her, where the editions hung one over another like an uneven tapestry.
+
+Ilya's last issue had printed a map of streets that no longer led anywhere. A month before that, she had published the names of three men who worked at the boundary and were lost during a night shift.
+
+The official report described the incident as a disruption of access. The newspaper described their families. The two accounts were not contradictory, Ilya said. One was simply smaller than the truth.
+
+**Mira:** Do the people read it?
+
+Ilya: Some read it. Some burn it to keep warm. I think both are reasons to print another copy.
+
+Cael noticed a sheet hanging near the press and stopped. It showed an engraving of a ship approaching AsterVale from the upper cloudline. The lettering beneath had been cut away, but he recognized the rigging. He had sailed on the ship.
+
+In the engraving someone stood at the stern, one hand raised in farewell. He could not see her face, but he knew how that person leaned when the wind came from the east. For a moment his composure fell from him entirely.
+
+Mira did not ask for an explanation. She took the image down and paid for it.
+
+They carried the engraving through streets bright with laundry, past a school where children were drawing maps of their bedrooms in order to learn what the word geography had once included. In one map the bed occupied the whole page.
+
+In another the doorway led directly to the moon. The teacher had written beneath each drawing: A PLACE IS NOT ONLY WHERE IT IS. It was a simple sentence.
+
+Mira wanted to return to the observatory and place it beside every theorem her father had ever written.
+
+Under the western bridge they found a shop repairing mechanical birds. Each bird contained a tiny folded paper on which a patron could write a name. When wound, it would fly a short, uncertain circle and return to the hand that released it.
+
+Mira watched a boy set one loose over the canal. It landed on the wrong balcony. The boy laughed, tried again, and on the third attempt the bird returned to him. The message inside read: COME HOME WHEN YOU CAN. There was no address.
+
+There never had been.
+
+The city, she thought, had kept inventing ways to send love across an absence. These inventions would be called inefficient by a machine designed to preserve exact quantities.
+
+They were, to Mira, the strongest evidence that the machine had never understood what it was preserving.
+
 Vendors sold the ordinary necessities of life: tea, flour, shoelaces, maps of streets that ended at the city's invisible border. The people had adapted to their confinement with the inventiveness that makes it possible to live inside almost any injustice.
 
 Children had made a game of throwing stones against the glass wall and watching them return, older than they had been when they left a hand.
@@ -590,6 +690,52 @@ There were questions from bakers, teachers, pilots, and children who did not und
 
 A woman carrying a bucket interrupted to ask why the water was running backward. The mayor put away the speech.
 
+The delegates had argued for an hour over whether the square was a suitable place to decide the fate of seventeen thousand people. The mayor wanted the chamber. The baker wanted a schoolhouse with enough chairs for every family.
+
+The clockmaker said there was no room big enough and that perhaps the city had spent too long believing important decisions required a special kind of room.
+
+In the end they carried benches out of shops and kitchens, arranged them in uneven circles, and left the central fountain uncovered so children could sit on its edge. No one could see everyone, but everyone could see someone.
+
+Mira was asked to describe the machine. She tried to begin with the number of lenses, their alignments, and the mechanism by which a sentence could be given the force of a law of nature.
+
+A woman in a flour-dusted apron interrupted her before the second sentence. Would the bakery still have an oven tomorrow? Mira could not answer. Then a cart driver asked whether his daughters would remember their grandmother. She could not answer that either.
+
+A third question concerned the northern hospital. Was its stairwell likely to vanish if the boundaries changed? At last Mira put down her notes.
+
+**Mira:** I can tell you what the machine is doing. I cannot tell you what it will do after we ask it to behave differently. My father claimed he could make that prediction. The city has spent seventeen years paying for his confidence.
+
+Silence followed. It was not the silence of belief. It was the more demanding silence of people deciding what to do with an answer they did not like.
+
+A surgeon from the eastern clinic stood. He had learned to operate in a city where the weather did not follow the season and children occasionally arrived at the hospital with memories older than their grandparents.
+
+He wanted the walls removed, he said, because medicine depended on exchange: the circulation of knowledge, medicine, and the experience of other people. Yet he had seen too many patients die because a confident authority had called a risk acceptable on their behalf.
+
+He would not let the Council make that calculation again. He did not want safety purchased with secrecy. He wanted danger described honestly, by people who would share it.
+
+The baker asked what such honesty would look like at the end of a long night when frightened people wanted certainty.
+
+A young carpenter answered that perhaps it looked like this: a crowd trying not to interrupt one another, even when the sentence being spoken was unbearable. The baker laughed at him, then apologized, then asked him to continue. Their conversation took six minutes.
+
+The machine had never allowed six minutes for a citizen to change her mind.
+
+Cael stood near the back, holding Ilya's engraving of the ship. Someone recognized the uniform on the deck and asked whether he had been on the last voyage through the boundary. He said yes. Another person accused him of having abandoned the city.
+
+Cael did not deny that he had left. He described the storm that carried him out, the injuries, the first weeks spent searching for a route home, and then the terrible slow loss of the knowledge that home existed.
+
+He could hear anger in the crowd; he let it remain anger. Mira had never seen him refuse the easier comfort of an explanation.
+
+**Cael:** I could have searched harder while I still remembered. That much is mine to answer for. But what happened to the people you sent out afterward was not a failure of their affection.
+
+**Cael:** Someone made it impossible to come back and then called their absence a choice.
+
+A woman in the front row covered her mouth. She had sent a son on a fishing boat ten years earlier. She asked whether Cael knew him. He did not. She asked whether that meant the boy was dead. He could not say.
+
+There was no answer large enough for the space between them. Cael came down from the step and sat beside her until the next speaker began.
+
+Mira was beginning to understand that a public decision might not give anyone relief. It could give them something more difficult: a burden that was genuinely theirs, shared out under conditions they could inspect. The Council's bargain had promised to remove that burden forever.
+
+What it removed instead was the right to carry it.
+
 Orsol appeared in the eastern lens, enormous as a mountain and as carefully composed as a portrait in a government building. She offered another generation of safety in exchange for the atlas and its evidence. The citizens could return to their work.
 
 The outer islands could continue to imagine themselves innocent of the agreement. The toll would be paid by places selected according to mathematical criteria. Nobody would need to know which places until after they were gone.
@@ -663,6 +809,38 @@ The observatory was no longer stable. Its floors had developed a slow inclinatio
 A staircase from the music hall appeared in the star library; the maintenance corridor ended at a window through which Mira could see her childhood kitchen. Her mother was putting salt on the sill. The scene lasted one heartbeat.
 
 Then the window looked out on lightning again.
+
+Before entering the control chamber, Mira returned to the little room where she had slept as a child. Its door had reappeared between two stone columns as the building shifted. The room was smaller than she remembered.
+
+This was almost a relief; memory should have its ordinary embarrassments as well as its terrors. The bed was still beneath the window, and a paper constellation hung from the ceiling on a thread of blue silk.
+
+Her mother had cut the stars from the backs of rejected Council documents. The shapes were imperfect. One had six points and another nine.
+
+Mira had been very young when her mother explained that the number of points did not matter if the child who named a star knew how to find it again.
+
+Cael stopped at the doorway. The shifting architecture seemed to have made him cautious of crossing any threshold without an invitation.
+
+Mira remembered how he had stood outside the west door on the night of his arrival, offering a letter from a vanished city without demanding that she accept it. The gesture had seemed almost theatrical then. Now it was the beginning of a pattern.
+
+He did not want to become one more person who made decisions for her while pretending the decisions were gifts.
+
+**Mira:** I used to hide here when the Council held its dinners. They would bring guests upstairs to look at the telescopes and speak about the world as though the world were a property they administered.
+
+**Mira:** My father used to bring me a plate of cakes and tell me to stay quiet until the speeches were over.
+
+**Cael:** You must have been an unusually obedient child.
+
+**Mira:** I was excellent at staying quiet while making elaborate plans to ruin something later.
+
+She lifted the paper constellation. Written on the back of the largest star were three words in her mother's handwriting: LET HER CHOOSE. The instruction had no obvious subject except Mira herself.
+
+She thought of her father, who had tried to keep the world safe by denying it choices, and her mother, who had left a child's toy with an unfinished sentence about freedom. Love could be protective. It could also be afraid.
+
+A choice was not a promise that nothing would hurt. It was an agreement not to borrow another person's life without asking.
+
+She tucked the star inside the atlas. It left a pale outline on the blank page, as though the paper were considering where to put it. Cael watched the shape appear but said nothing.
+
+They stood together long enough for the room to remember the people who had lived in it. Then the door began to vanish behind them, and they returned to the control chamber by the corridor that still existed.
 
 Cael carried the atlas under one arm and the delegation's sealed account under the other. The paper had grown heavy.
 
@@ -747,6 +925,36 @@ The line broke, not because the guards were frightened, but because their orders
 The last bell began to ring. It did not stop. Its sound moved through the observatory as a physical force, breaking the remaining windows and lifting pages into the air.
 
 The atlas rose from the table and opened to the blank place where Bellwether had been. Each vanished name appeared for one instant in a halo of blue light, then fell backward into the pages like rain.
+
+The machine's twelve rings bore the marks of all the hands that had turned them.
+
+Here was a dent from her father's instrument, there a gouge where a previous director had tried to force a locked position, and lower down a narrow polished stripe at the height of a child.
+
+Mira put her palm against that stripe and recognized her own scale of motion. When she was seven, she had believed that helping her father turn a wheel meant helping him turn the stars. He had allowed the misunderstanding.
+
+Later he had allowed much worse ones.
+
+The air beyond the lens became transparent. She saw the upper islands, the steeples of Bellwether, the markets of AsterVale, the little school with maps of impossible bedrooms. She saw a hospital at the coast where people waited beneath a leaking roof.
+
+She saw a grandmother sewing her name into a coat she hoped would outlast her. The machine had reduced all these things to a system of values. It had numbers for loss, continuity, risk, and projected suffering.
+
+Mira had learned to admire numbers because they could reveal what a human eye would miss. She still admired them.
+
+But numbers did not tell her who had been allowed to define what counted as suffering, or what another person might willingly risk to keep the life that belonged to them.
+
+Cael took his repaired watch from his pocket. It still had no hands. He set it on the control ring where the Council's seal would once have rested. Its empty face showed the reflection of Mira's own.
+
+Neither of them could measure how much time remained. The bell made measurement impossible, each stroke arriving before the previous one had faded.
+
+She thought of the dockmaster's register, the printer's proofs, the child's mechanical bird, the doctor's refusal to call an unknown danger acceptable on somebody else's behalf. None of those witnesses had offered a perfect plan. Together they had made a different kind of map.
+
+**Mira:** I thought my task was to restore the missing places. Then I thought it was to punish the people who took them. Now I think both were too small. A place cannot belong to a ledger, even a truthful one.
+
+**Mira:** It belongs to the people who have to wake up there tomorrow.
+
+**Cael:** And if there is no tomorrow?
+
+**Mira:** Then they should at least have been asked what they wished to do with tonight.
 
 The eastern lens expanded until it filled the room. AsterVale became visible behind it, enormous and impossibly near. Mira could see the market square, the House of Returns, the backward clock, and Elian's blue scarf moving through a crowd.
 
