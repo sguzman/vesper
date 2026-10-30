@@ -2,8 +2,8 @@
 
 This self-contained external game combines all earlier milestones without one game-specific Rust code path. It uses the previously authored notebook/banner art, sunrise painting, bird, plane and Tess sprite frames; art and story are in the game directory. Everything is readable and playable without a network connection.
 
-1. **Installed-font browser** (reader-owned): press `P` → `4` (Appearance), navigate to System Font, search/filter installed families, and choose one. Or provide `font_family` in the player preferences JSON. Authors do not override the reader’s chosen system font.
-2. **Auto-advance wait time** (reader-owned): set `auto_advance: true` and `auto_advance_delay: 0.8` in `player-preferences.json` (delay valid range 0.5–20 s), or change Auto Advance/Delay in Appearance.
+1. **Installed-font browser** (reader-owned): press `P` → `4` (Settings), navigate to System Font, search/filter installed families, and choose one. Or provide `font_family` in the player preferences JSON. Authors do not override the reader’s chosen system font.
+2. **Auto-advance wait time** (reader-owned): set `auto_advance: true` and `auto_advance_delay: 0.8` in `player-preferences.json` (delay valid range 0.5–20 s), or change Auto Advance/Delay in Settings.
 3. **Illustrated notebook/diary** (author-owned): `panel notebook` followed by `panel banner`; safe validated image paths, nine-slice margins, and high-contrast suppression.
 4. **Per-word dynamic flair** (author-owned): `[[fx=ember]]`, `[[fx=shadow]]`, and `[[fx=shimmer]]` mapped to bounded color effects in `styles/journal.toml`. Reduced motion freezes their colors; high contrast uses readable text.
 5. **Autonomous scenery** (author-owned): a two-frame walker, a looping bird, and a one-shot plane travel independently of dialogue and each other. The bird can be hidden and shown via story visual commands. Reduced motion freezes all three.
