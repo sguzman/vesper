@@ -16,10 +16,10 @@
     "docs/visual-experience-roadmap.json": 100
   },
   "scope_weight": 100,
-  "verified_weight": 95,
-  "status": "active: QOL01–QOL07 verified on merged main; QOL08 final combined showcase awaiting main certification",
-  "last_verified_commit": "84b32126599a127c1bcf335e7bb74ad011854bca",
-  "next_milestone": "QOL08",
+  "verified_weight": 100,
+  "status": "verified complete: QOL01–QOL08 certified on merged main; final narrative and Bevy CI green",
+  "last_verified_commit": "84d0ddf6b1c9a7d0c07fc19d4ff5292b655def0c",
+  "next_milestone": null,
   "rules": {
     "execution": "Implementation ongoing under the project stewardship protocol; credit only after acceptance-specific CI and merged-main certification.",
     "architecture": "Rust + Bevy 0.20; pure Rust narrative parser; external game-relative .vn/TOML/images/audio/fonts; generic engine; no game-specific Rust branches.",
@@ -240,10 +240,15 @@
         "Audit render-loop limits (no blocking scans/I/O, unbounded allocations or mandatory shaders); record physical Hyprland versus Xvfb limits; only then mark 100/100 verified."
       ],
       "example": "Run a combined scene with a paper notebook, fiery word, autonomous walkers, birds, and a plane.",
-      "status": "active",
+      "status": "verified complete",
       "evidence": [
-        "Draft stacked integration PR: https://github.com/sguzman/vesper/pull/23",
-        "External Living Journal combines notebook, styled words, walker, bird, plane, reader system fonts and auto delay; full PR and merged-main certification still required; no QOL08 credit."
+        "PR #23 merged: https://github.com/sguzman/vesper/pull/23",
+        "Passing full branch push CI: https://github.com/sguzman/vesper/actions/runs/40970633827",
+        "Passing full branch PR CI: https://github.com/sguzman/vesper/actions/runs/40970641201",
+        "Passing final merged-main narrative and Bevy CI: https://github.com/sguzman/vesper/actions/runs/40974030361",
+        "Merged source commit: 84d0ddf6b1c9a7d0c07fc19d4ff5292b655def0c",
+        "The Living Journal acceptance smoke passed at all six viewports with installed/generic fonts, opt-in auto delay, notebook/banner, ember/shadow/shimmer, walker/bird/plane motion, reader high contrast and reduced motion, and F5/F9; complete legacy playthroughs, hot reload and compiler-free Linux packaging passed.",
+        "Screenshot evidence preserved in final CI artifact vesper-integrated-qa (artifact 12941227870); source limits/physical Wayland QA boundaries documented in docs/reader-qol-audit.md."
       ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     }

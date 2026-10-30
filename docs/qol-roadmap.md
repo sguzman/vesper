@@ -1,6 +1,6 @@
 # Vesper — Reader QoL & Expressive Authoring Roadmap
 
-**Status: 95 / 100 verified points — QOL01–QOL07 VERIFIED on merged main; QOL08 ACTIVE.**
+**Status: 100 / 100 verified points — QOL01–QOL08 VERIFIED on merged main.**
 
 The preceding three phases (original MVP, Presentation Polish, Visual Experience) are independently **100 / 100 complete**. This is a new phase based on main commit `d90766f34a4d81be3064b1da5ee9ee4410aefca5`, created 2026-10-29.
 
@@ -18,7 +18,7 @@ The preceding three phases (original MVP, Presentation Polish, Visual Experience
 
 **QOL07 (9 points) is verified complete.** [PR #22](https://github.com/sguzman/vesper/pull/22) merged at `84b32126599a127c1bcf335e7bb74ad011854bca`. Both [branch CI](https://github.com/sguzman/vesper/actions/runs/40968525827) and [merged-main CI](https://github.com/sguzman/vesper/actions/runs/40971296273) passed all narrative and Bevy regressions, including walking NPC, bird, plane, six sizes, reduced-motion and pause freeze, F5/F9 in-flight restore, motion hot reload, complete old games and Linux packaging.
 
-**QOL08 (5 points) is active, not yet verified.** [PR #23](https://github.com/sguzman/vesper/pull/23) demonstrates all five capabilities in one external Living Journal example; both full branch CI runs [push](https://github.com/sguzman/vesper/actions/runs/40970633827) and [PR](https://github.com/sguzman/vesper/actions/runs/40970641201) passed. Merged-main certification remains required.
+**QOL08 (5 points) is verified complete.** [PR #23](https://github.com/sguzman/vesper/pull/23) merged at `84d0ddf6b1c9a7d0c07fc19d4ff5292b655def0c`; both complete [branch push](https://github.com/sguzman/vesper/actions/runs/40970633827) and [branch PR](https://github.com/sguzman/vesper/actions/runs/40970641201) CI passed. The [final merged-main run](https://github.com/sguzman/vesper/actions/runs/40974030361) also passed narrative and Bevy, including the six-viewport Living Journal acceptance test, legacy playthroughs, save/restore, hot reload, accessible overrides, and compiler-free Linux packaging. The `vesper-integrated-qa` screenshots are retained in run artifact `12941227870`. Xvfb results do not assert physical Hyprland/Wayland GPU QA.
 
 ## Purpose
 
@@ -37,8 +37,8 @@ The per-word aesthetic is inspired conceptually by *Kentucky Route Zero*, *Celes
 | **QOL05 — 🔥 Per-word dynamic flair library** | 14 | QOL04 | **Verified complete** |
 | **QOL06 — 🕊️ Independent ambient-scene actor infrastructure** | 13 | — | **Verified complete** |
 | **QOL07 — 🚶 Autonomous ambient motion and flipbook frames** | 9 | QOL06 | **Verified complete** |
-| **QOL08 — 🧪 Integration, authoring examples, final certification** | 5 | QOL01, QOL02, QOL03, QOL04, QOL05, QOL06, QOL07 | Active — certification pending |
-| **Total** | **100** | | **95 verified** |
+| **QOL08 — 🧪 Integration, authoring examples, final certification** | 5 | QOL01, QOL02, QOL03, QOL04, QOL05, QOL06, QOL07 | **Verified complete** |
+| **Total** | **100** | | **100 verified** |
 
 ### Delivery order
 
@@ -143,34 +143,14 @@ Show all five requested capabilities working together, with documentation and re
 **Reader/author example:** Run a combined scene with a paper notebook, fiery word, autonomous walkers, birds, and a plane.
 
 
-## Illustrative authoring direction (not existing syntax)
+## Implemented external authoring reference
 
-The markup and TOML below show the desired author experience only. The parser/validation milestones must finalize names, escaping, format migration and boundary rules before these examples become executable.
+These are **implemented authoring features**, not speculative syntax. [The Living Journal](../examples/living-journal/) exercises all five in one unmodified compiled engine. Run `cargo run --locked -p vesper-player -- examples/living-journal`.
 
-```vn
-@scene sky_garden
-background garden
-"The [[fx=ember]]fire[[/fx]] reveals a [[fx=shadow]]secret[[/fx]]."
-```
-
-```toml
-# Example concepts, not recognized by the current engine.
-[panel_variants.notebook]
-image = "assets/ui/notebook.png"
-scaling = "nine_slice"
-content_insets = [68, 44, 64, 48]
-
-[text_effects.ember]
-kind = "flicker"
-color = [1.0, 0.48, 0.12, 1.0]
-intensity = 0.20
-
-[ambients.bird]
-image = "assets/ambient/bird.png"
-motion = "loop_path"
-layer = "behind_characters"
-# Finite path points, animation frames and duration to be defined.
-```
+- **Per-word styling:** use nonnested `[[fx=ember]]fire[[/fx]]` in quoted `.vn` dialogue; define `[inline_styles.ember]` and its bounded optional `effect = "ember"` in external theme TOML. The other verified effects are `shadow` and `shimmer` (color animation, **not** moving glyphs). See [inline styles](inline-styles.md).
+- **Illustrated panels:** declare a validated game-relative PNG under `[panel_skins.notebook]` with `image`, `insets`, and `slice_border`; use `panel notebook`, `panel banner` and `panel default` in the story. See [diegetic panels](diegetic-panels.md).
+- **Ambient scenery:** declare bounded `[ambient_actors.bird]` with an image and optional `[ambient_actors.bird.motion]` containing normalized `waypoints`, `period_seconds`, and a `loop`, `ping_pong` or `once` mode; optional sprite frames are supported. See [ambient actors](ambient-actors.md) and [motion](ambient-motion.md).
+- **Reader controls:** installed font and auto-delay are reader-owned settings in Appearance, not author-script commands. Auto-advance stays opt-in, and font choice, high contrast and reduced motion take precedence over authored appearance. See [player preferences](player-preferences.md) and the [Living Journal guide](../examples/living-journal/README.md).
 
 ## Cross-cutting nonnegotiables
 
@@ -188,4 +168,4 @@ The final gate includes Xvfb renders at **946×511, 955×520, 800×600, 900×700
 
 **Source of truth:** [qol-roadmap.json](qol-roadmap.json). Prior completed phases: [MVP](roadmap.json) · [Polish](polish-roadmap.json) · [Visual Experience](visual-experience-roadmap.json).
 
-**Next:** Merge [QOL08 Living Journal PR #23](https://github.com/sguzman/vesper/pull/23), inspect combined screenshot evidence and audit, then certify its full Bevy/narrative regressions on merged main. No 100/100 claim until that green run.
+**Completion:** [QOL08 Living Journal PR #23](https://github.com/sguzman/vesper/pull/23) merged; [final merged-main CI](https://github.com/sguzman/vesper/actions/runs/40974030361) completed successfully with both narrative and Bevy jobs green and screenshot evidence archived. All 100 weighted points are verified; physical Hyprland/Wayland graphics/audio testing remains separately unclaimed.

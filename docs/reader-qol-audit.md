@@ -3,7 +3,7 @@
 This audit is scoped to the five Reader QoL capabilities and describes the
 *committed implementation*, not a general guarantee about every Bevy system.
 The source-of-truth weighted roadmap is [qol-roadmap.json](qol-roadmap.json).
-Source reference for this phase: QOL07 / QOL08 combined integration branch.
+Certified source for this phase: merged main `84d0ddf6b1c9a7d0c07fc19d4ff5292b655def0c` ([final CI](https://github.com/sguzman/vesper/actions/runs/40974030361)).
 
 ## Renderer safety rule
 
@@ -41,8 +41,9 @@ does not claim the entire runtime allocates nothing or never hitches.
 - **QOL08:** [The Living Journal](../examples/living-journal/) combines all
   five requested capabilities into an external game with no game-specific
   renderer. The dedicated `.github/scripts/integrated_authoring_smoke.py`
-  runs six viewport sizes and reader-preference overrides. Its branch and
-  merged-main CI are required before any QOL08 point is certified.
+  passed six viewport sizes and reader-preference overrides on merged main.
+  Both narrative and Bevy jobs passed in [run 40974030361](https://github.com/sguzman/vesper/actions/runs/40974030361);
+  screenshot evidence is archived as `vesper-integrated-qa` (artifact 12941227870).
 
 ## Limits and physical QA
 
