@@ -48,7 +48,7 @@ def scene_spec() -> dict[str, dict[str, int]]:
             scenes[current]["dialogue"] += 1
         elif current and line.startswith("* "):
             scenes[current]["choices"] += 1
-    assert len(scenes) == 56, f"Unexpected Atlas story scene count: {len(scenes)}"
+    assert len(scenes) == 61, f"Unexpected Atlas story scene count: {len(scenes)}"
     assert scenes["final_engine"]["choices"] == 4
     return scenes
 
@@ -169,10 +169,15 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                     for required in ("prologue", "courier", "atlas_wakes",
                                      "second_chapter", "third_chapter",
                                      "fourth_chapter", "threshold_market",
+                                     "the_garden_where_bells_were_planted",
+                                     "an_inventory_of_small_mercies",
+                                     "the_quay_of_unreturned_things",
+                                     "the_hall_of_open_questions",
+                                     "the_station_for_things_not_yet_lost",
                                      "assembly", "return_to_lens", "final_engine",
                                      ending):
                         assert required in traces, (option, required)
-                    assert len(set(traces)) == 36, (
+                    assert len(set(traces)) == 41, (
                         option, "Unexpected number of scenes in ending route",
                         sorted(set(traces)))
                     expected_routes = {
@@ -212,7 +217,12 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                                "record_contract", "record_names", "record_witness",
                                "face_orsol", "fetch_delegates", "write_clause",
                                "ending_open", "ending_witness",
-                               "ending_covenant", "ending_unbound") and current not in illustrated:
+                               "ending_covenant", "ending_unbound",
+                               "the_garden_where_bells_were_planted",
+                               "an_inventory_of_small_mercies",
+                               "the_quay_of_unreturned_things",
+                               "the_hall_of_open_questions",
+                               "the_station_for_things_not_yet_lost") and current not in illustrated:
                     # Capture different branch illustrations alongside shared
                     # narrative stages in the unchanged Bevy renderer.
                     time.sleep(0.4)

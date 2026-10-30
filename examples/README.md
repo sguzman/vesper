@@ -35,7 +35,7 @@ The portable Linux archive includes the new `./vesper/dawn` launcher, usable fro
 
 ## The Atlas of Unwritten Skies — long-form visual novella
 
-Path: `examples/atlas-unwritten-skies/`. A branching, illustrated 56-scene novella with four endings, original painterly background treatments, character art, custom dialogue panel, music and sound. The portable Linux package also provides a `./vesper/atlas` launcher. Story and assets are external to the unchanged engine. See [game details and current acceptance status](atlas-unwritten-skies/README.md).
+Path: `examples/atlas-unwritten-skies/`. A branching, illustrated 61-scene branching novel-length example with four endings, original painterly background treatments, character art, custom dialogue panel, music and sound. The portable Linux package also provides a `./vesper/atlas` launcher. Story and assets are external to the unchanged engine. See [game details and current acceptance status](atlas-unwritten-skies/README.md).
 
 ```sh
 cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies
