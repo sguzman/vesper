@@ -69,9 +69,9 @@ sound page
 "She had last seen it seventeen years ago, when he disappeared into the storm beyond the western observatory."
 "The paper trembled in her hands. A strange delicacy was required to handle a letter from the dead. She wanted to tear it open with her teeth."
 "She also wanted to put it back in its envelope and live forever in the moment before knowing what it contained."
-* "\"Read the letter now, however much it hurts.\"" -> letter_open
-* "\"Ask Cael everything about the delivery first.\"" -> courier_questions
-* "\"Protect the atlas; make sure the letter cannot be a trap.\"" -> protective_choice
+* "Read the letter now, however much it hurts." -> letter_open
+* "Ask Cael everything about the delivery first." -> courier_questions
+* "Protect the atlas; make sure the letter cannot be a trap." -> protective_choice
 
 @scene letter_open
 set truth += 2
@@ -137,9 +137,9 @@ mira: "Sit here until Bellwether becomes a polite gap in somebody else's story."
 "They both looked down at the book. A small golden circle formed where the southern harbor should have been. As it widened, Mira saw fragments of a street beneath its surface. There was a boy with a red scarf."
 "There was a dog sleeping in sunlight. There was a shadow on a wall shaped like a woman holding an open umbrella."
 "They had an evening, perhaps two, before the erased region reached the observatory itself. Mira recognized the way the map pulsed: each loss was a rehearsal for a greater one. The unseen hand would keep drawing circles until no name remained to contradict it."
-* "\"Search the forbidden east wing for the source.\"" -> east_route
-* "\"Follow the atlas through the memory of Bellwether.\"" -> memory_route
-* "\"Go below the clouds and meet the people at risk.\"" -> people_route
+* "Search the forbidden east wing for the source." -> east_route
+* "Follow the atlas through the memory of Bellwether." -> memory_route
+* "Go below the clouds and meet the people at risk." -> people_route
 
 @scene east_route
 set truth += 2
@@ -237,9 +237,9 @@ cael: "I carried messages people were told could not be delivered. I was very go
 "Mira wanted to insist he was mistaken. Instead she asked him to show her his palms. On the inside of his right wrist was the faint scar of an eight-pointed compass rose, the same mark her father had used on his letters."
 "It was not tattooed. It had been burned into the skin by something that had held him against an iron plate."
 "The first time she had met him, his name was the one thing she had trusted. Now it felt like a bridge that might have been built from both shores by different people."
-* "\"Tell Cael you trust him, even with the missing memories.\"" -> trust_courier
-* "\"Demand that he tell you what he is hiding.\"" -> suspect_courier
-* "\"Stop talking and examine the compass scar for clues.\"" -> examine_scar
+* "Tell Cael you trust him, even with the missing memories." -> trust_courier
+* "Demand that he tell you what he is hiding." -> suspect_courier
+* "Stop talking and examine the compass scar for clues." -> examine_scar
 
 @scene trust_courier
 set bond += 2
@@ -315,9 +315,9 @@ cael: "We have not come to break the lens. We want to know what was promised, an
 "You cannot bring all three records through the passage intact. It must be decided which loss you are willing to accept."
 "Behind the woman, three doors opened onto impossible spaces: a room of burning ledgers, a garden where every flower carried a name, and an observatory seen from beneath an ocean. Mira understood that the choices represented different kinds of evidence."
 "She also understood that every choice would leave something unknown."
-* "\"Take the contract and learn the exact terms.\"" -> record_contract
-* "\"Take the names and protect those who cannot speak.\"" -> record_names
-* "\"Find the living witness who can overturn the bargain.\"" -> record_witness
+* "Take the contract and learn the exact terms." -> record_contract
+* "Take the names and protect those who cannot speak." -> record_names
+* "Find the living witness who can overturn the bargain." -> record_witness
 
 @scene record_contract
 set truth += 3
@@ -410,9 +410,9 @@ cael: "You took my sister and called it mercy."
 "Orsol: I will be at the eastern stair when the last bell sounds. If you are wise, you will be there before me."
 "The seal collapsed into a circle of blue light. The market returned. Elian was gone."
 "Cael stood very still beside the glass, and Mira felt how little use it was to be right about a question when someone had just been given back a grief he had not known he possessed."
-* "\"Take the Chancellor's offer seriously: seek a negotiated delay.\"" -> negotiate_route
-* "\"Enter the hidden city and seek its people's consent.\"" -> consent_route
-* "\"Break the Council's grip and expose the concealed history.\"" -> expose_route
+* "Take the Chancellor's offer seriously: seek a negotiated delay." -> negotiate_route
+* "Enter the hidden city and seek its people's consent." -> consent_route
+* "Break the Council's grip and expose the concealed history." -> expose_route
 
 @scene negotiate_route
 set mercy += 1
@@ -508,9 +508,9 @@ sound bell
 "The murmuring grew into voices, then arguments, then the beginning of a public meeting."
 "Mira had spent years believing arguments were things people made when they had forgotten the value of evidence."
 "Watching the market, she began to suspect that an argument could also be a kind of evidence: that a person cared enough about the future to speak where a command would have preferred silence."
-* "\"Stand with Elian and hear the families before the assembly.\"" -> families_heard
-* "\"Go to the Council chamber and obtain the missing terms.\"" -> chamber_heard
-* "\"Walk the boundary to discover what the storm truly is.\"" -> storm_heard
+* "Stand with Elian and hear the families before the assembly." -> families_heard
+* "Go to the Council chamber and obtain the missing terms." -> chamber_heard
+* "Walk the boundary to discover what the storm truly is." -> storm_heard
 
 @scene families_heard
 set mercy += 2
@@ -632,9 +632,9 @@ cael: "I told him the apology would not matter unless he stopped."
 "Love and culpability were not opposites; a person could carry both, and the people who loved him could be asked to carry the knowledge without being asked to excuse it."
 "She looked into the lens. Her mother's remembered figure stood far away in the darkness, not moving. Mira wanted to ask whether her father had ever found a way to forgive himself. She did not."
 "The question would have been another attempt to make the dead answer for the living."
-* "\"Send Cael for the delegates; confront Orsol yourself.\"" -> face_orsol
-* "\"Go together to the market and bring everyone back.\"" -> fetch_delegates
-* "\"Try the unfinished grammar now with the witnesses you have.\"" -> write_clause
+* "Send Cael for the delegates; confront Orsol yourself." -> face_orsol
+* "Go together to the market and bring everyone back." -> fetch_delegates
+* "Try the unfinished grammar now with the witnesses you have." -> write_clause
 
 @scene face_orsol
 set truth += 2
@@ -721,10 +721,10 @@ mira: "I don't know. I used to think the purpose of studying the stars was to le
 "Orsol: The city has given us its conditions. What do you propose to write into the final clause?"
 "Mira looked at Cael. He looked back without attempting to choose for her. The atlas was open, its blank places waiting. Beyond the windows the first light of an unfinished morning touched the clouds."
 "Mira understood then that an ending was not a place where a story ceased. It was a place where the living accepted that the consequences of their choices would outlast the sentences in which they described them."
-* "\"Open the sky and accept the danger together.\"" -> ending_open
-* "\"Become the living witness and keep the passage open.\"" -> ending_witness
-* "\"Negotiate a public, temporary covenant.\"" -> ending_covenant
-* "\"Destroy the bargain and entrust the world to its people.\"" -> ending_unbound
+* "Open the sky and accept the danger together." -> ending_open
+* "Become the living witness and keep the passage open." -> ending_witness
+* "Negotiate a public, temporary covenant." -> ending_covenant
+* "Destroy the bargain and entrust the world to its people." -> ending_unbound
 
 @scene ending_open
 background first_morning

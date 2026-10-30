@@ -66,6 +66,11 @@ def build() -> dict:
             choice, sep, target = line[2:].rpartition(' -> ')
             if not sep:
                 raise ValueError(f'line {lineno}: choice missing destination')
+            # Authoring choices may be quoted for readability. Decode the
+            # author's surrounding quotes instead of showing them in the UI.
+            choice = choice.strip()
+            if choice.startswith('"') and choice.endswith('"'):
+                choice = json.loads(choice)
             output.append('* ' + json.dumps(choice, ensure_ascii=False) + ' -> ' + target)
             choices += 1
         else:

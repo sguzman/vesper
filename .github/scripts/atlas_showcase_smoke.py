@@ -166,6 +166,25 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                                      "assembly", "return_to_lens", "final_engine",
                                      ending):
                         assert required in traces, (option, required)
+                    assert len(set(traces)) == 19, (
+                        option, "Unexpected number of scenes in ending route",
+                        sorted(set(traces)))
+                    expected_routes = {
+                        1: ("letter_open", "east_route", "trust_courier",
+                            "record_contract", "negotiate_route",
+                            "families_heard", "face_orsol"),
+                        2: ("courier_questions", "memory_route",
+                            "suspect_courier", "record_names",
+                            "consent_route", "chamber_heard", "fetch_delegates"),
+                        3: ("protective_choice", "people_route",
+                            "examine_scar", "record_witness",
+                            "expose_route", "storm_heard", "write_clause"),
+                        4: ("letter_open", "east_route", "trust_courier",
+                            "record_contract", "negotiate_route",
+                            "families_heard", "face_orsol"),
+                    }
+                    for branch in expected_routes[option]:
+                        assert branch in traces, (option, branch)
                     assert "Vesper decoded audio asset: music:archive" in transcript, (
                         option, "Opening music was not decoded")
                     assert "Vesper decoded audio asset: sound:bell" in transcript, (
@@ -182,10 +201,14 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                     continue
                 current = traces[-1]
                 assert current in spec, (option, current)
-                if current in ("atlas_wakes", "threshold_market",
-                               "final_engine") and current not in illustrated:
-                    # These three distinct narrative stages demonstrate authored
-                    # backgrounds and give reviewers real Bevy frames.
+                if current in ("atlas_wakes", "threshold_market", "final_engine",
+                               "east_route", "memory_route", "people_route",
+                               "record_contract", "record_names", "record_witness",
+                               "face_orsol", "fetch_delegates", "write_clause",
+                               "ending_open", "ending_witness",
+                               "ending_covenant", "ending_unbound") and current not in illustrated:
+                    # Capture different branch illustrations alongside shared
+                    # narrative stages in the unchanged Bevy renderer.
                     time.sleep(0.4)
                     screenshot(win, f"{option}-{current}.png")
                     illustrated.add(current)
@@ -197,7 +220,8 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                 # selects the intended option only when the choice UI appears.
                 press(win, "Return", 0.09)
                 if scene["choices"] and dialogue_seen >= scene["dialogue"]:
-                    press(win, str(option if current == "final_engine" else 1), 0.09)
+                    route_option = option if option <= scene["choices"] else 1
+                    press(win, str(route_option), 0.09)
             else:
                 raise AssertionError(f"Atlas route {option} never reached {ending}; "
                                      f"last log:\n{read_log(log)[-5000:]}")
