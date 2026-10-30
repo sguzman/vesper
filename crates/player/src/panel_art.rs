@@ -18,6 +18,10 @@ pub fn active_skin(session: &Session) -> Option<&vesper_game::PanelSkin> {
 /// theme padding. Compress it at compact viewports, cap at 20% per edge, and
 /// never turn a narrow panel into negative available space.
 pub fn skin_padding(session: &Session, viewport: Vec2) -> Option<UiRect> {
+    // High contrast intentionally hides the authored paper illustration;
+    // remove its decorative writing insets at the same time. Otherwise the
+    // invisible notebook spine wastes the first 160px of the solid panel.
+    if session.preferences.high_contrast.unwrap_or(false) { return None; }
     let skin = active_skin(session)?;
     let compact = (viewport.x / 1280.0).min(viewport.y / 720.0).clamp(0.6, 1.0);
     let base = session.game.theme.panel.padding * compact;

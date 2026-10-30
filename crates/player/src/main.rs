@@ -109,7 +109,10 @@ fn viewport_metrics(size: Vec2, authored_ui_scale: f32) -> ViewportMetrics {
     ViewportMetrics {
         background_scale: factors.x.max(factors.y),
         character_scale: fit,
-        ui_scale: authored_ui_scale * fit.clamp(0.6, 2.5),
+        // Keep the UI at its authored readable size on larger windows.
+        // Enlarging with viewport area made story/choice panels occupy
+        // almost half of an ordinary widescreen desktop window.
+        ui_scale: authored_ui_scale * fit.clamp(0.6, 1.0),
     }
 }
 
@@ -159,7 +162,7 @@ fn fit_viewport(
         Option<&actors::ActorIdle>,
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
-    mut previous: Local<(Vec2, [u32; 8])>,
+    mut previous: Local<(Vec2, [u32; 9])>,
 ) {
     let Ok(window) = windows.single() else { return; };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
@@ -169,8 +172,10 @@ fn fit_viewport(
     // Borrow the authored geometry directly; do not clone/resolve a full
     // Theme on every frame just to compute layout bounds.
     let panel = &session.game.theme.panel;
-    let insets = panel_art::active_skin(&session)
-        .map_or([0.0; 4], |skin| skin.insets);
+    let high_contrast = session.preferences.high_contrast.unwrap_or(false);
+    let insets = if high_contrast { [0.0; 4] } else {
+        panel_art::active_skin(&session).map_or([0.0; 4], |skin| skin.insets)
+    };
     let panel_key = [
         panel.width_percent.to_bits(),
         panel.min_height.to_bits(),
@@ -178,6 +183,7 @@ fn fit_viewport(
         panel.gap.to_bits(),
         insets[0].to_bits(), insets[1].to_bits(),
         insets[2].to_bits(), insets[3].to_bits(),
+        u32::from(high_contrast),
     ];
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
     // reflowed only after a viewport or external theme-geometry change.
@@ -255,8 +261,8 @@ fn menu_step(index: usize, direction: i32, count: usize) -> usize {
 
 
 
-const PAUSE_ITEMS: [&str; 4] = ["Resume story", "Main menu", "Quit", "Appearance settings"];
-const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Quit", "Appearance settings"];
+const PAUSE_ITEMS: [&str; 4] = ["Resume story", "Main menu", "Quit", "Settings"];
+const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Quit", "Settings"];
 const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
 
 /// Retain row identity while focus changes: only selected row colors update.
@@ -1752,13 +1758,13 @@ mod tests {
         let full = viewport_metrics(Vec2::new(1920.0, 1080.0), 1.0);
         assert_eq!(full.background_scale, 1.5);
         assert_eq!(full.character_scale, 1.5);
-        assert_eq!(full.ui_scale, 1.5);
+        assert_eq!(full.ui_scale, 1.0, "large windows must not enlarge the UI panel");
 
         // Wide monitor: fill scene with cropping, retain character proportions.
         let wide = viewport_metrics(Vec2::new(2560.0, 1080.0), 1.0);
         assert_eq!(wide.background_scale, 2.0);
         assert_eq!(wide.character_scale, 1.5);
-        assert_eq!(wide.ui_scale, 1.5);
+        assert_eq!(wide.ui_scale, 1.0, "ultrawide windows must preserve readable UI size");
 
         let narrow = viewport_metrics(Vec2::new(800.0, 700.0), 1.2);
         assert!(narrow.background_scale > narrow.character_scale);

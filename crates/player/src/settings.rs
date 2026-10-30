@@ -203,7 +203,7 @@ pub fn open(
         BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.88)),
     )).with_children(|screen| {
         screen.spawn((
-            Name::new("Appearance settings panel"),
+            Name::new("Settings panel"),
             Node {
                 width: percent(88.0), max_width: px(720.0),
                 max_height: percent(94.0),
@@ -217,7 +217,7 @@ pub fn open(
             ScrollPosition(Vec2::ZERO),
         )).with_children(|panel| {
             panel.spawn((
-                Text::new("Appearance settings"),
+                Text::new("Settings"),
                 TextFont { font: font.clone(), font_size: FontSize::Px(23.0), ..default() },
                 TextColor(Color::WHITE),
             ));

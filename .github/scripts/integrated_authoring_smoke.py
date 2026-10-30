@@ -145,6 +145,21 @@ def run_case(name, *, font=None, contrast=False, reduced=False, auto=False):
                     wait(log, "Vesper ambient actor bird: visible=true")
                     key("Return")
                     wait(log, "Vesper choice UI mounted 2 independent rows")
+                    # Real-machine QA: growing from a compact to a ~Full HD
+                    # desktop must not turn two choices into a half-screen panel.
+                    # Test the actual choice scene, not only the opening line.
+                    call("xdotool", "windowsize", "--sync", win, "1920", "1080")
+                    choice_wide = image(win, directory / "choices-widescreen.png",
+                                        1920, 1080)
+                    sky = float(call(
+                        "convert", str(choice_wide), "-crop", "2x2+958+626",
+                        "+repage", "-format", "%[fx:mean]", "info:"
+                    ).stdout)
+                    assert sky > .08, (
+                        "the choice panel covers too much of the 1920x1080 "
+                        f"screen (sky sample at y=626 is {sky:.3f})"
+                    )
+                    call("xdotool", "windowsize", "--sync", win, "1280", "720")
                     key("Return")
                     wait(log, 'Vesper dialogue panel: Some("banner")')
                     banner = image(win, directory / "banner.png")
