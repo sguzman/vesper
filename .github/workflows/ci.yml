@@ -34,6 +34,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/word-effects
           cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
           cargo run --locked -p vesper-cli -- check-game examples/living-journal
+          cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies
       - name: Verify all 23 original Dawn assets and their manifest hashes
         run: python3 .github/scripts/dawn_assets_check.py
       - name: Verify the external PCM audio assets

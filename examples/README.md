@@ -1,4 +1,4 @@
-# Three complete external visual novels for Vesper
+# External visual novels for Vesper
 
 These are self-contained **external games**, not hard-coded engine demos. Every script, character, image, sound, and theme is loaded from its chosen game directory. No Rust recompilation is needed to switch novels.
 
@@ -32,6 +32,15 @@ cargo run --locked -p vesper-player -- examples/dawn-post-office
 ```
 
 The portable Linux archive includes the new `./vesper/dawn` launcher, usable from any directory without Cargo/Rust on the target machine. [Game-specific story, provenance and generation guide](dawn-post-office/README.md).
+
+## The Atlas of Unwritten Skies — long-form visual novella
+
+Path: `examples/atlas-unwritten-skies/`. A branching, illustrated 39-scene novella with four endings, original painterly backgrounds, character treatments, custom dialogue panel, music and sound. Story and assets are external to the unchanged engine. See [game details and current acceptance status](atlas-unwritten-skies/README.md).
+
+```sh
+cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies
+cargo run --locked -p vesper-player -- examples/atlas-unwritten-skies
+```
 
 ## Verification
 

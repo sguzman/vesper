@@ -1,6 +1,6 @@
 # The Atlas of Unwritten Skies — physical QA
 
-Run from the Vesper repository root after extracting the folder:
+Run from the Vesper repository root (the game is checked in under `examples/`):
 
 ```fish
 cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies

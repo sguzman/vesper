@@ -16,22 +16,16 @@ The game is **entirely external to Vesper's Rust player**. Its `.vn` source, ima
 - Live ambient light motion, character staging/idle/crossfades, cinematic transitions, reader font/auto-advance controls, save/restore, reduced-motion and high-contrast handling.
 - Four optional editorial reading editions in `reader_editions/` and all game-authoring source files.
 
-## Install into an existing Vesper checkout
+## Run from the Vesper repository
 
-The archive contains the path `examples/atlas-unwritten-skies/`. Extract from the **repository root**:
-
-```fish
-unzip -o /path/to/atlas-unwritten-skies-playable.zip -d .
-```
-
-Once this directory is under `examples`, check and run:
+This complete game is versioned at `examples/atlas-unwritten-skies/`. No separate ZIP extraction is needed after checking out the repository.
 
 ```fish
 cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies
 cargo run --locked -p vesper-player -- examples/atlas-unwritten-skies
 ```
 
-The full text is authored as `scripts/novel.source`, then deterministically compiled to canonical Vesper script format as `scripts/story.vn` with `tools/compile_story.py`. Editing a source paragraph does not require Rust changes; the only thing that needs rebuilding is the external `.vn` file. The Vesper player must be new enough for the Reader QoL phase and the PR #25/#27 fixes.
+The long-form text is authored as `scripts/novel.source` and compiled to `scripts/story.vn`. The game uses the existing Vesper player, not a game-specific executable.
 
 ## Controls
 
@@ -45,11 +39,9 @@ The audio is intentionally gentle and synthetic rather than recorded orchestral 
 
 ## Verification status
 
-The included offline validator has passed: asset paths, manifest TOML, graphics dimensions and alpha, audio format, unique/reachable scenes and four endings, and branch-graph traversal. The authored prose is paginated to at most 44 words per dialogue page so long paragraphs do not create unusable UI overlays.
+The original offline authoring validator previously passed structural, asset and branching checks. The repository CI also invokes Vesper's native `check-game` on this directory; consult the CI result for actual engine validation. Full graphical playthrough, four-ending navigation and physical speaker QA are separate acceptance gates, not yet claimed here.
 
-**Not yet verified in this delivery:** `cargo run -p vesper-cli -- check-game` against the actual Vesper crate, full Bevy graphical QA on this particular story, and sound playback on your machine. This environment has no network access to clone the Rust repository and no local copy of the player binary. Your checkout is the definitive end-to-end acceptance tool.
-
-See `QA_CHECKLIST.md` for the short but meaningful manual acceptance sweep. This standalone pack is not represented as a pushed or merged GitHub commit.
+See `QA_CHECKLIST.md` for manual acceptance. The game's sources and media are committed on the Atlas integration branch; do not treat that as a merged release until CI and integration pass.
 
 ## Four endings (titles only; no spoilers)
 
