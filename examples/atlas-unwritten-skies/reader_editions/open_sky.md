@@ -1106,6 +1106,186 @@ They climbed the narrow stair toward the storm. Above them, the glass continued 
 
 Mira could not decide whether the change meant they were succeeding or whether they had awakened something that had been sleeping for seventeen years. She went upward anyway.
 
+## The Room Beneath The Weather
+
+The staircase from the Chamber of Measures should have ended at the western gallery. Mira had climbed it every week as an apprentice, carrying boxes of brass weights to be calibrated in the room above.
+
+She remembered the exact number of steps, the place where the handrail was loose, the little notch in the plaster left when she dropped a weight and refused to admit it. On the seventeenth step the stair turned downward instead of up.
+
+On the eighteenth it disappeared into water.
+
+The water did not fall into the stairwell. It hung in front of them, occupying the shape of a room, clear and dark as glass. An enormous lens floated at its center. Schools of pale fish circled it without disturbing the surface.
+
+Mira could see a table on the other side, laid with plates of dinner that had never been served. Above the table hung a chandelier, its candles burning underwater. The flame of each candle pointed toward the floor.
+
+**Cael:** Tell me this is another memory.
+
+**Mira:** I don't know what it is.
+
+**Cael:** That's becoming a remarkably common answer from the world's foremost cartographer.
+
+**Mira:** I'm not the world's foremost cartographer.
+
+**Cael:** You've just corrected me about a title at the entrance to a flooded room in a staircase. I think the title is yours.
+
+He took her hand. She could feel the rough seam of his glove against her palm. It was a useful sensation because the room ahead had begun whispering in the voices of people she knew, and the hand reminded her that the person beside
+
+her was real, at least in the way a person could be real to another person standing on a stair that had forgotten which direction led upward.
+
+A figure sat at the table. It was an older woman in a blue shawl, her dark hair bound with a ribbon whose knot Mira remembered tying as a child. The figure lifted a teacup. The water did not enter it.
+
+Mira moved forward before she had made the decision to move, and Cael pulled her back from the surface. His grip was too hard.
+
+She turned on him, angry, and saw that he was looking not at the woman but at a second figure standing behind the chair.
+
+The second figure was Cael himself, younger and thinner, holding the hand of a child in a red coat. He was speaking without sound. The child looked up at him.
+
+His younger face was frightened and determined; he had the expression of someone trying to make the last possible promise before the room in which he stood ceased to exist.
+
+**Cael:** That is Elian. Or it was. I remember the coat. I bought it with the first money I earned carrying letters across the outer islands. She wore it even in summer because the lining had pockets large enough for stones.
+
+**Mira:** The machine is showing us memories.
+
+**Cael:** Then why are they sharing a room? Your mother and my sister were not at the same table. I would remember.
+
+**Mira:** Would you?
+
+The question was crueler than she intended. Cael let go of her hand.
+
+The water trembled in the outline of their fingers, and the people behind it changed places: Mira's mother rose and stood beside the child, while the younger Cael took the empty chair and covered his face. Mira wanted to apologize.
+
+She also wanted to know whether there was any way of asking a person for evidence when the person had been trained by violence to doubt his own recollection.
+
+They stood in silence until the candles began to move. The flames unfastened from their wicks and swam through the water like gold minnows. Each one carried a small sound, a syllable from a name.
+
+Mira recognized some: Renne, Tomas, the baker's granddaughter, the young apprentice who had vanished from the weather station. The flames formed a ring around the lens and stopped. On its surface a sentence appeared: THE SEA HOLDS WHAT THE SKY WAS ASKED TO FORGET.
+
+Mira reached into the water with one finger. It was not wet. It was cold, and beneath the cold was the sensation of being watched by many people who had not agreed to be made into a single witness. She withdrew her hand.
+
+A tiny blue mark remained on her skin, shaped like the coastline of an island she had never visited. The mark glowed once and faded.
+
+The chamber belonged to the Observatory's oldest experiments. Her father had written of a place beneath the weather where failed projections could be kept without altering the living world. Mira had thought he meant a storage room for damaged maps.
+
+She now understood that the phrase had been literal: the machine had stored whole unrealized days in an artificial sea, and the days had not become harmless merely because no one remembered living them.
+
+Cael's younger self stood in the water and approached the surface. He raised a palm. The scar on his wrist shone like the one Cael carried now. The image spoke, and this time they heard it clearly.
+
+Young Cael: The letter was not addressed to the Council. It was addressed to the woman who made the bells. We were supposed to tell the cities the first agreement had a second clause. The Chancellor stopped the delivery.
+
+**Cael:** Did she erase the letter?
+
+Young Cael: She erased the morning in which I delivered it.
+
+The memory bent beneath an unseen current. The child in red vanished. Cael stumbled forward, caught himself on the railing, and looked down at his wrist. A line of blue light crossed the scar. Mira called his name.
+
+He answered, but his voice sounded distant, as though he were already walking inside the memory with the younger man.
+
+Mira remembered the phrase her mother had written in the blue journal: an instrument should help us notice what we have failed to see, not decide for us what is permitted to remain.
+
+If the room was full of memories cut away from the world, its danger was not that they might be false.
+
+Its danger was that the living might become so absorbed in recovering what had been taken that they surrendered the remaining hours in which they could still act.
+
+**Mira:** Cael, look at me.
+
+He did not move. She said his name again. The room echoed it back in different voices, some old, some young, one voice too small to belong to the man standing beside her. Then Mira did something she had not planned.
+
+She began describing the journey they had actually made: the broken weather station, the cups of tea with Renne, the ferry rail he had repaired, the pears they had eaten walking toward the hidden market.
+
+She described the way he had complained about the ferryman's paperwork and how Daro had laughed when the jar proved difficult to open.
+
+Cael's hand loosened on the railing. He turned toward her, still pale.
+
+**Cael:** There was a boy with a cart.
+
+**Mira:** Yes.
+
+**Cael:** His left foot was in a splint. I told him to rest it, and he told me resting wouldn't get the pears delivered.
+
+**Mira:** He was right about one part of that.
+
+**Cael:** You were covered in syrup. I said you looked like a scholar who'd lost an argument to a fruit.
+
+**Mira:** You were not wrong.
+
+He laughed once, shakily. The water receded from the stairs. In the room beyond, the younger Cael stepped away from the surface. The memory did not dissolve.
+
+It remained where it was, waiting for someone who could return to it without abandoning the present to do so.
+
+Mira offered her hand again. Cael took it, and this time neither of them gripped too tightly. The machine searched their joined hands for a command and found none. Its silence felt like a small freedom neither could have described before the night began.
+
+The underwater table began to rise. Its plates turned into circular charts, each one displaying the outline of a possible storm. The first chart showed Bellwether torn from its foundations. The second showed AsterVale caught inside a permanent ring of cloud.
+
+The third showed the two cities joined by a bridge that existed for exactly one afternoon, long enough for families to cross before the sky decided it had been a mistake.
+
+The fourth showed no storm at all, but a blank continent where every road had been made perfectly safe by removing the people who might have traveled it.
+
+Mira examined the charts in turn. The instrument had been built to compare outcomes. She had studied such systems her whole life, convinced that if enough consequences could be displayed, choosing between them would become a matter of technical competence.
+
+Yet every chart required an answer to a question no calculation could resolve: what is a life allowed to risk for itself? The storm on one chart might be a tragedy. The absence of the storm on another might be a captivity.
+
+Neither could be judged by counting only the bodies that remained afterward.
+
+A mechanical bird appeared in the water. It had a small brass chest and wings made from thin sheets of mother-of-pearl. One wing was broken, and every time the bird tried to fly it turned in a circle and collided with a submerged wall.
+
+Cael watched it for several attempts. Then he stepped close to the surface, took a screwdriver from his pocket, and held it out toward the bird. It could not reach the tool. It could only continue circling.
+
+**Cael:** You can't repair everything from outside the room.
+
+**Mira:** No.
+
+**Cael:** But if you go inside, you may become part of the room.
+
+**Mira:** I know.
+
+He placed the screwdriver on the railing. It was a small tool, its wooden handle darkened by use. The machine recognized the act as an offering and pulled the tool gently through the water. The bird landed beside it.
+
+A tiny mechanical arm emerged from the table, examined the screw at the broken wing, and tightened it. On its next attempt the bird rose, uncertainly, into the currents.
+
+It made one complete circle without striking the wall, then flew toward the woman in blue.
+
+Mira felt tears arrive without warning. The bird had been repaired by a mechanism built into the same instrument that had stolen cities. The machine was not evil in the satisfying sense of a villain who could be removed and leave everything else untouched.
+
+It was capable of help. It was capable of harm. Its power had allowed people to believe that the difference no longer needed to be decided in public. That was what had to change.
+
+The woman in the blue shawl turned toward Mira. Her face was not quite the face Mira remembered. Memory had stretched its features and softened them in places; grief had made others too sharp. But the gesture she made was familiar.
+
+She touched two fingers to her forehead, then held them outward toward her daughter, the way she had done when Mira left for school.
+
+**Mira:** Mother?
+
+The water shook. The woman's mouth moved, but the sound emerged from the old bell above the staircase instead of from her lips. It was a single note.
+
+The note carried no sentence, no secret instruction, no final pardon for a father whose mistakes had not been hers to excuse. It carried the sound of someone acknowledging that another person was there.
+
+Mira answered the gesture. She touched two fingers to her forehead and held them toward the room. The woman's figure faded, and the table settled to the bottom of the sea. The broken bird landed on a brass ring beside the lens.
+
+Behind it the four charts remained visible, but their edges were no longer fixed. The currents moved through them, changing the shape of the storm as though the future were again permitted to contain more than one possibility.
+
+The staircase straightened. Where water had hung in the doorway, a narrow flight of stone led upward toward the southern gallery. The storm could be heard through its windows. Mira knew the delay had cost them time they did not possess. She also knew
+
+they had brought something out that the Council had not intended anyone to carry: not an authoritative vision of the past, but a memory returned to two people who had been allowed to speak about it without a clerk deciding which version was official.
+
+Cael retrieved his screwdriver from the railing. It was dry. One of its screws had been polished by the machine, and a small star had been etched into the handle. He turned it between his fingers, puzzled.
+
+**Cael:** Do you think it will remember what I asked it to do?
+
+**Mira:** It remembered how to mend a wing.
+
+**Cael:** Perhaps that is a beginning.
+
+He offered her his arm. She took it, and they climbed together into the storm.
+
+Behind them the room beneath the weather remained where it had always been, full of the days people had been denied and of the possible days they might yet choose to live. Mira did not promise to return and empty it.
+
+She promised herself that if she ever returned, she would bring people who could decide what belonged to them.
+
+The air in the gallery smelled of ozone and old paper. Rain struck the windows from below. A blue circle burned in the center of the marble floor where the Chancellor's seal would soon appear.
+
+Mira set the atlas on a dry bench and checked the reference number written beside her mother's name. It was still there. So was Cael, and the screwdriver, and the ordinary ache in her feet after climbing too many stairs.
+
+There were questions she had not answered. There would be more. She went to meet the woman who had built a government out of the claim that no questions remained.
+
 ## Fourth Chapter
 
 The storm began at the wrong end of the sky. Lightning rose out of the clouds and vanished into the stars without striking the observatory; thunder arrived before its light. Every window flashed with a different image of the city that had been erased.
