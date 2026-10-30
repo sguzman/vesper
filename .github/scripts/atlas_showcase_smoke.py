@@ -48,7 +48,7 @@ def scene_spec() -> dict[str, dict[str, int]]:
             scenes[current]["dialogue"] += 1
         elif current and line.startswith("* "):
             scenes[current]["choices"] += 1
-    assert len(scenes) == 55, f"Unexpected Atlas story scene count: {len(scenes)}"
+    assert len(scenes) == 56, f"Unexpected Atlas story scene count: {len(scenes)}"
     assert scenes["final_engine"]["choices"] == 4
     return scenes
 
@@ -172,7 +172,7 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                                      "assembly", "return_to_lens", "final_engine",
                                      ending):
                         assert required in traces, (option, required)
-                    assert len(set(traces)) == 35, (
+                    assert len(set(traces)) == 36, (
                         option, "Unexpected number of scenes in ending route",
                         sorted(set(traces)))
                     expected_routes = {
