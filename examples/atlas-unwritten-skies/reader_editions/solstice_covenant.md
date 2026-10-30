@@ -1830,6 +1830,72 @@ Mira watched from a bench with a book in her lap. She had written a history of t
 
 She wanted the book to leave room for that distinction.
 
+The first public hearing under the covenant lasted three days. The first day was devoted to the meaning of the word temporary. Several officials argued that a promise intended to last only until the solstice might collapse the moment the solstice arrived.
+
+The bakers pointed out that bread was temporary and that nobody considered this a reason not to make it. A surveyor said the analogy was charming but imprecise. The baker invited him to breakfast and declined to argue with an empty stomach.
+
+The second day concerned the rights of people who wished to leave the hidden city. Some families wanted immediate passage for everyone.
+
+Others feared that the city would be emptied of skilled workers and that the people too poor or ill to travel would be left behind. A teacher proposed a temporary exchange program. The hospital proposed shared supply routes.
+
+The river pilots asked who would maintain the bridges. Each suggestion created a new question. Mira had grown up believing that the purpose of a good system was to reduce the number of questions its users could ask. She began to suspect the opposite.
+
+On the third day, the Council's former Chancellor appeared to testify. Orsol did not ask to be forgiven. She described the early experiments, the weather models, and the choices made after the northern catastrophe.
+
+She tried once to describe the agreement as the least harmful of several terrible possibilities. A woman whose family had been erased interrupted her and asked what had happened to the other possibilities.
+
+Orsol admitted that the records had been destroyed so nobody could argue for them afterward. The silence that followed lasted longer than any speech.
+
+Mira looked at Orsol and remembered the room beneath the lens, the table of brass names, and the place where the machine had demanded that someone fill in the name of a district it was prepared to sacrifice.
+
+She wanted to hate the woman for making the world smaller and then claiming to have preserved it. She did hate some of what Orsol had done. But she could not pretend that hatred would rebuild the villages or determine the weather.
+
+The hearing had to remain a place where testimony could be challenged and a record could be made, not a theater in which Mira's anger became law.
+
+The witnesses worked for months. Their report was long and often contradictory.
+
+It named the people who had died, the towns that had been erased, the storms that had been diverted, and the officials who had signed the first agreement without telling those who would bear its price.
+
+It contained appendices written by people who had disagreed with the main conclusions. Mira insisted that the appendices remain attached. A report that hid its own disagreements would only build the next disaster from more elegant paper.
+
+Cael traveled between the cities carrying copies of the report. He had been a courier before he became an unwilling part of the machine. The work was ordinary again. Some packages were urgent. Others were not.
+
+A woman in Bellwether asked him to carry a birthday card to her sister in AsterVale. He delivered it three weeks late because the winds changed. The sister thanked him and complained about the delay.
+
+He considered the complaint a sign that the world was recovering.
+
+When the first solstice arrived, the sky above the observatory filled with a pale ring. The machine requested instructions about whether to renew the agreement. The representatives met in public.
+
+They argued for two days, amended the terms, and approved a shorter extension with stronger provisions for free travel and shared emergency supplies. Some citizens were disappointed. They had wanted the old system abolished at once. Others believed the extension was reckless.
+
+The decision had an appeal process and a date on which it would be revisited. Neither feature satisfied everyone. Both made it possible to begin again.
+
+Mira kept a calendar above her desk. Every important agreement had a date beside it, not only the day it was signed but the day its authors would have to answer for whether it had worked.
+
+She drew small stars beside the dates of the hearings she most feared. The fear did not disappear. It made her prepare more carefully.
+
+At the eighth solstice, the new stone bridge finally connected the cities without passing through the lens.
+
+Its builders had argued over the type of mortar, the strength of the supports, the height needed for river traffic, and whether the bridge should bear the names of the first negotiators. The last question had caused the most trouble.
+
+Some wanted the names engraved on the parapets; others thought the bridge should belong to the people who crossed it, not to those who signed the papers.
+
+In the end they engraved the names of the bridge workers on the underside, where future inspectors would see them. Mira approved.
+
+On opening day, a small crowd gathered beneath flags from both cities. The children ran across before the officials could complete their speeches.
+
+One child stopped halfway and announced that she had just crossed the border twice, because her mother had told her the border was invisible and she wanted to find out whether crossing it repeatedly made her feel different. It did not.
+
+The mayor suggested she return for the official ribbon cutting. She declined. The ribbon was cut without her.
+
+Cael found Mira by the bench and placed a parcel beside her. It contained a new notebook, bound in blue cloth and stamped with a small eight-pointed star.
+
+On the first page he had written: FOR THE QUESTIONS WE HAVE NOT YET LEARNED TO ASK. Mira turned the page and found that the remainder was blank. The gift was not a map, a contract, or a judgment.
+
+It was an invitation to keep working. She closed the notebook and watched the people crossing the bridge. The stone did not care which government had authorized it.
+
+It held them because the builders had done their work well and because other people would return to repair it when it began to crack.
+
 A little boy ran past holding two maps, one drawn by his mother and one by his grandfather. Their coastlines did not match. He asked which was the true one. Mira told him to look at the sea and make a third.
 
 The End: THE SOLSTICE COVENANT.

@@ -1822,6 +1822,74 @@ Its secondary purpose was to archive contradictory accounts without forcing them
 
 At the farewell dinner Cael returned her a watch he had repaired. It still had no hands. He said it was a reminder that time did not belong to the instruments that claimed to measure it. Mira wore it anyway.
 
+During the years Mira spent inside the glass, she kept a record of things the machine had never been designed to notice. She recorded the first day a child learned to read across the boundary.
+
+She recorded the smell of rain reported by someone who had spent a lifetime living beneath a fixed sky. She recorded the quiet argument between two sisters who had both remembered their mother differently and discovered that neither account made the other false.
+
+The record grew, not as a sequence of commands, but as a conversation with whoever stood nearest the lens.
+
+Cael visited every week. At first he came with plans for getting her out. He brought diagrams, materials lists, measurements, and theories copied from the old Council's libraries.
+
+Mira was grateful, though she sometimes wished he would ask how she was before presenting a new plan. Eventually he learned. He came with bread from the blue-door bakery and stories about the towns whose names had returned to maps.
+
+He told her about a child who had called the stars by the wrong names and an astronomer who had decided to use those names on the next school chart because the child had been careful to explain her reasoning.
+
+When the first substitute witnesses arrived, Mira did not believe the system would accept them. She had spent so long fearing the consequences of leaving that she had come to treat staying as the only responsible choice.
+
+The first substitute was a retired ferryman whose hands shook when he held the control ring. He remembered the passengers he had carried to the hidden city and wanted their descendants to know their names.
+
+He stood beside Mira in the glass for seven minutes. The lens did not collapse. It expanded its record to include a second voice.
+
+The second substitute was a schoolteacher who had spent twenty years teaching children that the old world had ended in a storm.
+
+When she discovered that the world had continued on the other side, she asked her former pupils to tell her what they had been taught that was wrong. They wrote letters. She carried the letters into the glass.
+
+The machine had no rule for receiving an apology from a person who had taught an error in good faith. It tried to classify the letters as evidence. Mira insisted that they were something larger and more difficult to count.
+
+The third substitute was an eleven-year-old girl who had once carried a box of drawings to the observatory. She was older now, but her drawings remained uncertain, full of doors that opened toward places no one had thought to build.
+
+She brought a new drawing, one in which the glass was empty and the people who had kept the passage open were sitting together at a table. Mira wept. It was not a prophecy.
+
+It was a possibility someone had taken the trouble to imagine for her.
+
+The first night Mira slept outside the lens, she woke in a panic because she could not hear the passage. For two years it had been present in every thought, a soft pressure beneath the sound of her own voice.
+
+She opened the window to prove that the sky remained in place. A bird was sitting on the sill. It looked at her with the irritation of a creature whose sleep had been disturbed. Mira laughed until she had to sit down.
+
+She returned to the observatory to find that other people had been working in her absence. The library had new shelves.
+
+The student astronomers had replaced the scratched-out stars on the corridor doors with small brass plates bearing the names of people who had searched for the lost.
+
+The Council had been dissolved and its archives opened, but some of its employees had remained as clerks and surveyors because a world did not become fair merely by removing everyone who knew where the documents were kept. They had to learn new responsibilities.
+
+Some learned quickly. Others resented being asked to explain their work. The questions continued.
+
+Cael took Mira aboard the first ship that traveled from Bellwether to AsterVale without surrendering a memory as its fare. She stood on the deck and watched the bridges pass beneath them.
+
+At one station, a child asked why the ticket office had two windows. The clerk said the windows had once been assigned to people from different sides of the boundary and that the distinction was no longer necessary.
+
+The child asked why they had not simply removed one. The clerk said that sometimes a building remained divided because nobody had yet found time to knock the wall down. Mira offered to return with a hammer.
+
+They ate supper in a small harbor town where the innkeeper had placed a mirror above the fireplace. Mira saw herself in it and stopped. Her face was older than she expected.
+
+She had been able to measure every moment of her witness duty but not the ordinary accumulation of years on her own skin. Cael saw her expression and did not pretend nothing had changed.
+
+He told her that the difference was visible to people who had loved her through the years as well, and that it gave them one more reason to be grateful she was standing in front of them now.
+
+**Mira:** I was afraid that leaving the glass would make everything I gave up meaningless.
+
+**Cael:** It mattered while you were there. It does not have to matter forever in the same way.
+
+**Mira:** And if I forget what it felt like?
+
+**Cael:** Then tell me while you can. I have some experience keeping stories that other people worry they will lose.
+
+At the end of the journey they found a parcel waiting for Mira. It contained a child's brass whistle and a note from a family who had searched old records and discovered that the whistle belonged to their great-grandmother.
+
+The family did not ask to have it returned. They asked Mira to keep it in the archive with the story of the person who had found it. She did.
+
+The small object occupied a place of honor beside the first photograph taken through the reopened passage. The photograph was blurry. Someone had moved during the exposure. Mira liked it better for that.
+
 The final page of her account contained one sentence: I was not wrong to give myself for the world; I would have been wrong to believe the world required me to remain lost.
 
 The End: THE LIVING WITNESS.

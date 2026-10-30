@@ -1898,6 +1898,72 @@ Mira turned a page. There was a blank region where the hidden cities had once be
 
 **Mira:** No. I think it's finally doing the job a map was meant to do.
 
+The first years without the machine were the years of small bridges. They were not the grand arches drawn on the Council's maps. They were rope spans across ravines, temporary docks on cliffs, and narrow paths built from planks salvaged after storms. Some fell.
+
+Some were rebuilt. The people who used them learned to keep spare rope near the crossings and to tell travelers when a bridge was unsafe.
+
+For the first time in generations, a warning could be given without first passing through the Council's language of acceptable risk.
+
+Mira traveled with a team of surveyors to the western edge of the old boundary. There the land ended in a wall of cloud that sometimes opened for hours and sometimes remained closed for months.
+
+They marked the opening and closing times in ordinary notebooks. They asked the fishermen to describe how the current behaved near the wall.
+
+They asked children to draw the colors they saw at sunset, because children sometimes noticed changes that adults dismissed as tricks of the light. The charts were imperfect. The people using them could correct them.
+
+Cael had become a pilot again, though his routes were less profitable than the old ones. He carried doctors, letters, tools, and people who wished to visit relatives the machine had once kept beyond reach.
+
+At one island he found a family whose names had never been entered into the Council's registers. They lived in a house built from salvaged ship timber and had little interest in becoming a symbol of historical injustice.
+
+They wanted a reliable supply of medicine, a safer harbor, and a school where the children could learn to repair engines. Cael promised to bring supplies on his next voyage. He did not promise to make the world fair by the time he returned.
+
+The families who had remained in the hidden cities were not all pleased by the new arrangement. Some had lost trade when the machine stopped preserving their markets. Others feared the storms more than they had feared captivity.
+
+Mira visited the houses nearest the old boundary and listened to their complaints. She wanted to explain that no system could guarantee every possible safety.
+
+She learned to begin instead by asking whether the roof leaked, whether the children could reach school, and who had the tools to repair the road. Those questions led to work that could be done.
+
+One morning she found the old Council's seal in a box of discarded instruments. It was no longer luminous. Its brass surface had darkened, and the official crest was almost unreadable. A student asked whether it should be displayed in the museum.
+
+Mira said yes, but only beside the testimony of the people who had lived under its authority. A seal without its consequences was merely a beautiful object.
+
+The museum placed it in a case beside the ledger of names, the teacher's letters, the waterworks manual, and the child's drawings. The students argued about which object mattered most. The museum did not choose for them.
+
+The first long-distance bridge took six years to complete. It was built by people who had never met before the machine was destroyed, with tools borrowed from ports that had been enemies while the boundary stood. The work was difficult.
+
+The builders disagreed about measurements and methods. Some workers left before the bridge was finished. Others arrived with new skills. Mira visited at the midpoint and found the central span unfinished, a gap above the clouds.
+
+The chief engineer told her that the gap was the most honest part of the structure. It showed exactly what they had not yet managed to do.
+
+Cael came with supplies during the final month of construction. His ship carried lengths of cable and a crate of small brass bells, each made by a different workshop.
+
+The bells would be hung along the finished bridge so travelers could hear whether the wind was moving toward or away from the cloud shelf. Mira remembered the old weather station and the bells that had stopped ringing.
+
+She helped the workers hang the new ones. The first time the wind passed through them, they sounded uneven and alive.
+
+On opening day the first travelers were not officials. They were two elderly sisters who had spent forty years on opposite sides of the boundary. Each had heard that the other was dead.
+
+They approached each other slowly, neither entirely certain that the woman waiting at the center was the person remembered from childhood. They embraced.
+
+Then one sister complained that the other had grown taller, and the other replied that she had merely learned to stand up straight. The crowd laughed. The sisters walked away together without waiting for anyone to name the moment historic.
+
+Mira returned to the observatory with Cael after sunset.
+
+The roof had been repaired with mismatched tiles, and the old lens chamber now housed a workshop where apprentices learned to make instruments that did not require a person to surrender a memory in order to use them.
+
+The atlas lay open on a desk. Its pages were still incomplete. She had stopped expecting completeness. A map could tell a traveler where the road was thought to go, and the traveler could return to say the road had changed.
+
+The child who found the atlas asked whether the empty place could be filled with a bridge she had drawn herself. Mira gave her a pencil and helped hold the page flat. The bridge was crooked.
+
+Its arches did not meet the shore at the correct angle. The child colored one side blue and the other gold because she liked the way the colors looked together. Cael told her the structure would probably fall if anyone attempted to build it.
+
+She said she would learn how to make it stand. He gave her a piece of paper on which to begin a better plan.
+
+Mira watched the child bend over the drawing. She remembered her father showing her the great lens and telling her that a perfect instrument could make the sky obey. She had believed him.
+
+Now she hoped the child would learn to make instruments that helped people ask better questions without pretending the sky belonged to anyone. She left the page open and went to make tea.
+
+The work, she thought, would continue long after the last person remembered who had begun it.
+
 The child asked whether she might draw a bridge in the empty place. Mira gave her the pencil. The bridge was crooked and led nowhere in particular. It was the first bridge the child had ever drawn. They kept it in the atlas.
 
 The End: THE UNBOUND WORLD.

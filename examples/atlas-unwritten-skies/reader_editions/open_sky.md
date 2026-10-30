@@ -1850,6 +1850,74 @@ A small plaque beneath them said: WE WERE NOT SAVED BY FORGETTING. WE WERE SAVED
 
 Mira thought it a little too grand for the trees, which were interested in soil and sunlight and would survive without any inscription at all. She did not remove it.
 
+The first winter after the opening was a difficult one. Clouds moved through valleys that had been warm for generations, and the northern crops failed when the rains arrived too early.
+
+People who had called the boundary a prison began asking whether it might have been kinder to keep the wall. Mira listened because the question was not absurd.
+
+The storm had been real, and several small villages were still rebuilding after the loss of their winter stores. The people whose lives had been damaged by freedom were not required to be cheerful about its price.
+
+She spent part of that winter on a supply barge with Cael, carrying seed grain and tools between ports whose maps did not yet agree.
+
+At one landing a harbor official refused to let them unload because his records said the village did not exist. Cael set down the manifest, pointed to the people waiting on the quay, and invited the official to explain the discrepancy directly to them.
+
+The man declined. He stamped the document so hard that the ink bled through three pages. Mira kept it as the first official acknowledgement of the village since the boundary opened.
+
+A month later, the same official sent a letter asking for help revising the harbor charts.
+
+His daughter had been born during the storm, and he had realized that the maps he guarded would determine which roads a doctor might travel if she became ill. Mira went to help him. She did not make him apologize first.
+
+She made him measure the harbor again, carefully, and write down which parts he was still uncertain about.
+
+The bakery with the blue door reopened in spring. The old baker had died before Bellwether's return, but her granddaughter had preserved a recipe in the lining of a winter coat. She could not remember why the recipe had been hidden there.
+
+The bread was different from the bread Mira recalled, darker and less sweet, and the queue outside the shop was full of people arguing about whether the change was an improvement.
+
+Mira ate a warm piece on the steps and realized that the grief of returning was sometimes the discovery that what you loved had not waited unchanged for you.
+
+Cael found her there at dusk, with flour on her sleeve and the old atlas open on her knees. He had spent the afternoon helping two families who believed the same house belonged to both of them.
+
+Each possessed documents that would have been persuasive in the world before the erasures. Both had lived in the house for years. Cael had managed to persuade them to share supper and delay the argument until a clerk could inspect the dates.
+
+The supper had become another argument, but the children of the two families had begun playing together in the courtyard. He considered this modest progress.
+
+**Cael:** Have you found the correct address for the bakery?
+
+**Mira:** There are three correct addresses. The street has been renamed twice, and the old name is the one its customers still use.
+
+**Cael:** Then I hope the bread is good enough to survive a disagreement over geography.
+
+**Mira:** It is. I intend to test the result again tomorrow.
+
+They walked to the harbor through streets that had been built around new gaps. The gaps would take years to close.
+
+Some would remain because the people who lived beside them had decided to turn the empty ground into parks, memorials, or places where children could see the sky. Mira had begun marking those choices on the atlas with a pale blue symbol.
+
+She did not mark them as errors. She marked them as places where the world was being written by more than one hand.
+
+In the observatory, the new mapmaking office kept two large tables. One held measurements: coastlines, depths, winds, the positions of dangerous reefs.
+
+The other held statements about use: where fishermen found safe shelter, which bridges neighbors avoided after rain, where elderly residents liked to sit in the afternoon, which schools had been moved to higher ground.
+
+At first the surveyors complained that the second table was untidy. Then a storm destroyed a bridge the first table had declared safe, and a grandmother's note on the second table showed the route by which children could reach the hospital.
+
+The office began treating both tables as essential.
+
+The trees on the western terrace grew slowly. During the first dry spell their leaves curled, and a child who had helped plant them accused Mira of having allowed the new world to go wrong. She brought him a watering can.
+
+They carried water from the cistern, one trip after another, until the soil darkened. Mira told him the trees were not a symbol that could survive on the strength of a speech. They were trees. They needed care.
+
+The child considered this and asked whether the same was true of cities. Mira said yes, and then admitted that she had learned the answer from him.
+
+One evening, a year and a day after the passage opened, Cael arrived at the terrace carrying two tickets. One was for Bellwether, the other for a small island neither of them had visited.
+
+The island appeared on the new charts but not the old ones. Its inhabitants had asked for help determining whether a lighthouse built before the catastrophe had been moved by the storm or simply remembered in the wrong place.
+
+Mira examined the tickets and laughed. She had wanted, for so long, to know where the world ended. Now someone had asked her to visit a place where even the beginning was uncertain.
+
+She folded the tickets into the atlas beside the child's crooked drawing. Below the observatory the cloud shelf shone in the colors of a sunrise that would not occur for another ten hours. The sky had kept its old habit.
+
+Mira no longer demanded that it become more straightforward. She took Cael's hand and went inside to pack.
+
 The new atlas lay open in the library. Its pages were not complete. They never would be. In the empty spaces, Mira had begun writing the most difficult words a map could contain: Here, someone may live whom we have not yet met.
 
 The End: THE OPEN SKY.
