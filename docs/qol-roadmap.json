@@ -18,7 +18,7 @@
   "scope_weight": 100,
   "verified_weight": 100,
   "status": "verified complete: QOL01–QOL08 certified on merged main; final narrative and Bevy CI green",
-  "last_verified_commit": "84d0ddf6b1c9a7d0c07fc19d4ff5292b655def0c",
+  "last_verified_commit": "3207b568a8e3acc6f9ff15f11aed8986f04820a7",
   "next_milestone": null,
   "rules": {
     "execution": "Implementation ongoing under the project stewardship protocol; credit only after acceptance-specific CI and merged-main certification.",
@@ -248,7 +248,10 @@
         "Passing final merged-main narrative and Bevy CI: https://github.com/sguzman/vesper/actions/runs/40974030361",
         "Merged source commit: 84d0ddf6b1c9a7d0c07fc19d4ff5292b655def0c",
         "The Living Journal acceptance smoke passed at all six viewports with installed/generic fonts, opt-in auto delay, notebook/banner, ember/shadow/shimmer, walker/bird/plane motion, reader high contrast and reduced motion, and F5/F9; complete legacy playthroughs, hot reload and compiler-free Linux packaging passed.",
-        "Screenshot evidence preserved in final CI artifact vesper-integrated-qa (artifact 12941227870); source limits/physical Wayland QA boundaries documented in docs/reader-qol-audit.md."
+        "Screenshot evidence preserved in final CI artifact vesper-integrated-qa (artifact 12941227870); source limits/physical Wayland QA boundaries documented in docs/reader-qol-audit.md.",
+        "PR #24 merged: https://github.com/sguzman/vesper/pull/24; corrected stale Xvfb 1920x1080 screenshot acceptance with far-right rendered-pixel readiness assertion.",
+        "Passing final QA-hardened merged-main CI (narrative + Bevy): https://github.com/sguzman/vesper/actions/runs/40978527556; all six Living Journal screenshot viewports, glyph overlap, three Dawn endings, save/restore and Linux packaging passed.",
+        "Final merged-main source commit: 3207b568a8e3acc6f9ff15f11aed8986f04820a7; corrected six-size visual artifacts vesper-integrated-qa (artifact 12943398486). Physical Wayland and audio QA not asserted."
       ],
       "verification": "Acceptance-specific unit/graphical CI followed by merged-main certification"
     }

@@ -3,7 +3,7 @@
 This audit is scoped to the five Reader QoL capabilities and describes the
 *committed implementation*, not a general guarantee about every Bevy system.
 The source-of-truth weighted roadmap is [qol-roadmap.json](qol-roadmap.json).
-Certified source for this phase: merged main `84d0ddf6b1c9a7d0c07fc19d4ff5292b655def0c` ([final CI](https://github.com/sguzman/vesper/actions/runs/40974030361)).
+Certified source for this phase: merged main `3207b568a8e3acc6f9ff15f11aed8986f04820a7` ([final QA-hardened CI](https://github.com/sguzman/vesper/actions/runs/40978527556)).
 
 ## Renderer safety rule
 
@@ -42,8 +42,24 @@ does not claim the entire runtime allocates nothing or never hitches.
   five requested capabilities into an external game with no game-specific
   renderer. The dedicated `.github/scripts/integrated_authoring_smoke.py`
   passed six viewport sizes and reader-preference overrides on merged main.
-  Both narrative and Bevy jobs passed in [run 40974030361](https://github.com/sguzman/vesper/actions/runs/40974030361);
-  screenshot evidence is archived as `vesper-integrated-qa` (artifact 12941227870).
+  Both narrative and Bevy jobs passed in [run 40978527556](https://github.com/sguzman/vesper/actions/runs/40978527556);
+  screenshot evidence is archived as `vesper-integrated-qa` (artifact 12943398486).
+
+## Final widescreen screenshot readiness guard
+
+The first merged-main QOL08 screenshot artifact contained a nominal 1920×1080
+capture with an old 1280×720 swapchain frame at its upper left and black pixels
+on the right. [PR #24](https://github.com/sguzman/vesper/pull/24)
+strengthens `.github/scripts/integrated_authoring_smoke.py`: after confirming
+window dimensions and the loaded background palette, it also samples the far-right
+sky pixels and retries for at most 15 seconds if the framebuffer is stale. This
+changes **test acceptance**, not authored layout or runtime rendering behavior.
+
+The QA-hardened [final main run](https://github.com/sguzman/vesper/actions/runs/40978527556) passed both jobs. Its
+six-size `vesper-integrated-qa` artifact `12943398486` includes a complete
+1920×1080 scene, unlike the earlier black-border capture. The integration test
+also passed the reduced-motion/high-contrast and save/reload variants. Prior
+successful branch validation alone was insufficient for this final gate.
 
 ## Limits and physical QA
 
