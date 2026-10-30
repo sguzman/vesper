@@ -534,6 +534,154 @@ Mira stood for a moment at the window and watched the empty cloud shelf. Its bel
 
 She held the slip of paper between two fingers. The name TOMAS RELL was still there. They returned to the observatory carrying one more piece of evidence and one more person whose future could not be reduced to a number in a ledger.
 
+## The Garden Where Bells Were Planted
+
+The pier keeper called the place a garden, though Mira could not identify a plant in it.
+
+Every plot was marked by a thin brass stem, every stem by a bell no larger than a plum, and every bell had been packed with soil instead of a clapper.
+
+The stems stood inside low walls of blue stone, arranged not in rows but in a spiral that opened toward the cloud shelf. Someone had left a watering can beside the gate. Its copper spout was polished from use.
+
+The ground was damp, although no rain had touched the pier since the weather station disappeared.
+
+Tessa stopped walking. Her coat still smelled faintly of engine oil and the pier keeper's soup. She made the stiff, protective movement of a child who expected adults to decide something important without explaining it to her.
+
+Mira understood the movement immediately and disliked recognizing it. She had spent the years after her parents vanished practicing the same posture under the Council's long tables.
+
+Tessa: This isn't on the station maps.
+
+**Cael:** Is it on any map?
+
+Mira unfolded the atlas. The plot was represented by a pale oval, without a name. She turned the book to the light and discovered that the oval was not blank. Its surface held shallow depressions, one for every bell in the garden.
+
+The marks looked as if someone had pressed a pen into the paper from the other side, leaving an indentation without ink. She could have taken a rubbing of the page.
+
+Instead she closed the book and asked Tessa whether she wanted to look inside.
+
+The girl considered the gate, then the cloud beyond it. She said she wanted to know where the bells came from, but only if they could leave when she asked. Mira repeated the condition aloud.
+
+Cael unlatched the gate, held it open, and waited for Tessa to walk through first. It was a small ceremony, absurdly formal for an abandoned garden. It seemed to matter to Tessa more than the garden itself.
+
+At the center stood a stone table engraved with dates. There were no names beside them, only a succession of weather symbols: an ordinary sun, a cloud, a brief shower, a gale, and something like a hand drawn over an empty square.
+
+Mira recognized the hand as an old navigators' sign for a location deliberately withheld from the public charts. The symbol had fallen out of use after the catastrophe. The Council's modern maps omitted it entirely.
+
+That was one way to erase a place: first make it unmentionable, then declare it had never been necessary to mention.
+
+Cael found a folded leaflet under the watering can. Its paper had been made from the coarse reeds that grew on the lower islands. The first line read INSTRUCTIONS FOR THE CULTIVATION OF TOMORROW.
+
+Below it, in handwriting too untidy for a Council clerk, someone had written: If a person is lost to the boundary, record a thing they did without being asked. Do not record the manner of their disappearance.
+
+Do not record the names of those who ordered it. Those belong in other books, and there must be other books. Here we keep what the person gave freely.
+
+The next page contained the account of a woman who repaired shoes at the harbor, charging people who could afford a new pair and never charging children. Another described a cooper who left his workshop door unlocked on storm nights.
+
+The descriptions were precise in the way ordinary gratitude is precise. The cooper had once apologized to a stranger for snapping at him because the wood would not bend.
+
+The shoemaker's daughter said her mother sang in the wrong key but never missed the beginning of a song. Their voices had been caught not in portraits or declarations, but in tiny judgments only the living would have made.
+
+Tessa: Why plant bells for them?
+
+**Cael:** Maybe the bells remember their voices.
+
+**Mira:** Or maybe someone wanted a place where remembering meant doing a task. If you come back to water the soil, you have to decide that the story matters again.
+
+They walked the spiral slowly. Some of the bells were new and untarnished. Others had turned green, their surfaces rough with years of salt wind. Many were empty.
+
+In one plot a bell had been removed entirely, leaving a small round indentation in the earth. Beside it lay the broken wooden handle of a trowel. Mira knelt to inspect the gap. The soil there was different.
+
+It contained flecks of powdered blue glass, the same material used to carry the Council's binding through the weather stations.
+
+A person had been taken from this garden after the garden had been built. The fact changed its meaning. The plot was not merely a memorial to losses in the past. It was a place being watched, censored, and sometimes undone.
+
+Someone who believed forgetting necessary had decided that even the harmless remembrance of a shoemaker was dangerous. Mira looked at the spiral and understood that the original gardeners must have kept coming despite the possibility that every visit would be observed.
+
+Under one of the bells Tessa found a card tied with red thread. Its inscription said TOMAS RELL. The girl read the name once, then held the card against the slip she carried inside her collar. The letters matched.
+
+The card was dated four years earlier, long before the supervisor had disappeared that morning. For a moment none of them spoke. The garden had anticipated a loss that had not yet happened. Or the machine had made ordinary chronological language unreliable.
+
+Mira felt the usual temptation to treat the contradiction as a puzzle, something that would be solved once she found the correct equation.
+
+Tessa: He wasn't a ghost when I knew him. He ate pickled onions on toast. He complained about the weather even when he invented the forecast. He would have said this was a ridiculous place for his name.
+
+**Mira:** Then that belongs on the card too.
+
+Tessa looked at her with deep suspicion. She asked whether writing the truth would make him less important, because it was not a beautiful truth. Mira shook her head.
+
+The information that someone had annoyed her was better evidence of his life than a hundred flawless sentences.
+
+Tessa took the pencil from behind Mira's ear and wrote beneath the name: TOMAS RELL ATE TOO MANY ONIONS AND HE WAS KIND WHEN PEOPLE WERE AFRAID. She made the lettering large enough to fill the card.
+
+Then she tied it back with a knot that would be easy to undo.
+
+A bell sounded behind them. It came from the empty plot and produced a noise like a teaspoon against a glass. Cael turned, but there was no wind. The bell sounded again.
+
+Inside the indentation where the missing bell had stood, blue glass began to rise from the soil in a thin column. It was forming letters. Mira read the first few before they dissolved: ACCESS REQUESTED BY THE PRIMARY ARCHIVE.
+
+Someone, somewhere, had asked the machine for this garden's list of remembered people. The request had not yet been granted. In the space between the bells, the soil trembled as though every buried piece of glass were trying to decide whether to answer.
+
+**Cael:** If they have found this place, we cannot stay here.
+
+**Mira:** We can take the cards.
+
+Tessa: But then it won't be a garden.
+
+The girl's objection stopped Mira more effectively than the sound. The cards could be copied. Their information could be hidden in a pocket and carried away. But the gardeners had built a public place, and the publicness was part of the remembrance.
+
+To take every card to safety would make the garden into another secret archive, available to the people who already controlled the maps. Mira had learned the danger of a record being kept by only one custodian.
+
+She had not expected to learn it from someone with soot still beneath her fingernails.
+
+They searched the table for a way to stop the request. The engravings on its surface were not dates after all. They were schedules.
+
+Every weather symbol corresponded to a recurring interval when the machine checked the garden and reported its contents to the Council. It had been doing so for years.
+
+The gardeners had adapted by planting names in soil where official instruments could read only the metallic bell stems. The glass fragments were the remnants of searches the machine had already attempted.
+
+Each time the demand returned, the gardeners broke its instruments and mixed the pieces into the earth.
+
+Cael laughed once, without amusement. He admired the stubbornness of a system that had resisted a colossal machine using nothing more sophisticated than gardening tools. Mira lifted the watering can.
+
+There was a small brass valve inside its spout, the kind used to divert pressure from a meteorological probe. Someone had adapted the can to flood the search mechanism whenever it activated. The water was not water alone.
+
+It held a fine suspension of iron particles that would obscure the machine's magnetic reading long enough for a human being to remove the fragments.
+
+They had no guarantee the device would still work. Cael filled the can from the barrel near the gate. Mira pried open the little valve, turned the spout toward the glowing glass, and poured. The stream struck the column.
+
+It blazed blue, then turned the color of milk, and fell into the soil with a hiss. Several bells answered with gentle notes. The garden seemed suddenly less like a memorial and more like a group of people coughing after an interruption at dinner.
+
+Tessa walked the spiral again. She watered each plot until the can was empty, not because any of them thought the bells could grow, but because the gesture had been explained to her and she had chosen to complete it.
+
+When she reached the gap she stopped. She asked whether she could put a new bell there. Mira found one in a cupboard beneath the table, beside a box of blank cards. The bell was plain copper, without a Council mark.
+
+Tessa set it in the soil and wrote a card for the station supervisor. She made a second card and put it in the cupboard for whoever arrived next.
+
+At the gate Cael noticed that one bell had not sounded. It hung near the path with its mouth pointing toward the empty cloud shelf. The inscription beneath it had been deliberately rubbed away, leaving only two letters at the far edge: VE.
+
+He touched the bell and drew his hand back as if burned. Mira asked what was wrong. Cael said he had been here before. He remembered arriving in rain, carrying a parcel wrapped in oilcloth.
+
+He remembered someone calling him by a name he no longer used. He remembered refusing to put the parcel down because the person waiting for it had not yet reached the gate.
+
+Mira did not ask him to finish the memory. She had seen the strain in his face when he tried to force the past into an orderly narrative. Instead she asked what kind of rain it had been. He thought for a long time.
+
+Then he said it had been warm, with a smell of apples from the lower orchards. It had fallen sideways. The bell had rung without a clapper.
+
+The person he was waiting for had been a woman, and she was laughing at something he had said. That was all he could retrieve. Mira wrote the weather down exactly as he described it.
+
+Not proof of an identity, not a diagnosis of loss; just weather.
+
+The caretaker came to fetch Tessa. The girl gave Mira a paper bell she had folded from a page of the supervisor's notebook. It made no noise. Tessa said that was why she liked it.
+
+It would not go off while she was trying to sleep. She promised to return to the garden when the roads were safe enough, and she made Mira promise to tell her if they were not.
+
+They did not promise that the machine would be defeated. There was too much between them and the machine for a promise of that kind to mean anything.
+
+They walked back toward the observatory. Along the pier the bells continued their small, uneven conversation.
+
+Mira carried one card, a scrap of weather written in Cael's handwriting, and the knowledge that a place could contain a whole argument about who had the right to remember. She had spent her life thinking of maps as descriptions of what existed.
+
+The garden suggested another use. A map could be an invitation to be responsible for something that might otherwise vanish when nobody was looking.
+
 ## Second Chapter
 
 By midnight the observatory had acquired a second weather. Outside, thunder rolled along the cloud shelf. Inside, a pale fog gathered on the polished marble and retreated whenever Mira spoke a name that the atlas still recognized.
@@ -1254,6 +1402,156 @@ Mira set the atlas on a dry bench and checked the reference number written besid
 
 There were questions she had not answered. There would be more. She went to meet the woman who had built a government out of the claim that no questions remained.
 
+## An Inventory Of Small Mercies
+
+The submerged chamber released them at the bottom of an ordinary staircase. Water ran from the cuffs of Cael's coat and pooled between the marble tiles. Behind them, the impossible door remained open for a moment, showing the submerged ceiling and its motionless papers.
+
+Then it shut, revealing a wall hung with the official portraits of observatory directors. Their faces looked away from the stairwell with a collective dignity that now seemed less like confidence than a refusal to witness.
+
+Mira carried a small tin box she had recovered from beneath the water. Its lid was stamped with the old seal of the Ministry of Relief. Relief was not a word she had expected to find in that place.
+
+The Council had always represented the first experiment as an act of navigation, a necessary response to a disaster in the upper air.
+
+A ministry devoted to relief suggested there had been another public explanation, one offered to people who needed medicines, shelter, and food rather than a precise account of where their homes had gone.
+
+They found the ministry's former office behind a door whose glass had been painted black. In the center of the room stood a desk with three drawers, none of them locked. There were no weapons, no guards, no hidden machine parts.
+
+Only a ledger of household supplies, a broken scale, and a line of empty bottles with labels still tied to their necks. The air smelled of lavender and old paper. Mira noticed that the bottles were all the same size.
+
+It was the sort of administrative uniformity she might once have admired.
+
+**Cael:** This place doesn't look like a laboratory.
+
+**Mira:** It wasn't. It was where the laboratory sent its consequences.
+
+The ledger listed blankets, hot water, children's shoes, and replacement papers. Each item had a number, a date, and a column for the recipient's signature.
+
+For several pages the signatures were legible: dockworkers, nurses, a pastry maker, a teacher from Bellwether whose lessons had ended the week the city disappeared. Then the signatures grew scarce.
+
+The later entries were marked with a little square, an office shorthand for unable to sign. Some of the people receiving supplies had been too young. Some had lost the use of their hands.
+
+Some were missing from the locations to which the supplies were supposedly delivered.
+
+Mira followed one column with her finger. A shipment of blankets had been dispatched to a school whose address no longer existed. It had been returned three days later, still wrapped, and sent out again under a different place-name.
+
+For seventeen years the ministry had repeated the same procedure, sending supplies to the edges of erasure and recording the failures as problems of distribution. The accounts were perfectly balanced. No blanket was ever counted as lost. No child was ever recorded as cold.
+
+The numbers told a story of exemplary diligence because the numbers had been designed not to ask the important question.
+
+Cael found a sheet of letters wedged behind the last drawer. Each began with the same sentence: We regret that the location named in your request cannot be found on current charts.
+
+The rest changed according to the relationship between the writer and the missing person. A mother had asked where her son's school had gone. A boy had asked why his sister's name no longer appeared in the family register.
+
+An old man had asked for permission to put flowers beside a bridge that no longer crossed anything. The ministry's replies were correct according to the charts. They were devastating according to every other measure of correctness.
+
+**Mira:** They made kindness into a kind of accounting. If the response was properly recorded, they counted the need as answered.
+
+**Cael:** And they could keep saying they were helping, because there was always another form to fill out.
+
+She expected him to be angry. He was angry, but his anger had an almost scholarly patience.
+
+He had carried letters to people who did not want them, delivered notices of eviction, brought medicine too late, and learned that a messenger's responsibility did not always end when the recipient accepted an envelope.
+
+He described the most difficult delivery of his life: a letter containing good news for a family whose father had died the previous morning. He had sat on the doorstep while the daughter decided whether she wanted him to read the letter aloud.
+
+He still remembered that it had concerned a scholarship. The girl had wanted the news, but she had not wanted to hear it from a stranger until someone she loved came home.
+
+**Cael:** A delivery can be right and still arrive at the wrong time. That's why I wait if someone asks me to.
+
+**Mira:** Did the scholarship change anything?
+
+**Cael:** I don't know. I wasn't there for the years afterward. That's the part no messenger gets to claim.
+
+A door on the far side of the office opened with a faint metallic click. They turned. An elderly woman stood in the doorway, holding a basket of empty bottles.
+
+She wore the plain grey apron of a ministry attendant and had a scar under her chin that moved when she swallowed. She regarded the strangers, the open ledger, and the water at their feet without displaying surprise.
+
+She asked whether they wanted the department of ordinary petitions or the department of extraordinary losses. When Mira said she wanted the truth, the woman gave a tired smile and told her that had always been a third department, but nobody had funded it.
+
+Her name was Aven. She had worked there since before Mira was born, first as a clerk and later as a caretaker after the Ministry of Relief formally ceased to exist.
+
+She had stayed because the shelves still contained people's letters and someone had to keep the mice away. The Council paid for the building to remain closed but had never issued an order to destroy its contents.
+
+An absence of authority, Aven said, could sometimes be useful. She knew the circumstances were not the same everywhere. In many offices a destruction order had arrived within hours of the first complaints.
+
+Aven: Do you know why they called it relief? Because the public could bear almost any explanation if it included a plan to help their children. They were frightened, and these people were frightened too. Fear is not an excuse.
+
+But fear was the material the Council worked with.
+
+**Mira:** You knew what the machine was doing?
+
+Aven: No. I knew that some children came back with two birthdays. I knew a woman asked for bread for her husband long after the husband had been pronounced nonexistent. I knew we were not permitted to ask whether either event made sense.
+
+When I understood, the first thing I did was ask for another job. There were no other jobs.
+
+Mira had prepared herself for the bureaucrats of this forgotten office to be villains. Aven complicated the picture without making the harm smaller. She described the bread deliveries she had arranged quietly after office hours, using her own wages.
+
+She also described the afternoon she had signed a report declaring a family absent from its address because refusing to sign would have ended the supplies for three other families. She did not ask Mira to admire the arithmetic.
+
+She said she thought about it every evening and did not know whether the people who suffered from the decision would find her reasons persuasive.
+
+The ledger held several dozen decisions of that kind. Some employees had forged signatures to make sure medicines were released. Others had forged them to conceal that medicines were never distributed.
+
+The same tool could be used to resist the machine or to feed it. Mira was beginning to see why the machine's authors had preferred numbers to testimony.
+
+Numbers could be compared without requiring the people responsible to tell the difference between mercy and cowardice.
+
+Aven opened a cabinet near the window. Inside were children's drawings, folded in bundles and tied with blue string. She explained that families who had not been able to name their lost addresses had sometimes drawn the places instead.
+
+The ministry had kept the pictures because the drawings were not considered evidence. The distinction had saved them. A map drawn by a surveyor could be confiscated.
+
+A child's picture of a kitchen with five chairs, when the family register recognized only four people, could be filed away as a harmless confusion.
+
+The first drawing Mira unfolded showed a yellow house beneath three purple trees. It had no scale, no directional markings, and a sun that occupied half the page. Under the house a child had written THE PLACE WHERE MY BROTHER PUT HIS BOOTS.
+
+The next showed two women crossing a bridge with a dog whose legs extended beyond the paper. The bridge was unmistakably the eastern viaduct of Bellwether. The third showed the observatory, drawn as a crooked tower beside a square of stars.
+
+Mira recognized the clumsy shape of the astronomy instrument at its summit. A small figure with a blue scarf stood beneath it, waving at someone in an upstairs window.
+
+She realized she was holding a record from the night her father disappeared. The date on the back had been entered in a clerk's hand. The name field was blank. Someone had kept the drawing without knowing what they had preserved.
+
+Mira laid it carefully on the desk. She could not identify the child who made it. She could not even be certain the tower was meant to be hers.
+
+But the drawing described a place the charts denied, and she could ask the people who remembered the child whether the picture was true.
+
+Aven: I always thought that one mattered. Not because it is more accurate than the others. Because the child made a window. Most people draw a house from the outside. That child wanted you to know there was someone inside waiting to be seen.
+
+**Cael:** Did the child return?
+
+Aven: I don't know. We never followed the letters after we answered them. We weren't permitted to be curious.
+
+They made an inventory of the cabinet. Aven insisted they distinguish between the original drawings and their copies.
+
+She showed Mira a way to mark the back of each copy with the day it was made, so a future reader could tell whether the original had changed. She also asked that the images not be published without any surviving family's agreement.
+
+A drawing could reveal intimate details about a home. The Council's surveillance had taught her that recovering a memory did not give the recovering institution ownership of it.
+
+Aven unlocked the box from the submerged chamber with a small key on a chain around her neck. Mira stared at the key. Aven said the ministry had once maintained a route through the eastern lens to receive petitions from people within the boundary.
+
+The route had been shut after a messenger returned carrying only the names of the people who had sent him. He had forgotten his own. The box contained copies of the last accepted petitions.
+
+Aven had kept the key because she could not bear the thought of a closed door whose lock nobody could ever open again.
+
+The papers inside were not requests for rescue. They were requests to be heard. A school principal wanted the boundary residents to determine their own curriculum. A midwife wanted medicines delivered without a Council official accompanying them.
+
+A group of dockworkers wanted a weekly list of who had been allowed to leave. Their complaints had been sent outside the boundary and recorded as irrelevant because they did not fit the language of emergency relief.
+
+Mira looked at the petitions, then at the neat column of balances in the ledger. The people inside had been asking for a voice while the people outside had been offering them blankets.
+
+Aven gave them the box, but only after they agreed to return its contents or place them in an archive controlled by representatives of the petitioners. Mira promised neither outcome would be decided by the Council alone.
+
+The woman made her write the promise on the back of the inventory. Cael signed as witness. Aven signed beneath them, slowly, as though a signature that had once helped the machinery of silence might become a different kind of act.
+
+At the door, Mira asked Aven why she had stayed. The woman considered the question and answered it as directly as she had answered everything else. She had stayed because she knew where the letters were.
+
+If she left, they might be destroyed by an employee who had never heard the voices behind them. She had also stayed because she was frightened of discovering what her own life would be without the building in which she had made her compromises.
+
+She did not know which reason had mattered more. Mira found the honesty painful and reassuring.
+
+They carried the tin box into the main hall. Outside, the storm was still holding its breath. The observatory's glass roof caught the last of the afternoon light and distributed it across the marble in pale stripes.
+
+Cael made a list of people to contact. Mira made a list of questions they could not answer yet. The two lists did not match. That, for once, seemed like evidence that they were beginning to do the work correctly.
+
 ## Fourth Chapter
 
 The storm began at the wrong end of the sky. Lightning rose out of the clouds and vanished into the stars without striking the observatory; thunder arrived before its light. Every window flashed with a different image of the city that had been erased.
@@ -1710,6 +2008,168 @@ The city around them was still hidden, still frightened, still caught inside a b
 
 But the pears tasted like an ordinary afternoon, and for the length of that walk Mira allowed herself to believe ordinary afternoons might return.
 
+## The Quay Of Unreturned Things
+
+The ferry delivered them to a quay that could not have appeared in any official harbor chart. Its pilings were made from old street lamps, the lanterns submerged in blue water below the boarding deck.
+
+Little fish moved through the glass chimneys, brushing against soot that had been deposited in some other lifetime. Across the channel, steps rose from the water into a town of balconies and sloping roofs. Every building bore a small white tile above its door.
+
+Some tiles held a name. Others held a question mark written in the same careful blue glaze.
+
+Cael stepped off the ferry with the ingrained caution of someone who had learned that a dock might not welcome the weight of a messenger. He tested a plank, moved the heavy case of petitions onto solid ground, and offered Mira a hand.
+
+She accepted it, then noticed that he had been watching her instead of the quay. When she asked whether he was afraid, he said he was counting the ways they might get back. The ferry's captain had already begun untying the rope.
+
+A return journey was not guaranteed, she had told them, but a ticket could be saved and used if the river remembered its own direction.
+
+There was a market along the quay, but it did not trade in anything a visitor would immediately recognize. A woman sold bundles of keys. Her sign read DOORS YOU MAY HAVE FORGOTTEN.
+
+A boy sat beneath a canopy repairing the straps of suitcases that belonged to travelers who had never arrived. Beside the steps, a man in a yellow apron weighed small parcels on a brass balance.
+
+The parcels contained wedding invitations, school certificates, worn-out gloves, fragments of recipes, and a child's collection of painted stones. A queue had formed before his table.
+
+People spoke to him in hushed voices and carried away the things he gave them as if receiving them made their hands heavier.
+
+Mira approached the table and asked who owned the parcels. The man looked at her atlas, recognized its binding, and put down the small weight he was holding. His name was Parel, he said, and he was the keeper of unreturned things.
+
+The goods on his table had been separated from their owners by the boundary, the machine, or the ordinary carelessness of people in a hurry. He did not decide to whom they belonged.
+
+He asked claimants to describe something about the object that was not visible from its exterior.
+
+Parel: The lock of a suitcase tells us nothing. A person might have bought it yesterday or inherited it from a woman they never met.
+
+But the smell of the clothes inside, the sound the hinge makes when it is opened in winter—that can be a beginning.
+
+**Mira:** What happens if two people describe the same object?
+
+Parel: Then we discover that belonging is not as simple as possession. They may have to speak to one another. Sometimes they would rather leave it here.
+
+The keeper offered them tea in cups that did not match. Cael held his cup with both hands. He had been staring at a parcel wrapped in dark oilcloth ever since they reached the table.
+
+There was no name on it, only a small brass tag stamped VEY. Mira had seen that surname on his courier license, and on none of the family records he had tried to obtain. She kept her gaze on the keeper.
+
+Cael had spent too long being treated as an object of investigation for her to turn the moment into another interview conducted without his permission.
+
+Parel noticed the parcel. He took it from the shelf and put it on the table without pushing it toward Cael. He asked whether the courier wanted to make a claim. Cael said he did not know if he could describe what was inside.
+
+Parel explained that remembering could be a reason to claim something, but it could not be a requirement for receiving help. Sometimes the person most entitled to a thing was the person whose memory had been damaged by its loss.
+
+**Cael:** If I take it and it isn't mine, I've stolen somebody's past.
+
+Parel: If you refuse to look because you might be wrong, you may leave somebody's past here forever. We cannot remove the risk. We can make you answerable for the choice.
+
+Mira asked whether they could open the parcel in the keeper's presence, leaving it in his custody until Cael knew what it was. The keeper considered that a sensible compromise. He unfolded the oilcloth.
+
+Inside lay a pair of child's shoes, a broken miniature compass, and a small envelope addressed in handwriting so familiar to Cael that he stopped breathing. The envelope did not contain a letter.
+
+It contained a pressed sprig of the apple blossom that grew on the lower islands, its petals now brown and fragile. Beneath it was a scrap of paper with a sentence: WHEN YOU COME BACK, TELL ME WHICH WAY THE RAIN WENT.
+
+Cael read the sentence without sound. His face changed. Mira recognized the expression from the bell garden, where a weather memory had arrived without any of the events that should have surrounded it. He knew the rain had fallen sideways.
+
+He knew it had smelled of apples. Now the sentence gave the memory another person's expectation, a promise held in a piece of paper long after the person who made it had vanished from his history.
+
+**Mira:** Do you know who wrote it?
+
+**Cael:** I know I promised to answer. I don't know to whom. That's worse than not remembering at all.
+
+Parel: Then we'll keep the parcel in your name for one week. You can come back with what you learn. Or you can ask for it to be held longer. I don't charge for either choice.
+
+They went to the edge of the quay, where a row of round windows opened beneath the waterline. Through them Mira could see a street suspended inside the channel, its stones clean and dry, its shops lit by yellow lamps.
+
+A woman walked along the submerged pavement carrying a basket of bread. When the woman reached the water's edge she passed through the glass reflection of a staircase and vanished from view.
+
+Mira understood that the quay was built along several different histories at once. People passed through different layers of the city without necessarily meeting. It was less a place than an agreement to share the possibility of arrival.
+
+**Cael:** The market feels ordinary until you look at it long enough.
+
+**Mira:** Perhaps that's what ordinary means here. Being able to do something every day even though the world keeps trying to stop you.
+
+A child appeared beside them, leading a dog that seemed to recognize Mira before the child did. He asked whether she was the cartographer from outside. When she admitted it, he said the quay had been expecting her. Not everyone wanted her to come.
+
+Some people feared that a person carrying an atlas would decide where their streets belonged and send official messengers to move them. Others had kept empty rooms for the people who lived outside the boundary.
+
+The child himself had never seen the world beyond the channel. He said he did not understand why the adults argued about returning to a place he had never visited.
+
+Mira asked what he liked about the quay. He told her the fish changed color when it rained. He liked how the kitchen windows opened over the water.
+
+He liked that the woman who repaired keys would keep fixing a broken one even if a customer had no money. When he was older, he wanted to work on the boats. She asked whether he wanted to leave.
+
+He said he would like to travel once, but he wanted to come home afterward. The desire seemed simple enough to fit into a sentence, and too complicated to fit into any of the Council's categories.
+
+They found the local notice board at the foot of a clock tower. Its postings were written in several alphabets, some older than the language of the observatory. One announced a music lesson. Another warned people not to enter the abandoned waterworks after sunset.
+
+A third contained the dates of an upcoming assembly and a request that visitors who wished to speak register before the hall reached capacity.
+
+Beneath the notices was a blank sheet of paper with a question written in large letters: WHO WILL RECORD WHAT THE OUTSIDE WORLD REFUSES TO HEAR?
+
+Mira took a piece of charcoal from the box provided for replies. She wrote: WE WILL RECORD IT, BUT YOU MUST BE ABLE TO CORRECT US. She put the charcoal down. Cael added: AND IF YOU ASK US TO STOP READING, WE WILL STOP.
+
+Their two sentences looked like modest contributions amid the furious handwriting already covering the board. Several people gathered to look. A woman objected that stopping an archive could become another form of censorship.
+
+A man asked who would preserve statements made by people who could no longer speak. The argument began in earnest before Mira could pretend that she had resolved anything.
+
+A teacher with a small brass whistle introduced herself as Nel. She had come to collect children from a lesson about the old bridges and found the visitors surrounded by adults asking questions.
+
+Nel told the crowd they would have plenty of opportunities to challenge the cartographer at the assembly. Then she turned to Mira and asked whether she wanted to see the school.
+
+She had no authority to speak for the quay, Nel explained, but she did have authority to invite guests into a classroom, so long as the children were told that the guests were free to leave and so were they.
+
+The classroom was upstairs in a former customs house. Its maps showed the streets in several different arrangements, each labeled with the name of the person who had drawn it. One was made of colored thread.
+
+Another had been painted on the back of a sail. The children had placed paper boats along the waterways, each boat bearing a name and a number indicating how many people might travel in it.
+
+When Mira asked why there was no official map on the wall, Nel answered that the official one was in a drawer where the students could consult it when they needed to know which laws would be enforced that week.
+
+Nel: I teach the children what the city looked like according to the people who lived here. Then I teach them the Council's map.
+
+It's important to understand the authority that may try to govern you, but I don't want them to confuse its map with the territory.
+
+A little girl asked whether the outer world still had stars. Mira told her that it did. The girl looked disappointed.
+
+She had hoped the stars belonged to the boundary, because the sky above the city had been unusually bright for as long as she could remember. A boy asked whether people outside ever got hungry.
+
+Another wanted to know whether the rain was blue there too. They treated Mira's answers as stories rather than proof, asking questions when she contradicted their parents and laughing when she admitted she could not explain the color of the clouds.
+
+After class Nel showed them the school register. Several children had been born inside the boundary but recorded as older than their parents according to the Council's outside calendar. The contradiction had caused disputes over apprenticeships and inheritance.
+
+Nel had developed a second register based on seasons spent together rather than official years.
+
+She asked Mira to help her understand how the calendars might be reconciled without allowing the Council to erase a generation simply because its birthdays did not fit the expected arithmetic.
+
+Mira spent an hour comparing the records. The result was incomplete. It could not tell the teacher precisely when the children had been born.
+
+But it showed that the two calendars drifted at a measurable rate and that the drift changed near the blue-glass channels. Nel could use the discovery to prepare evidence for the assembly.
+
+More importantly, the children could now understand why the numbers on the official forms did not always match what their families remembered. Their confusion had been treated as a personal failing. The discrepancy belonged to the machinery, not to them.
+
+Mira found that the school maps showed one alley in five different positions. Rather than correct the drawings, Nel had given the alley its own shelf, where students placed notes about where it appeared each morning.
+
+Their observations formed a rough history of the city's movement. Mira took a copy of the notes and promised to bring them back with her annotations rather than hide them in the observatory.
+
+On the stairwell Cael told Mira that he had once imagined recovering his family would mean finding a single photograph that answered every question. Now he was frightened that his own memories might disagree with the people he met.
+
+Mira said she could not promise the disagreements would be painless. She could promise to believe that his account was worth hearing even when it was incomplete.
+
+When they returned to the quay, the keeper of unreturned things had closed his table for the evening. He was sitting at the edge of the water, eating bread from a paper bag.
+
+He handed Cael a small brass receipt confirming that the parcel would remain in his care. The receipt did not describe the objects inside.
+
+It recorded only the terms they had agreed upon, so a future custodian would know the parcel had not been abandoned.
+
+Parel: A receipt is a small promise. It says a person came here with a question and another person agreed not to make the question disappear.
+
+Cael slipped the paper into his coat. Mira looked back at the quay as its lamps began to brighten. Behind the windows below the water, the submerged street filled with people carrying groceries and children running home from lessons.
+
+The outer pier was crowded with visitors arriving for the assembly, each with a story that would not fit easily into the official accounts. Somewhere in that crowd might be the woman who had asked Cael which way the rain went.
+
+He did not try to find her yet. For the first time, he had something resembling a right to come back.
+
+They followed Nel toward the upper market. Above the steps, an enormous clock showed two different hours on its two faces. The hands were moving at slightly different speeds.
+
+Mira thought about how often she had used the word error to describe a discrepancy between a measurement and an expectation. This time the discrepancy was the evidence.
+
+She opened the atlas to a blank page and drew the quay without trying to decide which of its histories had the better claim to being real.
+
 ## Threshold Market
 
 The hidden city began where the eastern lens ended. Its central market occupied a wide circle beneath towers built from gold limestone, each connected to its neighbor by a bridge of dark blue metal. Lanterns hung from cables above the stalls.
@@ -2160,6 +2620,144 @@ No one accused them of failing to participate in history. Mira crossed the bridg
 
 It was smudged and poorly aligned, and it told the truth about something the people had done together before anyone had agreed on what should happen next.
 
+## The Hall Of Open Questions
+
+The assembly could not begin in the square. Rain had entered through the narrow break in the eastern wall and turned the spaces between the cobbles into a series of small channels.
+
+People who had intended to stand in the open now gathered beneath awnings, carrying wet notebooks and demanding to know whether the meeting would be postponed. The mayor announced that the hall of the former customs house had enough seats for half the attendees.
+
+This produced an immediate argument about which half should be admitted. Mira saw how easily even an ordinary arrangement of furniture could become a decision about who was permitted to count.
+
+Nel the teacher arrived with a group of students carrying folding stools. She said the school had a hall with movable walls and a covered courtyard.
+
+It would accommodate everyone if the audience accepted that some people would sit where they could hear but not see the speakers. A printer from the city offered to reproduce the day's statements on paper for anyone who needed to follow them outside.
+
+Someone suggested that the children could carry notes between the rooms. The children objected that they wanted to listen to the debate themselves. The adults apologized, and a different messenger system was arranged.
+
+Cael found himself at the center of the discussion. As a courier, he knew the routes between the public buildings. He sketched the shortest path through the covered streets, marking the slippery steps and the places where carts could pass.
+
+It was a map designed not to exercise authority but to help people arrive. Mira looked at it with unexpected pride. Her entire childhood had been spent among maps whose makers valued accuracy more than welcome.
+
+Cael's map was accurate, but its first question was where a person might safely walk.
+
+The hall smelled of wet wool and hot metal. At the front stood a long table with five chairs. The mayor had placed herself in the middle.
+
+The other seats were marked for the Council's representative, the trades, the families of the missing, and the people of the outer districts.
+
+A young woman carrying a bundle of petitions looked at the arrangement, placed her bundle on the table, and asked where the children would sit. The mayor replied that children could submit written statements.
+
+The woman said that was not the same as being allowed to ask a question in the room.
+
+Mira watched the mayor think. She could have defended the arrangement as an established procedure. Instead she pushed her own chair to the side and asked the students to select a delegate.
+
+The students spent several minutes arguing over whether a delegate ought to be the oldest, the loudest, or the person who had prepared the most questions. They chose the quietest among them, a girl named Bera who had been taking notes throughout.
+
+Bera accepted only after they agreed that she could leave the chair to consult the others whenever she wanted.
+
+The incident took perhaps ten minutes. It changed the atmosphere of the meeting more than any proclamation could have done. People began to move the benches themselves, making room for neighbors who could not climb the steps.
+
+A man with a cane asked whether the speakers could sit down because he could not stand long enough to follow their gestures. The mayor agreed.
+
+An interpreter moved beside the first row, where she could hear without being required to cross a crowded aisle. None of these arrangements changed the machine. They changed who would be present when the machine's future was discussed.
+
+At the back of the hall a woman in an apron raised a piece of paper. She said her bakery had lost three deliveries in the last week and she wanted to know whether the boundary would make flour disappear next.
+
+An engineer answered that he could not guarantee the continuity of the supply routes. The baker asked whether the Council had been able to make such a guarantee before, when it had closed the passage without telling anyone. The engineer admitted it had not.
+
+Several people applauded. The baker looked irritated by the applause; she had wanted to know how much flour to order.
+
+**Cael:** She doesn't need a victory. She needs a shipping schedule.
+
+**Mira:** Then someone should help her make one.
+
+He went to the baker, borrowed her list of suppliers, and brought it to a group of dockworkers who knew which crossings were still functioning. They made a provisional plan using three different routes.
+
+The plan was not elegant and would probably need revision by morning. It was useful. Mira began to see that the meeting could produce more than a decision about the lens.
+
+It could become a way for the city to practice the kind of public conversation the Council had denied it.
+
+Parel arrived with a wooden crate from the quay. Inside were objects whose owners had asked that they be shown: a boy's schoolbook, a pair of women's gloves, a copper pot repaired many times, and a set of keys tied to a blue ribbon.
+
+He placed the crate beside the table and explained that some people could not speak about the boundary without a thing from the life it had divided. Others had refused to have their objects shown.
+
+He asked the mayor to announce that no one would be compelled to display a memory in order to have a vote.
+
+The Council's representative objected that physical objects could not establish the true location of a vanished district. Parel agreed. He added that a person's grief was not a navigational instrument, and that was precisely why it should not be required to function as one.
+
+The argument drew murmurs of approval and suspicion. Mira recognized the danger in allowing the room to treat sincerity as proof. People could remember incorrectly. They could lie. They could be mistaken about the causes of their losses.
+
+But a mistaken witness could still possess a right to know why a machine had been allowed to act upon their life.
+
+A young apprentice stood and said her father had voted for the original agreement. He was now dead, and the apprentice did not want strangers treating him as a villain for a choice made under conditions they could barely imagine.
+
+Across the aisle, a man whose family had been trapped inside the boundary said the father's vote had consequences regardless of whether he understood them. The apprentice asked whether that meant she should stop loving him.
+
+The man answered that he had never asked her to. They looked at one another across the hall, each holding an argument that was too heavy to be resolved by the other person yielding.
+
+Mira spoke only when the mayor invited her. She said the surviving records showed that voters had not been told the full cost of the agreement.
+
+That fact did not make every individual blameless, but it changed the questions an honest inquiry would need to ask. Who had known? Who had chosen not to find out? Who had attempted to stop the experiment?
+
+Who had learned enough to object and had been prevented from speaking? The room listened. For once she did not have to defend the value of a question that had no simple answer.
+
+Mira laid the relief ministry's censored charter on the table. She showed the room the sentence instructing officials to disclose the harm done to outer districts and the signature approving its deletion.
+
+The document provoked anger, but it also gave the inquiry a specific task: identify the official who ordered the deletion and find the surviving correspondence. The evidence turned an accusation into a set of questions that could be answered.
+
+Bera, the student delegate, asked what would happen if the machine showed a future in which opening the boundary killed people. The Council representative said the meeting would have to choose continuity.
+
+A dockworker asked what would happen if keeping it closed killed people whose names were not on the official charts. Neither man could answer without qualifying his principles.
+
+Bera wrote both statements in her notebook and asked the mayor whether the assembly would be allowed to hear the machine's projections directly rather than accept a summary prepared by the Council.
+
+The mayor said she would ask the Chancellor. Bera said that was not the question. Did the assembly have a right to see the projections? The mayor looked toward the representatives. The families' delegate answered yes.
+
+The trades agreed, on the condition that the engineers explain the limitations of their models. The outer districts' representative insisted that people be told what assumptions had been used.
+
+The Council's representative refused to endorse the proposal but did not claim the room lacked authority to adopt it.
+
+The vote was taken by standing, except for those who could not stand and were invited to raise a hand. Some refused to vote because they thought the question premature. Their refusal was counted separately. The result was not unanimous.
+
+That, Mira discovered, made it more trustworthy. She could name the objections, trace the procedure, and explain why the decision had been made despite disagreement. No one had to pretend that dissent had vanished from the room.
+
+A man in the front row asked what an outsider could know about AsterVale. Mira told him the truth: much less than the people who lived there, and more about the machine's construction than any one person should have been required to learn.
+
+He asked whether she would testify under oath. She agreed, then asked to write the oath herself.
+
+It would bind her to distinguish what she had seen from what she had inferred, and to return any evidence that belonged to another community if its custodian demanded it. The man was surprised that she had added restrictions on her own authority.
+
+Mira was surprised by how difficult it felt to write them down.
+
+Cael returned from the dockworkers with a list of supply routes and placed it beside the baker's notes. Parel had found the owner of one pair of gloves in the crate.
+
+Nel had arranged for the next school day to begin late so children could attend the opening testimony. Around the hall, people were producing arrangements small enough to change when they failed.
+
+The great decision was still ahead, but the meeting was already demonstrating that a city did not have to wait for a perfect answer before it began to govern its own life.
+
+Mira went out onto the covered balcony. Rain pattered on the awning and ran in careful lines along its seams. Cael joined her, bringing two cups of the bitter tea served at the hall's entrance.
+
+They watched the streets below, where volunteers moved lamps and carried the last benches inside. The city was not calm. Its people were frightened, and its foundations were still being pulled toward the lens.
+
+Yet Mira found she was less afraid of their disagreement than she had been of the Council's serene certainty.
+
+**Cael:** They could spend years debating some of this.
+
+**Mira:** I hope they get the chance.
+
+**Cael:** You really have changed.
+
+**Mira:** I used to believe a map was finished when the blank spaces were filled. Now I want to leave room for somebody to correct it.
+
+He gave her his empty cup. She balanced it on the rail beside hers. Below, a child tried to catch raindrops in a bowl and shouted whenever the water overflowed.
+
+Mira understood that the meeting would end, the decisions would be made, and the machine would demand a command long before all the questions could be answered. She also understood that the unanswered questions were not defects to be concealed.
+
+They were obligations the survivors would have to carry into whatever came next.
+
+They returned to the hall as the mayor called the first witness. Bera had brought an extra notebook for the questions the speakers could not answer. She placed it at the end of the table and wrote on the cover: QUESTIONS TO RETURN TO.
+
+The title was small enough for a child to carry. It was large enough, Mira thought, for the future the city was trying to make.
+
 ## Assembly
 
 The Emergency Assembly met beneath the open sky, because the Council chamber had become a place where people expected lies to be spoken in comfortable chairs. It was a disorderly meeting.
@@ -2443,6 +3041,154 @@ The night had taught her to want something else: the courage to be corrected by 
 They turned from the window and went toward the lens. Behind them the librarians continued moving books, the delegates continued discussing their instructions, and the child continued guarding the box of drawings. The world was still full of ordinary work.
 
 Mira hoped it would remain so after the bell stopped.
+
+## The Station For Things Not Yet Lost
+
+The last approach to the observatory passed through an abandoned passenger station. Its timetable had been painted directly onto the walls, where the columns of destinations climbed from floor to ceiling.
+
+Long ago trains had carried families between the upper islands and the lower harbors, following the same brass guide rails that now supported the great lenses. When the boundary closed, the railway had been declared unsafe.
+
+The tracks remained, but no train had crossed them for seventeen years. Someone still swept the platform every morning. Dust lay only where the roof had begun to leak.
+
+Mira stopped beneath the old clock. Its hands were missing, like those on Cael's watch. The stationmaster's booth was lit by a single lamp. Behind the glass a small figure moved, placing a book on the counter and turning its pages with great care.
+
+Mira expected another ghost from the machine, an apparition prepared to tell her something useful at the cost of a memory. The figure came to the window, lifted the lamp, and revealed an elderly woman with ink on her cheek.
+
+She asked whether they had come for the last train.
+
+Cael said there was no train. The woman agreed. She had been saying so every day since the closure. Then she asked whether he wanted to buy a ticket anyway. He asked where it would take him.
+
+She replied that the destination was not the important part. A ticket was a record that someone had intended to go somewhere, and intentions were sometimes all the authorities left behind when a journey was interrupted.
+
+The woman's name was Edda. She kept the station because her husband had been a driver on the last service. He had entered the boundary with seventy passengers and never returned. The Council had described the disappearance as an unavoidable interruption of transit.
+
+Edda had spent the next seventeen years recording the names of people who arrived asking about missing journeys. Some were relatives of the passengers. Others had been traveling themselves and could no longer remember where they had meant to go.
+
+She had never charged anyone who could not pay.
+
+Mira looked around the booth. Shelves held thin books, each marked with a year and a direction. She opened one.
+
+The entries were modest: a family trying to reach a wedding, a gardener bringing seedlings to his daughter, a boy who had missed the train because he stopped to watch a street performer. The entries preserved travel plans that had never been completed.
+
+Between the columns Edda had written little notes about the people who came to ask. Some were angry. Some were relieved to discover that somebody else remembered the service. Some came back each year even after they had stopped expecting the passengers to return.
+
+Edda: The Council offered me a pension if I would close the booth. I told them a pension was a payment for finishing a job. My job wasn't finished.
+
+**Cael:** What would finishing it look like?
+
+Edda: I don't know. Perhaps it would look like a train. Perhaps it would look like telling a child that a journey ended and that we are allowed to mourn it. But I need to be here to know which.
+
+The answer unsettled Mira. Her own father's disappearance had left a station of the mind in which she had waited for an arrival she could not describe.
+
+She had spent years filling the waiting room with research, refusing to ask whether she might be waiting for an apology rather than a person.
+
+Now the machine offered the possibility of bringing missing places back, and she was afraid that even a perfect restoration would leave something unresolved in the old rooms of her life.
+
+Cael asked to see the register for the year of the closure. Edda showed him the first page, which had been repaired with clear paper around its edges. The passengers were numbered. Beside each number stood a name and a destination.
+
+Some names had been crossed out by the Council. Others appeared only as faint depressions in the page, as if someone had written them and the ink had been drawn away. Halfway down the list Cael found a surname he recognized. VEY.
+
+There were two people registered under it, an adult and a child. The adult's first name had been erased. The child's name was still legible: LINA.
+
+Cael did not speak for a long time. Mira knew the pressure of a fact becoming a possibility. The name might belong to his family. It might belong to someone entirely unrelated. The name could answer one question and leave a hundred others.
+
+Edda offered to turn the book toward the light. Cael nodded. In the margin beside the child's name was a description of luggage: one trunk, two small bags, and a parcel wrapped in oilcloth.
+
+The parcel was to be held at the quay for the passenger's return.
+
+**Cael:** I saw that parcel. It's still there.
+
+Edda: Then somebody kept the promise. That matters.
+
+**Mira:** Did the train come back at all?
+
+Edda: The engine did. It arrived three days later with no driver and no passengers. The doors opened at every station, though nobody was aboard. We inspected it for damage. We found a little shoe under the back seat.
+
+I took it to the quay with the other lost things.
+
+Cael closed his eyes. He had seen the shoes. He could now imagine a child who had worn them, though the image was uncertain and might have been assembled from the information he had just learned.
+
+He asked Edda whether she remembered anything about Lina. The stationmaster said the girl had been restless and frightened of the dark, and that her companion had promised to tell her a story when the train entered the long tunnel.
+
+Edda remembered this because she had heard the promise from the platform and had thought it kind.
+
+**Cael:** I have spent years believing I was the one abandoned. What if I was the one who failed to come back?
+
+**Mira:** The register says they boarded the train. It doesn't say what happened after. Don't make the missing part of the record into a verdict against yourself.
+
+He opened his eyes. He asked Mira to repeat the sentence. She did. He said he wanted to remember it, not because it absolved him, but because he had been making the opposite assumption for so long that it felt like an unquestioned fact.
+
+Edda gave him a blank ticket. He wrote LINA VEY on one side and on the other: FIND OUT WHETHER SHE WANTED TO RETURN. Then he put the ticket beside the receipt from the quay.
+
+Mira looked at the register again. Two pages later she found her father's signature, entered as a guest inspector for the same last service. The signature had been written beside a note: requested authority to delay departure; request denied.
+
+Mira felt the old anger return so quickly that it almost blotted out the information. Her father had known something was wrong. He had tried to stop the train. He had also continued working for the people who would send it into the boundary.
+
+The page made him neither innocent nor irredeemable. It gave her another event to place beside the others, another chance to understand the limits of what she had been told.
+
+Edda: Your father argued with the transport director. I heard him say the instruments could not guarantee a return. The director said the risk was acceptable. Your father asked whose risk he was accepting. I thought that meant the service would be delayed.
+
+I was wrong.
+
+**Mira:** Did he try to stop the engine?
+
+Edda: I don't know. I saw him walk toward the rear carriage. Then the doors closed. That's the part I witnessed. Anything after that would be a guess.
+
+Mira thanked her. The discipline of Edda's answer mattered. She had not transformed uncertainty into comfort. She had refused to invent a heroic final act for Mira's father merely because a daughter stood asking about him.
+
+Mira touched the page where his name had been written. For the first time she felt able to acknowledge that she might never learn the last thing he thought.
+
+A future in which that remained unknown was not necessarily a future in which every other truth was inaccessible.
+
+The stationmaster brought them to a little room behind the platform. Its walls were covered with tickets people had left voluntarily, each bearing a destination they wished to reach someday. Some had been written by children.
+
+Others had been left by the elderly in shaking hands. A few named places that existed only on the old charts. One simply read HOME, with a date seventeen years in the past. Edda had never sorted the tickets by importance.
+
+They hung together like the leaves of a small tree, their edges moving whenever the door opened.
+
+Cael took Mira's hand beneath the hanging tickets. He asked whether she would still want to know him if recovering his memory made him into someone she did not like.
+
+Mira said she could not promise the future shape of affection, but he would not have to face the truth alone to protect her from it. He squeezed her hand.
+
+The promise was less romantic than the one he might have wanted, and stronger than any promise he could have made without knowing the answers.
+
+One ticket described a destination as the place where the blue rain begins. Mira recognized the phrase from the older transit legends. She copied the ticket's date and looked for its origin. The handwriting matched a line in the lost city's school maps.
+
+Perhaps the rain itself had a route. Perhaps it had been a symptom of a passage left open between two eras. She recorded the resemblance without declaring it a discovery.
+
+They sat for a few minutes on the platform while Edda made tea. The last light of evening fell through the broken roof in narrow bands. Cael looked at the rails disappearing into the tunnel.
+
+He said he had never been able to decide whether the most terrible part of his amnesia was losing the people he loved or losing the knowledge that he had loved them. Mira answered that the second loss made the first harder to mourn.
+
+Without the name of the feeling, a person could mistake grief for a flaw in their own character.
+
+**Cael:** If Lina is still alive, I have to find her.
+
+**Mira:** Yes.
+
+**Cael:** If she doesn't want to see me?
+
+**Mira:** Then you'll have to find a way to honor that. But first we have to make a world in which she can tell you.
+
+The sentence settled between them. It was another small revision to the language of rescue. Bringing a person back was not the same as having a claim upon them. Opening a city did not mean its citizens were obliged to return.
+
+Restoring a memory did not make the remembered person available to the one who remembered. Mira wondered whether the machine could be taught so subtle a distinction.
+
+If it could not, perhaps the distinction would have to live in the people who inherited the machine's work.
+
+Edda insisted they take two blank tickets for the journey ahead. She stamped the backs with the station's old mark, which showed a train crossing a bridge above the clouds. The tickets bore no destination. She said that was how they were now issued.
+
+People could write the destination themselves, and they could change it if they needed to. The Council had once called this practice disorderly. Edda called it the first honest timetable in seventeen years.
+
+At the far end of the platform they found a second departure board, half hidden behind a fallen curtain. Its destinations were not place-names but verbs: REMEMBER, RETURN, REMAIN, REFUSE. The letters had been painted over many times. Their edges were thick with color.
+
+Mira thought of the four outcomes the lens had begun to display, and she wondered how much of the final choice had been made before anyone living had a chance to speak. She copied the words into the atlas but did not circle one.
+
+When they left, Edda returned to her booth and resumed entering the day's visitors in her register. She wrote their names, the hour, and the fact that they had not bought passage. The platform lamp burned behind them as they climbed the observatory stairs.
+
+Cael carried the receipt, the ticket, and a little more knowledge of what he might have lost. Mira carried evidence that her father had once attempted to stop a departure he had helped make possible. Neither object promised an easy resolution.
+
+Both gave them something more useful than certainty: a reason to let other people tell the remainder of their own stories.
 
 ## Return To Lens
 
