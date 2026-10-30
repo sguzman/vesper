@@ -71,12 +71,18 @@ def press(window: str, key: str, delay: float = 0.09) -> None:
 
 def screenshot(window: str, name: str) -> Path:
     path = OUTPUT / name
-    run("import", "-window", window, str(path))
-    stats = run("identify", "-format", "%w %h %k", str(path)).stdout
-    width, height, colors = map(int, stats.split())
-    assert (width, height) == (1280, 720), (name, stats)
-    assert colors > 80, (name, stats)
-    return path
+    # Software Vulkan may present a completely black first frame immediately
+    # after a scene/save restoration. Wait for the actual composed frame, not
+    # just the X11 window's existence. Real persistent black output still fails.
+    for attempt in range(25):
+        run("import", "-window", window, str(path))
+        stats = run("identify", "-format", "%w %h %k", str(path)).stdout
+        width, height, colors = map(int, stats.split())
+        assert (width, height) == (1280, 720), (name, stats)
+        if colors > 80:
+            return path
+        time.sleep(0.3)
+    raise AssertionError(f"No rendered Atlas frame for {name}: {stats}")
 
 
 def changed(first: Path, last: Path) -> int:
