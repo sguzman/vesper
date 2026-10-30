@@ -3,7 +3,7 @@
 This audit is scoped to the five Reader QoL capabilities and describes the
 *committed implementation*, not a general guarantee about every Bevy system.
 The source-of-truth weighted roadmap is [qol-roadmap.json](qol-roadmap.json).
-Certified source for this phase: merged main `3207b568a8e3acc6f9ff15f11aed8986f04820a7` ([final QA-hardened CI](https://github.com/sguzman/vesper/actions/runs/40978527556)).
+Certified source for this phase: merged main `9de0f7a898a2df1431450a70c09d5ca808840a53` ([final CI after physical QA fixes](https://github.com/sguzman/vesper/actions/runs/40986220492)).
 
 ## Renderer safety rule
 
@@ -60,6 +60,24 @@ six-size `vesper-integrated-qa` artifact `12943398486` includes a complete
 1920×1080 scene, unlike the earlier black-border capture. The integration test
 also passed the reduced-motion/high-contrast and save/reload variants. Prior
 successful branch validation alone was insufficient for this final gate.
+
+## Post-completion physical desktop QA findings
+
+Initial real Hyprland testing verified the player launches and core controls (font selection,
+auto-delay, reduced motion, animated ambient actors and save/load), but found a too-tall
+widescreen choice panel and retained notebook writing inset with High contrast enabled.
+[PR #25](https://github.com/sguzman/vesper/pull/25) clamps upward Bevy UI scaling at large window sizes, restores ordinary
+panel padding when contrast hides the authored notebook, renames the general-purpose menu
+to **Settings**, and adds a screenshot assertion for the two-choice scene at 1920×1080.
+The [merged-main narrative and Bevy CI](https://github.com/sguzman/vesper/actions/runs/40986220492) passed at source `9de0f7a898a2df1431450a70c09d5ca808840a53`;
+`vesper-integrated-qa` artifact `12946728675` includes `choices-widescreen.png` and
+a high-contrast snapshot. The user has **not yet retested** these fixes on their physical
+Hyprland desktop; [issue #26](https://github.com/sguzman/vesper/issues/26) retains the manual acceptance checklist.
+
+The integrated Living Journal demo intentionally does not author audio; the one-shot plane
+is a finite 5.5-second motion, and dynamic word effects modulate colors only (not glyph
+positions). Actual speaker output must be tested with an audio-enabled example such as
+Dawn Post Office. No headset/speaker QA is claimed by software-rendered CI.
 
 ## Limits and physical QA
 
