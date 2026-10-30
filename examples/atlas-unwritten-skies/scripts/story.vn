@@ -828,7 +828,7 @@ end
 jump the_room_beneath_the_weather
 
 @scene the_room_beneath_the_weather
-background undersea_lens
+background submerged_memory_chamber
 music mystery
 show mira troubled at left
 show cael wary at right
