@@ -84,6 +84,16 @@ jobs:
         run: cargo build --locked -p vesper-player
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
+      - name: Play Atlas through all four original endings and test F5/F9
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/atlas_showcase_smoke.py
+      - name: Preserve Atlas ending screenshots and native runtime logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-atlas-showcase
+          path: /tmp/vesper-atlas-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verify QOL05 dynamic word effects, high contrast and reduced motion
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/word_effects_smoke.py
       - name: Preserve QOL05 dynamic word screenshots
@@ -577,16 +587,6 @@ jobs:
         with:
           name: vesper-dawn-showcase
           path: /tmp/vesper-dawn-qa/**/*
-          if-no-files-found: ignore
-          retention-days: 14
-      - name: Play Atlas through all four original endings and test F5/F9
-        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/atlas_showcase_smoke.py
-      - name: Preserve Atlas ending screenshots and native runtime logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: vesper-atlas-showcase
-          path: /tmp/vesper-atlas-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
       - name: Restore F5 save with F9 across process restart
