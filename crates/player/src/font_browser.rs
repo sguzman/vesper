@@ -3,7 +3,7 @@
 use super::*;
 use bevy::{
     input::mouse::MouseWheel,
-    input_focus::AutoFocus,
+    input_focus::{FocusCause, InputFocus},
     text::{EditableText, FontCx, TextCursorStyle},
     ui_widgets::TextInput,
 };
@@ -138,7 +138,7 @@ pub fn open(session: &Session, state: &mut State, commands: &mut Commands) {
                     max_characters: Some(96), allow_newlines: false,
                     ..default()
                 },
-                TextCursorStyle::default(), AutoFocus,
+                TextCursorStyle::default(),
                 TextLayout::no_wrap(),
                 TextFont { font_size: FontSize::Px(19.0),
                     font: FontSource::sans_serif(), ..default() },
@@ -208,6 +208,22 @@ pub fn open(session: &Session, state: &mut State, commands: &mut Commands) {
     }).id();
     state.overlay = Some(root);
     info!("Vesper system font browser opened: {} families", session.font_families.len());
+}
+
+/// The search field owns keyboard focus for the lifetime of this keyboard-first
+/// browser. Automatic focus at spawn alone is insufficient when the user clicks
+/// an empty panel area or a Wayland compositor changes focus during a resize.
+/// Only update InputFocus on an actual transition; never mutate it per frame.
+pub fn focus_search(
+    state: Res<State>, search: Query<Entity, With<Search>>,
+    mut focus: ResMut<InputFocus>,
+) {
+    if state.overlay.is_none() { return; }
+    let Ok(editor) = search.single() else { return; };
+    if focus.get() != Some(editor) {
+        focus.set(editor, FocusCause::Navigated);
+        info!("Vesper font search focused");
+    }
 }
 
 pub fn close(state: &mut State, commands: &mut Commands) {

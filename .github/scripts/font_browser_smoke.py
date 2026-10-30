@@ -107,11 +107,19 @@ def main() -> None:
                         key("Down", .32)
                     key("Return", .35)
                     wait_log(log, "Vesper system font browser opened")
+                    wait_log(log, "Vesper font search focused")
                     time.sleep(.45)
                     initial = OUT / f"{stage}-browser.png"
                     shot(win, initial)
 
                     if stage == "choose":
+                        # Real Hyprland QA found typing can stop working after
+                        # interacting with the font browser. Click empty panel
+                        # background, then type without manually refocusing.
+                        # A browser that only focuses once at spawn fails here.
+                        run("xdotool", "mousemove", "--window", win, "12", "12")
+                        run("xdotool", "click", "1")
+                        time.sleep(.35)
                         run("xdotool", "type", "--clearmodifiers", "--delay", "75", "DejaVu")
                         time.sleep(.85)
                         search = OUT / "filtered-dejavu.png"
@@ -131,6 +139,16 @@ def main() -> None:
                         shot(win, no_match)
                         assert changed(search, no_match) > 150
                         for _ in "zzzz-no-such-font":
+                            key("BackSpace", .035)
+                        # P and M are letters in a search, never global menu
+                        # shortcuts while the browser is open.
+                        run("xdotool", "type", "--clearmodifiers", "monospace")
+                        time.sleep(.35)
+                        mono = OUT / "filtered-monospace.png"
+                        shot(win, mono)
+                        assert changed(no_match, mono) > 150
+                        assert "Vesper system font browser closed" not in log.read_text()
+                        for _ in "monospace":
                             key("BackSpace", .035)
                         run("xdotool", "type", "--clearmodifiers", "DejaVu")
                         time.sleep(.35)
