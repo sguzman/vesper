@@ -226,6 +226,148 @@ The sparks rose toward the great globe. The brass rings turned without being tou
 
 Mira watched the atlas open and realized that the letters were not the only messages being carried through the world. The machine had been speaking for years. They had only just begun to notice the language it used.
 
+## The Library Of Lost Afternoons
+
+Mira did not sleep after reading her father's confession. The letter was folded and placed beneath a brass paperweight on her desk, and every time she crossed the room she caught herself checking that it was still there.
+
+The contents had not changed, but she had begun to fear that the moment she looked away the instrument would discover a way to make her believe they had.
+
+The observatory's smallest library occupied a circular landing above the public reading room.
+
+It was known as the library of lost afternoons because the windows faced west and the clock had been broken for so long that nobody could recall which afternoon had been the last one it measured accurately.
+
+As a child Mira had spent hours there inventing distant cities out of the names printed on old survey charts. Her father had brought her bread wrapped in the pages of abandoned calculations.
+
+She had thought this proof that he considered her more important than mathematics.
+
+Now the shelves seemed to hold a different kind of evidence. The geography books stood in a row, each with a narrow pale rectangle on its spine where a label had once been.
+
+Her own childhood atlas lay on its side at the lowest shelf, a green cloth volume with its corners turned down.
+
+She remembered a conversation in which her mother had told her not to straighten the corners because her father used them to mark the pages he could not bear to revise.
+
+**Cael:** You are making the face of someone about to interrogate a book.
+
+**Mira:** Books are usually more forthcoming than people.
+
+**Cael:** That has not been my experience. I have delivered letters that were quite determined not to answer their own questions.
+
+She showed him the green atlas. Its earliest pages contained drawings of real places: the south docks, the garden walk, a small staircase behind the kitchen, and a roof over which gulls had flown before the cloud shelf grew too thick to see them.
+
+Later pages contained impossible places, or places she now knew had been removed. There was a market where the awnings had been made from the wings of discarded maps. There was a school with an enormous glass chimney.
+
+There was a street on which every lamp cast two shadows and the second shadow arrived several minutes after the person who had made it.
+
+She had drawn these as a child, before she was old enough to understand the machine's work. That troubled her more than the details themselves. If she had seen the places and had been made to forget them, the childish drawings were eyewitness testimony.
+
+If she had invented them, they were another kind of evidence: proof that a mind could imagine what authority had insisted was impossible. She could not decide which conclusion she wanted to be true.
+
+The stairs creaked beneath footsteps. An elderly librarian emerged carrying a wooden tray with three cups of tea.
+
+Her name was Renne, though Mira had never known whether it was her given name or one chosen after her first name vanished from a register during the catastrophe. Renne had assisted her father for years.
+
+She had refused a pension on the grounds that the library might one day require someone who remembered where the damaged books were hidden.
+
+Renne: One of you looks as if you've read something terrible. The other looks as if he is wondering whether he has been invited to stay.
+
+**Cael:** I was invited to help carry books. I do not know whether that extends to tea.
+
+Renne: Everyone who carries a book properly gets tea. Everyone who drops one gets tea as well, though in a less comfortable chair.
+
+The third cup remained untouched. Renne set it beside the little clock, where its steam floated upward through a place that did not seem to disturb the air. Mira asked for whom it had been poured. Renne's hand paused.
+
+She said she had always made three cups in this room and that no one had ever complained about a surplus. She looked at the empty chair beneath the clock.
+
+Its cushion was worn in a place where a small person might have sat with their feet too short to reach the floor.
+
+Mira remembered her mother wearing a blue shawl and reading a children's book aloud. She remembered a laugh, too low and rough to have belonged to the voice in the story.
+
+But the chair in her memory stood on the other side of the room. The chair in front of her seemed to have been moved there deliberately, as if its old place had become too dangerous for it to occupy.
+
+Renne: Your mother kept a second journal here. Your father thought the first had burned. I let him continue thinking so. Sometimes protecting a book from its author is the only way to make sure it reaches its reader.
+
+**Mira:** Why didn't you give it to me?
+
+Renne: Because I was afraid you would ask whether I had chosen rightly, and I knew I hadn't earned the right to answer for you. This was not a generous fear.
+
+From the underside of the third shelf Renne removed a narrow drawer. Its false back was painted the same uneven brown as the wood around it. Inside lay a journal bound in pale blue cloth, stitched badly along the spine.
+
+Several pages bore water stains. One contained a pressed white flower whose stem had crumbled into a long green line. Mira knew the flower.
+
+It had grown beside the stairs leading to the old eastern wing, where her mother had taken her to watch the evening sky change color.
+
+The journal did not record the catastrophe as a single event. It recorded a series of days in which small things stopped agreeing with one another. A delivery of fruit arrived from a town no one could find on the official chart.
+
+A passenger train appeared at the terminus carrying six people whose tickets had been issued on a date that the timetable insisted did not exist.
+
+At the observatory a young apprentice began waking each morning with a memory of another life, including a child he had never met. The apprentice wrote the child's name on his wrist to preserve it.
+
+Later the name was covered by the burn of an eight-pointed seal.
+
+Cael leaned close enough to read the line. Mira watched his hand move toward the scar and stop. He had been speaking easily until then.
+
+Now his expression changed not to recognition but to the dread of a person who suspects the world has arranged a recognition for him in advance.
+
+**Cael:** What was the apprentice's name?
+
+**Mira:** My mother doesn't say. There's a sketch. A young man with dark hair, standing beside a little girl in a coat with a blue collar. The drawing isn't good enough for me to tell whether it was you.
+
+**Cael:** She may not have been drawing a face. She may have been trying to draw the feeling of someone being present before there was a record of him.
+
+Renne lit another lamp. The flame reflected in the journal's water stain, briefly turning it into a map of tiny golden islands. Mira turned to the final entry.
+
+Her mother had written that she was no longer willing to participate in the eastern lens trials.
+
+She believed the machine could save cities from the storm, but only by treating the people who lived there as entries that could be revised without asking them.
+
+She had begged the researchers to show their work to the families whose names appeared in the calculations. They had called her concerns sentimental and told her that a perfect instrument required an imperfect sacrifice.
+
+Below the entry was a short list in her mother's hand. It began with the name of a baker and ended with the name of a child. Between them were the names of several assistants, a ferry keeper, and a woman called Elian Vey.
+
+Cael read the last name twice. He whispered the words as if they belonged to a language he had known before he knew how to speak.
+
+**Cael:** Vey. That is my name.
+
+**Mira:** It is. But it may not be the whole of it.
+
+**Cael:** I can remember a child holding the sleeve of my coat. I can remember promising that I'd come back for her. Every time I try to see her face, I remember a different promise instead.
+
+**Cael:** This one was made to a woman who told me that if I delivered one more letter, the storm would spare the city. I delivered it. I don't remember what happened to the city.
+
+Mira closed the journal. She could have asked him to tell her the promise again, to compare every word against her father's records. Instead she asked whether he wanted to sit down. Cael nodded once.
+
+His hands shook as he took the tea Renne had poured. He did not spill any of it. Mira thought that this was probably the most difficult thing he had done since entering the room.
+
+The old clock rang. It had not possessed a bell for thirty years. The sound was small and wooden, like someone knocking from inside a closed cupboard. All three looked up.
+
+The hands, which had always pointed at twenty minutes after four, moved forward by the breadth of a hair. Behind the glass, a single line appeared on the face of the clock: AFTERNOONS CANNOT BE STORED. THEY MUST BE LIVED.
+
+Renne laughed, not because the message was funny but because she had been responsible for dusting the clock for decades. She said she had tried many times to make it behave.
+
+It had ignored her until this evening, when two young people had sat with a sorrow that neither could solve by examining a diagram. Mira found herself laughing too. The laughter startled Cael, and after a moment he joined them.
+
+They sat there until the tea grew cold.
+
+Renne told them how Mira's mother had taught the librarians to record a book's absence as carefully as its presence: who had borrowed it, what they hoped to learn, and whether they brought it back with a different understanding.
+
+That practice had saved more records than the Council's official index because an erasure could remove a title but could not remove the experience of someone trying and failing to find it.
+
+Mira wrote her mother's name on a fresh page of the atlas. Beneath it she wrote the names from the journal, including Elian Vey. She did not yet know what they would mean.
+
+They were not a spell that could return a city or a verdict that could condemn the Council. They were people her mother had thought worth writing down. For tonight that was enough to make the paper feel steadier in her hands.
+
+As they left the library, Cael paused at the door. He looked back at the empty chair and the third cup. The tea had vanished from it, but the cup was warm. Renne refused to look surprised.
+
+She simply asked Mira to bring the journal back when she was done, because an archive depended on people keeping ordinary promises even when the world was doing extraordinary things.
+
+**Mira:** I'll bring it back.
+
+Renne: I believe you. And if you can't, leave someone a note telling them where to look.
+
+Cael shut the door with care. Somewhere beneath their feet the lens continued its enormous unfinished calculation. For the first time that night, Mira did not imagine the machine as a monster with a single heart.
+
+She imagined it as a room full of people who had forgotten how to ask permission, with one empty chair waiting for the person who might teach them to begin.
+
 ## Atlas Wakes
 
 The atlas opened of its own accord. Its brass clasps lifted like hands recoiling from hot iron. Across the blank region where Bellwether belonged, pale lettering gathered and dissolved: a street, a garden, the beginning of a person's surname.
@@ -1233,6 +1375,158 @@ They stepped onto the platform. The conductor handed Mira a ticket stamped with 
 Mira put it in her ledger beside the other evidence. The tram moved away, its windows reflecting the market lamps. She could not tell whether the passengers inside were real or remembered.
 
 She knew the conductor had stopped when they needed him to stop, and that the ticket gave her a place to begin asking questions.
+
+## The Ferry Of Blue Glass
+
+The train had carried them to the edge of a city that had not appeared on any chart Mira trusted. Beyond the last platform the street ended at a canal, and the canal ended in an expanse of blue glass.
+
+It looked like water only when the wind moved across it; otherwise it reflected not the sky above but a sky that belonged to a different hour.
+
+The glass was crowded with faint luminous shapes, as if hundreds of lanterns had been lowered beneath its surface and left there to wait for night.
+
+A ferry stood at the quay with its gangplank down.
+
+Its cabin was painted green, its ropes wound into precise circles on the deck, and its brass bell had been polished so thoroughly that Mira could see a distorted image of her own face in it. There was no crew.
+
+The notice nailed to the ticket window stated that passage would be granted to travelers with a destination, and that travelers without a destination would be returned to the shore they most wished to forget.
+
+**Cael:** That seems a poor way to run a public ferry.
+
+**Mira:** It may have been designed by the same people who believed a public road should be kept safe by removing everyone who tried to use it.
+
+A boy at the end of the quay was trying to drag a wheeled cart toward the gangplank. The cart was piled with jars of preserved pears. Each jar held a small paper label bearing a name and a date.
+
+The boy's left foot was in a splint, and he had been pulling the cart with one hand while the other gripped a piece of rope.
+
+Every time he reached the edge of the plank the wheels rolled backward, as if the ferry had rejected him.
+
+His name was Daro. He said the pears had come from his aunt's orchard beyond the glass.
+
+The orchard had been sold to pay a debt the city insisted his aunt had never incurred, and Daro was carrying the final harvest to relatives on the other shore. He had the addresses written on a postcard.
+
+When Mira asked to see it, he unfolded a rectangle of blue paper on which the ink moved whenever the light changed.
+
+Daro: I had six addresses this morning. Now there are three. If the ferry doesn't take me soon there won't be any left, and my cousins will think I promised to visit and never came.
+
+The ferryman appeared then, though neither Mira nor Cael had seen him approach. He was a tall man in a coat stitched from pieces of outdated maps.
+
+His left sleeve displayed a coastline that had been revised three times; his right carried the outline of an island whose name had been scratched away.
+
+He introduced himself as Fen and said that he would be happy to accept their fares once the young man finished explaining where he intended to go.
+
+**Mira:** He has an address. It's disappearing. That is why he needs the ferry.
+
+Fen: The crossing is maintained by the distinction between one place and another. A destination that cannot be named is a hole in the contract. If I drive my vessel into it, I may carry all of you somewhere that cannot bring you home.
+
+**Cael:** What did you carry before the contract?
+
+Fen looked down at the rope in his hands. He said he had carried people. He spoke as if this were an obsolete profession, like a maker of clock hands or an apprentice assigned to copy entire books by candlelight.
+
+He had spent his first twenty years crossing the canal before the eastern lens was built. Back then the banks had been ordinary stone and the water brown from the mills upstream. The ferry had no bell because a passenger could shout for it.
+
+Now the bell answered questions the ferryman no longer felt permitted to understand.
+
+Mira studied the glass. Under its surface the shapes were not lanterns. They were fragments of written journeys: a child visiting her grandmother, a machinist crossing for a new job, a couple returning from a wedding, a woman traveling without telling anyone why.
+
+Every journey had been converted into an entry with a departure and arrival. The spaces between entries were filled with tiny, motionless stars.
+
+Somewhere in the structure of the canal the machine had tried to turn the act of going somewhere into a form of permission.
+
+Daro began to cry without sound. He rubbed his eyes with the sleeve of his jacket and then became angry at himself for crying. Mira knew the anger. She had once been told that a scientist should never allow grief to interfere with measurement.
+
+She had spent the next decade discovering that grief could be measured very precisely and still could not be cured by the accuracy of the measurement.
+
+She asked Fen whether he could take them across if they provided a temporary address. He refused.
+
+A temporary address, he said, might become permanent, and then the machine would have to decide whether it was telling the truth when it held the shore in place. Cael offered to repair the ferry's cracked handrail while they waited.
+
+Fen said the rail had been cracked for forty years and was not a priority. Cael took a wrench from his coat and began tightening the fittings anyway.
+
+The repair changed something. A small sound traveled along the deck, not the ring of the brass bell but the soft click of iron settling against wood. The ferry shuddered. One of the stars beneath the glass moved.
+
+Mira looked more closely at the inscription on the ticket window. It was a legal instruction from the Council, but there was a second set of marks below it, nearly worn away: CARRIED PERSONS HAVE THE RIGHT TO DISEMBARK.
+
+**Mira:** The old rules are still here. They have been overwritten, not erased.
+
+Fen: That language is older than the agreement. It describes a ferry. We are no longer a ferry.
+
+**Cael:** You are standing on one. I'm mending the rail. There's a boy with a cart, and the water is below us. Perhaps the paperwork has become confused about what you are.
+
+Fen's expression changed. He had not smiled since his arrival, but now he seemed in danger of remembering how. He moved to the rail and helped Cael hold the bracket steady while the last screw was turned. Daro pushed his cart onto the gangplank.
+
+The wheels caught at the edge and stopped. Mira crouched, slid a plank under them, and pushed. The cart rolled aboard with a clatter that echoed across the glass.
+
+The bell rang once. Beyond the quay a line appeared in the water, bright and blue, stretching toward the other shore. Fen climbed into the cabin and took the wheel. He did not ask for fares. He asked whether everyone could swim.
+
+When no one answered immediately, he handed out life belts from a locker that smelled of salt and old oranges. Mira tied hers with more care than dignity. Cael checked Daro's splint before fastening the boy's belt.
+
+They moved out onto the glass. At first the motion was familiar: a little rise beneath the keel, the soft slap of water against wood. Then the canal began showing them other journeys.
+
+Mira saw a younger version of herself walking beside her father through a crowded street. Cael saw the back of a woman wearing a blue scarf.
+
+Daro saw his aunt at an orchard gate, holding a basket of pears and smiling as if she had never sold the land. The images floated just beyond reach. The ferry passed through them without breaking their surfaces.
+
+**Mira:** Don't try to touch the water.
+
+**Cael:** I wasn't going to.
+
+**Mira:** You were leaning over the rail.
+
+**Cael:** I was wondering whether the people we see are memories or people who still exist somewhere.
+
+**Mira:** We may have to let that remain a question until we know how to ask them.
+
+Halfway across, the ferry stopped. The blue line beneath it broke into three parallel tracks, each leading toward a different version of the opposite shore. On one stood a crowd waiting at a market gate. On another stood an empty field.
+
+On the third the buildings were familiar, but their shadows fell upward into the clouds and a river ran through the sky. Fen gripped the wheel and whispered that the contract had never presented him with three destinations before.
+
+A voice rose from below the deck. It was the ferry's voice, high and formal: THE NAMED DESTINATION IS NO LONGER AVAILABLE. ACCEPT A SUBSTITUTION. The words repeated until Fen covered his ears. Daro clung to his cart.
+
+One of the jars fell and rolled toward the edge. Cael caught it with his boot.
+
+Mira took the postcard from Daro's hand. Only one address remained. She wrote it on the back of her father's letter, then copied it again in the atlas. The letters held steady. The machine repeated its request, louder.
+
+Mira looked at the three tracks and understood that they were not offering destinations. They were offering revisions to Daro's intention.
+
+The crowd would make his journey a public delivery, the field would make it a journey that had never happened, and the upside-down city would make it a story the machine could classify as impossible.
+
+**Mira:** We are not choosing a replacement. We are going where he asked to go.
+
+The voice replied that the requested place could not be verified. Mira asked Fen how he had navigated when there were no contracts. He said he had followed the current and the lights along the shore. She asked whether he could still see them.
+
+He closed his eyes, then opened them again and looked past the three false destinations. At the far edge of the glass a single ordinary window shone in a dark building. Someone had hung a lamp outside it. The light did not flicker.
+
+It was the kind of light a person kept burning because they were expecting someone home.
+
+Fen: I know that lamp. I used to steer by it when the current was bad. The woman in that house made terrible tea and never let anyone leave without a second cup.
+
+**Cael:** Then we should arrive before she gets worried about the first.
+
+Fen turned the wheel toward the lamp. The three tracks collapsed into one, and the ferry lurched forward with such force that every jar in Daro's cart rattled. The machine shouted something about unauthorized passage. Its voice grew thin as the wind rose.
+
+For a moment the water below them became ordinary again, cold and dark and full of small ripples where the moonlight struck it.
+
+On the far shore, Daro's cousins were waiting. They had been given the wrong arrival date and had come on the chance that some part of the letter was still true. Daro shouted when he recognized them.
+
+He did not run because of his splint. He stood on the deck and waved both arms until they reached him, and then he cried without trying to hide it.
+
+Fen helped carry the cart onto the quay. Before he returned to his vessel, he removed the notice from the ticket window. He folded it carefully and placed it in the cabin beneath the logbook of his earlier crossings.
+
+He said he did not yet know which authority would allow him to keep operating if he refused to demand a destination that could be verified.
+
+Cael replied that the people waiting on both shores might turn out to be an authority worth listening to.
+
+Mira recorded the crossing in the atlas. She did not write that they had defeated the machine, because the machine was still operating and had done enough harm to make a single victory feel dishonest.
+
+She wrote that a ferryman had remembered a light, a courier had repaired a railing, a child had protected a harvest, and a boy had reached his family without surrendering the purpose of his journey to an instrument.
+
+Daro gave them one jar of pears. He said he did not have money to pay for the crossing, and his aunt had always said that a debt paid in food was more likely to be remembered kindly. Mira accepted the jar.
+
+Cael opened it with the edge of his pocketknife as they climbed the street toward the market. They ate the pears with their fingers, laughing at how difficult it was to divide an uneven number of slices equally.
+
+The city around them was still hidden, still frightened, still caught inside a bargain that had stolen the shape of tomorrow.
+
+But the pears tasted like an ordinary afternoon, and for the length of that walk Mira allowed herself to believe ordinary afternoons might return.
 
 ## Threshold Market
 
