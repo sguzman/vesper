@@ -877,6 +877,18 @@ fn apply_visual(
     assets: &AssetServer,
     visual: Visual,
 ) -> Result<(), String> {
+    apply_visual_with_mode(session, commands, assets, visual, false)
+}
+
+/// Restoring a debug snapshot must not replay cinematic/character entrances.
+/// Ordinary story events and disk save loads retain their existing transitions.
+fn apply_visual_with_mode(
+    session: &mut Session,
+    commands: &mut Commands,
+    assets: &AssetServer,
+    visual: Visual,
+    instant: bool,
+) -> Result<(), String> {
     match visual {
         Visual::AmbientShow(id) => {
             if !session.game.manifest.ambient_actors.contains_key(&id) {
@@ -906,7 +918,7 @@ fn apply_visual(
             let path = session.game.background(&id)?.to_owned();
             let config = &session.game.theme.cinematic;
             let previous = session.background.take();
-            let reduced_motion = session.preferences.reduced_motion.unwrap_or(false);
+            let reduced_motion = instant || session.preferences.reduced_motion.unwrap_or(false);
             let cinematic = !reduced_motion
                 && config.transition != vesper_game::BackgroundTransitionKind::Legacy
                 && config.seconds > 0.0 && previous.is_some();
@@ -961,7 +973,7 @@ fn apply_visual(
                 return Err(format!("unknown character position '{position}'"));
             }
             let stage = &session.game.manifest.characters[&character].stage;
-            let reduced = session.preferences.reduced_motion.unwrap_or(false);
+            let reduced = instant || session.preferences.reduced_motion.unwrap_or(false);
             let previous = session.characters.remove(&character);
             let crossfade = !reduced && previous.is_some()
                 && stage.crossfade_seconds > 0.0;
@@ -1973,21 +1985,22 @@ fn poll_completed_io(
                 if let Some(id) = state.background {
                     if same_backdrop {
                         session.presentation.background = Some(id);
-                    } else if let Err(error) = apply_visual(
-                        &mut session, &mut commands, &assets, Visual::Background(id)
+                    } else if let Err(error) = apply_visual_with_mode(
+                        &mut session, &mut commands, &assets, Visual::Background(id), rewinding
                     ) {
                         error!("Invalid saved background: {error}");
                         continue;
                     }
                 }
                 for (id, pose) in state.characters {
-                    if let Err(error) = apply_visual(
+                    if let Err(error) = apply_visual_with_mode(
                         &mut session, &mut commands, &assets,
                         Visual::Show {
                             character: id,
                             expression: pose.expression,
                             position: pose.position,
                         },
+                        rewinding,
                     ) {
                         error!("Invalid saved character: {error}");
                         continue;
