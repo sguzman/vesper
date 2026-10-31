@@ -431,6 +431,12 @@ def responsive_layout() -> None:
                 # have distinct slider endpoints, not a single clamped width.
                 run("xdotool", "windowsize", "--sync", win, "810", "450")
                 time.sleep(0.4)
+                press(win, "p", 0.24)
+                press(win, "4", 0.24)
+                select_width_setting(win, log)
+                adjust_width(win, prefs, "Right", lambda width: width >= 85.0)
+                press(win, "Escape", 0.24)
+                press(win, "p", 0.40)
                 screenshot(win, "panel-small-wide.png", (810, 450))
                 small_wide_width = measured_panel_width(log)
                 press(win, "p", 0.24)
