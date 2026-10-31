@@ -38,7 +38,11 @@ The authored `compact_top_boost` keeps words below the upper ornament on
 smaller windows rather than assuming that its border scales like plain UI.
 
 Press **P**, choose **Settings**. **Dialogue width** adjusts the frame
-from **50% to 100%** in 5% increments, subject to the authored min/max caps.
+from **50% to 100%** in 5% steps across the available readable range in
+the current window, rather than having several nonfunctional clamped steps.
+At tiny window sizes there may be only one safely readable width.
+**Backspace** steps back through up to 256 previously viewed dialogue or
+choice screens, including after branching, without changing disk saves.
 **Dialogue position** moves the panel up or down (0–20% above the viewport
 bottom). **Text ink** cycles through game default, black, dark brown, navy,
 and sepia. The four reader colors are intentionally distinct; the contrast

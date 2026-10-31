@@ -343,6 +343,17 @@ def responsive_layout() -> None:
                 # Capture fully revealed prose rather than timing-dependent
                 # partial glyph output while the first line is animating.
                 press(win, "Return", 0.35)
+                # A one-step debug rewind must visually restore the previous
+                # page without a disk save and without restarting the novel.
+                press(win, "Return", 0.35)
+                screenshot(win, "panel-debug-next.png")
+                press(win, "BackSpace", 0.40)
+                wait_for_log(log, "Vesper debug rewind restored")
+                screenshot(win, "panel-debug-rewound.png")
+                assert changed(
+                    OUTPUT / "panel-debug-next.png",
+                    OUTPUT / "panel-debug-rewound.png"
+                ) > 250, "Backspace rewind did not change the visible dialogue"
                 for width, height, name in [
                     (1280, 720, "standard"),
                     (946, 511, "compact"),

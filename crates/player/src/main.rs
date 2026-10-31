@@ -16,9 +16,9 @@ mod history;
 mod save_slots;
 mod panel_art;
 mod ambient;
-use std::{collections::BTreeMap, env, path::PathBuf, process, sync::{Arc, Mutex}};
+use std::{collections::{BTreeMap, VecDeque}, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
-use vesper_story::{Machine, Output, Visual, rich_text::InlineSpan};
+use vesper_story::{Machine, MachineSnapshot, Output, Visual, rich_text::InlineSpan};
 
 #[derive(Resource)]
 struct Session {
@@ -47,6 +47,27 @@ struct Session {
     history: history::HistoryLog,
 }
 
+/// Bounded, ephemeral backwards navigation for debugging interactive stories.
+struct DebugStep {
+    narrative: MachineSnapshot,
+    presentation: PresentationState,
+}
+#[derive(Resource, Default)]
+struct DebugBack(VecDeque<DebugStep>);
+impl DebugBack {
+    fn capture(&mut self, session: &Session) {
+        if !matches!(session.machine.last_output(),
+            Some(Output::Dialogue { .. } | Output::RichDialogue { .. } | Output::Choices(_))) {
+            return;
+        }
+        if self.0.len() == 256 { self.0.pop_front(); }
+        self.0.push_back(DebugStep {
+            narrative: session.machine.snapshot(),
+            presentation: session.presentation.clone(),
+        });
+    }
+}
+
 #[derive(Resource, Default)]
 struct CompletedIo(Arc<Mutex<Vec<IoResult>>>);
 
@@ -57,6 +78,7 @@ struct IoWorkers(Arc<Mutex<Vec<std::thread::JoinHandle<()>>>>);
 enum IoResult {
     Saved(Result<(), String>),
     Loaded(Result<(Machine, PresentationState), String>),
+    Rewound(Machine, PresentationState),
     Slots(Result<Vec<save_slots::SlotInfo>, String>),
 }
 
@@ -139,11 +161,19 @@ fn panel_metrics(viewport: Vec2, panel: &vesper_game::PanelStyle) -> PanelMetric
 }
 
 fn panel_width(viewport_width: f32, panel: &vesper_game::PanelStyle, preference: Option<f32>) -> f32 {
-    let preferred = preference.unwrap_or(panel.width_percent);
     let limit = (viewport_width * 0.96).max(1.0);
-    let minimum = panel.min_width.min(limit);
-    (viewport_width * preferred / 100.0)
-        .clamp(minimum, panel.max_width.min(limit).max(minimum))
+    let maximum = panel.max_width.min(limit);
+    // Windowed mode also needs a meaningful adjustable range. A fixed
+    // 820-pixel floor had clamped multiple slider steps to the same value.
+    let minimum = panel.min_width.min(maximum);
+    if let Some(pct) = preference {
+        // Reader's 50..100% maps to the physically achievable range.
+        // At the authored default the original percentage is preserved.
+        let t = ((pct - 50.0) / 50.0).clamp(0.0, 1.0);
+        minimum + (maximum - minimum) * t
+    } else {
+        (viewport_width * panel.width_percent / 100.0).clamp(minimum, maximum)
+    }
 }
 
 /// Nameplate coordinates are sourced from the skin, not guessed from the
@@ -788,6 +818,7 @@ fn main() {
         .insert_resource(readout::ReadingState::default())
         .insert_resource(atmosphere::AtmosphereState::default())
         .insert_resource(feedback::FeedbackState::default())
+        .insert_resource(DebugBack::default())
         .insert_resource(history::HistoryClick::default())
         .insert_resource(save_slots::SaveUi::default())
         .insert_resource(save_slots::Click::default())
@@ -1132,10 +1163,12 @@ fn setup(
             StoryPanel,
         ))
         .with_children(|parent| {
+            // Paint the stretchable paper first. Decorative caps overlay
+            // its 2px underlap, masking texture-filter seams on fullscreen.
             let mut art_parts = vec![
                 panel_art::StoryPanelArt::Full,
-                panel_art::StoryPanelArt::Left,
                 panel_art::StoryPanelArt::Middle,
+                panel_art::StoryPanelArt::Left,
                 panel_art::StoryPanelArt::Right,
             ];
             for row in 0..3 {
@@ -1461,6 +1494,8 @@ fn advance_from_keyboard(
     mut choice_click: ResMut<choices::ChoiceClick>,
     mut reading: ResMut<readout::ReadingState>,
     mut feedback_state: ResMut<feedback::FeedbackState>,
+    mut debug_back: ResMut<DebugBack>,
+    completed: Res<CompletedIo>,
     mut overlays: OverlayInputs,
 ) {
     // Pointer activation must never survive a pause/menu or get replayed.
@@ -1525,6 +1560,7 @@ fn advance_from_keyboard(
             match index {
                 0 => {
                     hide_main_menu(&mut session, &mut commands);
+                    debug_back.0.clear();
                     restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, true);
                 }
                 1 => hide_main_menu(&mut session, &mut commands),
@@ -1597,6 +1633,22 @@ fn advance_from_keyboard(
         }
         return;
     }
+    // Backspace is a developer-friendly, bounded undo of the last visible
+    // dialogue/choice step. It never writes a save or rewinds disk state.
+    if input.just_pressed(KeyCode::Backspace) {
+        if let Some(step) = debug_back.0.pop_back() {
+            match Machine::restore(&session.game.story, step.narrative) {
+                Ok(machine) => {
+                    if let Ok(mut queue) = completed.0.lock() {
+                        queue.push(IoResult::Rewound(machine, step.presentation));
+                        info!("Vesper debug rewind requested");
+                    }
+                }
+                Err(error) => warn!("Vesper debug rewind unavailable: {error}"),
+            }
+        }
+        return;
+    }
     if session.finished {
         let selected = session.ending_selection;
         let next = if input.just_pressed(KeyCode::ArrowDown) {
@@ -1611,6 +1663,7 @@ fn advance_from_keyboard(
             return;
         }
         if input.just_pressed(KeyCode::KeyR) {
+            debug_back.0.clear();
             restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, false);
             return;
         }
@@ -1625,7 +1678,10 @@ fn advance_from_keyboard(
         if let Some(index) = confirmed {
             feedback::signal(&mut feedback_state, &session);
             match index {
-                0 => restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, false),
+                0 => {
+                    debug_back.0.clear();
+                    restart_story(&mut session, &mut commands, &assets, &mut texts, &mut reading, false)
+                },
                 1 => show_main_menu(&mut session, &mut commands, &assets, 0),
                 2 => {
                     info!("Vesper quitting through ending menu");
@@ -1666,6 +1722,8 @@ fn advance_from_keyboard(
                 .then_some(current)
         });
         if let Some(index) = confirmed {
+            // Capture the pending choice before interpreter branching.
+            debug_back.capture(&session);
             if session.machine.choose(index).is_ok() {
                 feedback::signal(&mut feedback_state, &session);
                 session.choosing = false;
@@ -1684,6 +1742,7 @@ fn advance_from_keyboard(
     {
         reading.autoplay_ready = false;
         if reading.complete_on_input() { return; }
+        debug_back.capture(&session);
         let screen = next_screen(&mut session, &mut commands, &assets);
         update_screen(screen, &effective_theme(&session), &mut texts,
                     &mut reading, readout::speed(&session));
@@ -1826,12 +1885,14 @@ fn poll_completed_io(
     mut reading: ResMut<readout::ReadingState>,
     mut backgrounds: Query<&mut Sprite, With<BackgroundVisual>>,
     mut save_ui: ResMut<save_slots::SaveUi>,
+    mut debug_back: ResMut<DebugBack>,
 ) {
     let events = match completed.0.lock() {
         Ok(mut events) => std::mem::take(&mut *events),
         Err(_) => return,
     };
     for event in events {
+        let rewinding = matches!(&event, IoResult::Rewound(..));
         match event {
             IoResult::Slots(Ok(slots)) => {
                 if save_ui.visible() {
@@ -1862,7 +1923,9 @@ fn poll_completed_io(
                     save_ui.status = format!("Load failed: {}", error.chars().take(120).collect::<String>());
                 }
             }
-            IoResult::Loaded(Ok((machine, state))) => {
+            IoResult::Loaded(Ok((machine, state))) |
+            IoResult::Rewound(machine, state) => {
+                if !rewinding { debug_back.0.clear(); }
                 if save_ui.visible() {
                     save_slots::close(&mut save_ui, &mut commands);
                 }
@@ -1948,7 +2011,11 @@ fn poll_completed_io(
                 };
                 update_screen(screen, &effective_theme(&session), &mut texts,
                     &mut reading, vesper_game::TextRevealSpeed::Instant);
-                info!("Vesper save restored");
+                if rewinding {
+                    info!("Vesper debug rewind restored");
+                } else {
+                    info!("Vesper save restored");
+                }
             }
         }
     }
@@ -2067,6 +2134,11 @@ mod tests {
         assert_eq!(super::panel_width(1920.0, &panel, None), 1180.0);
         assert_eq!(super::panel_width(1280.0, &panel, None), 921.6);
         assert_eq!(super::panel_width(946.0, &panel, Some(50.0)), 820.0);
+        // Windowed slider is strictly monotonic wherever safe width exists.
+        assert!(super::panel_width(946.0, &panel, Some(65.0))
+            > super::panel_width(946.0, &panel, Some(60.0)));
+        assert!(super::panel_width(1280.0, &panel, Some(80.0))
+            > super::panel_width(1280.0, &panel, Some(75.0)));
         assert!((super::panel_width(640.0, &panel, Some(50.0)) - 614.4).abs() < 0.001);
     }
 

@@ -171,9 +171,13 @@ pub fn sync(
             node.width = if column == 1 { Val::Auto } else { px(widths[column]) };
             node.height = if row == 1 { Val::Auto } else { px(heights[row]) };
         } else if let Some((left, right, rects)) = geometry {
+            // Avoid a 1px black line from bilinear sampling the transparent
+            // edges of adjacent cropped quads at fractional display scales.
+            // The plain middle paper underlaps the two opaque decorative caps.
+            let seam = 2.0_f32.min((size.x - left - right).max(0.0) * 0.2);
             let (rect, left_edge, right_edge, width) = match part {
                 StoryPanelArt::Left => (rects[0], px(0.0), Val::Auto, px(left)),
-                StoryPanelArt::Middle => (rects[1], px(left), px(right), Val::Auto),
+                StoryPanelArt::Middle => (rects[1], px(left - seam), px(right - seam), Val::Auto),
                 StoryPanelArt::Right => (rects[2], Val::Auto, px(0.0), px(right)),
                 StoryPanelArt::Full | StoryPanelArt::Cell(_, _) => unreachable!(),
             };
