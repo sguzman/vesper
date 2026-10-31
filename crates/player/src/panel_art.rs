@@ -9,6 +9,7 @@ pub enum StoryPanelArt {
     Left,
     Middle,
     Right,
+    Cell(usize, usize),
 }
 
 /// Per-scene panel choice overrides the authored theme default.
@@ -56,6 +57,19 @@ fn horizontal_geometry(
     ])
 }
 
+/// Optional nine-region geometry: decorations retain their original aspect
+/// ratio regardless of the extra paper added by longer prose or window width.
+fn grid_scale(spec: &vesper_game::PanelHorizontalSlices, size: Vec2) -> f32 {
+    let Some([top, bottom]) = spec.vertical_slices else { return 0.0; };
+    let [width, height] = spec.image_size;
+    let cap_width = spec.stretch_start + width - spec.stretch_end;
+    let cap_height = top + height - bottom;
+    (spec.reference_height.unwrap_or(height) / height)
+        .min(size.x * 0.90 / cap_width)
+        .min(size.y * 0.99 / cap_height)
+        .max(0.0)
+}
+
 pub fn sync(
     session: Res<Session>,
     assets: Res<AssetServer>,
@@ -79,16 +93,23 @@ pub fn sync(
         skin.map_or(0.0, |skin| skin.slice_border).to_bits(),
         size.x.to_bits(), size.y.to_bits(),
     );
-    if previous.as_ref() == Some(&cache_key) { return; }
+    if previous.as_ref() == Some(&cache_key) && !session.is_changed() { return; }
     let geometry = slices.map(|spec| horizontal_geometry(spec, size));
+    let grid = slices.filter(|spec| spec.vertical_slices.is_some());
 
     for (part, mut image, mut node) in &mut artwork {
         let Some(skin) = skin.filter(|_| !high_contrast) else {
             node.display = Display::None;
             continue;
         };
-        let is_full = geometry.is_none();
-        if is_full != (*part == StoryPanelArt::Full) {
+        let enabled = if grid.is_some() {
+            matches!(part, StoryPanelArt::Cell(_, _))
+        } else if geometry.is_some() {
+            matches!(part, StoryPanelArt::Left | StoryPanelArt::Middle | StoryPanelArt::Right)
+        } else {
+            *part == StoryPanelArt::Full
+        };
+        if !enabled {
             node.display = Display::None;
             continue;
         }
@@ -96,18 +117,38 @@ pub fn sync(
         image.image = handle;
         image.color = Color::srgba(1.0, 1.0, 1.0, opacity);
         node.display = Display::Flex;
-        if let Some((left, right, rects)) = geometry {
+        if let Some(spec) = grid {
+            let [sw, sh] = spec.image_size;
+            let [top, bottom] = spec.vertical_slices.expect("grid has vertical slices");
+            let scale = grid_scale(spec, size);
+            let xs = [0.0, spec.stretch_start, spec.stretch_end, sw];
+            let ys = [0.0, top, bottom, sh];
+            let widths = [spec.stretch_start * scale, 0.0, (sw - spec.stretch_end) * scale];
+            let heights = [top * scale, 0.0, (sh - bottom) * scale];
+            let StoryPanelArt::Cell(column, row) = *part else { unreachable!() };
+            image.rect = Some(Rect::new(xs[column], ys[row], xs[column+1], ys[row+1]));
+            image.image_mode = NodeImageMode::Stretch;
+            node.left = if column == 0 { px(0.0) } else if column == 1 { px(widths[0]) } else { Val::Auto };
+            node.right = if column == 2 { px(0.0) } else if column == 1 { px(widths[2]) } else { Val::Auto };
+            node.top = if row == 0 { px(0.0) } else if row == 1 { px(heights[0]) } else { Val::Auto };
+            node.bottom = if row == 2 { px(0.0) } else if row == 1 { px(heights[2]) } else { Val::Auto };
+            node.width = if column == 1 { Val::Auto } else { px(widths[column]) };
+            node.height = if row == 1 { Val::Auto } else { px(heights[row]) };
+        } else if let Some((left, right, rects)) = geometry {
             let (rect, left_edge, right_edge, width) = match part {
                 StoryPanelArt::Left => (rects[0], px(0.0), Val::Auto, px(left)),
                 StoryPanelArt::Middle => (rects[1], px(left), px(right), Val::Auto),
                 StoryPanelArt::Right => (rects[2], Val::Auto, px(0.0), px(right)),
-                StoryPanelArt::Full => unreachable!(),
+                StoryPanelArt::Full | StoryPanelArt::Cell(_, _) => unreachable!(),
             };
             image.rect = Some(rect);
             image.image_mode = NodeImageMode::Stretch;
             node.left = left_edge;
             node.right = right_edge;
             node.width = width;
+            node.height = percent(100.0);
+            node.top = px(0.0);
+            node.bottom = px(0.0);
         } else {
             image.rect = None;
             image.image_mode = NodeImageMode::Sliced(TextureSlicer {
@@ -117,6 +158,9 @@ pub fn sync(
             node.left = px(0.0);
             node.right = px(0.0);
             node.width = percent(100.0);
+            node.height = percent(100.0);
+            node.top = px(0.0);
+            node.bottom = px(0.0);
         }
     }
     *previous = Some(cache_key);
@@ -126,11 +170,31 @@ pub fn sync(
 mod tests {
     use super::*;
     #[test]
+    fn vertical_paper_growth_leaves_ornamental_cap_sizes_unchanged() {
+        let spec = vesper_game::PanelHorizontalSlices {
+            image_size: [1914.0, 820.0],
+            stretch_start: 1065.0, stretch_end: 1095.0,
+            vertical_slices: Some([395.0, 420.0]),
+            reference_height: Some(320.0),
+        };
+        let standard = grid_scale(&spec, Vec2::new(1180.0, 320.0));
+        let expanded = grid_scale(&spec, Vec2::new(1180.0, 400.0));
+        assert!((standard - expanded).abs() < 0.0001);
+        let source_height = spec.image_size[1];
+        let [top, bottom] = spec.vertical_slices.unwrap();
+        let extra_paper = (400.0 - (top + source_height - bottom) * expanded)
+            - (320.0 - (top + source_height - bottom) * standard);
+        assert!((extra_paper - 80.0).abs() < 0.01);
+    }
+
+    #[test]
     fn wide_and_narrow_panels_keep_illustrated_caps_proportional() {
         let spec = vesper_game::PanelHorizontalSlices {
             image_size: [1914.0, 820.0],
             stretch_start: 1065.0,
             stretch_end: 1095.0,
+            vertical_slices: None,
+            reference_height: None,
         };
         for size in [Vec2::new(1178.0, 320.0), Vec2::new(1764.0, 325.0),
                      Vec2::new(946.0, 245.0), Vec2::new(1900.0, 360.0)] {

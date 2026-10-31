@@ -183,6 +183,11 @@ pub struct PanelHorizontalSlices {
     pub image_size: [f32; 2],
     pub stretch_start: f32,
     pub stretch_end: f32,
+    /// Optional top/bottom source cuts; enables two-axis parchment growth.
+    /// When absent, the original one-axis horizontal rendering is preserved.
+    pub vertical_slices: Option<[f32; 2]>,
+    /// Logical height at which end decorations are designed to appear.
+    pub reference_height: Option<f32>,
 }
 impl PanelHorizontalSlices {
     pub fn validate(&self) -> Result<(), String> {
@@ -196,6 +201,14 @@ impl PanelHorizontalSlices {
             || self.stretch_end - self.stretch_start < 2.0
         {
             return Err("panel horizontal slices require image dimensions and an interior stretch strip".into());
+        }
+        if self.vertical_slices.is_some_and(|[top, bottom]|
+            !top.is_finite() || !bottom.is_finite()
+            || top < 4.0 || bottom > height - 4.0 || bottom - top < 2.0
+        ) || self.reference_height.is_some_and(|value|
+            !value.is_finite() || !(96.0..=1200.0).contains(&value)
+        ) {
+            return Err("panel vertical slices or reference height invalid".into());
         }
         Ok(())
     }
@@ -463,7 +476,17 @@ pub struct PanelStyle {
     /// Optional key into the game manifest's panel_skins table.
     pub skin: Option<String>,
     pub width_percent: f32,
+    /// Minimum readable width when the viewport has enough space.
+    pub min_width: f32,
+    /// Maximum panel width on widescreen monitors.
+    pub max_width: f32,
     pub min_height: f32,
+    /// Baseline height does not fluctuate for short dialogue paragraphs.
+    pub reserve_lines: u32,
+    /// Blend extended height smoothly when long text requires additional lines.
+    pub resize_seconds: f32,
+    /// In illustrated frames, present the instruction hint inside the paper.
+    pub hint_inside: bool,
     pub padding: f32,
     pub gap: f32,
 }
@@ -483,7 +506,12 @@ impl Default for PanelStyle {
             divider: [0.70, 0.76, 0.86, 0.34],
             skin: None,
             width_percent: 90.0,
+            min_width: 0.0,
+            max_width: 8192.0,
             min_height: 180.0,
+            reserve_lines: 0,
+            resize_seconds: 0.0,
+            hint_inside: false,
             padding: 20.0,
             gap: 8.0,
         }
@@ -582,6 +610,14 @@ impl Theme {
             || !color_valid(panel.divider)
             || !panel.width_percent.is_finite()
             || !(20.0..=100.0).contains(&panel.width_percent)
+            || !panel.min_width.is_finite()
+            || !(0.0..=8192.0).contains(&panel.min_width)
+            || !panel.max_width.is_finite()
+            || !(160.0..=8192.0).contains(&panel.max_width)
+            || panel.max_width < panel.min_width
+            || panel.reserve_lines > 8
+            || !panel.resize_seconds.is_finite()
+            || !(0.0..=0.5).contains(&panel.resize_seconds)
             || !panel.min_height.is_finite()
             || !(80.0..=600.0).contains(&panel.min_height)
             || !panel.padding.is_finite()
@@ -1262,6 +1298,26 @@ start_phase_seconds = 2.5
     }
 
 
+
+    #[test]
+    fn illustrated_paper_slices_accept_two_axes_and_reject_invalid_cuts() {
+        let good: PanelHorizontalSlices = toml::from_str(
+            "image_size = [1914.0, 820.0]\nstretch_start = 1065.0\nstretch_end = 1095.0\nvertical_slices = [395.0, 420.0]\nreference_height = 350.0\n"
+        ).unwrap();
+        assert!(good.validate().is_ok());
+        let one_axis: PanelHorizontalSlices = toml::from_str(
+            "image_size = [1914.0, 820.0]\nstretch_start = 1065.0\nstretch_end = 1095.0\n"
+        ).unwrap();
+        assert!(one_axis.validate().is_ok());
+        assert_eq!(one_axis.vertical_slices, None);
+        let mut invalid = good.clone();
+        invalid.vertical_slices = Some([560.0, 540.0]);
+        assert!(invalid.validate().is_err());
+        let invalid_width: Theme = toml::from_str(
+            "[panel]\nmin_width = 1300.0\nmax_width = 900.0\n"
+        ).unwrap();
+        assert!(invalid_width.validate().is_err());
+    }
 
     #[test]
     fn author_defined_motion_rejects_unbounded_waypoints_and_frame_rates() {

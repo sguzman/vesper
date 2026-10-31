@@ -88,6 +88,9 @@ transparent_background = true
 image_size = [1914.0, 820.0]
 stretch_start = 1065.0
 stretch_end = 1095.0
+# The existing illustration has detailed ornaments crossing every horizontal row.
+# Keep its endcaps proportionate. Two-axis slicing is reserved for assets
+# authored with a genuinely undecorated vertical stretch band.
 
 [ambient_actors.spark]
 image = "assets/ambient/spark.png"

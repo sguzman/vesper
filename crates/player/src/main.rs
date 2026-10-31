@@ -132,16 +132,28 @@ fn panel_metrics(viewport: Vec2, panel: &vesper_game::PanelStyle) -> PanelMetric
     let compact = (width / 1280.0).min(height / 720.0).clamp(0.60, 1.0);
     PanelMetrics {
         bottom: (height * 0.033).clamp(8.0, 24.0),
-        min_height: panel.min_height.min(height * 0.48),
+        min_height: panel.min_height.min(height * if panel.reserve_lines > 0 { 0.60 } else { 0.48 }),
         padding: panel.padding * compact,
         gap: (panel.gap * compact).max(3.0),
     }
 }
 
-fn apply_panel_metrics(node: &mut Node, panel: &vesper_game::PanelStyle, metrics: PanelMetrics) {
+fn panel_width(viewport_width: f32, panel: &vesper_game::PanelStyle, preference: Option<f32>) -> f32 {
+    let preferred = preference.unwrap_or(panel.width_percent);
+    let limit = (viewport_width * 0.96).max(1.0);
+    let minimum = panel.min_width.min(limit);
+    (viewport_width * preferred / 100.0)
+        .clamp(minimum, panel.max_width.min(limit).max(minimum))
+}
+
+fn apply_panel_metrics(
+    node: &mut Node, panel: &vesper_game::PanelStyle, metrics: PanelMetrics,
+    viewport: Vec2, preference: Option<f32>,
+) {
+    let width = panel_width(viewport.x, panel, preference);
     node.bottom = px(metrics.bottom);
-    node.left = percent((100.0 - panel.width_percent) / 2.0);
-    node.width = percent(panel.width_percent);
+    node.left = px((viewport.x - width) * 0.5);
+    node.width = px(width);
     node.min_height = px(metrics.min_height);
     node.padding = px(metrics.padding).all();
     node.row_gap = px(metrics.gap);
@@ -162,7 +174,7 @@ fn fit_viewport(
         Option<&actors::ActorIdle>,
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
-    mut previous: Local<(Vec2, [u32; 9])>,
+    mut previous: Local<(Vec2, [u32; 11])>,
 ) {
     let Ok(window) = windows.single() else { return; };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
@@ -184,13 +196,16 @@ fn fit_viewport(
         insets[0].to_bits(), insets[1].to_bits(),
         insets[2].to_bits(), insets[3].to_bits(),
         u32::from(high_contrast),
+        session.preferences.panel_width_percent.unwrap_or(0.0).to_bits(),
+        panel.min_width.to_bits() ^ panel.max_width.to_bits(),
     ];
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
     // reflowed only after a viewport or external theme-geometry change.
     if previous.0 != size || previous.1 != panel_key {
         let geometry = panel_metrics(size, panel);
         for mut node in &mut panels {
-            apply_panel_metrics(&mut node, panel, geometry);
+            apply_panel_metrics(&mut node, panel, geometry, size,
+                session.preferences.panel_width_percent);
             if let Some(padding) = panel_art::skin_padding(&session, size) {
                 node.padding = padding;
             }
@@ -498,8 +513,14 @@ fn add_text(
     content: &str,
     style: &vesper_game::TextStyle,
     font: &FontSource,
+    hint_inside: bool,
 ) {
-    let node = story_text_node(&slot);
+    let mut node = story_text_node(&slot);
+    if hint_inside && matches!(slot, StoryText::Hint) {
+        // Hints stay on the parchment, not below its ornate bottom border.
+        node.margin.top = px(4.0);
+        node.padding = UiRect::axes(px(6.0), px(2.0));
+    }
     parent.spawn((
         slot,
         Text::new(content),
@@ -528,8 +549,13 @@ fn text_height_reservation(actual: f32) -> Option<f32> {
 }
 
 fn reserve_story_text_height(
+    session: Res<Session>,
     mut texts: Query<(&StoryText, &TextLayoutInfo, &Text, &mut Node)>,
 ) {
+    let lines = session.game.theme.panel.reserve_lines;
+    let font_size = session.game.theme.dialogue.size
+        * session.preferences.text_scale.unwrap_or(1.0);
+    let baseline = lines as f32 * font_size * 1.40 + 10.0;
     for (slot, glyphs, text, mut node) in &mut texts {
         if text.0.is_empty() {
             // An empty body must not retain the old dialogue min-height
@@ -542,6 +568,9 @@ fn reserve_story_text_height(
         // keeps the hint visibly separate at compact/fractional scales.
         // The number of wrapped lines is still never guessed.
         let Some(required) = text_height_reservation(actual) else { continue; };
+        let required = if matches!(slot, StoryText::Body) && lines > 0 {
+            required.max(baseline.ceil())
+        } else { required };
         if node.min_height != px(required) {
             node.min_height = px(required);
             if env::var_os("VESPER_TRACE_LAYOUT").is_some() {
@@ -550,6 +579,47 @@ fn reserve_story_text_height(
             }
         }
     }
+}
+
+
+/// The initial reservation prevents single/two/three-line dialogue from
+/// changing the panel's height. Longer passages expand the paper gradually;
+/// reduced-motion readers see the target height immediately instead.
+fn animate_panel_height(
+    time: Res<Time>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    session: Res<Session>,
+    texts: Query<(&StoryText, &TextLayoutInfo, &Text)>,
+    mut panels: Query<&mut Node, With<StoryPanel>>,
+    mut animated: Local<Option<f32>>,
+) {
+    let authored = &session.game.theme.panel;
+    if authored.reserve_lines == 0 { return; }
+    let Ok(window) = windows.single() else { return; };
+    let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
+    let base = panel_metrics(viewport, authored).min_height;
+    let font = session.game.theme.dialogue.size
+        * session.preferences.text_scale.unwrap_or(1.0);
+    let reserved = authored.reserve_lines as f32 * font * 1.40;
+    let actual = texts.iter().find_map(|(slot, layout, text)| {
+        (matches!(slot, StoryText::Body) && !text.0.is_empty())
+            .then_some(layout.size.y)
+    }).unwrap_or(0.0);
+    let target = base + (actual - reserved).max(0.0);
+    let old = animated.unwrap_or(base);
+    let new = if session.preferences.reduced_motion.unwrap_or(false)
+        || authored.resize_seconds == 0.0
+    {
+        target
+    } else {
+        let alpha = (time.delta_secs() / authored.resize_seconds).clamp(0.0, 1.0);
+        let result = old + (target - old) * alpha;
+        if (result - target).abs() < 0.5 { target } else { result }
+    };
+    if let Ok(mut node) = panels.single_mut() {
+        if node.min_height != px(new) { node.min_height = px(new); }
+    }
+    *animated = Some(new);
 }
 
 fn main() {
@@ -650,7 +720,7 @@ fn main() {
                 reserve_story_text_height, trigger_save_load,
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
-                ambient::sync, ambient::tick_motion,
+                ambient::sync, ambient::tick_motion, animate_panel_height,
             ).chain(),
         ).chain());
     if let Some(inbox) = inbox {
@@ -943,8 +1013,8 @@ fn setup(
                 align_items: AlignItems::Stretch,
                 row_gap: px(geometry.gap),
                 bottom: px(geometry.bottom),
-                left: percent((100.0 - panel.width_percent) / 2.0),
-                width: percent(panel.width_percent),
+                left: px((1280.0 - panel_width(1280.0, panel, session.preferences.panel_width_percent)) / 2.0),
+                width: px(panel_width(1280.0, panel, session.preferences.panel_width_percent)),
                 min_height: px(geometry.min_height),
                 padding: px(geometry.padding).all(),
                 ..default()
@@ -955,12 +1025,18 @@ fn setup(
             StoryPanel,
         ))
         .with_children(|parent| {
-            for part in [
+            let mut art_parts = vec![
                 panel_art::StoryPanelArt::Full,
                 panel_art::StoryPanelArt::Left,
                 panel_art::StoryPanelArt::Middle,
                 panel_art::StoryPanelArt::Right,
-            ] {
+            ];
+            for row in 0..3 {
+                for column in 0..3 {
+                    art_parts.push(panel_art::StoryPanelArt::Cell(column, row));
+                }
+            }
+            for part in art_parts {
                 parent.spawn((
                     Name::new(format!("External dialogue panel {part:?}")),
                     part,
@@ -976,13 +1052,16 @@ fn setup(
             }
             parent.spawn((
                 StoryAccent,
-                Node { width: percent(100), height: px(3.0), flex_shrink: 0.0, ..default() },
+                Node {
+                    display: if panel.hint_inside { Display::None } else { Display::Flex },
+                    width: percent(100), height: px(3.0), flex_shrink: 0.0, ..default()
+                },
                 BackgroundColor(Color::srgba(
                     panel.accent[0], panel.accent[1], panel.accent[2], panel.accent[3]
                 )),
             ));
-            add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font);
-            add_text(parent, StoryText::Body, &initial_body, &body_style, &font);
+            add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font, panel.hint_inside);
+            add_text(parent, StoryText::Body, &initial_body, &body_style, &font, panel.hint_inside);
             choice_ui.container = Some(choices::spawn_container(parent));
             parent.spawn((
                 EndingActions,
@@ -998,12 +1077,16 @@ fn setup(
             });
             parent.spawn((
                 StorySeparator,
-                story_separator_node(),
+                if panel.hint_inside {
+                    Node { display: Display::None, ..story_separator_node() }
+                } else {
+                    story_separator_node()
+                },
                 BackgroundColor(Color::srgba(
                     panel.divider[0], panel.divider[1], panel.divider[2], panel.divider[3]
                 )),
             ));
-            add_text(parent, StoryText::Hint, &initial.hint, &hint_style, &font);
+            add_text(parent, StoryText::Hint, &initial.hint, &hint_style, &font, panel.hint_inside);
             // Absolute corner cue does not compete with wrapped body or hint.
             parent.spawn((
                 Name::new("Dialogue continue cue"),
@@ -1812,6 +1895,18 @@ mod tests {
         // Measured text reservation alone is insufficient when font glyphs
         // descend below their nominal content bounds.
         assert!(matches!(separator.margin.top, bevy::ui::Val::Px(value) if value >= 24.0));
+    }
+
+    #[test]
+    fn width_setting_is_centered_and_capped_on_fullscreen() {
+        let panel = vesper_game::PanelStyle {
+            width_percent: 72.0, min_width: 820.0, max_width: 1180.0,
+            ..Default::default()
+        };
+        assert_eq!(panel_width(1920.0, &panel, None), 1180.0);
+        assert_eq!(panel_width(1280.0, &panel, None), 921.6);
+        assert_eq!(panel_width(946.0, &panel, Some(50.0)), 820.0);
+        assert_eq!(panel_width(640.0, &panel, Some(50.0)), 614.4);
     }
 
     #[test]

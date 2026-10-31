@@ -25,6 +25,9 @@ pub struct PlayerPreferences {
     pub format_version: u32,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub panel_opacity: Option<f32>,
+    /// Reader-selected dialogue width; never edits the game's TOML.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub panel_width_percent: Option<f32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub text_scale: Option<f32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -48,6 +51,7 @@ impl Default for PlayerPreferences {
         Self {
             format_version: VERSION,
             panel_opacity: None,
+            panel_width_percent: None,
             text_scale: None,
             font_family: None,
             reveal_speed: None,
@@ -77,6 +81,9 @@ impl PlayerPreferences {
         }
         if self.panel_opacity.is_some_and(|v| !v.is_finite() || !(0.60..=1.0).contains(&v)) {
             return Err("panel_opacity must be within 0.60..=1.00".into());
+        }
+        if self.panel_width_percent.is_some_and(|v| !v.is_finite() || !(50.0..=100.0).contains(&v)) {
+            return Err("panel_width_percent must be within 50..=100".into());
         }
         if self.text_scale.is_some_and(|v| !v.is_finite() || !(0.80..=1.60).contains(&v)) {
             return Err("text_scale must be within 0.80..=1.60".into());
@@ -172,6 +179,9 @@ impl PlayerPreferences {
         if self.validate().is_err() { return result; }
         if let Some(opacity) = self.panel_opacity {
             result.panel.background[3] = opacity;
+        }
+        if let Some(width) = self.panel_width_percent {
+            result.panel.width_percent = width;
         }
         if let Some(scale) = self.text_scale {
             for style in [
@@ -380,6 +390,23 @@ mod tests {
         };
         assert!(invalid.write_atomic(&path).is_err());
         assert_eq!(fs::read(&path).unwrap(), original);
+    }
+
+    #[test]
+    fn reader_width_preference_is_validated_saved_and_resolved() {
+        let author = Theme::default();
+        let reader = PlayerPreferences {
+            panel_width_percent: Some(65.0), ..Default::default()
+        };
+        assert_eq!(reader.resolve_theme(&author, generic_font_available).panel.width_percent, 65.0);
+        assert_eq!(author.panel.width_percent, 90.0);
+        assert_eq!(PlayerPreferences::decode(&reader.encode().unwrap()).unwrap(), reader);
+        for bad in [f32::NAN, 49.0, 101.0] {
+            let invalid = PlayerPreferences {
+                panel_width_percent: Some(bad), ..Default::default()
+            };
+            assert!(invalid.validate().is_err());
+        }
     }
 
     #[test]

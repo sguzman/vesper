@@ -27,6 +27,31 @@ cargo run --locked -p vesper-player -- examples/atlas-unwritten-skies
 
 The long-form text is authored as `scripts/novel.source` and compiled to `scripts/story.vn`. The game uses the existing Vesper player, not a game-specific executable.
 
+## Dialogue panel and reader width
+
+The illustrated manuscript panel uses **aspect-preserving end caps**: the
+celestial globe, books and lantern are never squeezed to fit a window.
+Only a narrow undecorated **horizontal parchment strip** expands.
+Atlas defaults to a narrower **72% dialogue width**, capped at **1180 logical
+pixels** on large displays and with a compact-window readability minimum.
+
+Press **P**, choose **Settings**, then choose **Dialogue width** to adjust the
+panel from **50% to 100%** in 5% increments; the game's min/max safety caps
+still apply. This is a persistent reader preference: it never rewrites a
+game's authored theme, and **Reset to game defaults** restores its default.
+
+Atlas reserves space for three lines of prose and places the instruction hint
+on the readable parchment, instead of along the ornate lower dark fringe.
+Unusually long dialogue can grow the panel with a short easing transition
+(disabled in reduced-motion mode).
+
+**Artwork authoring:** the engine also accepts optional two-axis cuts
+(`vertical_slices` and `reference_height`) for **intentionally authored
+stretchable-paper skins**. Atlas's original painting is *not* vertically
+slice-safe—its books, ivy and lantern cross the potential cut—so Atlas itself
+retains the nonwarping, aspect-preserving three-part configuration rather than
+distorting its ornaments.
+
 ## Controls
 
 Enter/Space progresses; Up/Down or number keys choose; P pauses; P then 4 opens Settings including font browser and automatic advance delay. H opens reading history, F5/F9 quick saves/loads, F6 manual slots, K skips skippable staging, M opens the main menu. Fullscreen and window resizing follow the same Vesper engine rules as the original examples.
