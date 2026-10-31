@@ -384,13 +384,14 @@ def responsive_layout() -> None:
                 press(win, "Down", 0.22)       # row 9, bottom position
                 press(win, "Right", 0.35)
                 press(win, "Down", 0.22)       # row 10, ink preset
-                press(win, "Right", 0.35)      # authored -> black
+                for _ in range(3):
+                    press(win, "Right", 0.35)  # authored -> black -> brown -> navy
                 wait_for_log(log, "Vesper settings applied: Text ink")
                 deadline = time.monotonic() + 15
                 while time.monotonic() < deadline:
                     try:
                         actual = json.loads((prefs / "player-preferences.json").read_text())
-                        if actual.get("text_ink") == "black" and actual.get("panel_bottom_percent", 0) >= 1.0:
+                        if actual.get("text_ink") == "navy" and actual.get("panel_bottom_percent", 0) >= 1.0:
                             break
                     except (OSError, ValueError):
                         pass
@@ -404,6 +405,29 @@ def responsive_layout() -> None:
                     OUTPUT / "panel-reader-wide.png",
                     OUTPUT / "panel-reader-bottom-ink.png"
                 ) > 200, "Live bottom/ink settings produced no visible change"
+
+                # Compare ink alone on the *same* scene, unchanged width and
+                # position, so a colour setting cannot silently do nothing.
+                press(win, "p", 0.25)
+                press(win, "4", 0.25)
+                select_width_setting(win, log)
+                press(win, "Down", 0.22)
+                press(win, "Down", 0.22)  # ink row 10
+                press(win, "Right", 0.35)  # navy -> sepia
+                deadline = time.monotonic() + 15
+                while time.monotonic() < deadline:
+                    if json.loads((prefs / "player-preferences.json").read_text()).get("text_ink") == "sepia":
+                        break
+                    time.sleep(0.15)
+                else:
+                    raise AssertionError("Sepia ink preset did not persist")
+                press(win, "Escape", 0.25)
+                press(win, "p", 0.35)
+                screenshot(win, "panel-reader-sepia-ink.png")
+                assert changed(
+                    OUTPUT / "panel-reader-bottom-ink.png",
+                    OUTPUT / "panel-reader-sepia-ink.png"
+                ) > 100, "Ink palette change did not affect the rendered story"
 
                 # Include a multi-line revealed page, not only the title frame.
                 for _ in range(4):

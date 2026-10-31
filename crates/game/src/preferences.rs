@@ -18,10 +18,10 @@ pub enum TextInk { Black, DarkBrown, Navy, Sepia }
 impl TextInk {
     pub fn rgb(self) -> [f32; 3] {
         match self {
-            Self::Black => [0.015, 0.015, 0.015],
-            Self::DarkBrown => [0.085, 0.050, 0.030],
-            Self::Navy => [0.045, 0.075, 0.125],
-            Self::Sepia => [0.23, 0.13, 0.060],
+            Self::Black => [0.0, 0.0, 0.0],
+            Self::DarkBrown => [0.30, 0.125, 0.055],
+            Self::Navy => [0.085, 0.195, 0.37],
+            Self::Sepia => [0.47, 0.235, 0.075],
         }
     }
     pub fn label(self) -> &'static str {
@@ -461,7 +461,7 @@ mod tests {
         };
         let resolved = reader.resolve_theme(&authored, generic_font_available);
         assert_eq!(resolved.panel.bottom_percent, 1.0);
-        assert_eq!(resolved.dialogue.color[0], 0.015);
+        assert_eq!(resolved.dialogue.color[0], 0.0);
         assert_eq!(authored.panel.bottom_percent, 3.3);
         assert_eq!(PlayerPreferences::decode(&reader.encode().unwrap()).unwrap(), reader);
         let bad = PlayerPreferences { panel_bottom_percent: Some(21.0), ..Default::default() };
@@ -469,6 +469,18 @@ mod tests {
         let contrast = PlayerPreferences { high_contrast: Some(true), ..reader };
         assert_eq!(contrast.resolve_theme(&authored, generic_font_available).dialogue.color,
                    [1.0, 1.0, 1.0, 1.0]);
+    }
+
+    #[test]
+    fn ink_presets_are_distinguishable_on_light_paper() {
+        let colors = [TextInk::Black, TextInk::DarkBrown, TextInk::Navy, TextInk::Sepia]
+            .map(TextInk::rgb);
+        for (index, left) in colors.iter().enumerate() {
+            assert!(left.iter().all(|v| (0.0..=0.5).contains(v)));
+            for right in colors.iter().skip(index + 1) {
+                assert!(left.iter().zip(right).map(|(a, b)| (a - b).abs()).sum::<f32>() > 0.13);
+            }
+        }
     }
 
     #[test]

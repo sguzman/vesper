@@ -171,6 +171,12 @@ pub struct PanelSkin {
     /// Protected writing rectangle fractions [left, right, top, bottom]
     /// relative to the rendered panel, not the full window.
     pub safe_area: Option<[f32; 4]>,
+    /// Explicit titleplate label region [left, top, width, height], each
+    /// fraction of the rendered frame. Authors place names on their own art.
+    pub speaker_area: Option<[f32; 4]>,
+    /// Independent instruction legend [left, right, bottom] as fractions.
+    /// Never let the hint inherit the body text's lower safety margin.
+    pub hint_area: Option<[f32; 3]>,
     /// Texture pixels retained along each edge for nine-slice scaling.
     pub slice_border: f32,
     /// Optional distortion-free illustrated end caps with a stretchable center.
@@ -221,7 +227,7 @@ impl PanelHorizontalSlices {
 }
 impl Default for PanelSkin {
     fn default() -> Self {
-        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false, compact_top_boost: 0.0, safe_area: None }
+        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false, compact_top_boost: 0.0, safe_area: None, speaker_area: None, hint_area: None }
     }
 }
 impl PanelSkin {
@@ -233,6 +239,13 @@ impl PanelSkin {
             || self.safe_area.is_some_and(|a| a.iter().any(|v|
                 !v.is_finite() || !(0.0..=0.45).contains(v))
                 || a[0] + a[1] >= 0.80 || a[2] + a[3] >= 0.80)
+            || self.speaker_area.is_some_and(|a| a.iter().any(|v|
+                !v.is_finite() || !(0.0..=1.0).contains(v))
+                || a[2] < 0.05 || a[3] < 0.03
+                || a[0] + a[2] > 1.0 || a[1] + a[3] > 1.0)
+            || self.hint_area.is_some_and(|a| a.iter().any(|v|
+                !v.is_finite() || !(0.0..=0.65).contains(v))
+                || a[0] + a[1] >= 0.85)
             || !self.slice_border.is_finite()
             || !(2.0..=160.0).contains(&self.slice_border)
         {

@@ -176,8 +176,9 @@ pub fn sync_spans(
                     let visible = if upto > segment.from { &text[segment.from..upto] } else { "" };
                     let styled = segment.style.as_ref()
                         .and_then(|name| theme.inline_styles.get(name));
-                    let palette = if color_mode { theme.dialogue.color }
-                        else { styled.map_or(theme.dialogue.color, |style| style.color) };
+                    let palette = if color_mode || session.preferences.text_ink.is_some() {
+                        theme.dialogue.color
+                    } else { styled.map_or(theme.dialogue.color, |style| style.color) };
                     let font = if !color_mode && session.preferences.font_family.is_none() {
                         styled.and_then(|style| style.font_family.as_ref())
                             .map_or_else(|| default_font.clone(),
@@ -204,8 +205,9 @@ pub fn sync_spans(
             if session.is_changed() {
                 let styled = segment.style.as_ref()
                     .and_then(|name| theme.inline_styles.get(name));
-                let palette = if color_mode { theme.dialogue.color }
-                    else { styled.map_or(theme.dialogue.color, |style| style.color) };
+                let palette = if color_mode || session.preferences.text_ink.is_some() {
+                    theme.dialogue.color
+                } else { styled.map_or(theme.dialogue.color, |style| style.color) };
                 *color = text_color(palette);
                 let default_font = text_font(&theme, &assets);
                 font.font = if !color_mode && session.preferences.font_family.is_none() {
@@ -279,7 +281,9 @@ pub fn animate_inline_effects(
     // Reduced motion freezes both the periodic phase and the text's appearance.
     // High contrast always takes precedence and restores the normal text color
     // in sync_spans whenever the setting changes.
-    if session.preferences.high_contrast.unwrap_or(false) { return; }
+    if session.preferences.high_contrast.unwrap_or(false)
+        || session.preferences.text_ink.is_some()
+    { return; }
     let elapsed = if session.preferences.reduced_motion.unwrap_or(false) {
         0.0
     } else {

@@ -85,6 +85,11 @@ compact_top_boost = 40.0
 # Explicit protected writing region: no prose on the globe/ivy/compass/trim.
 # Fractions are of the actual panel dimensions, not the viewport.
 safe_area = [0.255, 0.23, 0.36, 0.37]
+# The upper navy label is distinct from the parchment writing region.
+# [left, top, width, height] relative to the displayed panel.
+speaker_area = [0.105, 0.13, 0.34, 0.16]
+# [left, right, bottom]. Keep short help visually below body prose.
+hint_area = [0.255, 0.23, 0.335]
 
 # Keep the globe, books and lantern at their original aspect ratio.
 # Stretch ONLY a plain vertical parchment strip between source pixels 1065–1095.

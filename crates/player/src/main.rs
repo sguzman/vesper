@@ -146,6 +146,31 @@ fn panel_width(viewport_width: f32, panel: &vesper_game::PanelStyle, preference:
         .clamp(minimum, panel.max_width.min(limit).max(minimum))
 }
 
+/// Nameplate coordinates are sourced from the skin, not guessed from the
+/// reader-safe prose padding. All four ratios refer to the displayed panel.
+fn speaker_bounds(
+    area: Option<[f32; 4]>, width: f32, height: f32,
+) -> (Val, Val, Val) {
+    if let Some([left, top, region_width, region_height]) = area {
+        return (
+            px(width * left),
+            px(height * (top + region_height * 0.25)),
+            px(width * region_width),
+        );
+    }
+    (px(width * 0.255 + 45.0), px(height * 0.08), px(width * 0.35))
+}
+
+fn hint_bounds(
+    area: Option<[f32; 3]>, width: f32, height: f32,
+    safe: UiRect,
+) -> (Val, Val, Val) {
+    if let Some([left, right, bottom]) = area {
+        return (px(width * left), px(width * right), px(height * bottom));
+    }
+    (safe.left, safe.right, safe.bottom)
+}
+
 fn apply_panel_metrics(
     node: &mut Node, panel: &vesper_game::PanelStyle, metrics: PanelMetrics,
     viewport: Vec2, preference: Option<f32>,
@@ -187,7 +212,7 @@ fn fit_viewport(
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
     mut text_nodes: Query<(&StoryText, &mut Node), Without<StoryPanel>>,
-    mut previous: Local<(Vec2, [u32; 14])>,
+    mut previous: Local<(Vec2, [u32; 16])>,
 ) {
     let Ok(window) = windows.single() else { return; };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
@@ -214,6 +239,10 @@ fn fit_viewport(
         session.preferences.panel_bottom_percent.unwrap_or(panel.bottom_percent).to_bits(),
         skin.and_then(|skin| skin.safe_area).map_or(0, |a| a.iter()
             .fold(0u32, |seed, v| seed.rotate_left(5) ^ v.to_bits())),
+        skin.and_then(|skin| skin.speaker_area).map_or(0, |a| a.iter()
+            .fold(0u32, |seed, v| seed.rotate_left(5) ^ v.to_bits())),
+        skin.and_then(|skin| skin.hint_area).map_or(0, |a| a.iter()
+            .fold(0u32, |seed, v| seed.rotate_left(5) ^ v.to_bits())),
     ];
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
     // reflowed only after a viewport or external theme-geometry change.
@@ -232,15 +261,19 @@ fn fit_viewport(
         if panel.fixed_height && panel.hint_inside {
             if let Some(padding) = safe {
                 let width = panel_width(size.x, panel, session.preferences.panel_width_percent);
+                let (speaker_left, speaker_top, speaker_width) =
+                    speaker_bounds(skin.and_then(|skin| skin.speaker_area), width, geometry.min_height);
+                let (hint_left, hint_right, hint_bottom) =
+                    hint_bounds(skin.and_then(|skin| skin.hint_area), width, geometry.min_height, padding);
                 for (slot, mut node) in &mut text_nodes {
                     match slot {
                         StoryText::Hint => {
                             // The legend stays inside the paper and cannot be
                             // displaced by paragraphs of different lengths.
                             node.position_type = PositionType::Absolute;
-                            node.left = padding.left;
-                            node.right = padding.right;
-                            node.bottom = padding.bottom;
+                            node.left = hint_left;
+                            node.right = hint_right;
+                            node.bottom = hint_bottom;
                             node.width = Val::Auto;
                             node.margin = UiRect::default();
                             node.padding = UiRect::default();
@@ -249,9 +282,9 @@ fn fit_viewport(
                             // The illustrated navy nameplate is an actual UI
                             // region, not part of the body writing surface.
                             node.position_type = PositionType::Absolute;
-                            node.left = px(width * 0.255 + 45.0);
-                            node.top = px(geometry.min_height * 0.08);
-                            node.width = px(width * 0.35);
+                            node.left = speaker_left;
+                            node.top = speaker_top;
+                            node.width = speaker_width;
                         }
                         _ => {}
                     }
@@ -1133,17 +1166,24 @@ fn setup(
             ));
             if panel.fixed_height && panel.hint_inside {
                 let width = panel_width(1280.0, panel, session.preferences.panel_width_percent);
+                let skin = panel_art::active_skin(&session);
+                let area = skin.and_then(|skin| skin.speaker_area);
+                let (name_left, name_top, name_width) =
+                    speaker_bounds(area, width, geometry.min_height);
                 parent.spawn((
                     StoryText::Speaker,
                     Text::new(&initial.speaker),
                     TextFont { font: font.clone(), font_size: FontSize::Px(speaker_style.size), ..default() },
                     text_color(speaker_style.color),
-                    TextLayout::new(Justify::Left, LineBreak::NoWrap),
+                    TextLayout::new(
+                        if area.is_some() { Justify::Center } else { Justify::Left },
+                        LineBreak::NoWrap
+                    ),
                     Node {
                         position_type: PositionType::Absolute,
-                        left: px(width * 0.255 + 45.0),
-                        top: px(geometry.min_height * 0.08),
-                        width: px(width * 0.35),
+                        left: name_left,
+                        top: name_top,
+                        width: name_width,
                         ..default()
                     },
                 ));
@@ -1178,6 +1218,11 @@ fn setup(
             if panel.fixed_height && panel.hint_inside {
                 // This slot is positioned independently of speaker/body flow.
                 let inset = initial_safe.unwrap_or_else(|| px(geometry.padding).all());
+                let width = panel_width(1280.0, panel, session.preferences.panel_width_percent);
+                let (hint_left, hint_right, hint_bottom) = hint_bounds(
+                    panel_art::active_skin(&session).and_then(|skin| skin.hint_area),
+                    width, geometry.min_height, inset,
+                );
                 parent.spawn((
                     StoryText::Hint,
                     Text::new(panel_hint(&initial, &theme)),
@@ -1186,8 +1231,8 @@ fn setup(
                     TextLayout::new(Justify::Left, LineBreak::NoWrap),
                     Node {
                         position_type: PositionType::Absolute,
-                        left: inset.left, right: inset.right,
-                        bottom: inset.bottom, width: Val::Auto,
+                        left: hint_left, right: hint_right,
+                        bottom: hint_bottom, width: Val::Auto,
                         ..default()
                     },
                 ));

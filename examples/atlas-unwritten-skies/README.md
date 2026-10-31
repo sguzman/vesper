@@ -41,12 +41,15 @@ Press **P**, choose **Settings**. **Dialogue width** adjusts the frame
 from **50% to 100%** in 5% increments, subject to the authored min/max caps.
 **Dialogue position** moves the panel up or down (0–20% above the viewport
 bottom). **Text ink** cycles through game default, black, dark brown, navy,
-and sepia. Preferences persist without editing the game's TOML, and
+and sepia. The four reader colors are intentionally distinct; the contrast
+gold speaker lettering on the navy label is preserved. Preferences persist without editing the game's TOML, and
 **Reset to game defaults** restores the authored look.
 
 Atlas uses a fixed-size illustrated frame and an explicit protected text-safe
-rectangle measured against the rendered panel. Speaker and prose remain inside
-the parchment, and the hint is anchored separately, regardless of text length.
+rectangle measured against the rendered panel. The skin declares an independent
+`speaker_area` for the navy titleplate and `hint_area` for the smaller instruction
+legend below the body. Prose, speaker and hint no longer compete for the same
+layout space, regardless of text length.
 Longer prose is paginated at sentence and word boundaries into short,
 readable pages (at most 22 words / 120 characters each), preserving every
 word of the original novel. The engine still supports height easing for
