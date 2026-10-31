@@ -1906,10 +1906,10 @@ mod tests {
             width_percent: 72.0, min_width: 820.0, max_width: 1180.0,
             ..Default::default()
         };
-        assert_eq!(panel_width(1920.0, &panel, None), 1180.0);
-        assert_eq!(panel_width(1280.0, &panel, None), 921.6);
-        assert_eq!(panel_width(946.0, &panel, Some(50.0)), 820.0);
-        assert_eq!(panel_width(640.0, &panel, Some(50.0)), 614.4);
+        assert_eq!(super::panel_width(1920.0, &panel, None), 1180.0);
+        assert_eq!(super::panel_width(1280.0, &panel, None), 921.6);
+        assert_eq!(super::panel_width(946.0, &panel, Some(50.0)), 820.0);
+        assert_eq!(super::panel_width(640.0, &panel, Some(50.0)), 614.4);
     }
 
     #[test]
