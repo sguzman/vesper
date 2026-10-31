@@ -37,10 +37,12 @@ pixels** on large displays and with a compact-window readability minimum.
 The authored `compact_top_boost` keeps words below the upper ornament on
 smaller windows rather than assuming that its border scales like plain UI.
 
-Press **P**, choose **Settings**, then choose **Dialogue width** to adjust the
-panel from **50% to 100%** in 5% increments; the game's min/max safety caps
-still apply. This is a persistent reader preference: it never rewrites a
-game's authored theme, and **Reset to game defaults** restores its default.
+Press **P**, choose **Settings**. **Dialogue width** adjusts the frame
+from **50% to 100%** in 5% increments, subject to the authored min/max caps.
+**Dialogue position** moves the panel up or down (0–20% above the viewport
+bottom). **Text ink** cycles through game default, black, dark brown, navy,
+and sepia. Preferences persist without editing the game's TOML, and
+**Reset to game defaults** restores the authored look.
 
 Atlas uses a fixed-size illustrated frame and an explicit protected text-safe
 rectangle measured against the rendered panel. Speaker and prose remain inside

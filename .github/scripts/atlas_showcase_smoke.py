@@ -376,6 +376,35 @@ def responsive_layout() -> None:
                     OUTPUT / "panel-reader-wide.png"
                 ) > 1000, "Reader width control did not change the rendered panel"
 
+                # Live reader control smoke: the bottom offset and ink
+                # palette must persist independently of authored game data.
+                press(win, "p", 0.25)
+                press(win, "4", 0.25)
+                select_width_setting(win, log)  # row 8, width
+                press(win, "Down", 0.22)       # row 9, bottom position
+                press(win, "Right", 0.35)
+                press(win, "Down", 0.22)       # row 10, ink preset
+                press(win, "Right", 0.35)      # authored -> black
+                wait_for_log(log, "Vesper settings applied: Text ink")
+                deadline = time.monotonic() + 15
+                while time.monotonic() < deadline:
+                    try:
+                        actual = json.loads((prefs / "player-preferences.json").read_text())
+                        if actual.get("text_ink") == "black" and actual.get("panel_bottom_percent", 0) >= 1.0:
+                            break
+                    except (OSError, ValueError):
+                        pass
+                    time.sleep(0.16)
+                else:
+                    raise AssertionError("Ink and bottom settings did not persist")
+                press(win, "Escape", 0.25)
+                press(win, "p", 0.35)
+                screenshot(win, "panel-reader-bottom-ink.png")
+                assert changed(
+                    OUTPUT / "panel-reader-wide.png",
+                    OUTPUT / "panel-reader-bottom-ink.png"
+                ) > 200, "Live bottom/ink settings produced no visible change"
+
                 # Include a multi-line revealed page, not only the title frame.
                 for _ in range(4):
                     press(win, "Return", 0.25)

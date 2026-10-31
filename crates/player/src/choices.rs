@@ -158,13 +158,30 @@ pub fn reserve_row_height(
     }
 }
 
+/// Choices must scroll within the real manuscript writing rectangle.
+/// A scroll container taller than the paper appears to fit internally but
+/// gets visually clipped by its fixed-height parent (hiding later options).
+fn paper_choice_height(panel_height: f32, safe: [f32; 4], gap: f32) -> f32 {
+    (panel_height * (1.0 - safe[2] - safe[3]) - gap * 2.0).max(60.0)
+}
 pub fn sync_viewport(
     windows: Query<&Window, With<PrimaryWindow>>,
+    session: Res<Session>,
     mut list: Query<&mut Node, With<ChoiceList>>,
     mut previous: Local<f32>,
 ) {
     let Ok(window) = windows.single() else { return; };
-    let height = choice_viewport_height(window.resolution.height());
+    let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
+    let mut height = choice_viewport_height(viewport.y);
+    let panel = &session.game.theme.panel;
+    if panel.fixed_height && !session.preferences.high_contrast.unwrap_or(false) {
+        if let Some(safe) = panel_art::active_skin(&session)
+            .and_then(|skin| skin.safe_area)
+        {
+            let fixed_height = super::panel_metrics(viewport, panel).min_height;
+            height = height.min(paper_choice_height(fixed_height, safe, panel.gap));
+        }
+    }
     if (*previous - height).abs() < 0.01 { return; }
     for mut node in &mut list {
         node.max_height = px(height);
@@ -219,7 +236,14 @@ pub fn scroll_selected(
 mod tests {
     use super::*;
     #[test]
-    fn viewport_height_is_finite_and_bounded() {
+    fn fixed_paper_limits_option_scroll_before_decorative_trim() {
+        let safe = [0.255, 0.23, 0.36, 0.37];
+        assert!((paper_choice_height(430.0, safe, 8.0) - 100.1).abs() < 0.01);
+        assert!(paper_choice_height(306.0, safe, 8.0) >= 60.0);
+    }
+
+    #[test]
+        fn viewport_height_is_finite_and_bounded() {
         for (height, expected) in [
             (511.0, 219.73),
             (720.0, 309.6),
