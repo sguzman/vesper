@@ -151,9 +151,12 @@ fn apply_panel_metrics(
     viewport: Vec2, preference: Option<f32>,
 ) {
     let width = panel_width(viewport.x, panel, preference);
+    // Percentage coordinates stay centered even when Bevy scales its root UI
+    // on compact windows; absolute px coordinates would drift under UiScale.
+    let ratio = width / viewport.x.max(1.0);
     node.bottom = px(metrics.bottom);
-    node.left = px((viewport.x - width) * 0.5);
-    node.width = px(width);
+    node.left = percent((1.0 - ratio) * 50.0);
+    node.width = percent(ratio * 100.0);
     node.min_height = px(metrics.min_height);
     node.padding = px(metrics.padding).all();
     node.row_gap = px(metrics.gap);
@@ -1013,8 +1016,8 @@ fn setup(
                 align_items: AlignItems::Stretch,
                 row_gap: px(geometry.gap),
                 bottom: px(geometry.bottom),
-                left: px((1280.0 - panel_width(1280.0, panel, session.preferences.panel_width_percent)) / 2.0),
-                width: px(panel_width(1280.0, panel, session.preferences.panel_width_percent)),
+                left: percent((1.0 - panel_width(1280.0, panel, session.preferences.panel_width_percent) / 1280.0) * 50.0),
+                width: percent(panel_width(1280.0, panel, session.preferences.panel_width_percent) / 1280.0 * 100.0),
                 min_height: px(geometry.min_height),
                 padding: px(geometry.padding).all(),
                 ..default()
