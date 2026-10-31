@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -273,6 +274,77 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                 process.wait(timeout=10)
 
 
+def responsive_layout() -> None:
+    """Quick visual regression before the much longer four-ending playthrough."""
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="vesper-atlas-panel-") as tmp:
+        root = Path(tmp)
+        prefs = root / "prefs"
+        prefs.mkdir()
+        log = OUTPUT / "responsive-panel.log"
+        env = dict(os.environ, VESPER_PREFERENCES_DIR=str(prefs),
+                   VESPER_SAVE_DIR=str(root / "saves"),
+                   LIBGL_ALWAYS_SOFTWARE="1")
+        with log.open("w", encoding="utf-8") as output:
+            process = subprocess.Popen([str(PLAYER), str(GAME)],
+                                       stdout=output, stderr=subprocess.STDOUT, env=env)
+            try:
+                win = window_id()
+                time.sleep(2.5)
+                for width, height, name in [
+                    (1280, 720, "standard"),
+                    (946, 511, "compact"),
+                    (1900, 1035, "ultrawide"),
+                ]:
+                    run("xdotool", "windowsize", "--sync", win, str(width), str(height))
+                    time.sleep(0.6)
+                    screenshot(win, f"panel-authored-{name}.png", (width, height))
+                run("xdotool", "windowsize", "--sync", win, "1280", "720")
+                time.sleep(0.6)
+
+                # P -> Settings (pause-menu option 4); width is row nine.
+                press(win, "p", 0.2)
+                press(win, "4", 0.2)
+                for _ in range(8):
+                    press(win, "Down", 0.06)
+                for _ in range(3):
+                    press(win, "Left", 0.10)
+                press(win, "Escape", 0.20)  # settings -> pause
+                press(win, "p", 0.35)       # pause -> story
+                screenshot(win, "panel-reader-narrow.png")
+
+                press(win, "p", 0.2)
+                press(win, "4", 0.2)
+                for _ in range(8):
+                    press(win, "Down", 0.06)
+                for _ in range(7):
+                    press(win, "Right", 0.10)
+                press(win, "Escape", 0.20)
+                press(win, "p", 0.35)
+                screenshot(win, "panel-reader-wide.png")
+                assert changed(
+                    OUTPUT / "panel-reader-narrow.png",
+                    OUTPUT / "panel-reader-wide.png"
+                ) > 1000, "Reader width control did not change the rendered panel"
+
+                # Include a multi-line revealed page, not only the title frame.
+                for _ in range(4):
+                    press(win, "Return", 0.25)
+                screenshot(win, "panel-later-dialogue.png")
+                assert not FAILURE.search(read_log(log)), read_log(log)[-3000:]
+                press(win, "Escape", 0.2)
+                process.wait(timeout=15)
+                assert process.returncode == 0
+                stored = json.loads((prefs / "player-preferences.json").read_text())
+                assert 85.0 <= stored["panel_width_percent"] <= 95.0, stored
+                print("Atlas panel: compact, standard, ultrawide, reader width "
+                      "and persisted preference passed", flush=True)
+            finally:
+                if process.poll() is None:
+                    process.terminate()
+                    process.wait(timeout=10)
+
+
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     spec = scene_spec()
@@ -285,4 +357,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if "--layout-only" in sys.argv:
+        responsive_layout()
+    else:
+        main()

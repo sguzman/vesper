@@ -84,6 +84,16 @@ jobs:
         run: cargo build --locked -p vesper-player
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
+      - name: Capture Atlas responsive panel and persistent reader width
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/atlas_showcase_smoke.py --layout-only
+      - name: Preserve early Atlas responsive panel screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-atlas-responsive-panel
+          path: /tmp/vesper-atlas-qa/panel-*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Play Atlas through all four original endings and test F5/F9
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/atlas_showcase_smoke.py
       - name: Preserve Atlas ending screenshots and native runtime logs
