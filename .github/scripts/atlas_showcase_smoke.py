@@ -336,7 +336,7 @@ def responsive_layout() -> None:
         root = Path(tmp)
         prefs = root / "prefs"
         prefs.mkdir()
-        log = OUTPUT / "responsive-panel.log"
+        log = OUTPUT / "panel-responsive.log"
         env = dict(os.environ, VESPER_PREFERENCES_DIR=str(prefs),
                    VESPER_SAVE_DIR=str(root / "saves"),
                    LIBGL_ALWAYS_SOFTWARE="1",
@@ -442,7 +442,10 @@ def responsive_layout() -> None:
                 screenshot(win, "panel-small-narrow.png", (810, 450))
                 small_narrow_width = measured_panel_width(log)
                 assert small_wide_width - small_narrow_width > 20.0, (
-                    "810px window panel did not shrink", small_wide_width, small_narrow_width
+                    "810px window panel did not shrink", small_wide_width, small_narrow_width,
+                    [line for line in read_log(log).splitlines()
+                     if "Vesper panel target width:" in line or
+                        "Vesper panel resolved width:" in line][-24:]
                 )
                 assert changed(
                     OUTPUT / "panel-small-wide.png",
