@@ -12,6 +12,26 @@ use std::{
 
 use crate::{TextRevealSpeed, Theme};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TextInk { Black, DarkBrown, Navy, Sepia }
+impl TextInk {
+    pub fn rgb(self) -> [f32; 3] {
+        match self {
+            Self::Black => [0.015, 0.015, 0.015],
+            Self::DarkBrown => [0.085, 0.050, 0.030],
+            Self::Navy => [0.045, 0.075, 0.125],
+            Self::Sepia => [0.23, 0.13, 0.060],
+        }
+    }
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Black => "Black", Self::DarkBrown => "Dark brown",
+            Self::Navy => "Navy", Self::Sepia => "Sepia",
+        }
+    }
+}
+
 pub const VERSION: u32 = 1;
 const MAX_BYTES: u64 = 16 * 1024;
 static NEXT_WRITE: AtomicU64 = AtomicU64::new(0);
@@ -28,6 +48,12 @@ pub struct PlayerPreferences {
     /// Reader-selected dialogue width; never edits the game's TOML.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub panel_width_percent: Option<f32>,
+    /// Percentage of viewport height from its bottom edge.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub panel_bottom_percent: Option<f32>,
+    /// Reader's chosen dialogue ink; None keeps the authored palette.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text_ink: Option<TextInk>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub text_scale: Option<f32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -52,6 +78,8 @@ impl Default for PlayerPreferences {
             format_version: VERSION,
             panel_opacity: None,
             panel_width_percent: None,
+            panel_bottom_percent: None,
+            text_ink: None,
             text_scale: None,
             font_family: None,
             reveal_speed: None,
@@ -84,6 +112,9 @@ impl PlayerPreferences {
         }
         if self.panel_width_percent.is_some_and(|v| !v.is_finite() || !(50.0..=100.0).contains(&v)) {
             return Err("panel_width_percent must be within 50..=100".into());
+        }
+        if self.panel_bottom_percent.is_some_and(|v| !v.is_finite() || !(0.0..=20.0).contains(&v)) {
+            return Err("panel_bottom_percent must be within 0..=20".into());
         }
         if self.text_scale.is_some_and(|v| !v.is_finite() || !(0.80..=1.60).contains(&v)) {
             return Err("text_scale must be within 0.80..=1.60".into());
@@ -182,6 +213,15 @@ impl PlayerPreferences {
         }
         if let Some(width) = self.panel_width_percent {
             result.panel.width_percent = width;
+        }
+        if let Some(position) = self.panel_bottom_percent {
+            result.panel.bottom_percent = position;
+        }
+        if let Some(ink) = self.text_ink {
+            let rgb = ink.rgb();
+            for style in [&mut result.speaker, &mut result.dialogue, &mut result.choices, &mut result.hint] {
+                style.color = [rgb[0], rgb[1], rgb[2], 1.0];
+            }
         }
         if let Some(scale) = self.text_scale {
             for style in [
@@ -407,6 +447,25 @@ mod tests {
             };
             assert!(invalid.validate().is_err());
         }
+    }
+
+    #[test]
+    fn panel_position_and_ink_are_reader_owned_and_validated() {
+        let authored = Theme::default();
+        let reader = PlayerPreferences {
+            panel_bottom_percent: Some(1.0), text_ink: Some(TextInk::Black),
+            ..Default::default()
+        };
+        let resolved = reader.resolve_theme(&authored, generic_font_available);
+        assert_eq!(resolved.panel.bottom_percent, 1.0);
+        assert_eq!(resolved.dialogue.color[0], 0.015);
+        assert_eq!(authored.panel.bottom_percent, 3.3);
+        assert_eq!(PlayerPreferences::decode(&reader.encode().unwrap()).unwrap(), reader);
+        let bad = PlayerPreferences { panel_bottom_percent: Some(21.0), ..Default::default() };
+        assert!(bad.validate().is_err());
+        let contrast = PlayerPreferences { high_contrast: Some(true), ..reader };
+        assert_eq!(contrast.resolve_theme(&authored, generic_font_available).dialogue.color,
+                   [1.0, 1.0, 1.0, 1.0]);
     }
 
     #[test]

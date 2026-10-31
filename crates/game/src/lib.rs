@@ -168,6 +168,9 @@ pub struct PanelSkin {
     /// Extra safe paper clearance on smaller viewports, scaled by
     /// (1 - min(viewport/1280x720)). Older games default to zero.
     pub compact_top_boost: f32,
+    /// Protected writing rectangle fractions [left, right, top, bottom]
+    /// relative to the rendered panel, not the full window.
+    pub safe_area: Option<[f32; 4]>,
     /// Texture pixels retained along each edge for nine-slice scaling.
     pub slice_border: f32,
     /// Optional distortion-free illustrated end caps with a stretchable center.
@@ -218,7 +221,7 @@ impl PanelHorizontalSlices {
 }
 impl Default for PanelSkin {
     fn default() -> Self {
-        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false, compact_top_boost: 0.0 }
+        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false, compact_top_boost: 0.0, safe_area: None }
     }
 }
 impl PanelSkin {
@@ -227,6 +230,9 @@ impl PanelSkin {
             || self.insets.iter().any(|v| !v.is_finite() || !(0.0..=160.0).contains(v))
             || !self.compact_top_boost.is_finite()
             || !(0.0..=80.0).contains(&self.compact_top_boost)
+            || self.safe_area.is_some_and(|a| a.iter().any(|v|
+                !v.is_finite() || !(0.0..=0.45).contains(v))
+                || a[0] + a[1] >= 0.80 || a[2] + a[3] >= 0.80)
             || !self.slice_border.is_finite()
             || !(2.0..=160.0).contains(&self.slice_border)
         {
@@ -485,6 +491,11 @@ pub struct PanelStyle {
     pub min_width: f32,
     /// Maximum panel width on widescreen monitors.
     pub max_width: f32,
+    /// Position relative to bottom of the viewport, in percent.
+    pub bottom_percent: f32,
+    /// Keep the art stationary regardless of text content (dialogue pages
+    /// must fit the authored safe writing area).
+    pub fixed_height: bool,
     pub min_height: f32,
     /// Baseline height does not fluctuate for short dialogue paragraphs.
     pub reserve_lines: u32,
@@ -513,6 +524,8 @@ impl Default for PanelStyle {
             width_percent: 90.0,
             min_width: 0.0,
             max_width: 8192.0,
+            bottom_percent: 3.3,
+            fixed_height: false,
             min_height: 180.0,
             reserve_lines: 0,
             resize_seconds: 0.0,
@@ -620,6 +633,8 @@ impl Theme {
             || !panel.max_width.is_finite()
             || !(160.0..=8192.0).contains(&panel.max_width)
             || panel.max_width < panel.min_width
+            || !panel.bottom_percent.is_finite()
+            || !(0.0..=25.0).contains(&panel.bottom_percent)
             || panel.reserve_lines > 8
             || !panel.resize_seconds.is_finite()
             || !(0.0..=0.5).contains(&panel.resize_seconds)

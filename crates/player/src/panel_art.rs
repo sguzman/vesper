@@ -36,6 +36,21 @@ pub fn skin_padding(session: &Session, viewport: Vec2) -> Option<UiRect> {
     let skin = active_skin(session)?;
     let compact = (viewport.x / 1280.0).min(viewport.y / 720.0).clamp(0.6, 1.0);
     let base = session.game.theme.panel.padding * compact;
+    if let Some(area) = skin.safe_area {
+        // Source painting declares the exact safe writing region as proportions
+        // of the *actual panel*, so changing reader width cannot move text onto
+        // the compass, ivy or ornamental corners.
+        let width = super::panel_width(
+            viewport.x, &session.game.theme.panel, session.preferences.panel_width_percent,
+        );
+        let height = super::panel_metrics(viewport, &session.game.theme.panel).min_height;
+        return Some(UiRect {
+            left: px((width * area[0]).ceil()),
+            right: px((width * area[1]).ceil()),
+            top: px((height * area[2]).ceil()),
+            bottom: px((height * area[3]).ceil()),
+        });
+    }
     let i = skin.insets;
     Some(UiRect {
         left: px((base + i[0] * compact).min(viewport.x * 0.2)),

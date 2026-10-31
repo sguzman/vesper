@@ -48,7 +48,7 @@ def scene_spec() -> dict[str, dict[str, int]]:
         elif current and (line.startswith('"') or
                           re.match(r"^[a-z][a-z0-9_]*: \".*\"$", line)):
             prose = line.split(": ", 1)[1] if not line.startswith('"') else line
-            assert len(json.loads(prose)) <= 145, (current, "oversized dialogue page")
+            assert len(json.loads(prose)) <= 120, (current, "oversized dialogue page")
             scenes[current]["dialogue"] += 1
         elif current and line.startswith("* "):
             scenes[current]["choices"] += 1

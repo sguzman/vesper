@@ -131,7 +131,7 @@ fn panel_metrics(viewport: Vec2, panel: &vesper_game::PanelStyle) -> PanelMetric
     let height = viewport.y.max(1.0);
     let compact = (width / 1280.0).min(height / 720.0).clamp(0.60, 1.0);
     PanelMetrics {
-        bottom: (height * 0.033).clamp(8.0, 24.0),
+        bottom: height * panel.bottom_percent / 100.0,
         min_height: panel.min_height.min(height * if panel.reserve_lines > 0 { 0.60 } else { 0.48 }),
         padding: panel.padding * compact,
         gap: (panel.gap * compact).max(3.0),
@@ -158,6 +158,15 @@ fn apply_panel_metrics(
     node.left = percent((1.0 - ratio) * 50.0);
     node.width = percent(ratio * 100.0);
     node.min_height = px(metrics.min_height);
+    if panel.fixed_height {
+        node.height = px(metrics.min_height);
+        node.max_height = px(metrics.min_height);
+        node.overflow = Overflow::clip();
+    } else {
+        node.height = Val::Auto;
+        node.max_height = Val::Auto;
+        node.overflow = Overflow::visible();
+    }
     node.padding = px(metrics.padding).all();
     node.row_gap = px(metrics.gap);
 }
@@ -177,7 +186,8 @@ fn fit_viewport(
         Option<&actors::ActorIdle>,
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
-    mut previous: Local<(Vec2, [u32; 12])>,
+    mut text_nodes: Query<(&StoryText, &mut Node), Without<StoryPanel>>,
+    mut previous: Local<(Vec2, [u32; 14])>,
 ) {
     let Ok(window) = windows.single() else { return; };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
@@ -201,16 +211,38 @@ fn fit_viewport(
         session.preferences.panel_width_percent.unwrap_or(0.0).to_bits(),
         panel.min_width.to_bits() ^ panel.max_width.to_bits(),
         skin.map_or(0.0, |skin| skin.compact_top_boost).to_bits(),
+        session.preferences.panel_bottom_percent.unwrap_or(panel.bottom_percent).to_bits(),
+        skin.and_then(|skin| skin.safe_area).map_or(0, |a| a.iter()
+            .fold(0u32, |seed, v| seed.rotate_left(5) ^ v.to_bits())),
     ];
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
     // reflowed only after a viewport or external theme-geometry change.
     if previous.0 != size || previous.1 != panel_key {
-        let geometry = panel_metrics(size, panel);
+        let mut geometry = panel_metrics(size, panel);
+        geometry.bottom = size.y * session.preferences.panel_bottom_percent
+            .unwrap_or(panel.bottom_percent) / 100.0;
+        let safe = panel_art::skin_padding(&session, size);
         for mut node in &mut panels {
             apply_panel_metrics(&mut node, panel, geometry, size,
                 session.preferences.panel_width_percent);
-            if let Some(padding) = panel_art::skin_padding(&session, size) {
+            if let Some(padding) = safe {
                 node.padding = padding;
+            }
+        }
+        if panel.fixed_height && panel.hint_inside {
+            if let Some(padding) = safe {
+                for (slot, mut node) in &mut text_nodes {
+                    if !matches!(slot, StoryText::Hint) { continue; }
+                    // Body text and speaker flow inside a protected rectangle;
+                    // the hint is separately anchored, never pushed by prose.
+                    node.position_type = PositionType::Absolute;
+                    node.left = padding.left;
+                    node.right = padding.right;
+                    node.bottom = padding.bottom;
+                    node.width = Val::Auto;
+                    node.margin = UiRect::default();
+                    node.padding = UiRect::default();
+                }
             }
         }
         previous.1 = panel_key;
@@ -614,7 +646,7 @@ fn animate_panel_height(
     mut animated: Local<Option<f32>>,
 ) {
     let authored = &session.game.theme.panel;
-    if authored.reserve_lines == 0 { return; }
+    if authored.reserve_lines == 0 || authored.fixed_height { return; }
     let Ok(window) = windows.single() else { return; };
     let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
     let base = panel_metrics(viewport, authored).min_height;
@@ -1014,7 +1046,10 @@ fn setup(
         &initial.spans,
     ).to_owned();
     let panel = &theme.panel;
-    let geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
+    let mut geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
+    geometry.bottom = 720.0 * session.preferences.panel_bottom_percent
+        .unwrap_or(panel.bottom_percent) / 100.0;
+    let initial_safe = panel_art::skin_padding(&session, Vec2::new(1280.0, 720.0));
     let mut background = panel.background;
     if !session.preferences.high_contrast.unwrap_or(false)
         && panel_art::active_skin(&session).is_some_and(|skin| skin.transparent_background)
@@ -1036,7 +1071,10 @@ fn setup(
                 left: percent((1.0 - panel_width(1280.0, panel, session.preferences.panel_width_percent) / 1280.0) * 50.0),
                 width: percent(panel_width(1280.0, panel, session.preferences.panel_width_percent) / 1280.0 * 100.0),
                 min_height: px(geometry.min_height),
-                padding: px(geometry.padding).all(),
+                height: if panel.fixed_height { px(geometry.min_height) } else { Val::Auto },
+                max_height: if panel.fixed_height { px(geometry.min_height) } else { Val::Auto },
+                overflow: if panel.fixed_height { Overflow::clip() } else { Overflow::visible() },
+                padding: initial_safe.unwrap_or_else(|| px(geometry.padding).all()),
                 ..default()
             },
             BackgroundColor(Color::srgba(
@@ -1106,8 +1144,26 @@ fn setup(
                     panel.divider[0], panel.divider[1], panel.divider[2], panel.divider[3]
                 )),
             ));
-            add_text(parent, StoryText::Hint, panel_hint(&initial, &theme),
-                &hint_style, &font, panel.hint_inside);
+            if panel.fixed_height && panel.hint_inside {
+                // This slot is positioned independently of speaker/body flow.
+                let inset = initial_safe.unwrap_or_else(|| px(geometry.padding).all());
+                parent.spawn((
+                    StoryText::Hint,
+                    Text::new(panel_hint(&initial, &theme)),
+                    TextFont { font: font.clone(), font_size: FontSize::Px(hint_style.size), ..default() },
+                    text_color(hint_style.color),
+                    TextLayout::new(Justify::Left, LineBreak::NoWrap),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        left: inset.left, right: inset.right,
+                        bottom: inset.bottom, width: Val::Auto,
+                        ..default()
+                    },
+                ));
+            } else {
+                add_text(parent, StoryText::Hint, panel_hint(&initial, &theme),
+                    &hint_style, &font, panel.hint_inside);
+            }
             // Absolute corner cue does not compete with wrapped body or hint.
             parent.spawn((
                 Name::new("Dialogue continue cue"),

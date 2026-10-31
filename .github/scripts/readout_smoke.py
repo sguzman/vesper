@@ -211,7 +211,9 @@ def verify_controls(game):
         press("Down")  # Auto delay (index 6)
         press("Down")  # High contrast (index 7)
         press("Down")  # Dialogue width (index 8)
-        press("Down")  # Reset to game defaults (index 9)
+        press("Down")  # Dialogue position (index 9)
+        press("Down")  # Text ink (index 10)
+        press("Down")  # Reset to game defaults (index 11)
         press("Return")
         end=time.monotonic()+7
         while time.monotonic()<end and any(
@@ -219,7 +221,7 @@ def verify_controls(game):
         ):
             time.sleep(.1)
         assert not any(k in load() for k in ("reveal_speed","reduced_motion","auto_advance")),load()
-        press("Down") # Back (index 10)
+        press("Down") # Back (index 12)
         press("Return")
         wait_for(log,"Vesper appearance settings closed")
         assert proc.poll() is None

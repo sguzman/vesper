@@ -82,6 +82,9 @@ insets = [160.0, 160.0, 94.0, 30.0]
 slice_border = 28.0
 transparent_background = true
 compact_top_boost = 40.0
+# Explicit protected writing region: no prose on the globe/ivy/compass/trim.
+# Fractions are of the actual panel dimensions, not the viewport.
+safe_area = [0.18, 0.17, 0.245, 0.205]
 
 # Keep the globe, books and lantern at their original aspect ratio.
 # Stretch ONLY a plain vertical parchment strip between source pixels 1065–1095.

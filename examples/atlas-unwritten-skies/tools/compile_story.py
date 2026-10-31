@@ -14,11 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'scripts' / 'novel.source'
 DEST = ROOT / 'scripts' / 'story.vn'
 
-def paginate(text: str, limit: int = 24, char_limit: int = 145) -> list[str]:
-    """Keep ornate Atlas dialogue readable without deforming the backdrop.
+def paginate(text: str, limit: int = 22, char_limit: int = 120) -> list[str]:
+    """Fit the fixed manuscript writing rectangle without orphaned words.
 
-    Preserve sentence boundaries where practical; otherwise split at words.
-    Every word retains the original order and spelling.
+    Preserve every source word, prioritize natural sentence boundaries and
+    rebalance short tails so the player never gets a one-word page.
     """
     words = text.split()
     if len(words) <= limit and len(text) <= char_limit:
@@ -47,6 +47,23 @@ def paginate(text: str, limit: int = 24, char_limit: int = 145) -> list[str]:
                 flush()
             current.extend(tokens)
     flush()
+
+    for index in range(1, len(result)):
+        if len(result[index].split()) >= 6:
+            continue
+        joined = (result[index - 1] + ' ' + result[index]).split()
+        options = []
+        for cut in range(6, len(joined) - 5):
+            left, right = ' '.join(joined[:cut]), ' '.join(joined[cut:])
+            if len(left) <= char_limit and len(right) <= char_limit and cut <= limit and len(joined)-cut <= limit:
+                score = abs(len(left) - len(right))
+                if left.endswith(('.', '!', '?', '.”', '!”', '?”')):
+                    score -= 12
+                options.append((score, cut))
+        if options:
+            _, cut = min(options)
+            result[index - 1] = ' '.join(joined[:cut])
+            result[index] = ' '.join(joined[cut:])
     assert ' '.join(result) == ' '.join(words), 'Pagination lost authored prose'
     assert all(len(chunk) <= char_limit for chunk in result), 'Oversized dialogue page'
     return result

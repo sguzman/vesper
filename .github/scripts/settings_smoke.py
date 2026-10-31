@@ -164,7 +164,7 @@ def main() -> None:
                     # Click the opacity control, not a stale fixed position.
                     if game == "little-lantern":
                         previous_opacity = font["panel_opacity"]
-                        run("xdotool", "mousemove", "--window", win, "600", "104")
+                        run("xdotool", "mousemove", "--window", win, "600", "70")
                         time.sleep(.4)
                         run("xdotool", "click", "1")
                         mouse_change = wait_prefs(prefs_path, lambda p:
@@ -234,8 +234,8 @@ def main() -> None:
                     key("p")
                     key("4")
                     wait_log(restart, "Vesper appearance settings opened")
-                    # High contrast, dialogue width, then Reset (10th row).
-                    for _ in range(9):
+                    # High contrast, dialogue width, position and ink, then Reset (12th row).
+                    for _ in range(11):
                         key("Down")
                     key("Return")
                     wait_prefs(prefs_path, lambda p:

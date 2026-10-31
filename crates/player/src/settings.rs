@@ -3,11 +3,11 @@
 use super::*;
 use std::sync::mpsc::{self, Sender};
 
-pub const ITEMS: [&str; 11] = [
+pub const ITEMS: [&str; 13] = [
     "Dialogue opacity", "Text size", "Font family",
     "Reveal speed", "Reduced motion", "Auto advance",
     "Auto advance delay", "High contrast", "Dialogue width",
-    "Reset to game defaults", "Back",
+    "Dialogue position", "Text ink", "Reset to game defaults", "Back",
 ];
 
 #[derive(Resource)]
@@ -112,8 +112,12 @@ fn label(session: &Session, index: usize) -> String {
                 |v| format!("{v:.0}%"));
             format!("Dialogue width   <  {label}  >")
         },
-        9 => "Reset to game defaults".into(),
-        10 => "Back to menu".into(),
+        9 => format!("Dialogue position   <  {:.0}% above bottom  >",
+            session.preferences.panel_bottom_percent.unwrap_or(session.game.theme.panel.bottom_percent)),
+        10 => format!("Text ink   <  {}  >",
+            session.preferences.text_ink.map_or("Game default", |ink| ink.label())),
+        11 => "Reset to game defaults".into(),
+        12 => "Back to menu".into(),
         3 => {
             let speed = session.preferences.reveal_speed
                 .unwrap_or(session.game.theme.reveal_speed);
@@ -162,7 +166,17 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
             let base = next.panel_width_percent.unwrap_or(session.game.theme.panel.width_percent);
             next.panel_width_percent = Some(step_scaled(base, delta, 50.0, 100.0, 5.0));
         },
-        9 => next.reset(),
+        9 => {
+            let base = next.panel_bottom_percent.unwrap_or(session.game.theme.panel.bottom_percent);
+            next.panel_bottom_percent = Some(step_scaled(base, delta, 0.0, 20.0, 1.0));
+        }
+        10 => {
+            use vesper_game::preferences::TextInk as Ink;
+            let choices = [None, Some(Ink::Black), Some(Ink::DarkBrown), Some(Ink::Navy), Some(Ink::Sepia)];
+            let index = choices.iter().position(|ink| *ink == next.text_ink).unwrap_or(0);
+            next.text_ink = choices[(index as i32 + delta).rem_euclid(choices.len() as i32) as usize];
+        }
+        11 => next.reset(),
         3 => {
             use vesper_game::TextRevealSpeed as Speed;
             let speeds = [Speed::Instant, Speed::Slow, Speed::Normal, Speed::Fast];
@@ -179,7 +193,7 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
 }
 
 pub fn change(session: &mut Session, index: usize, delta: i32, writer: &PreferencesWriter) {
-    if index == 10 || index >= ITEMS.len() { return; }
+    if index == 12 || index >= ITEMS.len() { return; }
     let next = edited(session, index, delta);
     if next == session.preferences { return; }
     if let Err(error) = next.validate() {
@@ -345,7 +359,7 @@ pub fn keyboard(
         if state.selection == 2 { font_browser::open(session, browser, commands); }
         else { change(session, state.selection, 1, writer); }
     } else if input.just_pressed(KeyCode::Enter) || input.just_pressed(KeyCode::Space) {
-        if state.selection == 10 { close(session, state, commands, assets); }
+        if state.selection == 12 { close(session, state, commands, assets); }
         else if state.selection == 2 { font_browser::open(session, browser, commands); }
         else { change(session, state.selection, 1, writer); }
     }
@@ -365,7 +379,7 @@ pub fn pointer(
     }
     if let Some(index) = clicks.0.take() {
         state.selection = index;
-        if index == 10 { close(&mut session, &mut state, &mut commands, &assets); }
+        if index == 12 { close(&mut session, &mut state, &mut commands, &assets); }
         else if index == 2 { font_browser::open(&session, &mut browser, &mut commands); }
         else { change(&mut session, index, 1, &writer); }
     }
@@ -456,7 +470,7 @@ mod tests {
         assert!((step_scaled(0.60, -1, 0.60, 1., 0.05) - 0.60).abs() < 0.001);
         assert!((step_scaled(0.95, 1, 0.60, 1., 0.05) - 1.).abs() < 0.001);
         assert!((step_scaled(10.60, 1, 0.80, 10.60, 0.10) - 10.60).abs() < 0.001);
-        assert_eq!(ITEMS.len(), 11);
+        assert_eq!(ITEMS.len(), 13);
         assert_eq!(step_scaled(1.5, 1, 0.5, 20.0, 0.5), 2.0);
         assert_eq!(step_scaled(20.0, 1, 0.5, 20.0, 0.5), 20.0);
     }
