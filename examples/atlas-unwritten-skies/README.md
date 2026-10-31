@@ -40,7 +40,10 @@ smaller windows rather than assuming that its border scales like plain UI.
 Press **P**, choose **Settings**. **Dialogue width** adjusts the frame
 from **50% to 100%** in 5% steps across the available readable range in
 the current window, rather than having several nonfunctional clamped steps.
-At tiny window sizes there may be only one safely readable width.
+Even below the artwork's authored minimum, the slider retains a
+bounded, readable window-relative range. Atlas uses an externally defined
+two-axis art hinge so the decorative endcaps and corners keep their aspect
+ratio as dialogue width or height changes.
 **Backspace** steps back through up to 256 previously viewed dialogue or
 choice screens, including after branching, without changing disk saves.
 **Dialogue position** moves the panel up or down (0–20% above the viewport

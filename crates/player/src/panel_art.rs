@@ -90,7 +90,13 @@ fn horizontal_geometry(
 /// Using the full panel width instead makes the name drift as paper stretches.
 pub fn speaker_anchor_width(skin: Option<&vesper_game::PanelSkin>, size: Vec2) -> f32 {
     skin.and_then(|skin| skin.horizontal_slices.as_ref())
-        .map_or(size.x, |spec| horizontal_geometry(spec, size).0)
+        .map_or(size.x, |spec| {
+            if spec.vertical_slices.is_some() {
+                spec.stretch_start * grid_scale(spec, size)
+            } else {
+                horizontal_geometry(spec, size).0
+            }
+        })
 }
 
 /// Optional nine-region geometry: decorations retain their original aspect
@@ -101,7 +107,7 @@ fn grid_scale(spec: &vesper_game::PanelHorizontalSlices, size: Vec2) -> f32 {
     let cap_width = spec.stretch_start + width - spec.stretch_end;
     let cap_height = top + height - bottom;
     (spec.reference_height.unwrap_or(height) / height)
-        .min(size.x * 0.90 / cap_width)
+        .min(size.x * 0.96 / cap_width)
         .min(size.y * 0.99 / cap_height)
         .max(0.0)
 }
@@ -164,10 +170,13 @@ pub fn sync(
             let StoryPanelArt::Cell(column, row) = *part else { unreachable!() };
             image.rect = Some(Rect::new(xs[column], ys[row], xs[column+1], ys[row+1]));
             image.image_mode = NodeImageMode::Stretch;
-            node.left = if column == 0 { px(0.0) } else if column == 1 { px(widths[0]) } else { Val::Auto };
-            node.right = if column == 2 { px(0.0) } else if column == 1 { px(widths[2]) } else { Val::Auto };
-            node.top = if row == 0 { px(0.0) } else if row == 1 { px(heights[0]) } else { Val::Auto };
-            node.bottom = if row == 2 { px(0.0) } else if row == 1 { px(heights[2]) } else { Val::Auto };
+            // Infill underlaps edge ornaments; corners are painted last.
+            let seam_x = 2.0_f32.min((size.x - widths[0] - widths[2]).max(0.0) * 0.2);
+            let seam_y = 2.0_f32.min((size.y - heights[0] - heights[2]).max(0.0) * 0.2);
+            node.left = if column == 0 { px(0.0) } else if column == 1 { px(widths[0] - seam_x) } else { Val::Auto };
+            node.right = if column == 2 { px(0.0) } else if column == 1 { px(widths[2] - seam_x) } else { Val::Auto };
+            node.top = if row == 0 { px(0.0) } else if row == 1 { px(heights[0] - seam_y) } else { Val::Auto };
+            node.bottom = if row == 2 { px(0.0) } else if row == 1 { px(heights[2] - seam_y) } else { Val::Auto };
             node.width = if column == 1 { Val::Auto } else { px(widths[column]) };
             node.height = if row == 1 { Val::Auto } else { px(heights[row]) };
         } else if let Some((left, right, rects)) = geometry {
@@ -243,6 +252,31 @@ mod tests {
             assert!(cap * (0.76 + 0.22) < cap);
         }
         assert_eq!(speaker_anchor_width(None, Vec2::new(900.0, 400.0)), 900.0);
+    }
+
+    #[test]
+    fn atlas_two_axis_caps_are_uniformly_scaled_and_anchor_follows_them() {
+        let spec = vesper_game::PanelHorizontalSlices {
+            image_size: [1914.0, 820.0],
+            stretch_start: 1240.0, stretch_end: 1244.0,
+            vertical_slices: Some([395.0, 420.0]),
+            reference_height: Some(430.0),
+        };
+        let skin = vesper_game::PanelSkin {
+            horizontal_slices: Some(spec.clone()), ..Default::default()
+        };
+        for size in [Vec2::new(770.0, 323.0), Vec2::new(810.0, 177.0),
+                     Vec2::new(946.0, 306.0), Vec2::new(1180.0, 430.0)] {
+            let scale = grid_scale(&spec, size);
+            let x_caps = (spec.stretch_start + spec.image_size[0] - spec.stretch_end) * scale;
+            let y_caps = (395.0 + 820.0 - 420.0) * scale;
+            assert!(x_caps < size.x && y_caps < size.y);
+            assert!((speaker_anchor_width(Some(&skin), size) -
+                spec.stretch_start * scale).abs() < 0.001);
+            assert!((spec.stretch_start * scale / spec.stretch_start -
+                (spec.image_size[0] - spec.stretch_end) * scale /
+                (spec.image_size[0] - spec.stretch_end)).abs() < 0.0001);
+        }
     }
 
     #[test]

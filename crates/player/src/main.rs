@@ -165,7 +165,13 @@ fn panel_width(viewport_width: f32, panel: &vesper_game::PanelStyle, preference:
     let maximum = panel.max_width.min(limit);
     // Windowed mode also needs a meaningful adjustable range. A fixed
     // 820-pixel floor had clamped multiple slider steps to the same value.
-    let minimum = panel.min_width.min(maximum);
+    // Below the authored min-width, retain a real slider range instead of
+    // clamping every setting to the same 96%-of-window value.
+    let minimum = if viewport_width < panel.min_width {
+        (viewport_width * 0.68).min(maximum)
+    } else {
+        panel.min_width.min(maximum)
+    };
     if let Some(pct) = preference {
         // Reader's 50..100% maps to the physically achievable range.
         // At the authored default the original percentage is preserved.
@@ -180,15 +186,13 @@ fn panel_width(viewport_width: f32, panel: &vesper_game::PanelStyle, preference:
 /// reader-safe prose padding. All four ratios refer to the displayed panel.
 fn speaker_bounds(
     area: Option<[f32; 4]>, width: f32, height: f32,
-) -> (Val, Val, Val) {
+) -> (Val, Val, Val, Val) {
     if let Some([left, top, region_width, region_height]) = area {
-        return (
-            px(width * left),
-            px(height * (top + region_height * 0.25)),
-            px(width * region_width),
-        );
+        return (px(width * left), px(height * top),
+                px(width * region_width), px(height * region_height));
     }
-    (px(width * 0.255 + 45.0), px(height * 0.08), px(width * 0.35))
+    (px(width * 0.255 + 45.0), px(height * 0.08),
+     px(width * 0.35), px(height * 0.15))
 }
 
 fn hint_bounds(
@@ -242,6 +246,7 @@ fn fit_viewport(
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
     mut text_nodes: Query<(&StoryText, &mut Node), Without<StoryPanel>>,
+    mut nameplate_anchors: Query<&mut Node, With<NameplateAnchor>>,
     mut previous: Local<(Vec2, [u32; 16])>,
 ) {
     let Ok(window) = windows.single() else { return; };
@@ -294,8 +299,14 @@ fn fit_viewport(
                 let nameplate_width = panel_art::speaker_anchor_width(
                     skin, Vec2::new(width, geometry.min_height),
                 );
-                let (speaker_left, speaker_top, speaker_width) =
+                let (speaker_left, speaker_top, speaker_width, speaker_height) =
                     speaker_bounds(skin.and_then(|skin| skin.speaker_area), nameplate_width, geometry.min_height);
+                for mut anchor in &mut nameplate_anchors {
+                    anchor.left = speaker_left;
+                    anchor.top = speaker_top;
+                    anchor.width = speaker_width;
+                    anchor.height = speaker_height;
+                }
                 let (hint_left, hint_right, hint_bottom) =
                     hint_bounds(skin.and_then(|skin| skin.hint_area), width, geometry.min_height, padding);
                 for (slot, mut node) in &mut text_nodes {
@@ -312,12 +323,10 @@ fn fit_viewport(
                             node.padding = UiRect::default();
                         }
                         StoryText::Speaker => {
-                            // The illustrated navy nameplate is an actual UI
-                            // region, not part of the body writing surface.
-                            node.position_type = PositionType::Absolute;
-                            node.left = speaker_left;
-                            node.top = speaker_top;
-                            node.width = speaker_width;
+                            // Text is vertically centered by its flex anchor,
+                            // never by a guessed glyph-top offset.
+                            node.position_type = PositionType::Relative;
+                            node.width = percent(100.0);
                         }
                         _ => {}
                     }
@@ -362,6 +371,9 @@ fn fit_viewport(
 
 #[derive(Component)]
 struct StoryPanel;
+
+#[derive(Component)]
+struct NameplateAnchor;
 
 #[derive(Component)]
 struct StorySeparator;
@@ -1175,18 +1187,19 @@ fn setup(
             StoryPanel,
         ))
         .with_children(|parent| {
-            // Paint the stretchable paper first. Decorative caps overlay
-            // its 2px underlap, masking texture-filter seams on fullscreen.
+            // Stretchable infill paints first. Then edges and corners
+            // cover the shared underlap, hiding seams at noninteger DPI.
             let mut art_parts = vec![
                 panel_art::StoryPanelArt::Full,
                 panel_art::StoryPanelArt::Middle,
                 panel_art::StoryPanelArt::Left,
                 panel_art::StoryPanelArt::Right,
             ];
-            for row in 0..3 {
-                for column in 0..3 {
-                    art_parts.push(panel_art::StoryPanelArt::Cell(column, row));
-                }
+            for (column, row) in [
+                (1, 1), (1, 0), (1, 2), (0, 1), (2, 1),
+                (0, 0), (2, 0), (0, 2), (2, 2),
+            ] {
+                art_parts.push(panel_art::StoryPanelArt::Cell(column, row));
             }
             for part in art_parts {
                 parent.spawn((
@@ -1219,25 +1232,31 @@ fn setup(
                 let nameplate_width = panel_art::speaker_anchor_width(
                     skin, Vec2::new(width, geometry.min_height),
                 );
-                let (name_left, name_top, name_width) =
+                let (name_left, name_top, name_width, name_height) =
                     speaker_bounds(area, nameplate_width, geometry.min_height);
                 parent.spawn((
-                    StoryText::Speaker,
-                    Text::new(&initial.speaker),
-                    TextFont { font: font.clone(), font_size: FontSize::Px(speaker_style.size), ..default() },
-                    text_color(speaker_style.color),
-                    TextLayout::new(
-                        if area.is_some() { Justify::Center } else { Justify::Left },
-                        LineBreak::NoWrap
-                    ),
+                    NameplateAnchor,
                     Node {
                         position_type: PositionType::Absolute,
-                        left: name_left,
-                        top: name_top,
-                        width: name_width,
+                        left: name_left, top: name_top,
+                        width: name_width, height: name_height,
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
                         ..default()
                     },
-                ));
+                )).with_children(|nameplate| {
+                    nameplate.spawn((
+                        StoryText::Speaker,
+                        Text::new(&initial.speaker),
+                        TextFont { font: font.clone(), font_size: FontSize::Px(speaker_style.size), ..default() },
+                        text_color(speaker_style.color),
+                        TextLayout::new(
+                            if area.is_some() { Justify::Center } else { Justify::Left },
+                            LineBreak::NoWrap
+                        ),
+                        Node { width: percent(100.0), flex_shrink: 0.0, ..default() },
+                    ));
+                });
             } else {
                 add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font, panel.hint_inside);
             }
@@ -1966,6 +1985,11 @@ fn poll_completed_io(
                 for (_, entity) in std::mem::take(&mut session.characters) {
                     commands.entity(entity).despawn();
                 }
+                // A debug rewind is not a music seek: an unchanged cue must
+                // retain its live AudioPlayer and playback position.
+                let retain_music = rewinding && state.music.is_some()
+                    && state.music == session.presentation.music
+                    && session.music.is_some();
                 session.presentation = PresentationState::default();
                 session.presentation.selected_choice = state.selected_choice;
                 session.presentation.panel_skin = state.panel_skin;
@@ -1973,7 +1997,9 @@ fn poll_completed_io(
                 session.presentation.ambient_motion_elapsed = state.ambient_motion_elapsed;
                 session.ambient_restore_epoch = session.ambient_restore_epoch.wrapping_add(1);
                 if let Some(id) = state.music {
-                    if let Err(error) = apply_visual(
+                    if retain_music {
+                        session.presentation.music = Some(id);
+                    } else if let Err(error) = apply_visual(
                         &mut session, &mut commands, &assets, Visual::Music(id)
                     ) {
                         error!("Invalid saved music: {error}");
@@ -2152,7 +2178,20 @@ mod tests {
             > super::panel_width(946.0, &panel, Some(60.0)));
         assert!(super::panel_width(1280.0, &panel, Some(80.0))
             > super::panel_width(1280.0, &panel, Some(75.0)));
-        assert!((super::panel_width(640.0, &panel, Some(50.0)) - 614.4).abs() < 0.001);
+        assert!((super::panel_width(640.0, &panel, Some(50.0)) - 435.2).abs() < 0.001);
+        assert!(super::panel_width(800.0, &panel, Some(90.0))
+            > super::panel_width(800.0, &panel, Some(50.0)));
+        assert!(super::panel_width(800.0, &panel, Some(50.0)) < 800.0 * 0.75);
+    }
+
+    #[test]
+    fn nameplate_anchor_uses_the_entire_painted_rectangle() {
+        let (left, top, width, height) =
+            super::speaker_bounds(Some([0.46, 0.13, 0.33, 0.16]), 500.0, 430.0);
+        assert!(matches!(left, bevy::ui::Val::Px(v) if (v - 230.0).abs() < 0.01));
+        assert!(matches!(top, bevy::ui::Val::Px(v) if (v - 55.9).abs() < 0.01));
+        assert!(matches!(width, bevy::ui::Val::Px(v) if (v - 165.0).abs() < 0.01));
+        assert!(matches!(height, bevy::ui::Val::Px(v) if (v - 68.8).abs() < 0.01));
     }
 
     #[test]

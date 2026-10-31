@@ -88,19 +88,22 @@ safe_area = [0.255, 0.23, 0.36, 0.37]
 # The upper navy label is distinct from the parchment writing region.
 # Horizontal fractions refer to the aspect-preserved left image cap,
 # not the stretchable whole frame; vertical fractions refer to frame height.
-speaker_area = [0.56, 0.13, 0.34, 0.16]
+speaker_area = [0.46, 0.13, 0.33, 0.16]
 # [left, right, bottom]. Keep short help visually below body prose.
 hint_area = [0.255, 0.23, 0.335]
 
 # Keep the globe, books and lantern at their original aspect ratio.
-# Stretch ONLY a plain vertical parchment strip between source pixels 1065–1095.
+# Nine-region hinge: preserve the globe, blue titleplate, compass, lantern,
+# and corner trims at a uniform scale. The 4px-wide horizontal infill crosses
+# the straight border and plain parchment just right of the central ornaments.
+# Vertical growth is isolated to the middle paper band (source y=395..420).
+# This makes the extended areas simple infill instead of distorted motifs.
 [panel_skins.parchment.horizontal_slices]
 image_size = [1914.0, 820.0]
-stretch_start = 1065.0
-stretch_end = 1095.0
-# The existing illustration has detailed ornaments crossing every horizontal row.
-# Keep its endcaps proportionate. Two-axis slicing is reserved for assets
-# authored with a genuinely undecorated vertical stretch band.
+stretch_start = 1240.0
+stretch_end = 1244.0
+vertical_slices = [395.0, 420.0]
+reference_height = 430.0
 
 [ambient_actors.spark]
 image = "assets/ambient/spark.png"

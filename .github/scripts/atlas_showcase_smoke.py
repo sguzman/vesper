@@ -348,10 +348,14 @@ def responsive_layout() -> None:
                 press(win, "Return", 0.35)
                 screenshot(win, "panel-debug-next.png")
                 staged_before = read_log(log).count("Vesper character staged:")
+                music_before = read_log(log).count("Vesper queued music:")
                 press(win, "BackSpace", 0.40)
                 wait_for_log(log, "Vesper debug rewind restored")
                 assert read_log(log).count("Vesper character staged:") == staged_before, (
                     "Debug rewind replayed a character entrance instead of restoring instantly"
+                )
+                assert read_log(log).count("Vesper queued music:") == music_before, (
+                    "Debug rewind restarted the same music track"
                 )
                 screenshot(win, "panel-debug-rewound.png")
                 assert changed(
@@ -361,6 +365,7 @@ def responsive_layout() -> None:
                 for width, height, name in [
                     (1280, 720, "standard"),
                     (946, 511, "compact"),
+                    (810, 450, "windowed"),
                     (1900, 1035, "ultrawide"),
                 ]:
                     run("xdotool", "windowsize", "--sync", win, str(width), str(height))
@@ -410,6 +415,22 @@ def responsive_layout() -> None:
                     OUTPUT / "panel-windowed-wide.png",
                     OUTPUT / "panel-windowed-narrow.png"
                 ) > 500, "Width control remained clamped in windowed mode"
+                # A window narrower than the authored minimum must still
+                # have distinct slider endpoints, not a single clamped width.
+                run("xdotool", "windowsize", "--sync", win, "810", "450")
+                time.sleep(0.4)
+                screenshot(win, "panel-small-wide.png", (810, 450))
+                press(win, "p", 0.24)
+                press(win, "4", 0.24)
+                select_width_setting(win, log)
+                adjust_width(win, prefs, "Left", lambda width: width <= 60.0)
+                press(win, "Escape", 0.24)
+                press(win, "p", 0.40)
+                screenshot(win, "panel-small-narrow.png", (810, 450))
+                assert changed(
+                    OUTPUT / "panel-small-wide.png",
+                    OUTPUT / "panel-small-narrow.png"
+                ) > 500, "Width setting is still clamped below authored min-width"
                 # Restore normal resolution and prior wide preference.
                 run("xdotool", "windowsize", "--sync", win, "1280", "720")
                 time.sleep(0.4)
