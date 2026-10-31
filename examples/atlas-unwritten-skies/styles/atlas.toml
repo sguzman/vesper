@@ -20,7 +20,7 @@ size = 22.0
 color = [0.32, 0.18, 0.10, 1.0]
 
 [dialogue]
-size = 23.0
+size = 21.0
 color = [0.18, 0.15, 0.14, 1.0]
 
 [choices]
