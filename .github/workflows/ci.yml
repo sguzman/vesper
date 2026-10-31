@@ -87,6 +87,9 @@ jobs:
       # Fast, sensitive UI regression first: fail before the lengthy four-ending run.
       - name: Exercise live player appearance settings and save/restart/reset
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/settings_smoke.py
+      # Fast Settings and reader-control checks run before long novel routes.
+      - name: Verify grapheme-safe text reveal, skip-once, reduced motion and opt-in auto
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/readout_smoke.py
       - name: Capture Atlas responsive panel and persistent reader width
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/atlas_showcase_smoke.py --layout-only
       - name: Preserve early Atlas responsive panel screenshots
@@ -257,8 +260,6 @@ jobs:
           path: /tmp/vesper-preferences-qa/*
           if-no-files-found: ignore
           retention-days: 10
-      - name: Verify grapheme-safe text reveal, skip-once, reduced motion and opt-in auto
-        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/readout_smoke.py
       - name: Verify configurable auto-advance wait and live preference
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/auto_delay_smoke.py
       - name: Preserve QOL02 auto-delay visual evidence
