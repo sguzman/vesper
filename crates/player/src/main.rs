@@ -182,6 +182,31 @@ fn panel_width(viewport_width: f32, panel: &vesper_game::PanelStyle, preference:
     }
 }
 
+/// Illustrated frames should not become arbitrarily tall while their fixed
+/// left/right ornaments are forced narrower. Keep the image's non-stretchable
+/// caps uniformly scaled and reserve the horizontal/vertical infill only for
+/// the few source pixels selected by the external art hinge.
+fn illustrated_panel_metrics(
+    viewport: Vec2,
+    panel: &vesper_game::PanelStyle,
+    skin: Option<&vesper_game::PanelSkin>,
+    preference: Option<f32>,
+) -> PanelMetrics {
+    let mut metrics = panel_metrics(viewport, panel);
+    if panel.fixed_height {
+        if let Some(spec) = skin.and_then(|skin| skin.horizontal_slices.as_ref())
+            .filter(|spec| spec.vertical_slices.is_some())
+        {
+            let source_caps = spec.stretch_start + spec.image_size[0] - spec.stretch_end;
+            let usable_width = panel_width(viewport.x, panel, preference);
+            // Match the same 96% cap-fit constraint used by nine-region art.
+            let aspect_height = usable_width * 0.96 * spec.image_size[1] / source_caps;
+            metrics.min_height = metrics.min_height.min(aspect_height);
+        }
+    }
+    metrics
+}
+
 /// Nameplate coordinates are sourced from the skin, not guessed from the
 /// reader-safe prose padding. All four ratios refer to the displayed panel.
 fn speaker_bounds(
@@ -282,7 +307,9 @@ fn fit_viewport(
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
     // reflowed only after a viewport or external theme-geometry change.
     if previous.0 != size || previous.1 != panel_key {
-        let mut geometry = panel_metrics(size, panel);
+        let mut geometry = illustrated_panel_metrics(
+            size, panel, skin, session.preferences.panel_width_percent,
+        );
         geometry.bottom = size.y * session.preferences.panel_bottom_percent
             .unwrap_or(panel.bottom_percent) / 100.0;
         let safe = panel_art::skin_padding(&session, size);
@@ -1150,7 +1177,15 @@ fn setup(
         &initial.spans,
     ).to_owned();
     let panel = &theme.panel;
-    let mut geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
+    let initial_skin = if session.preferences.high_contrast.unwrap_or(false) {
+        None
+    } else {
+        panel_art::active_skin(&session)
+    };
+    let mut geometry = illustrated_panel_metrics(
+        Vec2::new(1280.0, 720.0), panel, initial_skin,
+        session.preferences.panel_width_percent,
+    );
     geometry.bottom = 720.0 * session.preferences.panel_bottom_percent
         .unwrap_or(panel.bottom_percent) / 100.0;
     let initial_safe = panel_art::skin_padding(&session, Vec2::new(1280.0, 720.0));
@@ -2182,6 +2217,36 @@ mod tests {
         assert!(super::panel_width(800.0, &panel, Some(90.0))
             > super::panel_width(800.0, &panel, Some(50.0)));
         assert!(super::panel_width(800.0, &panel, Some(50.0)) < 800.0 * 0.75);
+    }
+
+    #[test]
+    fn illustrated_panel_caps_do_not_stretch_vertically_in_narrow_windows() {
+        let panel = vesper_game::PanelStyle {
+            width_percent: 72.0, min_width: 820.0, max_width: 1180.0,
+            min_height: 430.0, fixed_height: true,
+            ..Default::default()
+        };
+        let skin = vesper_game::PanelSkin {
+            horizontal_slices: Some(vesper_game::PanelHorizontalSlices {
+                image_size: [1914.0, 820.0],
+                stretch_start: 1240.0, stretch_end: 1244.0,
+                vertical_slices: Some([395.0, 420.0]),
+                reference_height: Some(430.0),
+            }), ..Default::default()
+        };
+        for width in [550.0, 810.0, 946.0, 1280.0, 1920.0] {
+            let viewport = Vec2::new(width, 720.0);
+            let metrics = super::illustrated_panel_metrics(
+                viewport, &panel, Some(&skin), Some(85.0),
+            );
+            let selected = super::panel_width(width, &panel, Some(85.0));
+            assert!(metrics.min_height <= selected * 0.96 * 820.0 / 1910.0 + 0.001);
+            assert!(metrics.min_height <= 430.0);
+        }
+        let no_skin = super::illustrated_panel_metrics(
+            Vec2::new(810.0, 720.0), &panel, None, Some(85.0),
+        );
+        assert_eq!(no_skin.min_height, 430.0);
     }
 
     #[test]

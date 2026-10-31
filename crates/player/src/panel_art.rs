@@ -43,7 +43,10 @@ pub fn skin_padding(session: &Session, viewport: Vec2) -> Option<UiRect> {
         let width = super::panel_width(
             viewport.x, &session.game.theme.panel, session.preferences.panel_width_percent,
         );
-        let height = super::panel_metrics(viewport, &session.game.theme.panel).min_height;
+        let height = super::illustrated_panel_metrics(
+            viewport, &session.game.theme.panel, Some(skin),
+            session.preferences.panel_width_percent,
+        ).min_height;
         return Some(UiRect {
             left: px((width * area[0]).ceil()),
             right: px((width * area[1]).ceil()),

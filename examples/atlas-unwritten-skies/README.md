@@ -42,8 +42,9 @@ from **50% to 100%** in 5% steps across the available readable range in
 the current window, rather than having several nonfunctional clamped steps.
 Even below the artwork's authored minimum, the slider retains a
 bounded, readable window-relative range. Atlas uses an externally defined
-two-axis art hinge so the decorative endcaps and corners keep their aspect
-ratio as dialogue width or height changes.
+two-axis art hinge plus an aspect-aware fixed-height limit: ornamental
+endcaps/corners retain their original scale, and the infill expands without
+pulling the globe, titleplate, compass or lantern into elongated shapes.
 **Backspace** steps back through up to 256 previously viewed dialogue or
 choice screens, including after branching, without changing disk saves.
 **Dialogue position** moves the panel up or down (0–20% above the viewport
