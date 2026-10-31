@@ -332,7 +332,8 @@ def responsive_layout() -> None:
         log = OUTPUT / "responsive-panel.log"
         env = dict(os.environ, VESPER_PREFERENCES_DIR=str(prefs),
                    VESPER_SAVE_DIR=str(root / "saves"),
-                   LIBGL_ALWAYS_SOFTWARE="1")
+                   LIBGL_ALWAYS_SOFTWARE="1",
+                   VESPER_TRACE_SCENES="1")
         with log.open("w", encoding="utf-8") as output:
             process = subprocess.Popen([str(PLAYER), str(GAME)],
                                        stdout=output, stderr=subprocess.STDOUT, env=env)
@@ -439,6 +440,20 @@ def responsive_layout() -> None:
                 press(win, "Return", 0.30)
                 press(win, "Return", 0.45)
                 screenshot(win, "panel-long-dialogue.png")
+
+                # Confirm the gold speaker label on the actual painted titleplate.
+                # First named Mira passage follows the anonymous prologue.
+                for _ in range(140):
+                    if len(TRACE.findall(read_log(log))) >= 38:
+                        break
+                    press(win, "Return", 0.16)
+                else:
+                    raise AssertionError("Did not reach named Mira dialogue")
+                screenshot(win, "panel-mira-titleplate.png")
+                assert changed(
+                    OUTPUT / "panel-long-dialogue.png",
+                    OUTPUT / "panel-mira-titleplate.png"
+                ) > 500, "Named dialogue screen did not render"
                 assert changed(
                     OUTPUT / "panel-later-dialogue.png",
                     OUTPUT / "panel-long-dialogue.png"

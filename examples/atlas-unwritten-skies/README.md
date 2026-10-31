@@ -47,7 +47,8 @@ gold speaker lettering on the navy label is preserved. Preferences persist witho
 
 Atlas uses a fixed-size illustrated frame and an explicit protected text-safe
 rectangle measured against the rendered panel. The skin declares an independent
-`speaker_area` for the navy titleplate and `hint_area` for the smaller instruction
+`speaker_area` relative to the non-stretching illustrated endcap, keeping
+names centered on the navy titleplate at any reader width, and `hint_area` for the smaller instruction
 legend below the body. Prose, speaker and hint no longer compete for the same
 layout space, regardless of text length.
 Longer prose is paginated at sentence and word boundaries into short,

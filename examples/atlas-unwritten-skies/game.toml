@@ -86,8 +86,9 @@ compact_top_boost = 40.0
 # Fractions are of the actual panel dimensions, not the viewport.
 safe_area = [0.255, 0.23, 0.36, 0.37]
 # The upper navy label is distinct from the parchment writing region.
-# [left, top, width, height] relative to the displayed panel.
-speaker_area = [0.105, 0.13, 0.34, 0.16]
+# Horizontal fractions refer to the aspect-preserved left image cap,
+# not the stretchable whole frame; vertical fractions refer to frame height.
+speaker_area = [0.28, 0.13, 0.70, 0.16]
 # [left, right, bottom]. Keep short help visually below body prose.
 hint_area = [0.255, 0.23, 0.335]
 

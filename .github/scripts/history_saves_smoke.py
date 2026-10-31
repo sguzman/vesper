@@ -224,11 +224,76 @@ def check_history_and_slots(game):
                 proc.wait(timeout=10)
 
 
+
+def check_long_backlog_scrolling(root):
+    """Regression: bounded true offset and mouse wheel, not a 100000px trap."""
+    game=fixture(root)
+    (game/"scripts/story.vn").write_text(
+        "@scene threshold\nbackground cottage\n" +
+        "".join(
+            f'"Remembered page {i:02d}: the village bell was ringing, and the '
+            f'archive kept each missing name safe in its ledger."\n'
+            for i in range(42)
+        )
+    )
+    out=OUT/"scroll"
+    out.mkdir(parents=True,exist_ok=True)
+    prefs=out/"preferences"
+    prefs.mkdir(exist_ok=True)
+    (prefs/"player-preferences.json").write_text(
+        json.dumps({"format_version":1,"reveal_speed":"instant"})
+    )
+    env=dict(os.environ,LIBGL_ALWAYS_SOFTWARE="1",
+             VESPER_PREFERENCES_DIR=str(prefs),
+             VESPER_SAVE_DIR=str(out/"saves"),VESPER_TRACE_SCENES="1")
+    log=out/"player.log"
+    with log.open("w") as stream:
+        proc=subprocess.Popen([str(BIN),str(game)],env=env,
+                              stdout=stream,stderr=subprocess.STDOUT)
+        try:
+            win=window()
+            wait(log,"Vesper scene dialogue: threshold")
+            for _ in range(38):
+                key("Return",.15)
+            wait(log,"Vesper scene dialogue: threshold",count=39)
+            key("h",.30)
+            wait(log,"Vesper reading history opened: 40 entries")
+            newest=out/"history-newest.png"
+            shot(win,newest)
+            key("Page_Up",.35)
+            wait(log,"Vesper reading history scrolled:")
+            older=out/"history-older.png"
+            shot(win,older)
+            assert difference(newest,older)>500, (
+                "Page Up failed to move real history content (100000px trap)"
+            )
+            # Scroll wheel down toward recent entries, then up toward older.
+            run("xdotool","mousemove","640","360")
+            run("xdotool","click","5")
+            time.sleep(.32)
+            newer=out/"history-wheel-newer.png"
+            shot(win,newer)
+            assert difference(older,newer)>500, "Mouse wheel did not scroll history"
+            run("xdotool","click","4")
+            time.sleep(.32)
+            wheel_older=out/"history-wheel-older.png"
+            shot(win,wheel_older)
+            assert difference(newer,wheel_older)>500, "Wheel up did not scroll history"
+            key("Escape")
+            wait(log,"Vesper reading history closed")
+            assert proc.poll() is None
+            print("VX08: long reading history Page Up, buttons and mouse wheel verified",flush=True)
+        finally:
+            if proc.poll() is None:
+                proc.terminate()
+                proc.wait(timeout=10)
+
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="vesper-history-") as temp:
         game=fixture(Path(temp))
         check_history_and_slots(game)
+        check_long_backlog_scrolling(Path(temp)/"long")
 
 
 if __name__=="__main__":

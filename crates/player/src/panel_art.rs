@@ -86,6 +86,13 @@ fn horizontal_geometry(
     ])
 }
 
+/// The painted speaker plate belongs to the aspect-preserved left endcap.
+/// Using the full panel width instead makes the name drift as paper stretches.
+pub fn speaker_anchor_width(skin: Option<&vesper_game::PanelSkin>, size: Vec2) -> f32 {
+    skin.and_then(|skin| skin.horizontal_slices.as_ref())
+        .map_or(size.x, |spec| horizontal_geometry(spec, size).0)
+}
+
 /// Optional nine-region geometry: decorations retain their original aspect
 /// ratio regardless of the extra paper added by longer prose or window width.
 fn grid_scale(spec: &vesper_game::PanelHorizontalSlices, size: Vec2) -> f32 {
@@ -214,6 +221,24 @@ mod tests {
         let extra_paper = (400.0 - (top + source_height - bottom) * expanded)
             - (320.0 - (top + source_height - bottom) * standard);
         assert!((extra_paper - 80.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn nameplate_tracks_fixed_illustrated_cap_across_reader_widths() {
+        let skin = vesper_game::PanelSkin {
+            horizontal_slices: Some(vesper_game::PanelHorizontalSlices {
+                image_size: [1914.0, 820.0],
+                stretch_start: 1065.0, stretch_end: 1095.0,
+                vertical_slices: None, reference_height: None,
+            }),
+            ..Default::default()
+        };
+        for size in [Vec2::new(950.0, 430.0), Vec2::new(1180.0, 430.0)] {
+            let cap = speaker_anchor_width(Some(&skin), size);
+            assert!(cap > 0.0 && cap < size.x);
+            assert!(cap * (0.28 + 0.70) < cap);
+        }
+        assert_eq!(speaker_anchor_width(None, Vec2::new(900.0, 400.0)), 900.0);
     }
 
     #[test]

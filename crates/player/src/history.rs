@@ -19,6 +19,9 @@ pub struct HistoryLog {
     last_scene: Option<String>,
     pub overlay: Option<Entity>,
     pub just_closed: bool,
+    /// A fresh overlay starts at the most recent page only once the layout
+    /// has resolved the true scroll extent (never a fake 100000px offset).
+    snap_to_latest: bool,
 }
 
 fn bound(text: &str) -> String {
@@ -129,7 +132,7 @@ pub fn open(
             panel.spawn((
                 Name::new("History scroll"),
                 HistoryScroll,
-                ScrollPosition(Vec2::new(0.0, 100000.0)),
+                ScrollPosition(Vec2::ZERO),
                 Node {
                     width: percent(100.0), flex_grow: 1.0, min_height: px(0.0),
                     overflow: Overflow::scroll_y(),
@@ -191,6 +194,7 @@ pub fn open(
         });
     }).id();
     history.overlay=Some(overlay);
+    history.snap_to_latest = true;
     info!("Vesper reading history opened: {} entries",history.entries.len());
 }
 
@@ -198,7 +202,44 @@ pub fn close(history: &mut HistoryLog, commands: &mut Commands) {
     if let Some(overlay)=history.overlay.take() {
         commands.entity(overlay).despawn();
         history.just_closed = true;
+        history.snap_to_latest = false;
         info!("Vesper reading history closed");
+    }
+}
+
+/// Bevy stores the requested scroll offset, which can exceed the rendered
+/// content extent. Clamp against the actual laid-out scroll region instead
+/// of saturating a made-up large offset.
+fn scroll_max(node: &ComputedNode) -> f32 {
+    ((node.content_size().y - node.size().y).max(0.0)
+        * node.inverse_scale_factor).max(0.0)
+}
+
+fn scroll_by(
+    delta: f32,
+    scroll: &mut Query<(&mut ScrollPosition, &ComputedNode), With<HistoryScroll>>,
+) {
+    for (mut position, computed) in scroll.iter_mut() {
+        let limit = scroll_max(computed);
+        let next = (position.0.y + delta).clamp(0.0, limit);
+        if (next - position.0.y).abs() >= 0.1 {
+            position.0.y = next;
+            info!("Vesper reading history scrolled: {:.0} / {:.0}", next, limit);
+        }
+    }
+}
+
+/// Initialize after Bevy measures the actual text and clips its viewport.
+/// The initial offset must never get stuck at an unreachable 100000 pixels.
+fn snap_latest(
+    history: &mut HistoryLog,
+    scroll: &mut Query<(&mut ScrollPosition, &ComputedNode), With<HistoryScroll>>,
+) {
+    if !history.snap_to_latest { return; }
+    for (mut position, computed) in scroll.iter_mut() {
+        if computed.size().y <= 0.0 || computed.content_size().y <= 0.0 { continue; }
+        position.0.y = scroll_max(computed);
+        history.snap_to_latest = false;
     }
 }
 
@@ -206,7 +247,7 @@ pub fn input(
     key: &ButtonInput<KeyCode>,
     history: &mut HistoryLog,
     clicks: &mut HistoryClick,
-    scroll: &mut Query<&mut ScrollPosition, With<HistoryScroll>>,
+    scroll: &mut Query<(&mut ScrollPosition, &ComputedNode), With<HistoryScroll>>,
     commands: &mut Commands,
 ) {
     let pointer=clicks.0.take();
@@ -217,17 +258,36 @@ pub fn input(
         close(history,commands);
         return;
     }
+    snap_latest(history, scroll);
     let delta=if key.just_pressed(KeyCode::PageUp)
         || matches!(pointer,Some(HistoryAction::Older)) { -320.0 }
         else if key.just_pressed(KeyCode::PageDown)
         || matches!(pointer,Some(HistoryAction::Newer)) { 320.0 }
         else if key.just_pressed(KeyCode::ArrowUp) { -70.0 }
         else if key.just_pressed(KeyCode::ArrowDown) { 70.0 }
+        else if key.just_pressed(KeyCode::Home) { -f32::MAX }
+        else if key.just_pressed(KeyCode::End) { f32::MAX }
         else { 0.0 };
-    if delta != 0.0 {
-        for mut position in scroll.iter_mut() {
-            position.0.y = (position.0.y + delta).clamp(0.0, 100000.0);
-        }
+    if delta != 0.0 { scroll_by(delta, scroll); }
+}
+
+/// Ordinary mouse wheels and trackpads control history directly; no pointer
+/// hovering a particular text row or owning keyboard focus is required.
+pub fn wheel(
+    mut events: MessageReader<bevy::input::mouse::MouseWheel>,
+    session: Res<Session>,
+    mut scroll: Query<(&mut ScrollPosition, &ComputedNode), With<HistoryScroll>>,
+) {
+    use bevy::input::mouse::MouseScrollUnit;
+    let mut delta = 0.0;
+    for event in events.read() {
+        delta -= event.y * match event.unit {
+            MouseScrollUnit::Line => 65.0,
+            MouseScrollUnit::Pixel => 1.0,
+        };
+    }
+    if session.history.visible() && delta != 0.0 {
+        scroll_by(delta, &mut scroll);
     }
 }
 
@@ -257,6 +317,19 @@ mod tests {
         assert_eq!(log.entries.len(),MAX_ENTRIES);
         let s="👩‍💻".repeat(MAX_GRAPHEMES+20);
         assert_eq!(bound(&s).graphemes(true).count(),MAX_GRAPHEMES+1);
+    }
+
+    #[test]
+    fn history_scroll_offset_tracks_real_content_bounds() {
+        let mut node = ComputedNode::default();
+        node.size = Vec2::new(800.0, 340.0);
+        node.content_size = Vec2::new(800.0, 1410.0);
+        node.inverse_scale_factor = 1.0;
+        assert_eq!(scroll_max(&node), 1070.0);
+        node.inverse_scale_factor = 0.5;
+        assert_eq!(scroll_max(&node), 535.0);
+        node.content_size.y = 240.0;
+        assert_eq!(scroll_max(&node), 0.0);
     }
 
     #[test]

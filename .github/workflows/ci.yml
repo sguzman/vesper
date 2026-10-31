@@ -90,6 +90,17 @@ jobs:
       # Fast Settings and reader-control checks run before long novel routes.
       - name: Verify grapheme-safe text reveal, skip-once, reduced motion and opt-in auto
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/readout_smoke.py
+      # Reader backlog scrolling must pass before the long Atlas four-ending QA.
+      - name: Verify VX08 reading history and manual/quick save UI
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/history_saves_smoke.py
+      - name: Preserve VX08 backlog and save-slot screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-history-saves
+          path: /tmp/vesper-history-saves-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Capture Atlas responsive panel and persistent reader width
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/atlas_showcase_smoke.py --layout-only
       - name: Preserve early Atlas responsive panel screenshots
@@ -188,16 +199,6 @@ jobs:
         with:
           name: vesper-panel-skins
           path: /tmp/vesper-panel-skins-qa/**/*
-          if-no-files-found: ignore
-          retention-days: 14
-      - name: Verify VX08 reading history and manual/quick save UI
-        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/history_saves_smoke.py
-      - name: Preserve VX08 backlog and save-slot screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: vesper-history-saves
-          path: /tmp/vesper-history-saves-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
       - name: Verify VX07 atmosphere presets and UI micro-interactions

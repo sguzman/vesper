@@ -261,8 +261,11 @@ fn fit_viewport(
         if panel.fixed_height && panel.hint_inside {
             if let Some(padding) = safe {
                 let width = panel_width(size.x, panel, session.preferences.panel_width_percent);
+                let nameplate_width = panel_art::speaker_anchor_width(
+                    skin, Vec2::new(width, geometry.min_height),
+                );
                 let (speaker_left, speaker_top, speaker_width) =
-                    speaker_bounds(skin.and_then(|skin| skin.speaker_area), width, geometry.min_height);
+                    speaker_bounds(skin.and_then(|skin| skin.speaker_area), nameplate_width, geometry.min_height);
                 let (hint_left, hint_right, hint_bottom) =
                     hint_bounds(skin.and_then(|skin| skin.hint_area), width, geometry.min_height, padding);
                 for (slot, mut node) in &mut text_nodes {
@@ -805,7 +808,7 @@ fn main() {
         .add_systems(Update, (
             (
                 font_browser::wheel, font_browser::pointer, settings::pointer,
-                advance_from_keyboard,
+                advance_from_keyboard, history::wheel,
                 choices::sync_rows, choices::sync_row_style,
                 choices::scroll_selected, choices::sync_viewport,
                 choices::reserve_row_height, readout::tick, readout::sync_spans,
@@ -1168,8 +1171,11 @@ fn setup(
                 let width = panel_width(1280.0, panel, session.preferences.panel_width_percent);
                 let skin = panel_art::active_skin(&session);
                 let area = skin.and_then(|skin| skin.speaker_area);
+                let nameplate_width = panel_art::speaker_anchor_width(
+                    skin, Vec2::new(width, geometry.min_height),
+                );
                 let (name_left, name_top, name_width) =
-                    speaker_bounds(area, width, geometry.min_height);
+                    speaker_bounds(area, nameplate_width, geometry.min_height);
                 parent.spawn((
                     StoryText::Speaker,
                     Text::new(&initial.speaker),
@@ -1434,7 +1440,7 @@ fn restart_story(
 #[derive(SystemParam)]
 struct OverlayInputs<'w, 's> {
     history_click: ResMut<'w, history::HistoryClick>,
-    history_scroll: Query<'w, 's, &'static mut ScrollPosition,
+    history_scroll: Query<'w, 's, (&'static mut ScrollPosition, &'static ComputedNode),
         With<history::HistoryScroll>>,
     save_ui: ResMut<'w, save_slots::SaveUi>,
     save_click: ResMut<'w, save_slots::Click>,
