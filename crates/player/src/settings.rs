@@ -144,7 +144,7 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
     let mut next = session.preferences.clone();
     match index {
         0 => {
-            let base = next.panel_opacity.unwrap_or(session.game.theme.panel.background[3]);
+            let base = next.panel_opacity.unwrap_or_else(|| panel_art::default_art_opacity(session));
             next.panel_opacity = Some(step_scaled(base, delta, 0.60, 1.0, 0.05));
         }
         1 => {
@@ -201,7 +201,10 @@ pub fn open(
     let theme = effective_theme(session);
     let font = text_font(&theme, assets);
     let accent = theme.panel.accent;
-    let bg = theme.panel.background;
+    let mut bg = theme.panel.background;
+    // The Settings sample needs an opaque paper swatch even when the story
+    // renders an illustrated panel over a transparent underlying node.
+    if bg[3] < 0.05 { bg[3] = 1.0; }
     let overlay = commands.spawn((
         Name::new("Player settings overlay"),
         Node {
@@ -415,7 +418,8 @@ pub fn sync_visuals(
         position.0.y = state.selection.saturating_sub(4) as f32 * 31.0;
     }
     let font = text_font(&theme, &assets);
-    let p = theme.panel.background;
+    let mut p = theme.panel.background;
+    if p[3] < 0.05 { p[3] = 1.0; }
     for mut background in &mut preview_panels {
         background.0 = Color::srgba(p[0], p[1], p[2], p[3]);
     }

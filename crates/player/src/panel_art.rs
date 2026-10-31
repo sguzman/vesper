@@ -21,6 +21,16 @@ pub fn active_skin(session: &Session) -> Option<&vesper_game::PanelSkin> {
 
 /// Decorative writing insets stay inside the viewport. High-contrast mode
 /// discards both illustration and its reserved space.
+/// A transparent game-panel backdrop must not make the illustrated skin
+/// invisible. The reader opacity slider still explicitly controls the art.
+pub fn default_art_opacity(session: &Session) -> f32 {
+    if active_skin(session).is_some_and(|skin| skin.transparent_background) {
+        1.0
+    } else {
+        session.game.theme.panel.background[3]
+    }
+}
+
 pub fn skin_padding(session: &Session, viewport: Vec2) -> Option<UiRect> {
     if session.preferences.high_contrast.unwrap_or(false) { return None; }
     let skin = active_skin(session)?;
@@ -80,7 +90,7 @@ pub fn sync(
     let skin = active_skin(&session);
     let high_contrast = session.preferences.high_contrast.unwrap_or(false);
     let opacity = session.preferences.panel_opacity
-        .unwrap_or(session.game.theme.panel.background[3]);
+        .unwrap_or_else(|| default_art_opacity(&session));
     let key = skin.map_or_else(String::new, |skin| skin.image.clone());
     let slices = skin.and_then(|skin| skin.horizontal_slices.as_ref());
     // ComputedNode is in physical pixels. Convert to UI logical pixels so
