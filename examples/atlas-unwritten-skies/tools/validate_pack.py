@@ -72,10 +72,23 @@ assert len({p[-1] for p in all_paths})==4
 assert set(scenes)=={x for path in all_paths for x in path},'unreachable scenes'
 for key,rel in list(m['backgrounds'].items())+list(m['music'].items())+list(m['sounds'].items()):
  assert (ROOT/rel).is_file(),(key,rel)
-for cat in ('music','sounds'):
- for rel in m[cat].values():
-  with wave.open(str(ROOT/rel)) as fp:
-   assert (fp.getframerate(),fp.getnchannels(),fp.getsampwidth())==(16000,1,2)
+# Sound effects are RIFF/PCM; the authored music uses Ogg Vorbis.
+# Inspect each codec's native header without requiring FFmpeg for offline QA.
+for rel in m['sounds'].values():
+ with wave.open(str(ROOT/rel)) as fp:
+  assert (fp.getframerate(),fp.getnchannels(),fp.getsampwidth())==(16000,1,2),rel
+for rel in m['music'].values():
+ data=(ROOT/rel).read_bytes()
+ assert len(data)>=27 and data.startswith(b'OggS'),f'Not an Ogg container: {rel}'
+ # The Vorbis identification packet is the first packet in an Ogg stream.
+ # The first page's segment table starts at byte 27; the packet follows it.
+ segment_count=data[26]
+ packet_start=27+segment_count
+ assert len(data)>packet_start+30 and data[packet_start:packet_start+7]==b'\x01vorbis',rel
+ version=int.from_bytes(data[packet_start+7:packet_start+11],'little')
+ channels=data[packet_start+11]
+ rate=int.from_bytes(data[packet_start+12:packet_start+16],'little')
+ assert (version,channels,rate)==(0,1,16000),(rel,version,channels,rate)
 for obj in m['characters'].values():
  for rel in obj['expressions'].values():
   im=Image.open(ROOT/rel)
@@ -86,4 +99,4 @@ for key,rel in m['backgrounds'].items():
 for obj in m['panel_skins'].values():
  im=Image.open(ROOT/obj['image']);assert im.mode=='RGBA'
  assert all(0<=v<=160 for v in obj['insets'])
-print(f"Local validation PASS: {len(scenes)} scenes, {len(all_paths)} distinct graph walks, 4 reachable endings; {len(m['backgrounds'])} backgrounds, {len(m['music'])} music tracks, {len(m['sounds'])} effects, {sum(map(lambda x:len(x['expressions']),m['characters'].values()))} character expression treatments, all referenced and readable")
+print(f"Local validation PASS: {len(scenes)} scenes, {len(all_paths)} distinct graph walks, 4 reachable endings; {len(m['backgrounds'])} backgrounds, {len(m['music'])} music tracks, {len(m['sounds'])} effects, {sum(map(lambda x:len(x['expressions']),m['characters'].values()))} character expression treatments, all referenced; WAV PCM and Vorbis metadata verified")
