@@ -40,7 +40,7 @@ panel from **50% to 100%** in 5% increments; the game's min/max safety caps
 still apply. This is a persistent reader preference: it never rewrites a
 game's authored theme, and **Reset to game defaults** restores its default.
 
-Atlas reserves space for three lines of prose and places the instruction hint
+Atlas reserves space for four lines of prose and places the instruction hint
 on the readable parchment, instead of along the ornate lower dark fringe.
 Unusually long dialogue can grow the panel with a short easing transition
 (disabled in reduced-motion mode).

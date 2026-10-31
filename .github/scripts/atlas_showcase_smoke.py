@@ -369,6 +369,16 @@ def responsive_layout() -> None:
                 for _ in range(4):
                     press(win, "Return", 0.25)
                 screenshot(win, "panel-later-dialogue.png")
+                # Advance to a naturally longer page and reveal all its words.
+                # This catches text/footer overlap that title or short-line
+                # screenshots cannot expose.
+                press(win, "Return", 0.30)
+                press(win, "Return", 0.45)
+                screenshot(win, "panel-long-dialogue.png")
+                assert changed(
+                    OUTPUT / "panel-later-dialogue.png",
+                    OUTPUT / "panel-long-dialogue.png"
+                ) > 800, "Long dialogue did not render a distinct page"
                 assert not FAILURE.search(read_log(log)), read_log(log)[-3000:]
                 press(win, "Escape", 0.2)
                 process.wait(timeout=15)
