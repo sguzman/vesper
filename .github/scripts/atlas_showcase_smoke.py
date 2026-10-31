@@ -156,6 +156,12 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
             win = window_id()
             time.sleep(2.5)
             opening = screenshot(win, f"{option}-opening.png")
+            # Preserve a fully revealed page for visual legibility review.
+            # This is not an engine test: a simulated reader presses once.
+            press(win, "Return", 0.35)
+            readable = screenshot(win, f"{option}-opening-readable.png")
+            assert changed(opening, readable) > 100, (
+                option, "Text reveal/advance did not change the opening frame")
             illustrated = set()
             for step in range(5000):
                 transcript = read_log(log)
