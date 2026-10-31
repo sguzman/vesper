@@ -2223,7 +2223,7 @@ mod tests {
     fn illustrated_panel_caps_do_not_stretch_vertically_in_narrow_windows() {
         let panel = vesper_game::PanelStyle {
             width_percent: 72.0, min_width: 820.0, max_width: 1180.0,
-            min_height: 430.0, fixed_height: true,
+            min_height: 430.0, fixed_height: true, reserve_lines: 3,
             ..Default::default()
         };
         let skin = vesper_game::PanelSkin {
