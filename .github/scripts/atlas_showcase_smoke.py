@@ -47,6 +47,8 @@ def scene_spec() -> dict[str, dict[str, int]]:
             scenes[current] = {"dialogue": 0, "choices": 0}
         elif current and (line.startswith('"') or
                           re.match(r"^[a-z][a-z0-9_]*: \".*\"$", line)):
+            prose = line.split(": ", 1)[1] if not line.startswith('"') else line
+            assert len(json.loads(prose)) <= 145, (current, "oversized dialogue page")
             scenes[current]["dialogue"] += 1
         elif current and line.startswith("* "):
             scenes[current]["choices"] += 1
@@ -150,7 +152,16 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
     save_root = root / f"saves-{option}"
     save_root.mkdir()
     log = OUTPUT / f"ending-{option}.log"
+    # End-to-end story traversal exercises each page and choice, while the
+    # separate responsive smoke and text-reveal unit tests cover animation.
+    # Instant reader preference keeps expanded pages from doubling CI time.
+    prefs = root / f"prefs-{option}"
+    prefs.mkdir()
+    (prefs / "player-preferences.json").write_text(
+        json.dumps({"format_version": 1, "reveal_speed": "instant"})
+    )
     env = dict(os.environ, VESPER_SAVE_DIR=str(save_root),
+               VESPER_PREFERENCES_DIR=str(prefs),
                VESPER_TRACE_SCENES="1", LIBGL_ALWAYS_SOFTWARE="1")
     with log.open("w", encoding="utf-8") as output:
         process = subprocess.Popen([str(PLAYER), str(GAME)],
@@ -159,8 +170,8 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
             win = window_id()
             time.sleep(2.5)
             opening = screenshot(win, f"{option}-opening.png")
-            # Preserve a fully revealed page for visual legibility review.
-            # This is not an engine test: a simulated reader presses once.
+            # Capture consecutive fully visible pages in instant-reader mode.
+            # Separate responsive QA validates the animated reveal path.
             press(win, "Return", 0.35)
             readable = screenshot(win, f"{option}-opening-readable.png")
             assert changed(opening, readable) > 100, (
@@ -182,7 +193,7 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                 time.sleep(0.6)
                 screenshot(win, "opening-readable-restored.png")
             illustrated = set()
-            for step in range(5000):
+            for step in range(12000):
                 transcript = read_log(log)
                 assert not FAILURE.search(transcript), (
                     option, step, transcript[-5000:])

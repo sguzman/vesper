@@ -14,36 +14,42 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'scripts' / 'novel.source'
 DEST = ROOT / 'scripts' / 'story.vn'
 
-def paginate(text: str, limit: int = 44) -> list[str]:
-    """Author-dialogue pages are a comfortable 2–5 lines, not a wall of prose.
+def paginate(text: str, limit: int = 24, char_limit: int = 145) -> list[str]:
+    """Keep ornate Atlas dialogue readable without deforming the backdrop.
 
-    Prefer sentence boundaries, then comma/semicolon, finally word boundaries.
-    Long source paragraphs retain their order and wording verbatim.
+    Preserve sentence boundaries where practical; otherwise split at words.
+    Every word retains the original order and spelling.
     """
     words = text.split()
-    if len(words) <= limit:
+    if len(words) <= limit and len(text) <= char_limit:
         return [text]
     pieces = re.split(r'(?<=[.!?])\s+(?=[A-Z0-9“"I])', text)
-    result=[]
-    current=[]
+    result = []
+    current = []
+
     def flush():
         nonlocal current
         if current:
             result.append(' '.join(current))
-            current=[]
+            current = []
+
     for piece in pieces:
         tokens = piece.split()
-        if len(tokens)>limit:
+        if len(tokens) > limit or len(piece) > char_limit:
             for token in tokens:
-                if len(current)>=limit: flush()
+                length = len(' '.join(current)) + 1 + len(token) if current else len(token)
+                if current and (len(current) >= limit or length > char_limit):
+                    flush()
                 current.append(token)
         else:
-            if current and len(current)+len(tokens)>limit:flush()
+            length = len(' '.join(current)) + 1 + len(piece) if current else len(piece)
+            if current and (len(current) + len(tokens) > limit or length > char_limit):
+                flush()
             current.extend(tokens)
     flush()
-    assert ' '.join(result)== ' '.join(words)
+    assert ' '.join(result) == ' '.join(words), 'Pagination lost authored prose'
+    assert all(len(chunk) <= char_limit for chunk in result), 'Oversized dialogue page'
     return result
-
 
 def build() -> dict:
     output = ['# THE ATLAS OF UNWRITTEN SKIES', '# Compiled offline from scripts/novel.source', '# Do not edit this generated file.']
