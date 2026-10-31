@@ -241,6 +241,9 @@ fn apply_panel_metrics(
     node.bottom = px(metrics.bottom);
     node.left = percent((1.0 - ratio) * 50.0);
     node.width = percent(ratio * 100.0);
+    // Explicitly disable content-driven minimum sizing: on compact windows
+    // Bevy's automatic min-content constraints can cancel the width slider.
+    node.min_width = px(0.0);
     node.min_height = px(metrics.min_height);
     if panel.fixed_height {
         node.height = px(metrics.min_height);
@@ -307,6 +310,9 @@ fn fit_viewport(
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
     // reflowed only after a viewport or external theme-geometry change.
     if previous.0 != size || previous.1 != panel_key {
+        info!("Vesper panel target width: {:.1} at window {:.0}x{:.0} (preference {:?})",
+            panel_width(size.x, panel, session.preferences.panel_width_percent),
+            size.x, size.y, session.preferences.panel_width_percent);
         let mut geometry = illustrated_panel_metrics(
             size, panel, skin, session.preferences.panel_width_percent,
         );
@@ -1209,6 +1215,7 @@ fn setup(
                 bottom: px(geometry.bottom),
                 left: percent((1.0 - panel_width(1280.0, panel, session.preferences.panel_width_percent) / 1280.0) * 50.0),
                 width: percent(panel_width(1280.0, panel, session.preferences.panel_width_percent) / 1280.0 * 100.0),
+                min_width: px(0.0),
                 min_height: px(geometry.min_height),
                 height: if panel.fixed_height { px(geometry.min_height) } else { Val::Auto },
                 max_height: if panel.fixed_height { px(geometry.min_height) } else { Val::Auto },

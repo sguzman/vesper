@@ -30,6 +30,7 @@ ENDINGS = {
 }
 TRACE = re.compile(r"Vesper scene dialogue: ([a-z0-9_]+)")
 FAILURE = re.compile(r"thread .* panicked|Story asset error|Story error:|asset failed", re.I)
+PANEL_WIDTH = re.compile(r"Vesper panel resolved width: ([0-9]+(?:\.[0-9]+)?)")
 
 
 def run(*argv: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -100,6 +101,12 @@ def changed(first: Path, last: Path) -> int:
 
 def read_log(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+def measured_panel_width(log: Path) -> float:
+    matches = PANEL_WIDTH.findall(read_log(log))
+    assert matches, "Native renderer never reported its computed panel width"
+    return float(matches[-1])
 
 
 def wait_for_log(path: Path, phrase: str, seconds: float = 10) -> None:
@@ -403,6 +410,7 @@ def responsive_layout() -> None:
                 run("xdotool", "windowsize", "--sync", win, "946", "511")
                 time.sleep(0.4)
                 screenshot(win, "panel-windowed-wide.png", (946, 511))
+                windowed_wide_width = measured_panel_width(log)
                 press(win, "p", 0.24)
                 press(win, "4", 0.24)
                 select_width_setting(win, log)
@@ -410,6 +418,10 @@ def responsive_layout() -> None:
                 press(win, "Escape", 0.24)
                 press(win, "p", 0.40)
                 screenshot(win, "panel-windowed-narrow.png", (946, 511))
+                windowed_narrow_width = measured_panel_width(log)
+                assert windowed_wide_width - windowed_narrow_width > 20.0, (
+                    "946px window panel did not shrink", windowed_wide_width, windowed_narrow_width
+                )
                 assert adjusted <= 60.0
                 assert changed(
                     OUTPUT / "panel-windowed-wide.png",
@@ -420,6 +432,7 @@ def responsive_layout() -> None:
                 run("xdotool", "windowsize", "--sync", win, "810", "450")
                 time.sleep(0.4)
                 screenshot(win, "panel-small-wide.png", (810, 450))
+                small_wide_width = measured_panel_width(log)
                 press(win, "p", 0.24)
                 press(win, "4", 0.24)
                 select_width_setting(win, log)
@@ -427,6 +440,10 @@ def responsive_layout() -> None:
                 press(win, "Escape", 0.24)
                 press(win, "p", 0.40)
                 screenshot(win, "panel-small-narrow.png", (810, 450))
+                small_narrow_width = measured_panel_width(log)
+                assert small_wide_width - small_narrow_width > 20.0, (
+                    "810px window panel did not shrink", small_wide_width, small_narrow_width
+                )
                 assert changed(
                     OUTPUT / "panel-small-wide.png",
                     OUTPUT / "panel-small-narrow.png"

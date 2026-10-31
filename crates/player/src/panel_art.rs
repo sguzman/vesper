@@ -139,6 +139,11 @@ pub fn sync(
         size.x.to_bits(), size.y.to_bits(),
     );
     if previous.as_ref() == Some(&cache_key) && !session.is_changed() { return; }
+    if previous.as_ref().is_none_or(|old| {
+        old.4 != size.x.to_bits() || old.5 != size.y.to_bits()
+    }) {
+        info!("Vesper panel resolved width: {:.1} (height {:.1})", size.x, size.y);
+    }
     let geometry = slices.map(|spec| horizontal_geometry(spec, size));
     let grid = slices.filter(|spec| spec.vertical_slices.is_some());
 
