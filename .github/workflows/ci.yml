@@ -34,6 +34,11 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/word-effects
           cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
           cargo run --locked -p vesper-cli -- check-game examples/living-journal
+          cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies
+      - name: Verify deterministic Atlas authoring compilation
+        run: |
+          python3 examples/atlas-unwritten-skies/tools/compile_story.py
+          git diff --exit-code -- examples/atlas-unwritten-skies/scripts/story.vn
       - name: Verify all 23 original Dawn assets and their manifest hashes
         run: python3 .github/scripts/dawn_assets_check.py
       - name: Verify the external PCM audio assets
@@ -79,6 +84,16 @@ jobs:
         run: cargo build --locked -p vesper-player
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
+      - name: Play Atlas through all four original endings and test F5/F9
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/atlas_showcase_smoke.py
+      - name: Preserve Atlas ending screenshots and native runtime logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-atlas-showcase
+          path: /tmp/vesper-atlas-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verify QOL05 dynamic word effects, high contrast and reduced motion
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/word_effects_smoke.py
       - name: Preserve QOL05 dynamic word screenshots
@@ -490,6 +505,11 @@ jobs:
           test -x /tmp/vesper-install/vesper/lantern
           test -x /tmp/vesper-install/vesper/moon
           test -x /tmp/vesper-install/vesper/dawn
+          test -x /tmp/vesper-install/vesper/atlas
+          test -f /tmp/vesper-install/vesper/examples/atlas-unwritten-skies/game.toml
+          test -f /tmp/vesper-install/vesper/examples/atlas-unwritten-skies/scripts/story.vn
+          test -f /tmp/vesper-install/vesper/examples/atlas-unwritten-skies/assets/backgrounds/observatory_evening.png
+          test -f /tmp/vesper-install/vesper/examples/atlas-unwritten-skies/assets/audio/archive.wav
           test -f /tmp/vesper-install/vesper/examples/dawn-post-office/game.toml
           test -f /tmp/vesper-install/vesper/examples/dawn-post-office/assets/backgrounds/sorting-room.png
           test -f /tmp/vesper-install/vesper/examples/dawn-post-office/assets/characters/nima-hopeful.png
@@ -516,6 +536,17 @@ jobs:
           cat /tmp/vesper-dawn-package.log
           test "$result" -eq 124
           grep -F "Creating new window The Post Office at the Edge of Dawn" /tmp/vesper-dawn-package.log
+      - name: Verify standalone Atlas launcher without Cargo
+        run: |
+          cd /tmp
+          set +e
+          PATH=/usr/bin:/bin LIBGL_ALWAYS_SOFTWARE=1 timeout --signal=TERM 18s \
+            xvfb-run -a /tmp/vesper-install/vesper/atlas > /tmp/vesper-atlas-package.log 2>&1
+          result=$?
+          set -e
+          cat /tmp/vesper-atlas-package.log
+          test "$result" -eq 124
+          grep -F "Creating new window The Atlas of Unwritten Skies" /tmp/vesper-atlas-package.log
       - name: Upload ready-to-play Linux fairytale showcase
         uses: actions/upload-artifact@v4
         with:

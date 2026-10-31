@@ -62,5 +62,14 @@ exec "$here/vesper-player" "$here/examples/dawn-post-office" "$@"
 DAWN
   chmod 755 "$tmp/vesper/dawn"
 fi
+if [[ -d "$tmp/vesper/examples/atlas-unwritten-skies" ]]; then
+  cat > "$tmp/vesper/atlas" <<'ATLAS'
+#!/usr/bin/env sh
+set -eu
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec "$here/vesper-player" "$here/examples/atlas-unwritten-skies" "$@"
+ATLAS
+  chmod 755 "$tmp/vesper/atlas"
+fi
 tar --owner=0 --group=0 --numeric-owner -czf "$output" -C "$tmp" vesper
 echo "Created Linux bundle: $output"

@@ -4,11 +4,12 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 
 **Status:** scoped Vesper MVP verified complete (100/100 weighted roadmap points; GitHub Actions run 40571573177). Both demonstration branches, presentation, hot reload, sound asset decoding, save/load and compiler-free Linux packaging passed automated tests. Hardware audio output and exhaustive coverage of every possible Linux configuration were not directly tested.
 
-## Three standalone external visual novels
+## Standalone external visual novels
 
 - **[The Little Lantern](examples/little-lantern/)** — the smallest complete visual novel: a little fox, one background, two choices and a shared ending.
 - **[The Clockwork Moon](examples/clockwork-moon/)** — an extended, fully branched children's adventure with 18 scenes, 36 possible choice sequences, four endings, seven locations, music, audio cues, sprite expressions, story variables, save/load, and externally editable themes.
 - **[The Post Office at the Edge of Dawn](examples/dawn-post-office/)** — the original 12–20-minute showcase, with 27 routes, three endings, seven illustrated locations, three characters, original music and a cut-paper storybook style.
+- **[The Atlas of Unwritten Skies](examples/atlas-unwritten-skies/)** — an illustrated, 61-scene branching novel-length visual example with four endings and original audio. Each of its four playable routes now exceeds 50,000 words. Final visual-art upgrades and example QA remain tracked in [the expansion goal](https://github.com/sguzman/vesper/issues/29).
 
 These are **separate game directories**, never compiled into the engine. Run them with:
 
@@ -16,9 +17,10 @@ These are **separate game directories**, never compiled into the engine. Run the
 cargo run --locked -p vesper-player -- examples/little-lantern
 cargo run --locked -p vesper-player -- examples/clockwork-moon
 cargo run --locked -p vesper-player -- examples/dawn-post-office
+cargo run --locked -p vesper-player -- examples/atlas-unwritten-skies
 ```
 
-Or download the compiled **vesper-linux-fairytale-showcase** artifact from [final verified Linux CI](https://github.com/sguzman/vesper/actions/runs/40803672919). Unpack its inner `vesper-linux-x86_64.tar.gz`, then use `./vesper/lantern`, `./vesper/moon` or `./vesper/dawn` without Rust or Cargo. [Example guide, controls, and visual QA](examples/README.md).
+Or download the compiled **vesper-linux-fairytale-showcase** artifact from [final verified Linux CI](https://github.com/sguzman/vesper/actions/runs/40803672919). Unpack its inner `vesper-linux-x86_64.tar.gz`, then use `./vesper/lantern`, `./vesper/moon`, `./vesper/dawn`, or (in builds containing Atlas) `./vesper/atlas` without Rust or Cargo. [Example guide, controls, and visual QA](examples/README.md).
 
 ## Reader QoL and illustrated dialogue panels (verified complete)
 
@@ -40,7 +42,7 @@ See [diegetic panel authoring](docs/diegetic-panels.md) for schema, safety, text
 
 [The Moving Meadow](examples/moving-meadow/) demonstrates QOL07's independently walking NPC, looping bird and one-shot plane, authored entirely in a game manifest. See the [ambient motion authoring guide](docs/ambient-motion.md) for waypoint/flipbook limits, reduced-motion precedence and graphical QA. QOL07 is **verified complete** in full merged-main narrative and Bevy CI.
 
-[The Living Journal](examples/living-journal/) is the QOL08 combined external example: an illustrated notebook with per-word effects, independent walker/bird/plane motion, reader-owned font selection and auto delay. The [render-loop and compatibility audit](docs/reader-qol-audit.md) records the source-level limits and virtual-display QA boundaries. QOL08 and the [PR #24 widescreen screenshot-ready regression guard](https://github.com/sguzman/vesper/pull/24) passed their original certification. A later real Hyprland smoke test uncovered large-window dialogue-panel and high-contrast inset defects; [PR #25](https://github.com/sguzman/vesper/pull/25) fixed those and renamed **Settings**. The [final merged-main CI](https://github.com/sguzman/vesper/actions/runs/40986220492) passed both jobs with an additional widescreen choice-panel screenshot check. [Manual Hyprland retest](https://github.com/sguzman/vesper/issues/26) remains open; the corrected layout has not yet been confirmed on the actual desktop.
+[The Living Journal](examples/living-journal/) is the QOL08 combined external example: an illustrated notebook with per-word effects, independent walker/bird/plane motion, reader-owned font selection and auto delay. The [render-loop and compatibility audit](docs/reader-qol-audit.md) records the source-level limits and virtual-display QA boundaries. QOL08 and the [PR #24 widescreen screenshot-ready regression guard](https://github.com/sguzman/vesper/pull/24) passed their original certification. A later real Hyprland smoke test uncovered large-window dialogue-panel and high-contrast inset defects; [PR #25](https://github.com/sguzman/vesper/pull/25) fixed those and renamed **Settings**. The [final merged-main CI](https://github.com/sguzman/vesper/actions/runs/40986220492) passed both jobs with an additional widescreen choice-panel screenshot check. [Manual Hyprland retest](https://github.com/sguzman/vesper/issues/26) was completed and closed after the user confirmed the corrected layout, font search and audio on physical hardware.
 
 ## Presentation polish (completed phase)
 
