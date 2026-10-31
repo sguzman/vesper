@@ -388,6 +388,34 @@ def responsive_layout() -> None:
                     OUTPUT / "panel-reader-wide.png"
                 ) > 1000, "Reader width control did not change the rendered panel"
 
+                # Confirm width changes in an ordinary compact WINDOW,
+                # not only at desktop/fullscreen resolution. Old hard clamps
+                # made several slider values indistinguishable here.
+                run("xdotool", "windowsize", "--sync", win, "946", "511")
+                time.sleep(0.4)
+                screenshot(win, "panel-windowed-wide.png", (946, 511))
+                press(win, "p", 0.24)
+                press(win, "4", 0.24)
+                select_width_setting(win, log)
+                adjusted = adjust_width(win, prefs, "Left", lambda width: width <= 60.0)
+                press(win, "Escape", 0.24)
+                press(win, "p", 0.40)
+                screenshot(win, "panel-windowed-narrow.png", (946, 511))
+                assert adjusted <= 60.0
+                assert changed(
+                    OUTPUT / "panel-windowed-wide.png",
+                    OUTPUT / "panel-windowed-narrow.png"
+                ) > 500, "Width control remained clamped in windowed mode"
+                # Restore normal resolution and prior wide preference.
+                run("xdotool", "windowsize", "--sync", win, "1280", "720")
+                time.sleep(0.4)
+                press(win, "p", 0.24)
+                press(win, "4", 0.24)
+                select_width_setting(win, log)
+                adjust_width(win, prefs, "Right", lambda width: width >= 85.0)
+                press(win, "Escape", 0.24)
+                press(win, "p", 0.40)
+
                 # Live reader control smoke: the bottom offset and ink
                 # palette must persist independently of authored game data.
                 press(win, "p", 0.25)
