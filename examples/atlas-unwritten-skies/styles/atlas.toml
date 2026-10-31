@@ -24,7 +24,7 @@ gap = 8.0
 
 [speaker]
 size = 22.0
-color = [0.07, 0.045, 0.025, 1.0]
+color = [0.98, 0.86, 0.57, 1.0]
 
 [dialogue]
 size = 21.0

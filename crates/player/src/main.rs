@@ -231,17 +231,30 @@ fn fit_viewport(
         }
         if panel.fixed_height && panel.hint_inside {
             if let Some(padding) = safe {
+                let width = panel_width(size.x, panel, session.preferences.panel_width_percent);
                 for (slot, mut node) in &mut text_nodes {
-                    if !matches!(slot, StoryText::Hint) { continue; }
-                    // Body text and speaker flow inside a protected rectangle;
-                    // the hint is separately anchored, never pushed by prose.
-                    node.position_type = PositionType::Absolute;
-                    node.left = padding.left;
-                    node.right = padding.right;
-                    node.bottom = padding.bottom;
-                    node.width = Val::Auto;
-                    node.margin = UiRect::default();
-                    node.padding = UiRect::default();
+                    match slot {
+                        StoryText::Hint => {
+                            // The legend stays inside the paper and cannot be
+                            // displaced by paragraphs of different lengths.
+                            node.position_type = PositionType::Absolute;
+                            node.left = padding.left;
+                            node.right = padding.right;
+                            node.bottom = padding.bottom;
+                            node.width = Val::Auto;
+                            node.margin = UiRect::default();
+                            node.padding = UiRect::default();
+                        }
+                        StoryText::Speaker => {
+                            // The illustrated navy nameplate is an actual UI
+                            // region, not part of the body writing surface.
+                            node.position_type = PositionType::Absolute;
+                            node.left = px(width * 0.255 + 45.0);
+                            node.top = px(geometry.min_height * 0.08);
+                            node.width = px(width * 0.35);
+                        }
+                        _ => {}
+                    }
                 }
             }
         }
@@ -1118,7 +1131,25 @@ fn setup(
                     panel.accent[0], panel.accent[1], panel.accent[2], panel.accent[3]
                 )),
             ));
-            add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font, panel.hint_inside);
+            if panel.fixed_height && panel.hint_inside {
+                let width = panel_width(1280.0, panel, session.preferences.panel_width_percent);
+                parent.spawn((
+                    StoryText::Speaker,
+                    Text::new(&initial.speaker),
+                    TextFont { font: font.clone(), font_size: FontSize::Px(speaker_style.size), ..default() },
+                    text_color(speaker_style.color),
+                    TextLayout::new(Justify::Left, LineBreak::NoWrap),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        left: px(width * 0.255 + 45.0),
+                        top: px(geometry.min_height * 0.08),
+                        width: px(width * 0.35),
+                        ..default()
+                    },
+                ));
+            } else {
+                add_text(parent, StoryText::Speaker, &initial.speaker, &speaker_style, &font, panel.hint_inside);
+            }
             add_text(parent, StoryText::Body, &initial_body, &body_style, &font, panel.hint_inside);
             choice_ui.container = Some(choices::spawn_container(parent));
             parent.spawn((

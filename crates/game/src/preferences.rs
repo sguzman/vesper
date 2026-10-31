@@ -219,7 +219,10 @@ impl PlayerPreferences {
         }
         if let Some(ink) = self.text_ink {
             let rgb = ink.rgb();
-            for style in [&mut result.speaker, &mut result.dialogue, &mut result.choices, &mut result.hint] {
+            // Speaker names are on illustrated title plates; preserve their
+            // authored contrasting gold instead of making black ink invisible
+            // on a navy nameplate.
+            for style in [&mut result.dialogue, &mut result.choices, &mut result.hint] {
                 style.color = [rgb[0], rgb[1], rgb[2], 1.0];
             }
         }

@@ -84,7 +84,7 @@ transparent_background = true
 compact_top_boost = 40.0
 # Explicit protected writing region: no prose on the globe/ivy/compass/trim.
 # Fractions are of the actual panel dimensions, not the viewport.
-safe_area = [0.255, 0.23, 0.36, 0.285]
+safe_area = [0.255, 0.23, 0.36, 0.37]
 
 # Keep the globe, books and lantern at their original aspect ratio.
 # Stretch ONLY a plain vertical parchment strip between source pixels 1065–1095.
