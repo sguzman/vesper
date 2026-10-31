@@ -328,6 +328,9 @@ def responsive_layout() -> None:
             try:
                 win = window_id()
                 time.sleep(2.5)
+                # Capture fully revealed prose rather than timing-dependent
+                # partial glyph output while the first line is animating.
+                press(win, "Return", 0.35)
                 for width, height, name in [
                     (1280, 720, "standard"),
                     (946, 511, "compact"),
