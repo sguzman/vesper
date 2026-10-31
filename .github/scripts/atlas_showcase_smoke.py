@@ -347,8 +347,12 @@ def responsive_layout() -> None:
                 # page without a disk save and without restarting the novel.
                 press(win, "Return", 0.35)
                 screenshot(win, "panel-debug-next.png")
+                staged_before = read_log(log).count("Vesper character staged:")
                 press(win, "BackSpace", 0.40)
                 wait_for_log(log, "Vesper debug rewind restored")
+                assert read_log(log).count("Vesper character staged:") == staged_before, (
+                    "Debug rewind replayed a character entrance instead of restoring instantly"
+                )
                 screenshot(win, "panel-debug-rewound.png")
                 assert changed(
                     OUTPUT / "panel-debug-next.png",
