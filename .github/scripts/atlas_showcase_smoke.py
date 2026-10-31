@@ -69,7 +69,8 @@ def press(window: str, key: str, delay: float = 0.09) -> None:
     time.sleep(delay)
 
 
-def screenshot(window: str, name: str) -> Path:
+def screenshot(window: str, name: str,
+               expected_size: tuple[int, int] = (1280, 720)) -> Path:
     path = OUTPUT / name
     # Software Vulkan may present a completely black first frame immediately
     # after a scene/save restoration. Wait for the actual composed frame, not
@@ -78,7 +79,7 @@ def screenshot(window: str, name: str) -> Path:
         run("import", "-window", window, str(path))
         stats = run("identify", "-format", "%w %h %k", str(path)).stdout
         width, height, colors = map(int, stats.split())
-        assert (width, height) == (1280, 720), (name, stats)
+        assert (width, height) == expected_size, (name, stats)
         if colors > 80:
             return path
         time.sleep(0.3)
@@ -162,6 +163,22 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
             readable = screenshot(win, f"{option}-opening-readable.png")
             assert changed(opening, readable) > 100, (
                 option, "Text reveal/advance did not change the opening frame")
+            if option == 1:
+                # Preserve the same fully revealed opening prose at compact and
+                # spacious window sizes for human review of the ornate skin.
+                # The engine's general resize tests use other external games;
+                # these screenshots specifically cover Atlas artwork and text.
+                for width, height, label in (
+                    (946, 511, "compact"), (1900, 1035, "large")
+                ):
+                    run("xdotool", "windowsize", "--sync", win,
+                        str(width), str(height))
+                    time.sleep(0.6)
+                    screenshot(win, f"opening-readable-{label}.png",
+                               (width, height))
+                run("xdotool", "windowsize", "--sync", win, "1280", "720")
+                time.sleep(0.6)
+                screenshot(win, "opening-readable-restored.png")
             illustrated = set()
             for step in range(5000):
                 transcript = read_log(log)
