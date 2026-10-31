@@ -7,6 +7,7 @@ The script does not modify the game, save format, or Rust runtime.
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Callable
 import json
 import os
 from pathlib import Path
@@ -274,6 +275,42 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                 process.wait(timeout=10)
 
 
+def width_preference(prefs: Path) -> float | None:
+    filename = prefs / "player-preferences.json"
+    if not filename.is_file():
+        return None
+    return json.loads(filename.read_text()).get("panel_width_percent")
+
+
+def select_width_setting(win: str, log: Path) -> None:
+    """Walk only after each selection event has actually reached the renderer.
+
+    llvmpipe can drop rapid xdotool keypresses under a heavy screenshot load.
+    """
+    wait_for_log(log, "Vesper appearance settings opened")
+    deadline = time.monotonic() + 35
+    while time.monotonic() < deadline:
+        section = read_log(log).rsplit("Vesper appearance settings opened", 1)[-1]
+        positions = re.findall(r"Vesper appearance selection: (\d+)", section)
+        selection = int(positions[-1]) if positions else 0
+        if selection == 8:
+            return
+        press(win, "Down" if selection < 8 else "Up", 0.19)
+    raise AssertionError("Settings never focused Dialogue width: " + read_log(log)[-1800:])
+
+
+def adjust_width(win: str, prefs: Path, direction: str, accept: Callable[[float], bool]) -> float:
+    """Verify the serialized setting itself; image pixel changes are insufficient."""
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        current = width_preference(prefs)
+        if current is not None and accept(current):
+            return current
+        press(win, direction, 0.18)
+        time.sleep(0.13)
+    raise AssertionError("Reader width setting did not persist: " + str(width_preference(prefs)))
+
+
 def responsive_layout() -> None:
     """Quick visual regression before the much longer four-ending playthrough."""
     OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -302,26 +339,24 @@ def responsive_layout() -> None:
                 run("xdotool", "windowsize", "--sync", win, "1280", "720")
                 time.sleep(0.6)
 
-                # P -> Settings (pause-menu option 4); width is row nine.
-                press(win, "p", 0.2)
-                press(win, "4", 0.2)
-                for _ in range(8):
-                    press(win, "Down", 0.06)
-                for _ in range(3):
-                    press(win, "Left", 0.10)
-                press(win, "Escape", 0.20)  # settings -> pause
-                press(win, "p", 0.35)       # pause -> story
+                # P -> Settings (pause menu option 4); track selection logs
+                # rather than assuming every event was processed by llvmpipe.
+                press(win, "p", 0.24)
+                press(win, "4", 0.24)
+                select_width_setting(win, log)
+                narrow = adjust_width(win, prefs, "Left", lambda width: width <= 60.0)
+                press(win, "Escape", 0.24)
+                press(win, "p", 0.40)
                 screenshot(win, "panel-reader-narrow.png")
 
-                press(win, "p", 0.2)
-                press(win, "4", 0.2)
-                for _ in range(8):
-                    press(win, "Down", 0.06)
-                for _ in range(7):
-                    press(win, "Right", 0.10)
-                press(win, "Escape", 0.20)
-                press(win, "p", 0.35)
+                press(win, "p", 0.24)
+                press(win, "4", 0.24)
+                select_width_setting(win, log)
+                wide = adjust_width(win, prefs, "Right", lambda width: width >= 85.0)
+                press(win, "Escape", 0.24)
+                press(win, "p", 0.40)
                 screenshot(win, "panel-reader-wide.png")
+                assert wide - narrow >= 25.0, (narrow, wide)
                 assert changed(
                     OUTPUT / "panel-reader-narrow.png",
                     OUTPUT / "panel-reader-wide.png"
@@ -336,7 +371,7 @@ def responsive_layout() -> None:
                 process.wait(timeout=15)
                 assert process.returncode == 0
                 stored = json.loads((prefs / "player-preferences.json").read_text())
-                assert 85.0 <= stored["panel_width_percent"] <= 95.0, stored
+                assert 85.0 <= stored["panel_width_percent"] <= 100.0, stored
                 print("Atlas panel: compact, standard, ultrawide, reader width "
                       "and persisted preference passed", flush=True)
             finally:

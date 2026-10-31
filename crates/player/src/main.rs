@@ -510,6 +510,19 @@ fn story_separator_node() -> Node {
     }
 }
 
+/// The full keyboard inventory remains available through the pause/menu
+/// screen; illustrated parchment receives a legible single-line legend.
+fn panel_hint<'a>(screen: &'a Screen, theme: &vesper_game::Theme) -> &'a str {
+    if !theme.panel.hint_inside { return &screen.hint; }
+    if screen.choices {
+        "↑↓ Move   Enter Choose   H History   P Pause"
+    } else if screen.hint.contains("replay") {
+        "↑↓ Select   Enter Confirm   R Replay"
+    } else {
+        "Enter Continue   H History   P Pause   M Menu"
+    }
+}
+
 fn add_text(
     parent: &mut ChildSpawnerCommands,
     slot: StoryText,
@@ -520,7 +533,11 @@ fn add_text(
 ) {
     let mut node = story_text_node(&slot);
     if hint_inside && matches!(slot, StoryText::Hint) {
-        // Hints stay on the parchment, not below its ornate bottom border.
+        // Place this single-line legend above the ornate lower trim. A
+        // relative offset retains the underlying flex reservation so wrapped
+        // body text does not collide with a footer that changes position.
+        node.position_type = PositionType::Relative;
+        node.bottom = px(25.0);
         node.margin.top = px(4.0);
         node.padding = UiRect::axes(px(6.0), px(2.0));
     }
@@ -1089,7 +1106,8 @@ fn setup(
                     panel.divider[0], panel.divider[1], panel.divider[2], panel.divider[3]
                 )),
             ));
-            add_text(parent, StoryText::Hint, &initial.hint, &hint_style, &font, panel.hint_inside);
+            add_text(parent, StoryText::Hint, panel_hint(&initial, &theme),
+                &hint_style, &font, panel.hint_inside);
             // Absolute corner cue does not compete with wrapped body or hint.
             parent.spawn((
                 Name::new("Dialogue continue cue"),
@@ -1121,6 +1139,8 @@ fn update_screen(
     for (mut text, mut font, mut color, slot) in texts.iter_mut() {
         text.0 = if matches!(slot, StoryText::Body) {
             if screen.spans.is_empty() { visible.clone() } else { String::new() }
+        } else if matches!(slot, StoryText::Hint) {
+            panel_hint(&screen, theme).to_owned()
         } else {
             screen.part(slot).to_owned()
         };
