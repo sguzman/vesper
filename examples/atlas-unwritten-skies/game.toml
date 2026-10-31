@@ -30,13 +30,13 @@ shattered_lens = "assets/backgrounds/shattered_lens.png"
 first_morning = "assets/backgrounds/first_morning.png"
 
 [music]
-archive = "assets/audio/archive.wav"
-threshold = "assets/audio/threshold.wav"
-mystery = "assets/audio/mystery.wav"
-memory = "assets/audio/memory.wav"
-journey = "assets/audio/journey.wav"
-storm = "assets/audio/storm.wav"
-dawn = "assets/audio/dawn.wav"
+archive = "assets/audio/archive.ogg"
+threshold = "assets/audio/threshold.ogg"
+mystery = "assets/audio/mystery.ogg"
+memory = "assets/audio/memory.ogg"
+journey = "assets/audio/journey.ogg"
+storm = "assets/audio/storm.ogg"
+dawn = "assets/audio/dawn.ogg"
 
 [sounds]
 page = "assets/audio/page.wav"
