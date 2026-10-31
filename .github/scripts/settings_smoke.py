@@ -158,11 +158,13 @@ def main() -> None:
                     assert font["format_version"] == 1
 
                     # Click a real Bevy settings control with the pointer.
-                    # The first opacity row is centered near x=600, y=145
-                    # in the 1280x720 settings panel.
+                    # The added dialogue-width row increases the settings panel height:
+                    # at 1280x720 its first opacity button is near y=105,
+                    # while y=128 now activates Text size.
+                    # Click the opacity control, not a stale fixed position.
                     if game == "little-lantern":
                         previous_opacity = font["panel_opacity"]
-                        run("xdotool", "mousemove", "--window", win, "600", "128")
+                        run("xdotool", "mousemove", "--window", win, "600", "104")
                         time.sleep(.4)
                         run("xdotool", "click", "1")
                         mouse_change = wait_prefs(prefs_path, lambda p:
@@ -232,8 +234,8 @@ def main() -> None:
                     key("p")
                     key("4")
                     wait_log(restart, "Vesper appearance settings opened")
-                    # VX09 high contrast and QOL02 delay precede Reset (9th row).
-                    for _ in range(8):
+                    # High contrast, dialogue width, then Reset (10th row).
+                    for _ in range(9):
                         key("Down")
                     key("Return")
                     wait_prefs(prefs_path, lambda p:
