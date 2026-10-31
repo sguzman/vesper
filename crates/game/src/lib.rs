@@ -167,10 +167,42 @@ pub struct PanelSkin {
     pub insets: [f32; 4],
     /// Texture pixels retained along each edge for nine-slice scaling.
     pub slice_border: f32,
+    /// Optional distortion-free illustrated end caps with a stretchable center.
+    /// The source artwork remains a single external image.
+    pub horizontal_slices: Option<PanelHorizontalSlices>,
+    /// Hide the ordinary solid panel whenever this illustration is active.
+    pub transparent_background: bool,
+}
+
+/// Source-pixel coordinates in the authored image. Everything before
+/// stretch_start and after stretch_end keeps its aspect ratio when resized;
+/// only the thin, undecorated strip between those coordinates expands.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PanelHorizontalSlices {
+    pub image_size: [f32; 2],
+    pub stretch_start: f32,
+    pub stretch_end: f32,
+}
+impl PanelHorizontalSlices {
+    pub fn validate(&self) -> Result<(), String> {
+        let [width, height] = self.image_size;
+        if !width.is_finite() || !height.is_finite()
+            || !(32.0..=8192.0).contains(&width)
+            || !(32.0..=8192.0).contains(&height)
+            || !self.stretch_start.is_finite() || !self.stretch_end.is_finite()
+            || self.stretch_start < 4.0
+            || self.stretch_end > width - 4.0
+            || self.stretch_end - self.stretch_start < 2.0
+        {
+            return Err("panel horizontal slices require image dimensions and an interior stretch strip".into());
+        }
+        Ok(())
+    }
 }
 impl Default for PanelSkin {
     fn default() -> Self {
-        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0 }
+        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false }
     }
 }
 impl PanelSkin {
@@ -181,6 +213,9 @@ impl PanelSkin {
             || !(2.0..=160.0).contains(&self.slice_border)
         {
             return Err("panel skin image, content insets or slice border invalid".into());
+        }
+        if let Some(slices) = &self.horizontal_slices {
+            slices.validate()?;
         }
         Ok(())
     }

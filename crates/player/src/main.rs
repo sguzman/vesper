@@ -925,7 +925,12 @@ fn setup(
     ).to_owned();
     let panel = &theme.panel;
     let geometry = panel_metrics(Vec2::new(1280.0, 720.0), panel);
-    let background = panel.background;
+    let mut background = panel.background;
+    if !session.preferences.high_contrast.unwrap_or(false)
+        && panel_art::active_skin(&session).is_some_and(|skin| skin.transparent_background)
+    {
+        background[3] = 0.0;
+    }
     let speaker_style = theme.speaker.clone();
     let body_style = if initial.choices { &theme.choices } else { &theme.dialogue }.clone();
     let hint_style = theme.hint.clone();
@@ -950,18 +955,25 @@ fn setup(
             StoryPanel,
         ))
         .with_children(|parent| {
-            parent.spawn((
-                Name::new("External dialogue panel image"),
-                panel_art::StoryPanelArt,
-                ImageNode::default(),
-                Node {
-                    display: Display::None,
-                    position_type: PositionType::Absolute,
-                    left: px(0.0), top: px(0.0),
-                    width: percent(100.0), height: percent(100.0),
-                    ..default()
-                },
-            ));
+            for part in [
+                panel_art::StoryPanelArt::Full,
+                panel_art::StoryPanelArt::Left,
+                panel_art::StoryPanelArt::Middle,
+                panel_art::StoryPanelArt::Right,
+            ] {
+                parent.spawn((
+                    Name::new(format!("External dialogue panel {part:?}")),
+                    part,
+                    ImageNode::default(),
+                    Node {
+                        display: Display::None,
+                        position_type: PositionType::Absolute,
+                        left: px(0.0), top: px(0.0),
+                        width: percent(100.0), height: percent(100.0),
+                        ..default()
+                    },
+                ));
+            }
             parent.spawn((
                 StoryAccent,
                 Node { width: percent(100), height: px(3.0), flex_shrink: 0.0, ..default() },

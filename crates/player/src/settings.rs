@@ -376,7 +376,14 @@ pub fn sync_visuals(
     let theme = effective_theme(&session);
     if last.as_ref() != Some(&session.preferences) {
         let font = text_font(&theme, &assets);
-        let p = theme.panel.background;
+        let mut p = theme.panel.background;
+        if !session.preferences.high_contrast.unwrap_or(false)
+            && panel_art::active_skin(&session).is_some_and(|skin| skin.transparent_background)
+        {
+            // Keep the illustration floating over the scene even if the
+            // reader adjusts panel opacity; only the artwork fades.
+            p[3] = 0.0;
+        }
         for mut color in &mut panels {
             color.0 = Color::srgba(p[0], p[1], p[2], p[3]);
         }
