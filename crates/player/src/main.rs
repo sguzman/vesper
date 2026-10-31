@@ -1909,7 +1909,7 @@ mod tests {
         assert_eq!(super::panel_width(1920.0, &panel, None), 1180.0);
         assert_eq!(super::panel_width(1280.0, &panel, None), 921.6);
         assert_eq!(super::panel_width(946.0, &panel, Some(50.0)), 820.0);
-        assert_eq!(super::panel_width(640.0, &panel, Some(50.0)), 614.4);
+        assert!((super::panel_width(640.0, &panel, Some(50.0)) - 614.4).abs() < 0.001);
     }
 
     #[test]
