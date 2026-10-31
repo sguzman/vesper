@@ -78,7 +78,7 @@ idle_period_seconds = 6.1
 
 [panel_skins.parchment]
 image = "assets/panels/celestial_dialogue.png"
-insets = [245.0, 94.0, 225.0, 30.0]
+insets = [160.0, 160.0, 110.0, 30.0]
 slice_border = 28.0
 
 [ambient_actors.spark]
