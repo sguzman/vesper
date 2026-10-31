@@ -165,6 +165,9 @@ impl AmbientActor {
 pub struct PanelSkin {
     pub image: String,
     pub insets: [f32; 4],
+    /// Extra safe paper clearance on smaller viewports, scaled by
+    /// (1 - min(viewport/1280x720)). Older games default to zero.
+    pub compact_top_boost: f32,
     /// Texture pixels retained along each edge for nine-slice scaling.
     pub slice_border: f32,
     /// Optional distortion-free illustrated end caps with a stretchable center.
@@ -215,13 +218,15 @@ impl PanelHorizontalSlices {
 }
 impl Default for PanelSkin {
     fn default() -> Self {
-        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false }
+        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false, compact_top_boost: 0.0 }
     }
 }
 impl PanelSkin {
     pub fn validate(&self) -> Result<(), String> {
         if self.image.is_empty()
             || self.insets.iter().any(|v| !v.is_finite() || !(0.0..=160.0).contains(v))
+            || !self.compact_top_boost.is_finite()
+            || !(0.0..=80.0).contains(&self.compact_top_boost)
             || !self.slice_border.is_finite()
             || !(2.0..=160.0).contains(&self.slice_border)
         {

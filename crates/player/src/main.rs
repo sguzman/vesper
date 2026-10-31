@@ -177,7 +177,7 @@ fn fit_viewport(
         Option<&actors::ActorIdle>,
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
-    mut previous: Local<(Vec2, [u32; 11])>,
+    mut previous: Local<(Vec2, [u32; 12])>,
 ) {
     let Ok(window) = windows.single() else { return; };
     let size = Vec2::new(window.resolution.width(), window.resolution.height());
@@ -188,9 +188,8 @@ fn fit_viewport(
     // Theme on every frame just to compute layout bounds.
     let panel = &session.game.theme.panel;
     let high_contrast = session.preferences.high_contrast.unwrap_or(false);
-    let insets = if high_contrast { [0.0; 4] } else {
-        panel_art::active_skin(&session).map_or([0.0; 4], |skin| skin.insets)
-    };
+    let skin = if high_contrast { None } else { panel_art::active_skin(&session) };
+    let insets = skin.map_or([0.0; 4], |skin| skin.insets);
     let panel_key = [
         panel.width_percent.to_bits(),
         panel.min_height.to_bits(),
@@ -201,6 +200,7 @@ fn fit_viewport(
         u32::from(high_contrast),
         session.preferences.panel_width_percent.unwrap_or(0.0).to_bits(),
         panel.min_width.to_bits() ^ panel.max_width.to_bits(),
+        skin.map_or(0.0, |skin| skin.compact_top_boost).to_bits(),
     ];
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
     // reflowed only after a viewport or external theme-geometry change.

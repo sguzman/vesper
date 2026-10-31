@@ -34,6 +34,8 @@ celestial globe, books and lantern are never squeezed to fit a window.
 Only a narrow undecorated **horizontal parchment strip** expands.
 Atlas defaults to a narrower **72% dialogue width**, capped at **1180 logical
 pixels** on large displays and with a compact-window readability minimum.
+The authored `compact_top_boost` keeps words below the upper ornament on
+smaller windows rather than assuming that its border scales like plain UI.
 
 Press **P**, choose **Settings**, then choose **Dialogue width** to adjust the
 panel from **50% to 100%** in 5% increments; the game's min/max safety caps

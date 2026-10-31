@@ -40,7 +40,11 @@ pub fn skin_padding(session: &Session, viewport: Vec2) -> Option<UiRect> {
     Some(UiRect {
         left: px((base + i[0] * compact).min(viewport.x * 0.2)),
         right: px((base + i[1] * compact).min(viewport.x * 0.2)),
-        top: px((base + i[2] * compact).min(viewport.y * 0.2)),
+        // Ornamental top bars lose proportionally more content clearance
+        // on compact screens. An opt-in authored boost keeps glyphs below
+        // the paper border rather than touching the dark gold trim.
+        top: px((base + i[2] * compact
+            + skin.compact_top_boost * (1.0 - compact)).min(viewport.y * 0.2)),
         bottom: px((base + i[3] * compact).min(viewport.y * 0.2)),
     })
 }
