@@ -88,7 +88,7 @@ safe_area = [0.255, 0.23, 0.36, 0.37]
 # The upper navy label is distinct from the parchment writing region.
 # Horizontal fractions refer to the aspect-preserved left image cap,
 # not the stretchable whole frame; vertical fractions refer to frame height.
-speaker_area = [0.28, 0.13, 0.70, 0.16]
+speaker_area = [0.76, 0.13, 0.22, 0.16]
 # [left, right, bottom]. Keep short help visually below body prose.
 hint_area = [0.255, 0.23, 0.335]
 

@@ -236,7 +236,7 @@ mod tests {
         for size in [Vec2::new(950.0, 430.0), Vec2::new(1180.0, 430.0)] {
             let cap = speaker_anchor_width(Some(&skin), size);
             assert!(cap > 0.0 && cap < size.x);
-            assert!(cap * (0.28 + 0.70) < cap);
+            assert!(cap * (0.76 + 0.22) < cap);
         }
         assert_eq!(speaker_anchor_width(None, Vec2::new(900.0, 400.0)), 900.0);
     }
