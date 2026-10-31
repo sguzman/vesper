@@ -253,9 +253,14 @@ def check_long_backlog_scrolling(root):
         try:
             win=window()
             wait(log,"Vesper scene dialogue: threshold")
-            for _ in range(38):
-                key("Return",.15)
-            wait(log,"Vesper scene dialogue: threshold",count=39)
+            # A first Return may complete typing rather than advance. Drive
+            # by observed dialogue events, never assume one press per page.
+            for _ in range(150):
+                if log.read_text(errors="replace").count("Vesper scene dialogue: threshold") >= 39:
+                    break
+                key("Return",.16)
+            else:
+                raise AssertionError("Could not reach 39 history dialogues")
             key("h",.30)
             wait(log,"Vesper reading history opened: 40 entries")
             newest=out/"history-newest.png"
