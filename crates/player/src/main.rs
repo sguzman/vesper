@@ -245,8 +245,8 @@ fn fit_viewport(
         Option<&actors::ActorIdle>,
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
-    mut text_nodes: Query<(&StoryText, &mut Node), Without<StoryPanel>>,
-    mut nameplate_anchors: Query<&mut Node, With<NameplateAnchor>>,
+    mut text_nodes: Query<(&StoryText, &mut Node), (Without<StoryPanel>, Without<NameplateAnchor>)>,
+    mut nameplate_anchors: Query<&mut Node, (With<NameplateAnchor>, Without<StoryPanel>, Without<StoryText>)>,
     mut previous: Local<(Vec2, [u32; 16])>,
 ) {
     let Ok(window) = windows.single() else { return; };
