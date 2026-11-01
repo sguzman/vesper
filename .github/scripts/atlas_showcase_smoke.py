@@ -200,6 +200,10 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                 time.sleep(0.6)
                 screenshot(win, "opening-readable-restored.png")
             illustrated = set()
+            # Count UI mount events already serviced. A late Return on a
+            # mounted choice screen selects the default first option; digit
+            # input must be delivered without that intervening Return.
+            handled_choice_mounts = 0
             for step in range(12000):
                 transcript = read_log(log)
                 assert not FAILURE.search(transcript), (
@@ -273,14 +277,41 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                     illustrated.add(current)
                 dialogue_seen = Counter(traces)[current]
                 scene = spec[current]
-                # Each Enter either finishes text reveal or advances a dialogue.
-                # Once the scene's final dialogue is visible, pair Enter with a
-                # numeric choice. The number is inert during text reveal and
-                # selects the intended option only when the choice UI appears.
-                press(win, "Return", 0.09)
+                # Never send Return to a mounted choice screen: it picks
+                # the default row before Digit2/3/4 can choose the route.
+                # Wait for the native mount event, then use only the intended
+                # numeric choice until a new scene is actually observed.
                 if scene["choices"] and dialogue_seen >= scene["dialogue"]:
+                    marker = "Vesper choice UI mounted"
+                    mounted = transcript.count(marker)
+                    if mounted <= handled_choice_mounts:
+                        press(win, "Return", 0.09)
+                        deadline = time.monotonic() + 8
+                        while time.monotonic() < deadline:
+                            mounted = read_log(log).count(marker)
+                            if mounted > handled_choice_mounts:
+                                break
+                            time.sleep(.05)
+                        else:
+                            raise AssertionError(
+                                f"Choice UI never mounted in {current} (route {option})"
+                            )
+                    handled_choice_mounts = mounted
                     route_option = option if option <= scene["choices"] else 1
-                    press(win, str(route_option), 0.09)
+                    deadline = time.monotonic() + 8
+                    while time.monotonic() < deadline:
+                        press(win, str(route_option), 0.12)
+                        latest = TRACE.findall(read_log(log))
+                        if latest and latest[-1] != current:
+                            break
+                    else:
+                        raise AssertionError(
+                            f"Choice {route_option} in {current} never changed scene: "
+                            + read_log(log)[-2500:]
+                        )
+                    continue
+                # Ordinary dialogue never receives an unnecessary choice key.
+                press(win, "Return", 0.09)
             else:
                 raise AssertionError(f"Atlas route {option} never reached {ending}; "
                                      f"last log:\n{read_log(log)[-5000:]}")
