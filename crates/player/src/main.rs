@@ -1251,7 +1251,7 @@ fn main() {
             ).chain(),
             (
                 settings::sync_visuals, settings::sync_slider_visuals,
-                settings::sync_tab_art, font_browser::focus_search,
+                font_browser::focus_search,
                 font_browser::sync, panel_art::sync,
                 reserve_story_text_height, trace_hint_geometry, trigger_save_load,
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
@@ -1259,6 +1259,7 @@ fn main() {
                 ambient::sync, ambient::tick_motion, animate_panel_height,
                 sync_menu_backdrops,
             ).chain(),
+            settings::sync_tab_art,
         ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
