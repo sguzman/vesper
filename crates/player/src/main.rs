@@ -490,6 +490,30 @@ struct EndingActions;
 #[derive(Resource, Default)]
 struct MenuPointer { action: Option<(MenuKind, usize)> }
 
+/// A one-time diagnostic of the *computed* legend bounds, not authored
+/// coordinates. CI uses it to catch hidden/clipped text that static region
+/// validation alone cannot detect. Never query the full UI tree every frame.
+fn trace_hint_geometry(
+    hint_anchor: Query<(&ComputedNode, &GlobalTransform), With<HintAnchor>>,
+    text: Query<(&StoryText, &ComputedNode, &TextLayoutInfo, &GlobalTransform), Without<HintAnchor>>,
+    mut observed: Local<bool>,
+) {
+    if *observed { return; }
+    let Ok((slot, anchor_position)) = hint_anchor.single() else { return; };
+    for (role, computed, glyphs, position) in &text {
+        if !matches!(role, StoryText::Hint) || glyphs.size.y <= 0.0 { continue; }
+        let anchor_top = anchor_position.translation().y - slot.size().y * 0.5;
+        let glyph_top = position.translation().y - computed.size().y * 0.5;
+        let anchor_bottom = anchor_top + slot.size().y;
+        let glyph_bottom = glyph_top + glyphs.size.y;
+        info!("Vesper hint computed: anchor {:.1}..{:.1} (h {:.1}), glyph {:.1}..{:.1} (h {:.1})",
+            anchor_top, anchor_bottom, slot.size().y,
+            glyph_top, glyph_bottom, glyphs.size.y);
+        *observed = true;
+        break;
+    }
+}
+
 /// Preserve the previous Up-from-first = Quit navigation shortcut.
 fn menu_step(index: usize, direction: i32, count: usize) -> usize {
     if direction < 0 && index == 0 && count == 4 { return 2; }
@@ -1043,7 +1067,7 @@ fn main() {
             (
                 settings::sync_visuals, font_browser::focus_search,
                 font_browser::sync, panel_art::sync,
-                reserve_story_text_height, trigger_save_load,
+                reserve_story_text_height, trace_hint_geometry, trigger_save_load,
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
                 ambient::sync, ambient::tick_motion, animate_panel_height,

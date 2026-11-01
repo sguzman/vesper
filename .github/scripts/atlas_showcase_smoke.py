@@ -350,6 +350,7 @@ def responsive_layout() -> None:
                 # Atlas exercises three independent, optional menu illustrations.
                 # Existing games without menu_backgrounds retain plain overlays.
                 screenshot(win, "panel-before-illustrated-menus.png")
+                wait_for_log(log, "Vesper hint computed:")
                 press(win, "p", 0.35)
                 time.sleep(0.65)
                 screenshot(win, "menu-pause-illustrated.png")
