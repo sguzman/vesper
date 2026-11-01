@@ -177,9 +177,15 @@ def main() -> None:
                     # white text override authored low-contrast colors.
                     # Pointer test selects row 0; keyboard-only path remains
                     # on the font row (index 2).
+                    # The software-rendered CI window can take longer than
+                    # 80 ms between UI frames. Key-down transitions must be
+                    # sampled in distinct frames, not silently skipped by a
+                    # timing-dependent synthetic keyboard burst.
                     for _ in range(7 if game == "little-lantern" else 5):
-                        key("Down", .08)
-                    key("Return", .12)
+                        key("Down", .25)
+                    if game == "little-lantern":
+                        wait_log(log, "Vesper appearance selection: 7")
+                    key("Return", .20)
                     contrast = wait_prefs(prefs_path, lambda p:
                         p.get("high_contrast") is True)
                     assert contrast["high_contrast"] is True
