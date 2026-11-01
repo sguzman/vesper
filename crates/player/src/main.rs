@@ -832,20 +832,39 @@ fn text_height_reservation(actual: f32) -> Option<f32> {
 
 fn reserve_story_text_height(
     session: Res<Session>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     mut texts: Query<(&StoryText, &TextLayoutInfo, &Text, &mut Node)>,
 ) {
-    let has_bounded_footer = !session.preferences.high_contrast.unwrap_or(false)
-        && panel_art::active_skin(&session)
-            .is_some_and(|skin| skin.hint_region.is_some());
+    // Preserve Bevy text's measured intrinsic height, but never let it
+    // make an authored footer larger than the protected writing slot.
+    let bounded_footer_height = panel_art::active_skin(&session)
+        .filter(|_| !session.preferences.high_contrast.unwrap_or(false))
+        .and_then(|skin| skin.hint_region.map(|region| (skin, region)))
+        .and_then(|(skin, region)| {
+            let window = windows.single().ok()?;
+            let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
+            Some(region[3] * illustrated_panel_metrics(
+                viewport, &session.game.theme.panel, Some(skin),
+                session.preferences.panel_width_percent,
+            ).min_height)
+        });
     let lines = session.game.theme.panel.reserve_lines;
     let font_size = session.game.theme.dialogue.size
         * session.preferences.text_scale.unwrap_or(1.0);
     let baseline = lines as f32 * font_size * 1.40 + 10.0;
     for (slot, glyphs, text, mut node) in &mut texts {
-        if has_bounded_footer && matches!(slot, StoryText::Hint) {
-            // An absolute text node with an authored height must never grow
-            // its min-content bounds to escape the safe footer rectangle.
-            if node.min_height != px(0.0) { node.min_height = px(0.0); }
+        if matches!(slot, StoryText::Hint)
+            && let Some(max_height) = bounded_footer_height
+        {
+            // A zero intrinsic minimum can make Bevy drop text glyphs
+            // entirely inside an absolute clipped node. Retain the
+            // measured single-line reservation, capped to this slot.
+            let measured = text_height_reservation(glyphs.size.y)
+                .unwrap_or(18.0);
+            let reserved = measured.min(max_height).max(1.0);
+            if node.min_height != px(reserved) {
+                node.min_height = px(reserved);
+            }
             continue;
         }
         if text.0.is_empty() {
