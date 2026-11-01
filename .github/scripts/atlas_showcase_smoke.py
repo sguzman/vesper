@@ -402,6 +402,43 @@ def assert_settings_preview_reflows(path: Path, width: int, height: int,
         )
 
 
+def assert_native_opacity_slider_drag(window: str, prefs_dir: Path) -> None:
+    """Exercise actual Bevy slider pointer events, not only keyboard arrows.
+
+    At the 1280x720 illustrated Settings view, the opacity rail occupies
+    x=397..567, y=326. First click near its left end, then drag its native
+    thumb toward the right and require two separately persisted model values.
+    The temporary preferences directory is isolated to this QA process.
+    """
+    path = prefs_dir / "player-preferences.json"
+
+    def value_after(predicate) -> float:
+        end = time.monotonic() + 10
+        while time.monotonic() < end:
+            try:
+                value = json.loads(path.read_text()).get("panel_opacity")
+                if isinstance(value, (float, int)) and predicate(float(value)):
+                    return float(value)
+            except (OSError, json.JSONDecodeError):
+                pass
+            time.sleep(0.12)
+        raise AssertionError("Native Settings opacity slider did not persist pointer edit")
+
+    run("xdotool", "windowfocus", "--sync", window)
+    run("xdotool", "mousemove", "--window", window, "420", "326")
+    run("xdotool", "click", "1")
+    left = value_after(lambda x: 0.60 <= x < 0.78)
+    run("xdotool", "mousemove", "--window", window, "420", "326")
+    run("xdotool", "mousedown", "1")
+    time.sleep(0.12)
+    run("xdotool", "mousemove", "--window", window, "533", "326")
+    time.sleep(0.25)
+    run("xdotool", "mouseup", "1")
+    right = value_after(lambda x: x > left + 0.12)
+    assert right <= 1.0, (left, right)
+    print(f"Atlas native opacity slider click/drag: {left:.2f} -> {right:.2f}", flush=True)
+
+
 def responsive_layout() -> None:
     """Quick visual regression before the much longer four-ending playthrough."""
     OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -469,6 +506,7 @@ def responsive_layout() -> None:
                     assert_settings_preview_reflows(
                         OUTPUT / name, width, height, compact,
                     )
+                assert_native_opacity_slider_drag(win, prefs)
                 press(win, "Escape", 0.30)
                 press(win, "p", 0.30)
                 press(win, "m", 0.35)
