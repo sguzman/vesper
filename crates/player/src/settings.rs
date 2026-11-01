@@ -314,7 +314,28 @@ pub fn open(
                     width: percent(100.0), height: percent(100.0),
                     left: px(0.0), top: px(0.0), ..default()
                 },
-                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.33)),
+                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.18)),
+            ));
+        }
+        if let Some(skin) = skin
+            && let Some(path) = skin.decor_image.as_deref()
+        {
+            info!("Vesper settings menu decoration loaded: {path}");
+            screen.spawn((
+                Name::new("Settings independent decorative art"),
+                MenuBackdrop,
+                ImageNode {
+                    image: assets.load(path.to_owned()),
+                    color: Color::srgba(1.0, 1.0, 1.0, skin.decor_opacity),
+                    image_mode: bevy::ui::widget::NodeImageMode::Stretch,
+                    ..default()
+                },
+                Node {
+                    position_type: PositionType::Absolute,
+                    left: px(0.0), top: px(0.0),
+                    width: percent(100.0), height: percent(100.0),
+                    ..default()
+                },
             ));
         }
         screen.spawn((
@@ -350,7 +371,7 @@ pub fn open(
             ScrollPosition(Vec2::ZERO),
         )).with_children(|panel| {
             panel.spawn((
-                Text::new("Settings"),
+                Text::new(skin.and_then(|skin| skin.title.as_deref()).unwrap_or("Settings")),
                 TextFont { font: font.clone(), font_size: FontSize::Px(skin.map_or(23.0, |skin| skin.title_size)), ..default() },
                 TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.title_color))),
             ));

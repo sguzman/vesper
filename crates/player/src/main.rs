@@ -652,16 +652,30 @@ fn spawn_menu_rows(
                     },
                 ));
                 button.spawn((
-                    MenuRowLabel { kind, index },
-                    Text::new(title),
-                    TextFont { font: font.clone(),
-                        font_size: FontSize::Px(skin.button_text_size),
-                        ..default() },
-                    TextColor(rgba(skin.normal_text)),
-                    TextLayout::new(if skin.centered { Justify::Center }
-                        else { Justify::Left }, LineBreak::NoWrap),
-                    Node { width: percent(100.0), ..default() },
-                ));
+                    Node {
+                        position_type: PositionType::Absolute,
+                        left: px(0.0), top: px(0.0),
+                        width: percent(100.0), height: percent(100.0),
+                        align_items: AlignItems::Center,
+                        justify_content: if skin.centered {
+                            JustifyContent::Center
+                        } else { JustifyContent::FlexStart },
+                        padding: if skin.centered { UiRect::default() }
+                            else { UiRect::left(px(80.0)) },
+                        ..default()
+                    },
+                )).with_children(|holder| {
+                    holder.spawn((
+                        MenuRowLabel { kind, index },
+                        Text::new(title),
+                        TextFont { font: font.clone(),
+                            font_size: FontSize::Px(skin.button_text_size),
+                            ..default() },
+                        TextColor(rgba(skin.normal_text)),
+                        TextLayout::new(Justify::Left, LineBreak::NoWrap),
+                        Node { flex_shrink: 0.0, ..default() },
+                    ));
+                });
             });
         } else {
             parent.spawn((
@@ -1774,7 +1788,28 @@ fn spawn_center_menu(
                     width: percent(100.0), height: percent(100.0),
                     left: px(0.0), top: px(0.0), ..default()
                 },
-                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.32)),
+                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.19)),
+            ));
+        }
+        if let Some(skin) = skin
+            && let Some(path) = skin.decor_image.as_deref()
+        {
+            info!("Vesper {kind:?} menu decoration loaded: {path}");
+            parent.spawn((
+                Name::new(format!("{kind:?} independent decorative art")),
+                MenuBackdrop,
+                ImageNode {
+                    image: assets.load(path.to_owned()),
+                    color: Color::srgba(1.0, 1.0, 1.0, skin.decor_opacity),
+                    image_mode: bevy::ui::widget::NodeImageMode::Stretch,
+                    ..default()
+                },
+                Node {
+                    position_type: PositionType::Absolute,
+                    left: px(0.0), top: px(0.0),
+                    width: percent(100.0), height: percent(100.0),
+                    ..default()
+                },
             ));
         }
         parent.spawn((

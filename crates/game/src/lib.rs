@@ -91,6 +91,8 @@ pub struct MenuSkin {
     pub button_slice_border: [f32; 4],
     /// Optional custom title instead of engine's default menu label.
     pub title: Option<String>,
+    pub decor_image: Option<String>,
+    pub decor_opacity: f32,
 }
 impl Default for MenuSkin {
     fn default() -> Self {
@@ -110,6 +112,8 @@ impl Default for MenuSkin {
             button_selected_image: None,
             button_slice_border: [16.0, 16.0, 16.0, 16.0],
             title: None,
+            decor_image: None,
+            decor_opacity: 0.24,
         }
     }
 }
@@ -130,6 +134,9 @@ impl MenuSkin {
         }
         if self.panel_width_percent + self.panel_offset_percent > 96.0 {
             return Err("menu skin panel extends beyond the viewport".into());
+        }
+        if !self.decor_opacity.is_finite() || !(0.0..=1.0).contains(&self.decor_opacity) {
+            return Err("menu skin decor_opacity must be in 0..=1".into());
         }
         if self.button_slice_border.iter().any(|v| !v.is_finite() || !(0.0..=1024.0).contains(v)) {
             return Err("menu skin button_slice_border must be finite and 0..=1024".into());
@@ -957,6 +964,7 @@ impl Game {
                 for (state, filename) in [
                     ("idle", skin.button_idle_image.as_deref()),
                     ("selected", skin.button_selected_image.as_deref()),
+                    ("decoration", skin.decor_image.as_deref()),
                 ] {
                     if let Some(filename) = filename {
                         let file = checked_file(&root, filename)?;

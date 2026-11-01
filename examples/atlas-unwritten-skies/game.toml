@@ -30,13 +30,15 @@ shattered_lens = "assets/backgrounds/shattered_lens.png"
 first_morning = "assets/backgrounds/first_morning.png"
 
 [menu_backgrounds]
-main = "assets/menus/main.png"
-pause = "assets/menus/pause.png"
-settings = "assets/menus/settings.png"
+main = "assets/backgrounds/observatory_dawn.png"
+pause = "assets/backgrounds/observatory_night.png"
+settings = "assets/backgrounds/observatory_close.png"
 
 # Illustrated menu composition and native diegetic controls. Distinct
 # frames, palettes and focus plaques; not just scenery behind generic rows.
 [menu_skins.main]
+decor_image = "assets/menus/main.png"
+decor_opacity = 0.24
 title = "THE ATLAS OF UNWRITTEN SKIES"
 button_slice_border = [170.0, 170.0, 40.0, 40.0]
 button_idle_image = "assets/menus/button-idle.png"
@@ -61,6 +63,8 @@ selected_text = [1.0, 0.96, 0.81, 1.0]
 # Diegetic brass-and-navy button plaques, independent from backdrop art.
 # Native menu hit targets, keyboard focus and number shortcuts remain engine-owned.
 [menu_skins.pause]
+decor_image = "assets/menus/pause.png"
+decor_opacity = 0.24
 title = "✦  PAUSE  ✦"
 button_slice_border = [170.0, 170.0, 40.0, 40.0]
 button_idle_image = "assets/menus/button-idle.png"
@@ -85,6 +89,8 @@ selected_text = [1.0, 0.96, 0.8, 1.0]
 # Diegetic archive control desk: labeled settings rows, value badges,
 # numeric slider rails, toggles and a live parchment preview.
 [menu_skins.settings]
+decor_image = "assets/menus/settings.png"
+decor_opacity = 0.24
 title = "✦  SETTINGS  ✦"
 panel_width_percent = 71.0
 panel_offset_percent = 5.0
