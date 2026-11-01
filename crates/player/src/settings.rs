@@ -28,6 +28,8 @@ impl Default for SettingsState {
 pub struct SettingsRow(pub usize);
 #[derive(Component)]
 pub struct SettingsScroll;
+#[derive(Component)]
+pub struct SettingsLayoutPanel;
 
 /// Completed pointer/button activations enter the normal validated settings
 /// input path. Transient Pressed markers are not reliable click events.
@@ -373,6 +375,7 @@ pub fn open(
         }
         screen.spawn((
             Name::new("Settings panel"),
+            SettingsLayoutPanel,
             Node {
                 width: if let Some(skin) = skin { percent(skin.panel_width_percent) }
                     else if illustrated { percent(70.0) } else { percent(88.0) },
@@ -838,6 +841,34 @@ pub fn pointer(
     }
 }
 
+/// A hard viewport bound is necessary for Bevy's scrollable column:
+/// its nested button/image intrinsic widths otherwise keep the 1050px desktop
+/// panel after the window shrinks to 946px, clipping all controls on the right.
+/// Apply the current physical window and UiScale to the actual live ECS panel.
+fn responsive_panel_width(viewport_logical_width: f32, authored_percent: f32) -> f32 {
+    (viewport_logical_width.max(0.0) * authored_percent / 100.0)
+        .min(1050.0).max(0.0)
+}
+
+pub fn fit_panel_to_viewport(
+    session: Res<Session>, state: Res<SettingsState>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    ui_scale: Res<UiScale>,
+    mut panels: Query<&mut Node, With<SettingsLayoutPanel>>,
+) {
+    if state.overlay.is_none() { return; }
+    let Some(skin) = session.game.manifest.menu_skins.settings.as_ref() else { return; };
+    if !skin.centered { return; }
+    let Ok(window) = windows.single() else { return; };
+    let logical = menu_logical_viewport(
+        Vec2::new(window.resolution.width(), window.resolution.height()), ui_scale.0);
+    let width = px(responsive_panel_width(logical.x, skin.panel_width_percent));
+    for mut node in &mut panels {
+        if node.width != width { node.width = width; }
+        if node.max_width != width { node.max_width = width; }
+    }
+}
+
 /// Category plaques use authored art while pointer and keyboard focus
 /// remain owned by the same native Bevy SettingsTab entities.
 pub fn sync_tab_art(
@@ -999,6 +1030,14 @@ pub fn sync_visuals(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn atlas_settings_panel_never_exceeds_compact_logical_viewport() {
+        assert_eq!(responsive_panel_width(1280.0, 87.0), 1050.0);
+        assert!((responsive_panel_width(946.0, 87.0) - 823.02).abs() < 0.001);
+        assert!(responsive_panel_width(810.0, 87.0) < 810.0);
+        assert!(responsive_panel_width(1900.0, 87.0) <= 1050.0);
+    }
+
     #[test]
     fn section_navigation_is_total_and_stable() {
         for index in 0..ITEMS.len() {

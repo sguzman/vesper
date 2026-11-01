@@ -1259,7 +1259,7 @@ fn main() {
                 ambient::sync, ambient::tick_motion, animate_panel_height,
                 sync_menu_backdrops,
             ).chain(),
-            settings::sync_tab_art,
+            (settings::sync_tab_art, settings::fit_panel_to_viewport).chain(),
         ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
