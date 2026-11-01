@@ -166,10 +166,23 @@ def main() -> None:
                         previous_opacity = font["panel_opacity"]
                         run("xdotool", "mousemove", "--window", win, "600", "70")
                         time.sleep(.4)
-                        run("xdotool", "click", "1")
-                        mouse_change = wait_prefs(prefs_path, lambda p:
-                            p.get("panel_opacity", 0) > previous_opacity + .02)
+                        # Apply immediately on mouse-down, without requiring release.
+                        # Rows persist after adjustment: mouse-up must not
+                        # apply the same change a second time.
+                        run("xdotool", "mousedown", "1")
+                        try:
+                            mouse_change = wait_prefs(prefs_path, lambda p:
+                                p.get("panel_opacity", 0) > previous_opacity + .02)
+                        finally:
+                            run("xdotool", "mouseup", "1")
                         assert mouse_change["panel_opacity"] <= 1.0
+                        time.sleep(.6)
+                        after_release = json.loads(prefs_path.read_text())
+                        assert abs(after_release["panel_opacity"] - mouse_change["panel_opacity"]) < 0.0001, (
+                            "Settings click applied again on mouse release",
+                            mouse_change["panel_opacity"], after_release["panel_opacity"],
+                        )
+                        print("Settings mouse-down applies before release, once", flush=True)
                         mouse_screen = base / "settings-pointer.png"
                         screenshot(win, mouse_screen)
 

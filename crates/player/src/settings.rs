@@ -37,8 +37,9 @@ pub struct SettingsOptionsColumn;
 #[derive(Component)]
 pub struct SettingsPreviewColumn;
 
-/// Completed pointer/button activations enter the normal validated settings
-/// input path. Transient Pressed markers are not reliable click events.
+/// Primary mouse-down events enter the validated settings input path. The
+/// settings rows remain on screen after adjustment, so release-driven Activate
+/// must not reapply the same change. Keyboard activation is handled separately.
 #[derive(Resource, Default)]
 pub struct SettingsClicks(pub Option<usize>);
 /// Pointer-activated left/right controls use exactly the keyboard edit path.
@@ -474,9 +475,11 @@ pub fn open(
                             // The 9-slice plaque fills the entire hit target;
                             // no paper-colored rectangle or inset white rim.
                             BackgroundColor(Color::NONE),
-                            observe(move |_activate: On<Activate>,
+                            observe(move |press: On<bevy::picking::events::PointerPress>,
                                 mut tabs: ResMut<SettingsTabClicks>| {
-                                tabs.0 = Some(group);
+                                if press.button == bevy::picking::pointer::PointerButton::Primary {
+                                    tabs.0 = Some(group);
+                                }
                             }),
                         )).with_children(|button| {
                             if let (Some(idle_path), Some(selected_path)) = (
@@ -564,8 +567,11 @@ pub fn open(
                     Button,
                     Hovered::default(),
                     SettingsRow(i),
-                    observe(move |_activate: On<Activate>, mut clicks: ResMut<SettingsClicks>| {
-                        clicks.0 = Some(i);
+                    observe(move |press: On<bevy::picking::events::PointerPress>,
+                        mut clicks: ResMut<SettingsClicks>| {
+                        if press.button == bevy::picking::pointer::PointerButton::Primary {
+                            clicks.0 = Some(i);
+                        }
                     }),
                     Node {
                         display: if skin.is_some() && section(i) != section(state.selection) {
@@ -614,9 +620,11 @@ pub fn open(
                                     },
                                     BackgroundColor(rgba(skin.normal_fill)),
                                     BorderColor::all(rgba(skin.border_color)),
-                                    observe(move |_activate: On<Activate>,
+                                    observe(move |press: On<bevy::picking::events::PointerPress>,
                                         mut adjust: ResMut<SettingsAdjustClicks>| {
-                                        adjust.0 = Some((i, -1));
+                                        if press.button == bevy::picking::pointer::PointerButton::Primary {
+                                            adjust.0 = Some((i, -1));
+                                        }
                                     }),
                                 )).with_children(|arrow| {
                                     arrow.spawn((
@@ -704,9 +712,11 @@ pub fn open(
                                     },
                                     BackgroundColor(rgba(skin.normal_fill)),
                                     BorderColor::all(rgba(skin.border_color)),
-                                    observe(move |_activate: On<Activate>,
+                                    observe(move |press: On<bevy::picking::events::PointerPress>,
                                         mut adjust: ResMut<SettingsAdjustClicks>| {
-                                        adjust.0 = Some((i, 1));
+                                        if press.button == bevy::picking::pointer::PointerButton::Primary {
+                                            adjust.0 = Some((i, 1));
+                                        }
                                     }),
                                 )).with_children(|arrow| {
                                     arrow.spawn((
