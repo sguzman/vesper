@@ -27,6 +27,9 @@ pub struct Manifest {
     /// Optional per-menu backdrop images; absent means legacy dark menus.
     #[serde(default)]
     pub menu_backgrounds: MenuBackgrounds,
+    /// Optional visual compositions and widget skins for each menu.
+    #[serde(default)]
+    pub menu_skins: MenuSkins,
     /// Optional external dialogue surfaces. Never compiled into the engine.
     #[serde(default)]
     pub panel_skins: BTreeMap<String, PanelSkin>,
@@ -48,6 +51,90 @@ pub struct MenuBackgrounds {
     pub main: Option<String>,
     pub pause: Option<String>,
     pub settings: Option<String>,
+}
+
+/// Customizable menu UI chrome. Omitting this section preserves the
+/// existing generic UI for games with no authored menu identity.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct MenuSkins {
+    pub main: Option<MenuSkin>,
+    pub pause: Option<MenuSkin>,
+    pub settings: Option<MenuSkin>,
+}
+
+/// All lengths are logical UI pixels / percentages, independent from
+/// the 1280x720 artwork and suitable for native Bevy buttons.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct MenuSkin {
+    pub panel_width_percent: f32,
+    pub panel_offset_percent: f32,
+    pub panel_opacity: f32,
+    pub title_size: f32,
+    pub button_height: f32,
+    pub button_text_size: f32,
+    pub button_gap: f32,
+    pub centered: bool,
+    pub show_numbers: bool,
+    pub panel_color: [f32; 4],
+    pub border_color: [f32; 4],
+    pub title_color: [f32; 4],
+    pub normal_fill: [f32; 4],
+    pub selected_fill: [f32; 4],
+    pub normal_text: [f32; 4],
+    pub selected_text: [f32; 4],
+}
+impl Default for MenuSkin {
+    fn default() -> Self {
+        Self {
+            panel_width_percent: 44.0, panel_offset_percent: 8.0,
+            panel_opacity: 0.82, title_size: 30.0,
+            button_height: 48.0, button_text_size: 21.0,
+            button_gap: 8.0, centered: true, show_numbers: false,
+            panel_color: [0.035, 0.075, 0.14, 1.0],
+            border_color: [0.87, 0.67, 0.34, 1.0],
+            title_color: [0.98, 0.86, 0.62, 1.0],
+            normal_fill: [0.045, 0.11, 0.22, 0.91],
+            selected_fill: [0.24, 0.19, 0.11, 0.98],
+            normal_text: [0.91, 0.88, 0.8, 1.0],
+            selected_text: [1.0, 0.94, 0.72, 1.0],
+        }
+    }
+}
+impl MenuSkin {
+    pub fn validate(&self) -> Result<(), String> {
+        for (key, val, lo, hi) in [
+            ("panel_width_percent", self.panel_width_percent, 28.0, 92.0),
+            ("panel_offset_percent", self.panel_offset_percent, 0.0, 25.0),
+            ("panel_opacity", self.panel_opacity, 0.3, 1.0),
+            ("title_size", self.title_size, 14.0, 46.0),
+            ("button_height", self.button_height, 32.0, 82.0),
+            ("button_text_size", self.button_text_size, 12.0, 36.0),
+            ("button_gap", self.button_gap, 2.0, 30.0),
+        ] {
+            if !val.is_finite() || !(lo..=hi).contains(&val) {
+                return Err(format!("menu skin {key} must be in {lo}..={hi}"));
+            }
+        }
+        if self.panel_width_percent + self.panel_offset_percent > 96.0 {
+            return Err("menu skin panel extends beyond the viewport".into());
+        }
+        for (key, color) in [
+            ("panel_color", self.panel_color),
+            ("border_color", self.border_color),
+            ("title_color", self.title_color),
+            ("normal_fill", self.normal_fill),
+            ("selected_fill", self.selected_fill),
+            ("normal_text", self.normal_text),
+            ("selected_text", self.selected_text),
+        ] {
+            if color.iter().any(|v| !v.is_finite() || !(0.0..=1.0).contains(v)) {
+                return Err(format!("menu skin {key} must contain RGBA values 0..=1"));
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -840,6 +927,15 @@ impl Game {
             Theme::default()
         };
         theme.validate()?;
+        for (name, skin) in [
+            ("main", manifest.menu_skins.main.as_ref()),
+            ("pause", manifest.menu_skins.pause.as_ref()),
+            ("settings", manifest.menu_skins.settings.as_ref()),
+        ] {
+            if let Some(skin) = skin {
+                skin.validate().map_err(|e| format!("menu skin '{name}': {e}"))?;
+            }
+        }
         for (line, style) in story.inline_style_references() {
             if !theme.inline_styles.contains_key(&style) {
                 return Err(format!(
@@ -1392,6 +1488,23 @@ start_phase_seconds = 2.5
             "[panel]\nmin_width = 1300.0\nmax_width = 900.0\n"
         ).unwrap();
         assert!(invalid_width.validate().is_err());
+    }
+
+    #[test]
+    fn author_menu_skins_are_bounded_and_backward_compatible() {
+        let skins: MenuSkins = toml::from_str("").unwrap();
+        assert!(skins.pause.is_none() && skins.main.is_none() && skins.settings.is_none());
+        let valid: MenuSkins = toml::from_str(
+            "[pause]\npanel_width_percent = 45.0\nbutton_height = 52.0"
+        ).unwrap();
+        assert!(valid.pause.unwrap().validate().is_ok());
+        let mut bad = MenuSkin::default();
+        bad.panel_width_percent = 90.0;
+        bad.panel_offset_percent = 20.0;
+        assert!(bad.validate().unwrap_err().contains("viewport"));
+        bad.panel_width_percent = 44.0;
+        bad.selected_fill = [f32::NAN, 0.3, 0.2, 1.0];
+        assert!(bad.validate().is_err());
     }
 
     #[test]
