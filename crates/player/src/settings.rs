@@ -551,6 +551,13 @@ pub fn open(
                     observe(move |_activate: On<Activate>, mut clicks: ResMut<SettingsClicks>| {
                         clicks.0 = Some(i);
                     }),
+                    observe(move |e: On<bevy::picking::events::PointerDragStart>| {
+                        if i == 0 { info!("Vesper Settings opacity row DragStart target={:?}", e.entity); }
+                    }),
+                    observe(move |e: On<bevy::picking::events::PointerDrag>| {
+                        if i == 0 { info!("Vesper Settings opacity row Drag target={:?} distance={:?}",
+                            e.entity, e.distance); }
+                    }),
                     Node {
                         display: if skin.is_some() && section(i) != section(state.selection) {
                             Display::None
@@ -629,6 +636,15 @@ pub fn open(
                                         info!("Vesper Settings native slider {i} value={:.3} final={}",
                                             value.value, value.is_final);
                                         sliders.0 = Some((i, value.value));
+                                    }),
+                                    observe(move |e: On<bevy::picking::events::PointerPress>| {
+                                        info!("Vesper Settings native slider {i} Press entity={:?}", e.entity);
+                                    }),
+                                    observe(move |e: On<bevy::picking::events::PointerRelease>| {
+                                        info!("Vesper Settings native slider {i} Release entity={:?}", e.entity);
+                                    }),
+                                    observe(move |e: On<bevy::picking::events::PointerMove>| {
+                                        info!("Vesper Settings native slider {i} Move entity={:?}", e.entity);
                                     }),
                                     observe(move |_e: On<bevy::picking::events::PointerDragStart>| {
                                         info!("Vesper Settings native slider {i} DragStart");
