@@ -14,13 +14,15 @@ pub const ITEMS: [&str; 13] = [
 #[derive(Resource)]
 pub struct SettingsState {
     pub overlay: Option<Entity>,
+    pub cached_overlay: Option<Entity>,
     pub selection: usize,
     pub origin: MenuKind,
     pub just_closed: bool,
 }
 impl Default for SettingsState {
     fn default() -> Self {
-        Self { overlay: None, selection: 0, origin: MenuKind::Pause, just_closed: false }
+        Self { overlay: None, cached_overlay: None, selection: 0,
+            origin: MenuKind::Pause, just_closed: false }
     }
 }
 
@@ -314,6 +316,33 @@ pub fn open(
     if state.overlay.is_some() { return; }
     state.selection = 0;
     state.origin = origin;
+    if let Some(entity) = state.cached_overlay.take() {
+        commands.entity(entity).insert(Visibility::Visible);
+        state.overlay = Some(entity);
+        info!("Vesper Settings menu UI reused");
+    } else {
+        state.overlay = Some(spawn_overlay(session, state, commands, assets));
+    }
+    info!("Vesper appearance settings opened");
+}
+
+/// Prebuild only illustrated Settings during startup. Its complete control
+/// tree and GPU asset handles remain hidden until the first user request.
+pub fn prewarm(
+    session: Res<Session>, mut state: ResMut<SettingsState>,
+    mut commands: Commands, assets: Res<AssetServer>,
+) {
+    if session.game.manifest.menu_backgrounds.settings.is_none() { return; }
+    let entity = spawn_overlay(&session, &state, &mut commands, &assets);
+    commands.entity(entity).insert(Visibility::Hidden);
+    state.cached_overlay = Some(entity);
+    info!("Vesper Settings UI prewarmed");
+}
+
+fn spawn_overlay(
+    session: &Session, state: &SettingsState,
+    commands: &mut Commands, assets: &AssetServer,
+) -> Entity {
     let theme = effective_theme(session);
     let font = text_font(&theme, assets);
     let accent = theme.panel.accent;
@@ -336,8 +365,9 @@ pub fn open(
             overflow: Overflow::clip(),
             ..default()
         },
-        BackgroundColor(Color::srgba(0.02, 0.03, 0.07,
-            if illustrated { 0.08 } else { 0.88 })),
+        // The image may still be decoding: opaque backing blocks any flash
+        // of the live game while the Settings frame is made visible.
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 1.0)),
     )).with_children(|screen| {
         if let Some(path) = session.game.manifest.menu_backgrounds.settings.as_deref() {
             info!("Vesper settings menu backdrop loaded: {path}");
@@ -812,15 +842,17 @@ pub fn open(
                 "↑↓: select    ←→: adjust    Enter: activate    Esc: back", &font, false);
         });
     }).id();
-    state.overlay = Some(overlay);
-    info!("Vesper appearance settings opened");
+    overlay
 }
 
 pub fn close(
     session: &mut Session, state: &mut SettingsState,
     commands: &mut Commands, assets: &AssetServer,
 ) {
-    if let Some(entity) = state.overlay.take() { commands.entity(entity).despawn(); }
+    if let Some(entity) = state.overlay.take() {
+        commands.entity(entity).insert(Visibility::Hidden);
+        state.cached_overlay = Some(entity);
+    }
     state.just_closed = true;
     match state.origin {
         MenuKind::Pause => show_pause_menu(session, commands, assets, PAUSE_ITEMS.len() - 1),

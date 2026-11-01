@@ -33,8 +33,10 @@ struct Session {
     ending_selection: usize,
     paused: bool,
     pause_overlay: Option<Entity>,
+    pause_cache: Option<Entity>,
     pause_selection: usize,
     menu_overlay: Option<Entity>,
+    menu_cache: Option<Entity>,
     menu_selection: usize,
     background: Option<Entity>,
     music: Option<Entity>,
@@ -1249,16 +1251,19 @@ fn main() {
         .insert_resource(Session {
             game, preferences, font_families: Vec::new(), machine, choosing: false, finished: false,
             ending_selection: 0,
-            paused: false, pause_overlay: None,
+            paused: false, pause_overlay: None, pause_cache: None,
             pause_selection: 0,
-            menu_overlay: None, menu_selection: 0,
+            menu_overlay: None, menu_cache: None, menu_selection: 0,
             background: None, music: None, characters: BTreeMap::new(),
             presentation: PresentationState::default(),
             ambient_restore_epoch: 0,
             pending_audio: Vec::new(),
             history: history::HistoryLog::default(),
         })
-        .add_systems(Startup, (font_browser::discover, atmosphere::setup, setup, ambient::spawn).chain())
+        .add_systems(Startup, (
+            font_browser::discover, atmosphere::setup, setup, ambient::spawn,
+            prewarm_menus, settings::prewarm,
+        ).chain())
         .add_systems(Update, (
             (
                 font_browser::wheel, font_browser::pointer, settings::pointer,
@@ -2001,8 +2006,9 @@ fn spawn_center_menu(
             overflow: Overflow::clip(),
             ..default()
         },
-        BackgroundColor(Color::srgba(0.02, 0.03, 0.07,
-            if illustrated { 0.08 } else { 0.78 })),
+        // Fully opaque while artwork is loading: never expose live actors or
+        // the story between menu transitions.
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 1.0)),
     )).with_children(|parent| {
         if let Some(path) = background_image {
             info!("Vesper {kind:?} menu backdrop loaded: {path}");
@@ -2112,9 +2118,39 @@ fn spawn_center_menu(
     }).id()
 }
 
+// Build illustrated menu trees and queue textures during startup, rather than
+// performing text layout and many image loads on the first interactive click.
+// Hidden trees remain available for instant switching in either direction.
+fn prewarm_menus(mut session: ResMut<Session>, mut commands: Commands, assets: Res<AssetServer>) {
+    let theme = effective_theme(&session);
+    if session.game.manifest.menu_backgrounds.pause.is_some() {
+        let entity = spawn_center_menu(
+            &mut commands, &assets, &theme, "PAUSED", MenuKind::Pause,
+            &PAUSE_ITEMS,
+            "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
+            session.game.manifest.menu_backgrounds.pause.as_deref(),
+            menu_skin(&session, MenuKind::Pause),
+        );
+        commands.entity(entity).insert(Visibility::Hidden);
+        session.pause_cache = Some(entity);
+    }
+    if session.game.manifest.menu_backgrounds.main.is_some() {
+        let title = format!("{} — Main menu", session.game.manifest.title);
+        let entity = spawn_center_menu(
+            &mut commands, &assets, &theme, &title, MenuKind::Main, &MAIN_ITEMS,
+            "Up/Down: select    Enter: confirm    M: close    Esc: quit",
+            session.game.manifest.menu_backgrounds.main.as_deref(),
+            menu_skin(&session, MenuKind::Main),
+        );
+        commands.entity(entity).insert(Visibility::Hidden);
+        session.menu_cache = Some(entity);
+    }
+}
+
 fn dismiss_pause(session: &mut Session, commands: &mut Commands) {
     if let Some(overlay) = session.pause_overlay.take() {
-        commands.entity(overlay).despawn();
+        commands.entity(overlay).insert(Visibility::Hidden);
+        session.pause_cache = Some(overlay);
     }
     session.paused = false;
     info!("Vesper story resumed");
@@ -2124,15 +2160,22 @@ fn show_pause_menu(
     session: &mut Session, commands: &mut Commands, assets: &AssetServer, selected: usize,
 ) {
     if let Some(overlay) = session.pause_overlay.take() {
-        commands.entity(overlay).despawn();
+        commands.entity(overlay).insert(Visibility::Hidden);
+        session.pause_cache = Some(overlay);
     }
-    let overlay = spawn_center_menu(
-        commands, assets, &effective_theme(session), "PAUSED", MenuKind::Pause,
-        &PAUSE_ITEMS,
-        "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
-        session.game.manifest.menu_backgrounds.pause.as_deref(),
-        menu_skin(session, MenuKind::Pause),
-    );
+    let overlay = if let Some(cached) = session.pause_cache.take() {
+        commands.entity(cached).insert(Visibility::Visible);
+        info!("Vesper Pause menu UI reused");
+        cached
+    } else {
+        spawn_center_menu(
+            commands, assets, &effective_theme(session), "PAUSED", MenuKind::Pause,
+            &PAUSE_ITEMS,
+            "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
+            session.game.manifest.menu_backgrounds.pause.as_deref(),
+            menu_skin(session, MenuKind::Pause),
+        )
+    };
     session.pause_overlay = Some(overlay);
     session.paused = true;
     session.pause_selection = selected;
@@ -2141,7 +2184,8 @@ fn show_pause_menu(
 
 fn hide_main_menu(session: &mut Session, commands: &mut Commands) {
     if let Some(overlay) = session.menu_overlay.take() {
-        commands.entity(overlay).despawn();
+        commands.entity(overlay).insert(Visibility::Hidden);
+        session.menu_cache = Some(overlay);
         info!("Vesper main menu closed");
     }
 }
@@ -2150,13 +2194,19 @@ fn show_main_menu(
     session: &mut Session, commands: &mut Commands, assets: &AssetServer, selected: usize,
 ) {
     hide_main_menu(session, commands);
-    let title = format!("{} — Main menu", session.game.manifest.title);
-    let overlay = spawn_center_menu(
-        commands, assets, &effective_theme(session), &title, MenuKind::Main, &MAIN_ITEMS,
-        "Up/Down: select    Enter: confirm    M: close    Esc: quit",
-        session.game.manifest.menu_backgrounds.main.as_deref(),
-        menu_skin(session, MenuKind::Main),
-    );
+    let overlay = if let Some(cached) = session.menu_cache.take() {
+        commands.entity(cached).insert(Visibility::Visible);
+        info!("Vesper Main menu UI reused");
+        cached
+    } else {
+        let title = format!("{} — Main menu", session.game.manifest.title);
+        spawn_center_menu(
+            commands, assets, &effective_theme(session), &title, MenuKind::Main, &MAIN_ITEMS,
+            "Up/Down: select    Enter: confirm    M: close    Esc: quit",
+            session.game.manifest.menu_backgrounds.main.as_deref(),
+            menu_skin(session, MenuKind::Main),
+        )
+    };
     session.menu_overlay = Some(overlay);
     session.menu_selection = selected;
     info!("Vesper main menu opened");

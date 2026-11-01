@@ -58,6 +58,7 @@ pub fn start(root: PathBuf) -> ReloadInbox {
 pub fn apply_reload(
     inbox: Res<ReloadInbox>,
     mut session: ResMut<Session>,
+    mut settings_state: ResMut<settings::SettingsState>,
     mut commands: Commands,
     assets: Res<AssetServer>,
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -221,6 +222,34 @@ pub fn apply_reload(
         text_font.font = font.clone();
         text_font.font_size = FontSize::Px(style.size);
         *color = text_color(style.color);
+    }
+    // Cached menu trees contain authored labels, artwork and skin geometry.
+    // Invalidate them only for a validated reload. Hidden caches may be
+    // destroyed immediately; active menus are reconstructed from new data
+    // without a frame that exposes the underlying story.
+    for cached in [
+        session.pause_cache.take(),
+        session.menu_cache.take(),
+        settings_state.cached_overlay.take(),
+    ].into_iter().flatten() {
+        commands.entity(cached).despawn();
+    }
+    if let Some(old) = session.pause_overlay.take() {
+        commands.entity(old).despawn();
+        let selected = session.pause_selection;
+        show_pause_menu(&mut session, &mut commands, &assets, selected);
+    }
+    if let Some(old) = session.menu_overlay.take() {
+        commands.entity(old).despawn();
+        let selected = session.menu_selection;
+        show_main_menu(&mut session, &mut commands, &assets, selected);
+    }
+    if let Some(old) = settings_state.overlay.take() {
+        commands.entity(old).despawn();
+        let origin = settings_state.origin;
+        let selected = settings_state.selection;
+        settings::open(&session, &mut settings_state, &mut commands, &assets, origin);
+        settings_state.selection = selected;
     }
     info!("Vesper hot reload applied");
 }

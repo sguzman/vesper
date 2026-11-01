@@ -619,8 +619,13 @@ def responsive_layout() -> None:
                 screenshot(win, "menu-main-illustrated.png")
                 capture_menu_viewports("main")
                 assert "Vesper Pause menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
-                assert "Vesper Main menu backdrop loaded: assets/backgrounds/observatory_dawn.png" in read_log(log)
-                assert "Vesper settings menu backdrop loaded: assets/backgrounds/observatory_close.png" in read_log(log)
+                assert "Vesper Main menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
+                assert "Vesper settings menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
+                # All three illustrated menus are prebuilt and reused: no
+                # expensive UI subtree construction on transition frames.
+                assert "Vesper Settings menu UI reused" in read_log(log)
+                assert "Vesper Pause menu UI reused" in read_log(log)
+                assert "Vesper Main menu UI reused" in read_log(log)
                 for decoration in [
                     "Vesper Pause menu decoration loaded: assets/menus/pause.png",
                     "Vesper Main menu decoration loaded: assets/menus/main.png",

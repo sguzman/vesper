@@ -30,11 +30,11 @@ shattered_lens = "assets/backgrounds/shattered_lens.png"
 first_morning = "assets/backgrounds/first_morning.png"
 
 [menu_backgrounds]
-main = "assets/backgrounds/observatory_dawn.png"
-# Use the detailed painterly observatory scene rather than the flatter night
-# backdrop. Keep the paused view distinct from the dawn main menu.
+# One already-accepted illustrated scene for all menus. Reusing the same
+# decoded GPU image prevents backdrop swaps during menu navigation.
+main = "assets/backgrounds/observatory_evening.png"
 pause = "assets/backgrounds/observatory_evening.png"
-settings = "assets/backgrounds/observatory_close.png"
+settings = "assets/backgrounds/observatory_evening.png"
 
 # Illustrated menu composition and native diegetic controls. Distinct
 # frames, palettes and focus plaques; not just scenery behind generic rows.
