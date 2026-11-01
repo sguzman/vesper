@@ -839,7 +839,7 @@ pub fn pointer(
 /// A hard viewport bound is necessary for Bevy's scrollable column:
 /// its nested button/image intrinsic widths otherwise keep the 1050px desktop
 /// panel after the window shrinks to 946px, clipping all controls on the right.
-/// Apply the current physical window and UiScale to the actual live ECS panel.
+/// Apply the current physical window to the actual live ECS panel.
 fn responsive_panel_width(physical_width: f32, authored_percent: f32) -> f32 {
     // UI-scale-adjusted logical dimensions can exceed the actual X11 window;
     // never let that compensation defeat the *visible* compact frame bound.
@@ -852,17 +852,34 @@ fn responsive_panel_width(physical_width: f32, authored_percent: f32) -> f32 {
 pub fn fit_panel_to_viewport(
     session: Res<Session>, state: Res<SettingsState>,
     windows: Query<&Window, With<PrimaryWindow>>,
-    mut panels: Query<&mut Node, With<SettingsLayoutPanel>>,
+    ui_scale: Res<UiScale>,
+    mut panels: Query<(&mut Node, &ComputedNode, &UiGlobalTransform), With<SettingsLayoutPanel>>,
+    mut last: Local<Option<(u32, u32, u32)>>,
 ) {
     if state.overlay.is_none() { return; }
     let Some(skin) = session.game.manifest.menu_skins.settings.as_ref() else { return; };
     if !skin.centered { return; }
     let Ok(window) = windows.single() else { return; };
-    let width = px(responsive_panel_width(
-        window.resolution.width(), skin.panel_width_percent));
-    for mut node in &mut panels {
+    let physical = Vec2::new(window.resolution.width(), window.resolution.height());
+    let width = px(responsive_panel_width(physical.x, skin.panel_width_percent));
+    let key = (physical.x as u32, physical.y as u32);
+    let sample = match *last {
+        Some((x, y, frames)) if (x, y) == key => frames.saturating_add(1),
+        _ => 0,
+    };
+    *last = Some((key.0, key.1, sample));
+    for (mut node, actual, transform) in &mut panels {
+        // A scrollable column's min-content contribution may otherwise
+        // override a width or a max-width by itself; set both fixed bounds.
         if node.width != width { node.width = width; }
+        if node.min_width != width { node.min_width = width; }
         if node.max_width != width { node.max_width = width; }
+        if matches!(sample, 1 | 30) {
+            info!(
+                "Vesper settings geometry: window={}x{} ui_scale={:.3} target={:?} computed_width={:.1} center_x={:.1}",
+                key.0, key.1, ui_scale.0, width, actual.size().x, transform.translation.x,
+            );
+        }
     }
 }
 
