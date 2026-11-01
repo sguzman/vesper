@@ -34,6 +34,26 @@ main = "assets/menus/main.png"
 pause = "assets/menus/pause.png"
 settings = "assets/menus/settings.png"
 
+# Diegetic brass-and-navy button plaques, independent from backdrop art.
+# Native menu hit targets, keyboard focus and number shortcuts remain engine-owned.
+[menu_skins.pause]
+panel_width_percent = 44.0
+panel_offset_percent = 7.0
+panel_opacity = 0.84
+title_size = 30.0
+button_height = 47.0
+button_text_size = 20.0
+button_gap = 8.0
+centered = true
+show_numbers = false
+panel_color = [0.025, 0.052, 0.108, 1.0]
+border_color = [0.9, 0.7, 0.37, 1.0]
+title_color = [0.98, 0.86, 0.65, 1.0]
+normal_fill = [0.04, 0.1, 0.19, 0.91]
+selected_fill = [0.24, 0.17, 0.078, 0.98]
+normal_text = [0.93, 0.86, 0.72, 1.0]
+selected_text = [1.0, 0.96, 0.8, 1.0]
+
 [music]
 archive = "assets/audio/archive.ogg"
 threshold = "assets/audio/threshold.ogg"
