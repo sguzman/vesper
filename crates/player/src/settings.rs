@@ -35,6 +35,10 @@ pub struct SettingsClicks(pub Option<usize>);
 #[derive(Component)]
 pub struct SettingsRowLabel(usize);
 #[derive(Component)]
+pub struct SettingsRowValue(usize);
+#[derive(Component)]
+pub struct SettingsSliderFill(usize);
+#[derive(Component)]
 pub struct SettingsPreviewPanel;
 #[derive(Component, Clone, Copy)]
 pub enum Preview { Speaker, Body, Choice, Hint }
@@ -137,6 +141,38 @@ fn label(session: &Session, index: usize) -> String {
     }
 }
 
+/// Data model for skinned controls. The widgets share the same preferences
+/// and directional editing logic as the legacy rows; no duplicate settings.
+fn slider_fraction(session: &Session, index: usize) -> Option<f32> {
+    let (value, low, high) = match index {
+        0 => (session.preferences.panel_opacity.unwrap_or_else(|| {
+            panel_art::default_art_opacity(session)
+        }), 0.60, 1.0),
+        1 => (session.preferences.text_scale.unwrap_or(1.0), 0.8, 1.6),
+        6 => (session.preferences.auto_advance_delay.unwrap_or(1.5), 0.5, 20.0),
+        8 => (session.preferences.panel_width_percent.unwrap_or(
+            session.game.theme.panel.width_percent
+        ), 50.0, 100.0),
+        9 => (session.preferences.panel_bottom_percent.unwrap_or(
+            session.game.theme.panel.bottom_percent
+        ), 0.0, 20.0),
+        _ => return None,
+    };
+    Some(((value - low) / (high - low)).clamp(0.0, 1.0))
+}
+
+fn control_value(session: &Session, index: usize) -> String {
+    let string = label(session, index);
+    if let Some((_, tail)) = string.split_once("   <  ") {
+        return format!("‹ {} ›", tail.trim_end_matches("  >"));
+    }
+    if let Some((_, tail)) = string.split_once("   [ ") {
+        return format!("▾ {}", tail.trim_end_matches(" ]"));
+    }
+    if matches!(index, 11 | 12) { return "↵".into(); }
+    string
+}
+
 fn step_scaled(value: f32, delta: i32, minimum: f32, maximum: f32, tick: f32) -> f32 {
     let steps = ((value - minimum) / tick).round() as i32 + delta;
     let limit = ((maximum - minimum) / tick).round() as i32;
@@ -220,6 +256,7 @@ pub fn open(
     // renders an illustrated panel over a transparent underlying node.
     if bg[3] < 0.05 { bg[3] = 1.0; }
     let illustrated = session.game.manifest.menu_backgrounds.settings.is_some();
+    let skin = session.game.manifest.menu_skins.settings.as_ref();
     let overlay = commands.spawn((
         Name::new("Player settings overlay"),
         Node {
@@ -262,11 +299,14 @@ pub fn open(
         screen.spawn((
             Name::new("Settings panel"),
             Node {
-                width: if illustrated { percent(70.0) } else { percent(88.0) },
+                width: if let Some(skin) = skin { percent(skin.panel_width_percent) }
+                    else if illustrated { percent(70.0) } else { percent(88.0) },
                 min_width: if illustrated { px(300.0) } else { px(0.0) },
                 max_width: px(720.0),
                 max_height: percent(94.0),
-                margin: if illustrated { UiRect::left(percent(5.0)) }
+                margin: if let Some(skin) = skin {
+                    UiRect::left(percent(skin.panel_offset_percent))
+                } else if illustrated { UiRect::left(percent(5.0)) }
                     else { UiRect::default() },
                 border: if illustrated { px(2.0).all() } else { UiRect::default() },
                 overflow: Overflow::scroll_y(),
@@ -274,22 +314,46 @@ pub fn open(
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
-            BorderColor::all(Color::srgba(0.86, 0.68, 0.38, 0.95)),
-            BackgroundColor(Color::srgba(0.05, 0.07, 0.12,
-                if illustrated { 0.86 } else { 0.98 })),
+            BorderColor::all(skin.map_or(
+                Color::srgba(0.86, 0.68, 0.38, 0.95), |skin| rgba(skin.border_color),
+            )),
+            BackgroundColor(skin.map_or(
+                Color::srgba(0.05, 0.07, 0.12, if illustrated { 0.86 } else { 0.98 }),
+                |skin| {
+                    let mut p = skin.panel_color;
+                    p[3] *= skin.panel_opacity;
+                    rgba(p)
+                },
+            )),
             SettingsScroll,
             ScrollPosition(Vec2::ZERO),
         )).with_children(|panel| {
             panel.spawn((
                 Text::new("Settings"),
-                TextFont { font: font.clone(), font_size: FontSize::Px(23.0), ..default() },
-                TextColor(Color::WHITE),
+                TextFont { font: font.clone(), font_size: FontSize::Px(skin.map_or(23.0, |skin| skin.title_size)), ..default() },
+                TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.title_color))),
             ));
             panel.spawn((
                 Node { width: percent(100.0), height: px(2.0), ..default() },
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
             ));
             for i in 0..ITEMS.len() {
+                if let Some(skin) = skin
+                    && matches!(i, 0 | 4 | 8 | 11)
+                {
+                    let heading = match i {
+                        0 => "✦  READING & DISPLAY  ✦",
+                        4 => "✦  MOTION & ACCESSIBILITY  ✦",
+                        8 => "✦  PAGE COMPOSITION  ✦",
+                        _ => "✦  ACTIONS  ✦",
+                    };
+                    panel.spawn((
+                        Text::new(heading),
+                        TextFont { font: font.clone(), font_size: FontSize::Px(12.0), ..default() },
+                        TextColor(rgba(skin.title_color)),
+                        Node { margin: UiRect::top(px(6.0)), ..default() },
+                    ));
+                }
                 panel.spawn((
                     Name::new(format!("Settings option {}", i + 1)),
                     Button,
@@ -299,20 +363,61 @@ pub fn open(
                         clicks.0 = Some(i);
                     }),
                     Node {
-                        width: percent(100.0), padding: px(3.0).all(),
+                        width: percent(100.0),
+                        min_height: skin.map_or(Val::Auto, |skin| px(skin.button_height.min(45.0))),
+                        padding: if skin.is_some() { px(6.0).all() } else { px(3.0).all() },
+                        border: if skin.is_some() { px(1.5).all() } else { UiRect::default() },
+                        flex_direction: FlexDirection::Row,
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::SpaceBetween,
                         flex_shrink: 0.0, ..default()
                     },
-                    BackgroundColor(Color::NONE),
+                    BorderColor::all(skin.map_or(Color::NONE, |skin| rgba(skin.border_color))),
+                    BackgroundColor(skin.map_or(Color::NONE, |skin| rgba(skin.normal_fill))),
                 )).with_children(|button| {
                     button.spawn((
                         SettingsRowLabel(i),
-                        Text::new(label(session, i)),
+                        Text::new(if skin.is_some() { ITEMS[i].to_owned() } else { label(session, i) }),
                         TextFont {
-                            font: font.clone(), font_size: FontSize::Px(16.0),
+                            font: font.clone(),
+                            font_size: FontSize::Px(skin.map_or(16.0, |skin| skin.button_text_size.min(17.0))),
                             ..default()
                         },
-                        TextColor(Color::WHITE),
+                        TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.normal_text))),
                     ));
+                    if let Some(skin) = skin {
+                        button.spawn((
+                            Node {
+                                flex_direction: FlexDirection::Row,
+                                align_items: AlignItems::Center,
+                                column_gap: px(10.0),
+                                ..default()
+                            },
+                        )).with_children(|controls| {
+                            if let Some(frac) = slider_fraction(session, i) {
+                                controls.spawn((
+                                    Node { width: px(83.0), height: px(7.0), ..default() },
+                                    BackgroundColor(Color::srgba(0.12, 0.16, 0.22, 1.0)),
+                                )).with_children(|bar| {
+                                    bar.spawn((
+                                        SettingsSliderFill(i),
+                                        Node { width: percent(frac * 100.0), height: percent(100.0), ..default() },
+                                        BackgroundColor(rgba(skin.border_color)),
+                                    ));
+                                });
+                            }
+                            controls.spawn((
+                                SettingsRowValue(i),
+                                Text::new(control_value(session, i)),
+                                TextFont {
+                                    font: font.clone(),
+                                    font_size: FontSize::Px(skin.button_text_size.min(15.0)),
+                                    ..default()
+                                },
+                                TextColor(rgba(skin.selected_text)),
+                            ));
+                        });
+                    }
                 });
             }
             panel.spawn((
@@ -325,8 +430,10 @@ pub fn open(
                 Node {
                     width: percent(100.0), flex_direction: FlexDirection::Column,
                     row_gap: px(2.0), padding: px(8.0).all(),
+                    border: if skin.is_some() { px(2.0).all() } else { UiRect::default() },
                     ..default()
                 },
+                BorderColor::all(skin.map_or(Color::NONE, |skin| rgba(skin.border_color))),
                 BackgroundColor(Color::srgba(bg[0], bg[1], bg[2], bg[3])),
             )).with_children(|preview| {
                 for (slot, content, style) in [
@@ -430,8 +537,10 @@ pub fn sync_visuals(
     mut texts: Query<(&StoryText, &mut TextFont, &mut TextColor), (Without<Preview>, Without<SettingsRowLabel>)>,
     mut preview_panels: Query<&mut BackgroundColor, (With<SettingsPreviewPanel>, Without<StoryPanel>, Without<SettingsRow>)>,
     mut previews: Query<(&Preview, &mut TextFont, &mut TextColor), (Without<StoryText>, Without<SettingsRowLabel>)>,
-    mut labels: Query<(&SettingsRowLabel, &mut Text), (Without<Preview>, Without<StoryText>)>,
-    mut rows: Query<(&SettingsRow, &mut BackgroundColor), (Without<StoryPanel>, Without<SettingsPreviewPanel>)>,
+    mut labels: Query<(&SettingsRowLabel, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowValue>)>,
+    mut values: Query<(&SettingsRowValue, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowLabel>)>,
+    mut gauges: Query<(&SettingsSliderFill, &mut Node)>,
+    mut rows: Query<(&SettingsRow, &mut BackgroundColor, &mut BorderColor), (Without<StoryPanel>, Without<SettingsPreviewPanel>)>,
     mut scrolling: Query<&mut ScrollPosition, With<SettingsScroll>>,
     mut last: Local<Option<PlayerPreferences>>,
 ) {
@@ -484,17 +593,34 @@ pub fn sync_visuals(
         text_font.font = font.clone();
         *color = text_color(style.color);
     }
+    let skin = session.game.manifest.menu_skins.settings.as_ref();
     for (label_slot, mut text) in &mut labels {
-        let value = label(&session, label_slot.0);
+        let value = if skin.is_some() { ITEMS[label_slot.0].to_owned() }
+            else { label(&session, label_slot.0) };
         if text.0 != value { text.0 = value; }
     }
-    for (row, mut background) in &mut rows {
+    for (slot, mut text) in &mut values {
+        let value = control_value(&session, slot.0);
+        if text.0 != value { text.0 = value; }
+    }
+    for (slot, mut node) in &mut gauges {
+        if let Some(frac) = slider_fraction(&session, slot.0) {
+            node.width = percent(frac * 100.0);
+        }
+    }
+    for (row, mut background, mut border) in &mut rows {
         let selected = row.0 == state.selection;
-        let a = theme.panel.accent;
-        let color = if selected {
-            Color::srgba(a[0] * 0.27, a[1] * 0.27, a[2] * 0.27, 0.92)
-        } else { Color::NONE };
-        if background.0 != color { background.0 = color; }
+        if let Some(skin) = skin {
+            let (fill, _, edge) = menu_skin_row_colors(skin, selected);
+            if background.0 != fill { background.0 = fill; }
+            if *border != BorderColor::all(edge) { *border = BorderColor::all(edge); }
+        } else {
+            let a = theme.panel.accent;
+            let color = if selected {
+                Color::srgba(a[0] * 0.27, a[1] * 0.27, a[2] * 0.27, 0.92)
+            } else { Color::NONE };
+            if background.0 != color { background.0 = color; }
+        }
     }
 }
 
