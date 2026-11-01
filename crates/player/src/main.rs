@@ -1250,7 +1250,8 @@ fn main() {
                 cinematics::tick, actors::tick, atmosphere::tick,
             ).chain(),
             (
-                settings::sync_visuals, font_browser::focus_search,
+                settings::sync_visuals, settings::sync_slider_visuals,
+                font_browser::focus_search,
                 font_browser::sync, panel_art::sync,
                 reserve_story_text_height, trace_hint_geometry, trigger_save_load,
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,

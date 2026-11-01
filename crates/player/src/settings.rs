@@ -769,6 +769,35 @@ pub fn pointer(
     }
 }
 
+/// Keep native immutable Bevy SliderValue state consistent with edits from
+/// keyboard, arrow buttons and slider track events. This is a separate small
+/// system to keep the general Settings synchronizer within ECS parameter limits.
+pub fn sync_slider_visuals(
+    session: Res<Session>, mut commands: Commands,
+    mut gauges: Query<(&SettingsSliderFill, &mut Node), (Without<SettingsRow>, Without<SettingsSliderThumb>)>,
+    mut thumbs: Query<(&SettingsSliderThumb, &mut Node), (Without<SettingsRow>, Without<SettingsSliderFill>)>,
+    sliders: Query<(Entity, &SettingsSliderControl, &SliderValue)>,
+) {
+    if !session.is_changed() { return; }
+    for (slot, mut node) in &mut gauges {
+        if let Some(frac) = slider_fraction(&session, slot.0) {
+            node.width = percent(frac * 100.0);
+        }
+    }
+    for (slot, mut node) in &mut thumbs {
+        if let Some(frac) = slider_fraction(&session, slot.0) {
+            node.left = px(frac * 92.0);
+        }
+    }
+    for (entity, slot, value) in &sliders {
+        if let Some(frac) = slider_fraction(&session, slot.0) {
+            if (value.0 - frac).abs() > 0.0001 {
+                commands.entity(entity).insert(SliderValue(frac));
+            }
+        }
+    }
+}
+
 /// Updates existing ECS entities in place. The story position and choices are
 /// never reset. Not scheduled on a worker because only UI component values change.
 pub fn sync_visuals(
@@ -780,9 +809,6 @@ pub fn sync_visuals(
     mut previews: Query<(&Preview, &mut TextFont, &mut TextColor), (Without<StoryText>, Without<SettingsRowLabel>)>,
     mut labels: Query<(&SettingsRowLabel, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowValue>)>,
     mut values: Query<(&SettingsRowValue, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowLabel>)>,
-    mut gauges: Query<(&SettingsSliderFill, &mut Node), (Without<SettingsRow>, Without<SettingsSliderThumb>)>,
-    mut slider_thumbs: Query<(&SettingsSliderThumb, &mut Node), (Without<SettingsRow>, Without<SettingsSliderFill>, Without<SettingsSectionHeading>)>,
-    mut slider_values: Query<(&SettingsSliderControl, &mut SliderValue)>,
     mut rows: Query<(&SettingsRow, &mut BackgroundColor, &mut BorderColor, &mut Node),
         (Without<StoryPanel>, Without<SettingsPreviewPanel>, Without<SettingsSliderFill>, Without<SettingsSliderThumb>, Without<SettingsSectionHeading>, Without<SettingsTab>)>,
     mut headings: Query<(&SettingsSectionHeading, &mut Node),
@@ -855,21 +881,6 @@ pub fn sync_visuals(
     for (slot, mut text) in &mut values {
         let value = control_value(&session, slot.0);
         if text.0 != value { text.0 = value; }
-    }
-    for (slot, mut node) in &mut gauges {
-        if let Some(frac) = slider_fraction(&session, slot.0) {
-            node.width = percent(frac * 100.0);
-        }
-    }
-    for (slot, mut node) in &mut slider_thumbs {
-        if let Some(frac) = slider_fraction(&session, slot.0) {
-            node.left = px(frac * 92.0);
-        }
-    }
-    for (slot, mut slider) in &mut slider_values {
-        if let Some(frac) = slider_fraction(&session, slot.0) {
-            if (slider.0 - frac).abs() > 0.0001 { slider.0 = frac; }
-        }
     }
     for (group, mut node) in &mut headings {
         let show = skin.is_none() || group.0 == section(state.selection);
