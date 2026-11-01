@@ -23,11 +23,15 @@ jobs:
             rsvg-convert --width 1280 --height 720 --keep-aspect-ratio               --output "examples/atlas-unwritten-skies/assets/menus/${name}.png"               "examples/atlas-unwritten-skies/assets/menus/${name}.svg"
             file "examples/atlas-unwritten-skies/assets/menus/${name}.png"
           done
+          for name in button-idle button-selected; do
+            rsvg-convert --width 1024 --height 128 --output "examples/atlas-unwritten-skies/assets/menus/${name}.png" "examples/atlas-unwritten-skies/assets/menus/${name}.svg"
+            file "examples/atlas-unwritten-skies/assets/menus/${name}.png"
+          done
       - name: Commit rendered game assets
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add examples/atlas-unwritten-skies/assets/menus/main.png examples/atlas-unwritten-skies/assets/menus/pause.png examples/atlas-unwritten-skies/assets/menus/settings.png
+          git add examples/atlas-unwritten-skies/assets/menus/*.png
           if git diff --cached --quiet; then
             echo "Rendered menu PNGs are current"
           else
