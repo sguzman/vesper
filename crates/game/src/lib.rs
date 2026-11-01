@@ -87,6 +87,10 @@ pub struct MenuSkin {
     /// Optional game-local PNGs for authored idle/selected button plaques.
     pub button_idle_image: Option<String>,
     pub button_selected_image: Option<String>,
+    /// Nine-slice border pixels [left, right, top, bottom] for menu plaques.
+    pub button_slice_border: [f32; 4],
+    /// Optional custom title instead of engine's default menu label.
+    pub title: Option<String>,
 }
 impl Default for MenuSkin {
     fn default() -> Self {
@@ -104,6 +108,8 @@ impl Default for MenuSkin {
             selected_text: [1.0, 0.94, 0.72, 1.0],
             button_idle_image: None,
             button_selected_image: None,
+            button_slice_border: [16.0, 16.0, 16.0, 16.0],
+            title: None,
         }
     }
 }
@@ -124,6 +130,12 @@ impl MenuSkin {
         }
         if self.panel_width_percent + self.panel_offset_percent > 96.0 {
             return Err("menu skin panel extends beyond the viewport".into());
+        }
+        if self.button_slice_border.iter().any(|v| !v.is_finite() || !(0.0..=1024.0).contains(v)) {
+            return Err("menu skin button_slice_border must be finite and 0..=1024".into());
+        }
+        if self.title.as_ref().is_some_and(|v| v.trim().is_empty() || v.chars().count() > 120) {
+            return Err("menu skin title must be 1..=120 characters".into());
         }
         if self.button_idle_image.is_some() != self.button_selected_image.is_some() {
             return Err("menu skin button images require both idle and selected PNG paths".into());

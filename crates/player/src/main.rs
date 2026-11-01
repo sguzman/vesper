@@ -592,10 +592,13 @@ fn menu_row_label(kind: MenuKind, index: usize, label: &str,
     }
 }
 
-fn menu_button_slicer() -> TextureSlicer {
-    // The illustrated end ornaments are never flattened across the button.
+fn menu_button_slicer(insets: [f32; 4]) -> TextureSlicer {
+    // Authors declare the preserved caps for their own button illustration.
     TextureSlicer {
-        border: BorderRect { left: 170.0, right: 170.0, top: 40.0, bottom: 40.0 },
+        border: BorderRect {
+            min_inset: Vec2::new(insets[0], insets[2]),
+            max_inset: Vec2::new(insets[1], insets[3]),
+        },
         center_scale_mode: SliceScaleMode::Stretch,
         sides_scale_mode: SliceScaleMode::Stretch,
         max_corner_scale: 1.0,
@@ -636,7 +639,9 @@ fn spawn_menu_rows(
                     MenuRowArt { kind, index },
                     ImageNode {
                         image: assets.load(skin.button_idle_image.clone().unwrap_or_default()),
-                        image_mode: bevy::ui::widget::NodeImageMode::Sliced(menu_button_slicer()),
+                        image_mode: bevy::ui::widget::NodeImageMode::Sliced(
+                            menu_button_slicer(skin.button_slice_border)
+                        ),
                         ..default()
                     },
                     Node {
@@ -1729,6 +1734,7 @@ fn spawn_center_menu(
 ) -> Entity {
     let font = text_font(theme, assets);
     let accent = theme.panel.accent;
+    let title = skin.and_then(|skin| skin.title.as_deref()).unwrap_or(title);
     let illustrated = background_image.is_some();
     commands.spawn((
         Name::new(format!("{kind:?} overlay")),
