@@ -630,18 +630,21 @@ pub fn open(
                                     }),
                                 )).with_children(|bar| {
                                     bar.spawn((
+                                        // The headless Slider (not its decorative
+                                        // descendants) must own pointer drag events.
+                                        Pickable::IGNORE,
                                         Node { width: percent(100.0), height: px(7.0), ..default() },
                                         BackgroundColor(Color::srgba(0.12, 0.16, 0.22, 1.0)),
                                     )).with_children(|rail| {
                                         rail.spawn((
-                                            SettingsSliderFill(i),
+                                            SettingsSliderFill(i), Pickable::IGNORE,
                                             Node { width: percent(frac * 100.0),
                                                 height: percent(100.0), ..default() },
                                             BackgroundColor(rgba(skin.border_color)),
                                         ));
                                     });
                                     bar.spawn((
-                                        SliderThumb, SettingsSliderThumb(i),
+                                        SliderThumb, SettingsSliderThumb(i), Pickable::IGNORE,
                                         Node { position_type: PositionType::Absolute,
                                             left: px(frac * 158.0), top: px(2.0),
                                             width: px(12.0), height: px(18.0),
