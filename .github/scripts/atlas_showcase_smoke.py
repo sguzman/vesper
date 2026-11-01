@@ -422,7 +422,10 @@ def assert_native_opacity_slider_drag(window: str, prefs_dir: Path) -> None:
             except (OSError, json.JSONDecodeError):
                 pass
             time.sleep(0.12)
-        raise AssertionError("Native Settings opacity slider did not persist pointer edit")
+        current = path.read_text(errors="replace") if path.exists() else "(no preference file)"
+        raise AssertionError(
+            "Native Settings opacity slider did not persist pointer edit: " + current
+        )
 
     run("xdotool", "windowfocus", "--sync", window)
     run("xdotool", "mousemove", "--window", window, "420", "326")
@@ -430,9 +433,14 @@ def assert_native_opacity_slider_drag(window: str, prefs_dir: Path) -> None:
     left = value_after(lambda x: 0.60 <= x < 0.78)
     run("xdotool", "mousemove", "--window", window, "420", "326")
     run("xdotool", "mousedown", "1")
-    time.sleep(0.12)
+    time.sleep(0.16)
+    # Cross the drag threshold in a distinct rendered frame, then generate
+    # a second move; the first motion starts a Bevy drag, while subsequent
+    # motion actually produces the ValueChange used by the preference model.
+    run("xdotool", "mousemove", "--window", window, "460", "326")
+    time.sleep(0.24)
     run("xdotool", "mousemove", "--window", window, "533", "326")
-    time.sleep(0.25)
+    time.sleep(0.30)
     run("xdotool", "mouseup", "1")
     right = value_after(lambda x: x > left + 0.12)
     assert right <= 1.0, (left, right)
