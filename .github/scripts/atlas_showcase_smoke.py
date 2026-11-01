@@ -364,6 +364,44 @@ def assert_settings_frame_fits(path: Path, width: int, height: int) -> None:
     )
 
 
+def assert_settings_preview_reflows(path: Path, width: int, height: int,
+                                     compact: bool) -> None:
+    """Pixel-level contract: the actual parchment sample moves columns.
+
+    Merely capturing a screenshot can miss a stuck desktop-sized grid. The
+    Atlas live preview's opaque parchment swatch has an exact authored RGB,
+    independent of scene artwork, text rasterization or keyboard focus.
+    Its median position distinguishes a stacked compact viewport from the
+    native desktop two-column composition.
+    """
+    result = subprocess.run(
+        ["convert", str(path), "-depth", "8", "rgb:-"],
+        capture_output=True, check=True,
+    )
+    pixels = result.stdout
+    assert len(pixels) == width * height * 3, (path, "unexpected dimensions")
+    paper = bytes((223, 208, 175))
+    positions = [index // 3 for index in range(0, len(pixels), 3)
+                 if pixels[index:index + 3] == paper]
+    assert len(positions) > 10000, (
+        "Atlas Settings preview paper did not render", path, len(positions),
+    )
+    xs = sorted(position % width for position in positions)
+    ys = sorted(position // width for position in positions)
+    center_x = xs[len(xs) // 2] / width
+    center_y = ys[len(ys) // 2] / height
+    if compact:
+        assert 0.42 < center_x < 0.60 and center_y > 0.69, (
+            "Compact Settings preview did not stack beneath controls",
+            path, center_x, center_y,
+        )
+    else:
+        assert center_x > 0.60 and center_y < 0.70, (
+            "Desktop Settings preview did not occupy right-hand column",
+            path, center_x, center_y,
+        )
+
+
 def responsive_layout() -> None:
     """Quick visual regression before the much longer four-ending playthrough."""
     OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -423,6 +461,14 @@ def responsive_layout() -> None:
                 assert_settings_frame_fits(
                     OUTPUT / "menu-settings-compact.png", 946, 511,
                 )
+                for name, width, height, compact in (
+                    ("menu-settings-compact.png", 946, 511, True),
+                    ("menu-settings-illustrated.png", 1280, 720, False),
+                    ("menu-settings-large.png", 1900, 1035, False),
+                ):
+                    assert_settings_preview_reflows(
+                        OUTPUT / name, width, height, compact,
+                    )
                 press(win, "Escape", 0.30)
                 press(win, "p", 0.30)
                 press(win, "m", 0.35)
