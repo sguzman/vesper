@@ -456,8 +456,12 @@ pub fn open(
                             Node {
                                 // Equal-size tab columns, rather than four unbounded
                                 // text/image min-content boxes that clip at 946px.
-                                flex_grow: 1.0, flex_shrink: 1.0,
+                                flex_grow: 1.0, flex_shrink: 0.0,
                                 flex_basis: px(0.0), min_width: px(0.0),
+                                // Preserve a full-height navy brass plaque even
+                                // without the obsolete paper-colored padding.
+                                height: px(31.0), min_height: px(31.0),
+                                max_height: px(31.0),
                                 padding: UiRect::default(),
                                 align_items: AlignItems::Center,
                                 justify_content: JustifyContent::Center,
