@@ -63,9 +63,10 @@ const SECTION_LABEL: [&str; 4] = ["Reading", "Accessibility", "Layout", "Actions
 fn section(index: usize) -> usize {
     if index < 4 { 0 } else if index < 8 { 1 } else if index < 11 { 2 } else { 3 }
 }
-fn section_label(tab: usize, active: bool) -> String {
-    if active { format!("◆ {}", SECTION_LABEL[tab]) }
-    else { SECTION_LABEL[tab].to_owned() }
+fn section_label(tab: usize, _active: bool) -> String {
+    // The illuminated blue-and-brass plaque already indicates selection.
+    // Avoid font-dependent diamond characters in the tab label itself.
+    SECTION_LABEL[tab].to_owned()
 }
 #[derive(Component)]
 pub struct SettingsRowLabel(usize);
@@ -419,8 +420,7 @@ pub fn open(
             ScrollPosition(Vec2::ZERO),
         )).with_children(|panel| {
             if skin.is_some_and(|s| s.centered) {
-                spawn_centered_caption(panel, "✦  ✧  ✦", &font, 15.0,
-                    Color::srgba(0.96, 0.78, 0.46, 1.0));
+                spawn_gold_ornament(panel);
             }
             if let Some(skin) = skin.filter(|s| s.centered) {
                 let title_font = FontSource::Family("DejaVu Serif".into());
@@ -458,13 +458,14 @@ pub fn open(
                                 // text/image min-content boxes that clip at 946px.
                                 flex_grow: 1.0, flex_shrink: 1.0,
                                 flex_basis: px(0.0), min_width: px(0.0),
-                                padding: UiRect::axes(px(4.0), px(5.0)),
+                                padding: UiRect::default(),
                                 align_items: AlignItems::Center,
                                 justify_content: JustifyContent::Center,
-                                border: px(1.0).all(), ..default()
+                                border: UiRect::default(), ..default()
                             },
-                            BorderColor::all(rgba(skin.border_color)),
-                            BackgroundColor(rgba(skin.normal_fill)),
+                            // The 9-slice plaque fills the entire hit target;
+                            // no paper-colored rectangle or inset white rim.
+                            BackgroundColor(Color::NONE),
                             observe(move |_activate: On<Activate>,
                                 mut tabs: ResMut<SettingsTabClicks>| {
                                 tabs.0 = Some(group);
@@ -480,6 +481,9 @@ pub fn open(
                                         image: assets.load(if group == section(state.selection) {
                                             selected.clone()
                                         } else { idle.clone() }),
+                                        color: if group == section(state.selection) {
+                                            Color::WHITE
+                                        } else { Color::srgba(0.68, 0.75, 0.83, 1.0) },
                                         image_mode: bevy::ui::widget::NodeImageMode::Sliced(
                                             menu_button_slicer(skin.button_slice_border)),
                                         ..default()
@@ -525,10 +529,10 @@ pub fn open(
                     && matches!(i, 0 | 4 | 8 | 11)
                 {
                     let heading = match i {
-                        0 => "✦  READING & DISPLAY  ✦",
-                        4 => "✦  MOTION & ACCESSIBILITY  ✦",
-                        8 => "✦  PAGE COMPOSITION  ✦",
-                        _ => "✦  ACTIONS  ✦",
+                        0 => "READING & DISPLAY",
+                        4 => "MOTION & ACCESSIBILITY",
+                        8 => "PAGE COMPOSITION",
+                        _ => "ACTIONS",
                     };
                     options.spawn((
                         SettingsSectionHeading(section(i)),
@@ -1004,12 +1008,15 @@ pub fn sync_tab_art(
     if !state.is_changed() || state.overlay.is_none() { return; }
     let Some(skin) = &session.game.manifest.menu_skins.settings else { return; };
     for (tab, mut image) in &mut art {
-        let path = if tab.0 == section(state.selection) {
-            &skin.button_selected_image
-        } else { &skin.button_idle_image };
+        let active = tab.0 == section(state.selection);
+        let path = if active { &skin.button_selected_image }
+            else { &skin.button_idle_image };
         if let Some(path) = path {
             let handle = assets.load(path.clone());
             if image.image != handle { image.image = handle; }
+            let tint = if active { Color::WHITE }
+                else { Color::srgba(0.68, 0.75, 0.83, 1.0) };
+            if image.color != tint { image.color = tint; }
         }
     }
 }
@@ -1197,7 +1204,8 @@ mod tests {
         assert_eq!(section(4), 1);
         assert_eq!(section(8), 2);
         assert_eq!(section(12), 3);
-        assert!(section_label(2, true).starts_with('◆'));
+        assert_eq!(section_label(2, true), "Layout");
+        assert_eq!(section_label(2, false), "Layout");
     }
     #[test]
     fn stepping_is_bounded() {

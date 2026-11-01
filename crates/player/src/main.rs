@@ -1827,6 +1827,29 @@ fn spawn_centered_caption(parent: &mut ChildSpawnerCommands, value: &str,
     });
 }
 
+/// A font-independent celestial divider: UI geometry, not decorative
+/// Unicode glyphs (which rendered as missing-character squares on Linux).
+fn spawn_gold_ornament(parent: &mut ChildSpawnerCommands) {
+    parent.spawn((
+        Name::new("Gold celestial divider without font glyphs"),
+        Node { width: percent(100.0), height: px(17.0),
+            flex_direction: FlexDirection::Row,
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center, column_gap: px(10.0),
+            flex_shrink: 0.0, ..default() },
+    )).with_children(|row| {
+        for (width, height) in [(36.0, 1.0), (5.0, 5.0),
+                                (9.0, 9.0), (5.0, 5.0), (36.0, 1.0)] {
+            row.spawn((
+                Node { width: px(width), height: px(height),
+                    border_radius: BorderRadius::all(px(if width > 20.0 { 0.0 } else { 5.0 })),
+                    ..default() },
+                BackgroundColor(Color::srgba(0.95, 0.76, 0.40, 0.98)),
+            ));
+        }
+    });
+}
+
 /// Native title plaque using the authored nine-sliced brass button art.
 /// Words remain real Bevy text and can never be baked into the illustration.
 fn spawn_ornate_menu_heading(
@@ -2044,8 +2067,7 @@ fn spawn_center_menu(
             )),
         )).with_children(|panel| {
             if skin.is_some_and(|s| s.centered) {
-                spawn_centered_caption(panel, "✦     ✧     ✦", &font, 18.0,
-                    Color::srgba(0.96, 0.77, 0.43, 1.0));
+                spawn_gold_ornament(panel);
             }
             if let Some(skin) = skin.filter(|s| s.centered) {
                 spawn_ornate_menu_heading(panel, title, &font, assets, skin);
@@ -2063,8 +2085,7 @@ fn spawn_center_menu(
             ));
             spawn_menu_rows(panel, kind, options, &font, skin, assets);
             if skin.is_some_and(|s| s.centered) {
-                spawn_centered_caption(panel, "✧     ✦     ✧", &font, 13.0,
-                    Color::srgba(0.96, 0.77, 0.43, 0.94));
+                spawn_gold_ornament(panel);
             }
             spawn_keyboard_legend(panel, instructions, &font, false);
         });
