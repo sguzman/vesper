@@ -1745,7 +1745,7 @@ fn setup(
                                         else { Display::None },
                                     ..default() },
                             )).with_children(|legend_root| {
-                                spawn_keyboard_legend(legend_root, legend, &font);
+                                spawn_keyboard_legend(legend_root, legend, &font, true);
                             });
                         }
                     });
@@ -1821,6 +1821,7 @@ fn keyboard_legend_pairs(instructions: &str) -> impl Iterator<Item = (&str, &str
 
 fn spawn_keyboard_legend(
     parent: &mut ChildSpawnerCommands, instructions: &str, font: &FontSource,
+    on_paper: bool,
 ) {
     parent.spawn((
         Name::new("Keyboard shortcut keycaps"),
@@ -1851,7 +1852,11 @@ fn spawn_keyboard_legend(
                 pair.spawn((
                     Text::new(action.to_owned()),
                     TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
-                    TextColor(Color::srgba(0.83, 0.86, 0.89, 1.0)),
+                    TextColor(if on_paper {
+                        Color::srgba(0.24, 0.16, 0.10, 1.0)
+                    } else {
+                        Color::srgba(0.83, 0.86, 0.89, 1.0)
+                    }),
                 ));
             });
         }
@@ -1981,7 +1986,7 @@ fn spawn_center_menu(
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
             ));
             spawn_menu_rows(panel, kind, options, &font, skin, assets);
-            spawn_keyboard_legend(panel, instructions, &font);
+            spawn_keyboard_legend(panel, instructions, &font, false);
         });
     }).id()
 }
