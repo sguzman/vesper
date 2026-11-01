@@ -693,6 +693,17 @@ pub fn open(
                                     ..default()
                                 },
                                 TextColor(rgba(skin.selected_text)),
+                                // Fixed-width live readouts keep the slider/arrow
+                                // geometry stable when "Game default" becomes
+                                // "65%" mid-pointer-drag. Font names have their
+                                // own wider selector slot, without a slider.
+                                TextLayout::new(Justify::Right, LineBreak::NoWrap),
+                                Node {
+                                    width: px(if i == 2 { 168.0 } else { 112.0 }),
+                                    min_width: px(if i == 2 { 168.0 } else { 112.0 }),
+                                    max_width: px(if i == 2 { 168.0 } else { 112.0 }),
+                                    flex_shrink: 0.0, ..default()
+                                },
                             ));
                             if i < 11 {
                                 controls.spawn((
