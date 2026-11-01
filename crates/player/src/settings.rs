@@ -508,16 +508,14 @@ pub fn open(
             panel.spawn((
                 SettingsContentGrid,
                 Node { width: percent(100.0), min_width: px(0.0),
-                    flex_direction: if skin.is_some_and(|s| s.centered) {
-                        FlexDirection::Row
-                    } else { FlexDirection::Column },
+                    // Start in the safe compact layout. Only a measured viewport
+                    // may opt in to the desktop two-column arrangement.
+                    flex_direction: FlexDirection::Column,
                     column_gap: px(12.0), row_gap: px(5.0), ..default() },
             )).with_children(|grid| {
                 grid.spawn((
                     SettingsOptionsColumn,
-                    Node { width: if skin.is_some_and(|s| s.centered) {
-                            percent(57.0)
-                        } else { percent(100.0) },
+                    Node { width: percent(100.0),
                         min_width: px(0.0), flex_shrink: 0.0,
                         flex_direction: FlexDirection::Column,
                         row_gap: px(4.0), ..default() },
@@ -690,9 +688,7 @@ pub fn open(
                 });
                 grid.spawn((
                     SettingsPreviewColumn,
-                    Node { width: if skin.is_some_and(|s| s.centered) {
-                            percent(40.0)
-                        } else { percent(100.0) },
+                    Node { width: percent(100.0),
                         min_width: px(0.0), flex_shrink: 0.0,
                         flex_direction: FlexDirection::Column,
                         row_gap: px(5.0), ..default() },
@@ -935,14 +931,21 @@ pub fn sync_content_layout(
     if !session.game.manifest.menu_skins.settings.as_ref().is_some_and(|s| s.centered) { return; }
     let Ok(window) = windows.single() else { return; };
     let side = settings_side_by_side(window.resolution.width(), window.resolution.height());
+    let desired = if side { FlexDirection::Row } else { FlexDirection::Column };
     for mut node in &mut grids {
-        node.flex_direction = if side { FlexDirection::Row } else { FlexDirection::Column };
+        if node.flex_direction != desired {
+            info!("Vesper Settings layout: window={:.0}x{:.0}, two_columns={side}",
+                window.resolution.width(), window.resolution.height());
+            node.flex_direction = desired;
+        }
     }
     for mut node in &mut options {
-        node.width = percent(if side { 57.0 } else { 100.0 });
+        let width = percent(if side { 57.0 } else { 100.0 });
+        if node.width != width { node.width = width; }
     }
     for mut node in &mut previews {
-        node.width = percent(if side { 40.0 } else { 100.0 });
+        let width = percent(if side { 40.0 } else { 100.0 });
+        if node.width != width { node.width = width; }
     }
 }
 
