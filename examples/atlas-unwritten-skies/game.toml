@@ -29,6 +29,11 @@ blue_glass_ferry = "assets/backgrounds/blue_glass_ferry.png"
 shattered_lens = "assets/backgrounds/shattered_lens.png"
 first_morning = "assets/backgrounds/first_morning.png"
 
+[menu_backgrounds]
+main = "assets/backgrounds/observatory_dawn.png"
+pause = "assets/backgrounds/observatory_night.png"
+settings = "assets/backgrounds/name_garden.png"
+
 [music]
 archive = "assets/audio/archive.ogg"
 threshold = "assets/audio/threshold.ogg"
@@ -91,6 +96,9 @@ safe_area = [0.255, 0.23, 0.36, 0.37]
 speaker_area = [0.46, 0.15, 0.33, 0.16]
 # [left, right, bottom]. Keep short help visually below body prose.
 hint_area = [0.255, 0.23, 0.335]
+# Dedicated bounded legend, away from the lower gold border and ornamental crest.
+# [left, top, width, height] of the panel, independent of prose padding.
+hint_region = [0.255, 0.69, 0.51, 0.12]
 
 # Keep the globe, books and lantern at their original aspect ratio.
 # Nine-region hinge: preserve the globe, blue titleplate, compass, lantern,

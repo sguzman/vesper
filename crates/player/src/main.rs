@@ -230,6 +230,13 @@ fn hint_bounds(
     (safe.left, safe.right, safe.bottom)
 }
 
+/// Dedicated author-defined hint slot, independent of the body and
+/// ornamental border. All values refer to the displayed panel geometry.
+fn hint_region_bounds(area: [f32; 4], width: f32, height: f32) -> (Val, Val, Val, Val) {
+    (px(area[0] * width), px(area[1] * height),
+     px(area[2] * width), px(area[3] * height))
+}
+
 fn apply_panel_metrics(
     node: &mut Node, panel: &vesper_game::PanelStyle, metrics: PanelMetrics,
     viewport: Vec2, preference: Option<f32>,
@@ -305,6 +312,8 @@ fn fit_viewport(
         skin.and_then(|skin| skin.speaker_area).map_or(0, |a| a.iter()
             .fold(0u32, |seed, v| seed.rotate_left(5) ^ v.to_bits())),
         skin.and_then(|skin| skin.hint_area).map_or(0, |a| a.iter()
+            .fold(0u32, |seed, v| seed.rotate_left(5) ^ v.to_bits()))
+        ^ skin.and_then(|skin| skin.hint_region).map_or(0, |a| a.iter()
             .fold(0u32, |seed, v| seed.rotate_left(5) ^ v.to_bits())),
     ];
     // Avoid marking the Bevy UI layout dirty every frame. The panel is
@@ -345,13 +354,26 @@ fn fit_viewport(
                 for (slot, mut node) in &mut text_nodes {
                     match slot {
                         StoryText::Hint => {
-                            // The legend stays inside the paper and cannot be
-                            // displaced by paragraphs of different lengths.
                             node.position_type = PositionType::Absolute;
-                            node.left = hint_left;
-                            node.right = hint_right;
-                            node.bottom = hint_bottom;
-                            node.width = Val::Auto;
+                            if let Some(area) = skin.and_then(|skin| skin.hint_region) {
+                                let (left, top, width, height) =
+                                    hint_region_bounds(area, width, geometry.min_height);
+                                node.left = left;
+                                node.top = top;
+                                node.right = Val::Auto;
+                                node.bottom = Val::Auto;
+                                node.width = width;
+                                node.height = height;
+                                node.overflow = Overflow::clip();
+                            } else {
+                                node.left = hint_left;
+                                node.top = Val::Auto;
+                                node.right = hint_right;
+                                node.bottom = hint_bottom;
+                                node.width = Val::Auto;
+                                node.height = Val::Auto;
+                                node.overflow = Overflow::visible();
+                            }
                             node.margin = UiRect::default();
                             node.padding = UiRect::default();
                         }
@@ -1335,16 +1357,28 @@ fn setup(
                     panel_art::active_skin(&session).and_then(|skin| skin.hint_area),
                     width, geometry.min_height, inset,
                 );
+                let authored_hint = panel_art::active_skin(&session)
+                    .and_then(|skin| skin.hint_region);
+                let hint_bounds = authored_hint
+                    .map(|area| hint_region_bounds(area, width, geometry.min_height));
                 parent.spawn((
                     StoryText::Hint,
                     Text::new(panel_hint(&initial, &theme)),
                     TextFont { font: font.clone(), font_size: FontSize::Px(hint_style.size), ..default() },
                     text_color(hint_style.color),
-                    TextLayout::new(Justify::Left, LineBreak::NoWrap),
+                    TextLayout::new(Justify::Left,
+                        if authored_hint.is_some() { LineBreak::WordOrCharacter }
+                        else { LineBreak::NoWrap }),
                     Node {
                         position_type: PositionType::Absolute,
-                        left: hint_left, right: hint_right,
-                        bottom: hint_bottom, width: Val::Auto,
+                        left: hint_bounds.map_or(hint_left, |v| v.0),
+                        top: hint_bounds.map_or(Val::Auto, |v| v.1),
+                        width: hint_bounds.map_or(Val::Auto, |v| v.2),
+                        height: hint_bounds.map_or(Val::Auto, |v| v.3),
+                        right: if authored_hint.is_some() { Val::Auto } else { hint_right },
+                        bottom: if authored_hint.is_some() { Val::Auto } else { hint_bottom },
+                        overflow: if authored_hint.is_some() { Overflow::clip() }
+                            else { Overflow::visible() },
                         ..default()
                     },
                 ));
@@ -1408,6 +1442,7 @@ fn spawn_center_menu(
     kind: MenuKind,
     options: &[&str],
     instructions: &str,
+    background_image: Option<&str>,
 ) -> Entity {
     let font = text_font(theme, assets);
     let accent = theme.panel.accent;
@@ -1423,6 +1458,30 @@ fn spawn_center_menu(
         },
         BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.78)),
     )).with_children(|parent| {
+        if let Some(path) = background_image {
+            parent.spawn((
+                Name::new(format!("{kind:?} custom backdrop")),
+                ImageNode {
+                    image: assets.load(path.to_owned()),
+                    image_mode: bevy::ui::widget::NodeImageMode::Stretch,
+                    ..default()
+                },
+                Node {
+                    position_type: PositionType::Absolute,
+                    width: percent(100.0), height: percent(100.0),
+                    left: px(0.0), top: px(0.0), ..default()
+                },
+            ));
+            // Preserve accessible contrast and visible menu focus.
+            parent.spawn((
+                Node {
+                    position_type: PositionType::Absolute,
+                    width: percent(100.0), height: percent(100.0),
+                    left: px(0.0), top: px(0.0), ..default()
+                },
+                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.62)),
+            ));
+        }
         parent.spawn((
             Name::new(format!("{kind:?} panel")),
             Node {
@@ -1475,6 +1534,7 @@ fn show_pause_menu(
         commands, assets, &effective_theme(session), "PAUSED", MenuKind::Pause,
         &PAUSE_ITEMS,
         "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
+        session.game.manifest.menu_backgrounds.pause.as_deref(),
     );
     session.pause_overlay = Some(overlay);
     session.paused = true;
@@ -1497,6 +1557,7 @@ fn show_main_menu(
     let overlay = spawn_center_menu(
         commands, assets, &effective_theme(session), &title, MenuKind::Main, &MAIN_ITEMS,
         "Up/Down: select    Enter: confirm    M: close    Esc: quit",
+        session.game.manifest.menu_backgrounds.main.as_deref(),
     );
     session.menu_overlay = Some(overlay);
     session.menu_selection = selected;

@@ -24,6 +24,9 @@ pub struct Manifest {
     pub theme: Option<String>,
     #[serde(default)]
     pub backgrounds: BTreeMap<String, String>,
+    /// Optional per-menu backdrop images; absent means legacy dark menus.
+    #[serde(default)]
+    pub menu_backgrounds: MenuBackgrounds,
     /// Optional external dialogue surfaces. Never compiled into the engine.
     #[serde(default)]
     pub panel_skins: BTreeMap<String, PanelSkin>,
@@ -36,6 +39,15 @@ pub struct Manifest {
     /// Background/non-speaking scene sprites; independent from named speakers.
     #[serde(default)]
     pub ambient_actors: BTreeMap<String, AmbientActor>,
+}
+
+/// Each overlay may use its own validated, game-relative PNG image.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct MenuBackgrounds {
+    pub main: Option<String>,
+    pub pause: Option<String>,
+    pub settings: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -177,6 +189,9 @@ pub struct PanelSkin {
     /// Independent instruction legend [left, right, bottom] as fractions.
     /// Never let the hint inherit the body text's lower safety margin.
     pub hint_area: Option<[f32; 3]>,
+    /// Exact footer rectangle [left, top, width, height] in panel fractions.
+    /// Unlike legacy hint_area this is a bounded, top-anchored writing slot.
+    pub hint_region: Option<[f32; 4]>,
     /// Texture pixels retained along each edge for nine-slice scaling.
     pub slice_border: f32,
     /// Optional distortion-free illustrated end caps with a stretchable center.
@@ -227,7 +242,7 @@ impl PanelHorizontalSlices {
 }
 impl Default for PanelSkin {
     fn default() -> Self {
-        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false, compact_top_boost: 0.0, safe_area: None, speaker_area: None, hint_area: None }
+        Self { image: String::new(), insets: [32.0; 4], slice_border: 24.0, horizontal_slices: None, transparent_background: false, compact_top_boost: 0.0, safe_area: None, speaker_area: None, hint_area: None, hint_region: None }
     }
 }
 impl PanelSkin {
@@ -246,6 +261,10 @@ impl PanelSkin {
             || self.hint_area.is_some_and(|a| a.iter().any(|v|
                 !v.is_finite() || !(0.0..=0.65).contains(v))
                 || a[0] + a[1] >= 0.85)
+            || self.hint_region.is_some_and(|a| a.iter().any(|v|
+                !v.is_finite() || !(0.0..=1.0).contains(v))
+                || a[2] < 0.05 || a[3] < 0.03
+                || a[0] + a[2] > 1.0 || a[1] + a[3] > 1.0)
             || !self.slice_border.is_finite()
             || !(2.0..=160.0).contains(&self.slice_border)
         {
@@ -846,6 +865,20 @@ impl Game {
                 Some("ttf" | "otf")
             ) {
                 return Err("theme.font.file must be a .ttf or .otf file".into());
+            }
+        }
+        for (kind, filename) in [
+            ("main", manifest.menu_backgrounds.main.as_deref()),
+            ("pause", manifest.menu_backgrounds.pause.as_deref()),
+            ("settings", manifest.menu_backgrounds.settings.as_deref()),
+        ] {
+            if let Some(filename) = filename {
+                let file = checked_file(&root, filename)?;
+                if !file.extension().and_then(|ext| ext.to_str())
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
+                {
+                    return Err(format!("menu background '{kind}' must be a PNG"));
+                }
             }
         }
         for (name, filename) in &manifest.backgrounds {

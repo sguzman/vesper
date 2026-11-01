@@ -230,6 +230,29 @@ pub fn open(
         },
         BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.88)),
     )).with_children(|screen| {
+        if let Some(path) = session.game.manifest.menu_backgrounds.settings.as_deref() {
+            screen.spawn((
+                Name::new("Settings custom backdrop"),
+                ImageNode {
+                    image: assets.load(path.to_owned()),
+                    image_mode: bevy::ui::widget::NodeImageMode::Stretch,
+                    ..default()
+                },
+                Node {
+                    position_type: PositionType::Absolute,
+                    width: percent(100.0), height: percent(100.0),
+                    left: px(0.0), top: px(0.0), ..default()
+                },
+            ));
+            screen.spawn((
+                Node {
+                    position_type: PositionType::Absolute,
+                    width: percent(100.0), height: percent(100.0),
+                    left: px(0.0), top: px(0.0), ..default()
+                },
+                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.66)),
+            ));
+        }
         screen.spawn((
             Name::new("Settings panel"),
             Node {
