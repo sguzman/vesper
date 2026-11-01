@@ -30,9 +30,9 @@ shattered_lens = "assets/backgrounds/shattered_lens.png"
 first_morning = "assets/backgrounds/first_morning.png"
 
 [menu_backgrounds]
-main = "assets/backgrounds/observatory_dawn.png"
-pause = "assets/backgrounds/observatory_night.png"
-settings = "assets/backgrounds/observatory_close.png"
+main = "assets/menus/main.png"
+pause = "assets/menus/pause.png"
+settings = "assets/menus/settings.png"
 
 [music]
 archive = "assets/audio/archive.ogg"

@@ -73,14 +73,15 @@ original geometry at compact widths instead of stretching to fill the frame.
 
 ## Illustrated menus
 
-Atlas now provides three independently selectable backgrounds through its
-`[menu_backgrounds]` manifest section: **observatory dawn** for the main menu,
-**observatory night** for Pause, and **observatory close-up** for Settings. These reuse
-the game's existing full-size illustrations, with a dark scrim and a readable
-native interactive menu above them. The engine supports any valid game-local
-PNG for each slot, so game authors can replace them with dedicated artwork
-without code changes. The UI stays usable for games that specify no menu
-images.
+Atlas ships three independently authored illustrated menus through its
+`[menu_backgrounds]` manifest section: **the celestial atlas at sunset** for
+Main Menu, **the suspended hourglass at night** for Pause, and **the astronomer's
+brass controls** for Settings. Each has its own rasterized PNG and an editable
+SVG source in `assets/menus/`. The decorated native menu is inset to expose
+the painting; art crops with aspect-preserving *cover* rather than stretching.
+Existing games without these assets retain their familiar solid menus.
+The generated PNGs are committed and can be reproduced from the SVG sources
+with the repository's artwork-rendering workflow.
 
 ## Controls
 

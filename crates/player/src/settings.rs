@@ -219,21 +219,26 @@ pub fn open(
     // The Settings sample needs an opaque paper swatch even when the story
     // renders an illustrated panel over a transparent underlying node.
     if bg[3] < 0.05 { bg[3] = 1.0; }
+    let illustrated = session.game.manifest.menu_backgrounds.settings.is_some();
     let overlay = commands.spawn((
         Name::new("Player settings overlay"),
         Node {
             position_type: PositionType::Absolute,
             width: percent(100.0), height: percent(100.0),
             align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
+            justify_content: if illustrated { JustifyContent::FlexStart }
+                else { JustifyContent::Center },
+            overflow: Overflow::clip(),
             ..default()
         },
-        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.88)),
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07,
+            if illustrated { 0.08 } else { 0.88 })),
     )).with_children(|screen| {
         if let Some(path) = session.game.manifest.menu_backgrounds.settings.as_deref() {
             info!("Vesper settings menu backdrop loaded: {path}");
             screen.spawn((
                 Name::new("Settings custom backdrop"),
+                MenuBackdrop,
                 ImageNode {
                     image: assets.load(path.to_owned()),
                     image_mode: bevy::ui::widget::NodeImageMode::Stretch,
@@ -251,20 +256,27 @@ pub fn open(
                     width: percent(100.0), height: percent(100.0),
                     left: px(0.0), top: px(0.0), ..default()
                 },
-                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.66)),
+                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.33)),
             ));
         }
         screen.spawn((
             Name::new("Settings panel"),
             Node {
-                width: percent(88.0), max_width: px(720.0),
+                width: if illustrated { percent(70.0) } else { percent(88.0) },
+                min_width: if illustrated { px(300.0) } else { px(0.0) },
+                max_width: px(720.0),
                 max_height: percent(94.0),
+                margin: if illustrated { UiRect::left(percent(5.0)) }
+                    else { UiRect::default() },
+                border: if illustrated { px(2.0).all() } else { UiRect::default() },
                 overflow: Overflow::scroll_y(),
                 padding: px(8.0).all(), row_gap: px(2.0),
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
-            BackgroundColor(Color::srgba(0.05, 0.07, 0.12, 0.98)),
+            BorderColor::all(Color::srgba(0.86, 0.68, 0.38, 0.95)),
+            BackgroundColor(Color::srgba(0.05, 0.07, 0.12,
+                if illustrated { 0.86 } else { 0.98 })),
             SettingsScroll,
             ScrollPosition(Vec2::ZERO),
         )).with_children(|panel| {

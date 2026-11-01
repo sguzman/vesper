@@ -58,9 +58,9 @@ A game may opt into any subset of the three menu images in `game.toml`:
 
 ```toml
 [menu_backgrounds]
-main = "assets/backgrounds/observatory_dawn.png"
-pause = "assets/backgrounds/observatory_night.png"
-settings = "assets/backgrounds/observatory_close.png"
+main = "assets/menus/main.png"
+pause = "assets/menus/pause.png"
+settings = "assets/menus/settings.png"
 ```
 
 Each is a separately selected, game-local PNG. Missing entries preserve the
@@ -68,8 +68,11 @@ usual solid-color menus. Menu and settings controls remain native UI with
 their existing keyboard/mouse behavior; a dark readability scrim overlays
 decorative images. The paths follow the same canonicalized root-containment
 and PNG-extension requirements as other authored images, so external file
-references and traversal are rejected. Atlas uses three illustrations it
-already ships; authors can swap in dedicated menu PNGs without changing Rust.
+references and traversal are rejected. Atlas ships three separate, authored celestial menu illustrations
+in `assets/menus/` with editable SVG sources and committed PNG renderings.
+This is distinct from simply reusing a story location. Authors can swap the
+three PNGs without changing Rust. The engine renders menu artwork with
+aspect-preserving cover cropping, not stretched dimensions.
 
 ## Safety, compatibility and accessibility
 

@@ -362,8 +362,9 @@ def responsive_layout() -> None:
                 press(win, "m", 0.35)
                 time.sleep(0.65)
                 screenshot(win, "menu-main-illustrated.png")
-                assert "Vesper Pause menu backdrop loaded:" in read_log(log)
-                assert "Vesper Main menu backdrop loaded:" in read_log(log)
+                assert "Vesper Pause menu backdrop loaded: assets/menus/pause.png" in read_log(log)
+                assert "Vesper Main menu backdrop loaded: assets/menus/main.png" in read_log(log)
+                assert "Vesper settings menu backdrop loaded: assets/menus/settings.png" in read_log(log)
                 for previous_name, current_name in [
                     ("panel-before-illustrated-menus.png", "menu-pause-illustrated.png"),
                     ("menu-pause-illustrated.png", "menu-settings-illustrated.png"),

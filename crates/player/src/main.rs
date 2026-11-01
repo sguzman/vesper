@@ -430,6 +430,34 @@ struct StoryPanel;
 #[derive(Component)]
 struct NameplateAnchor;
 
+/// Full-bleed optional menu illustration. Reflow to aspect-preserving cover,
+/// never stretching illustrated instruments when window dimensions change.
+#[derive(Component)]
+struct MenuBackdrop;
+
+fn menu_backdrop_cover(viewport: Vec2) -> (Vec2, Vec2) {
+    let scale = (viewport.x / 1280.0).max(viewport.y / 720.0);
+    let drawn = Vec2::new(1280.0 * scale, 720.0 * scale);
+    ((viewport - drawn) * 0.5, drawn)
+}
+
+fn sync_menu_backdrops(
+    windows: Query<&Window, With<PrimaryWindow>>,
+    mut backdrops: Query<&mut Node, With<MenuBackdrop>>,
+) {
+    let Ok(window) = windows.single() else { return; };
+    if backdrops.is_empty() { return; }
+    let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
+    if viewport.x <= 0.0 || viewport.y <= 0.0 { return; }
+    let (offset, drawn) = menu_backdrop_cover(viewport);
+    for mut node in &mut backdrops {
+        if node.width != px(drawn.x) { node.width = px(drawn.x); }
+        if node.height != px(drawn.y) { node.height = px(drawn.y); }
+        if node.left != px(offset.x) { node.left = px(offset.x); }
+        if node.top != px(offset.y) { node.top = px(offset.y); }
+    }
+}
+
 #[derive(Component)]
 struct StorySeparator;
 
@@ -920,6 +948,7 @@ fn main() {
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
                 ambient::sync, ambient::tick_motion, animate_panel_height,
+                sync_menu_backdrops,
             ).chain(),
         ).chain());
     if let Some(inbox) = inbox {
@@ -1446,6 +1475,7 @@ fn spawn_center_menu(
 ) -> Entity {
     let font = text_font(theme, assets);
     let accent = theme.panel.accent;
+    let illustrated = background_image.is_some();
     commands.spawn((
         Name::new(format!("{kind:?} overlay")),
         Node {
@@ -1453,15 +1483,19 @@ fn spawn_center_menu(
             left: percent(0.0), top: percent(0.0),
             width: percent(100.0), height: percent(100.0),
             align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
+            justify_content: if illustrated { JustifyContent::FlexStart }
+                else { JustifyContent::Center },
+            overflow: Overflow::clip(),
             ..default()
         },
-        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.78)),
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07,
+            if illustrated { 0.08 } else { 0.78 })),
     )).with_children(|parent| {
         if let Some(path) = background_image {
             info!("Vesper {kind:?} menu backdrop loaded: {path}");
             parent.spawn((
                 Name::new(format!("{kind:?} custom backdrop")),
+                MenuBackdrop,
                 ImageNode {
                     image: assets.load(path.to_owned()),
                     image_mode: bevy::ui::widget::NodeImageMode::Stretch,
@@ -1480,20 +1514,26 @@ fn spawn_center_menu(
                     width: percent(100.0), height: percent(100.0),
                     left: px(0.0), top: px(0.0), ..default()
                 },
-                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.62)),
+                BackgroundColor(Color::srgba(0.01, 0.018, 0.04, 0.32)),
             ));
         }
         parent.spawn((
             Name::new(format!("{kind:?} panel")),
             Node {
-                width: percent(85.0),
-                max_width: px(660.0),
+                width: if illustrated { percent(49.0) } else { percent(85.0) },
+                min_width: if illustrated { px(275.0) } else { px(0.0) },
+                max_width: if illustrated { px(550.0) } else { px(660.0) },
+                margin: if illustrated { UiRect::left(percent(7.0)) }
+                    else { UiRect::default() },
+                border: if illustrated { px(2.0).all() } else { UiRect::default() },
                 flex_direction: FlexDirection::Column,
                 padding: px(26.0).all(),
                 row_gap: px(10.0),
                 ..default()
             },
-            BackgroundColor(Color::srgba(0.055, 0.072, 0.12, 0.97)),
+            BorderColor::all(Color::srgba(0.86, 0.68, 0.38, 0.95)),
+            BackgroundColor(Color::srgba(0.055, 0.072, 0.12,
+                if illustrated { 0.85 } else { 0.97 })),
         )).with_children(|panel| {
             panel.spawn((
                 Text::new(title),
@@ -2326,6 +2366,22 @@ mod tests {
         assert!(matches!(top, bevy::ui::Val::Px(v) if (v - 168.0).abs() < 0.01));
         assert!(matches!(width, bevy::ui::Val::Px(v) if (v - 510.0).abs() < 0.01));
         assert!(matches!(height, bevy::ui::Val::Px(v) if (v - 36.0).abs() < 0.01));
+    }
+
+    #[test]
+    fn menu_backdrops_preserve_aspect_ratio_across_windows() {
+        for window in [
+            bevy::math::Vec2::new(1280.0, 720.0),
+            bevy::math::Vec2::new(810.0, 450.0),
+            bevy::math::Vec2::new(800.0, 600.0),
+            bevy::math::Vec2::new(1920.0, 1080.0),
+        ] {
+            let (offset, drawn) = super::menu_backdrop_cover(window);
+            assert!((drawn.x / drawn.y - 1280.0 / 720.0).abs() < 0.0001);
+            assert!(drawn.x + 0.01 >= window.x && drawn.y + 0.01 >= window.y);
+            assert!((offset.x * 2.0 + drawn.x - window.x).abs() < 0.01);
+            assert!((offset.y * 2.0 + drawn.y - window.y).abs() < 0.01);
+        }
     }
 
     #[test]
