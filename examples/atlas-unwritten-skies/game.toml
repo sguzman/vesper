@@ -32,7 +32,7 @@ first_morning = "assets/backgrounds/first_morning.png"
 [menu_backgrounds]
 main = "assets/backgrounds/observatory_dawn.png"
 pause = "assets/backgrounds/observatory_night.png"
-settings = "assets/backgrounds/name_garden.png"
+settings = "assets/backgrounds/observatory_close.png"
 
 [music]
 archive = "assets/audio/archive.ogg"

@@ -75,7 +75,7 @@ original geometry at compact widths instead of stretching to fill the frame.
 
 Atlas now provides three independently selectable backgrounds through its
 `[menu_backgrounds]` manifest section: **observatory dawn** for the main menu,
-**observatory night** for Pause, and **name garden** for Settings. These reuse
+**observatory night** for Pause, and **observatory close-up** for Settings. These reuse
 the game's existing full-size illustrations, with a dark scrim and a readable
 native interactive menu above them. The engine supports any valid game-local
 PNG for each slot, so game authors can replace them with dedicated artwork

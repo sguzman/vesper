@@ -60,7 +60,7 @@ A game may opt into any subset of the three menu images in `game.toml`:
 [menu_backgrounds]
 main = "assets/backgrounds/observatory_dawn.png"
 pause = "assets/backgrounds/observatory_night.png"
-settings = "assets/backgrounds/name_garden.png"
+settings = "assets/backgrounds/observatory_close.png"
 ```
 
 Each is a separately selected, game-local PNG. Missing entries preserve the
