@@ -443,6 +443,24 @@ struct NameplateAnchor;
 #[derive(Component)]
 struct HintAnchor;
 
+/// A stage-specific visual keyboard legend lives inside the authored hint slot.
+/// The source hint text remains mounted for text diagnostics and future A11y.
+#[derive(Component)]
+struct StoryHintKeycaps(u8);
+#[derive(Component)]
+struct HiddenHintText;
+
+fn sync_story_hint_keycaps(
+    session: Res<Session>, mut legends: Query<(&StoryHintKeycaps, &mut Node)>,
+) {
+    if !session.is_changed() { return; }
+    let active = if session.finished { 2 } else if session.choosing { 1 } else { 0 };
+    for (stage, mut node) in &mut legends {
+        let display = if stage.0 == active { Display::Flex } else { Display::None };
+        if node.display != display { node.display = display; }
+    }
+}
+
 /// Full-bleed optional menu illustration. Reflow to aspect-preserving cover,
 /// never stretching illustrated instruments when window dimensions change.
 #[derive(Component)]
@@ -1224,7 +1242,7 @@ fn main() {
         .add_systems(Update, (
             (
                 font_browser::wheel, font_browser::pointer, settings::pointer,
-                advance_from_keyboard, history::wheel,
+                sync_story_hint_keycaps, advance_from_keyboard, history::wheel,
                 choices::sync_rows, choices::sync_row_style,
                 choices::scroll_selected, choices::sync_viewport,
                 choices::reserve_row_height, readout::tick, readout::sync_spans,
@@ -1695,17 +1713,40 @@ fn setup(
                             ..default()
                         },
                     )).with_children(|slot| {
+                        // Keep the dynamic string for diagnostics, but draw
+                        // distinct keycaps in the same protected writing slot.
+                        let mut invisible = hint_style.color;
+                        invisible[3] = 0.0;
                         slot.spawn((
-                            StoryText::Hint,
+                            HiddenHintText, StoryText::Hint,
                             Text::new(panel_hint(&initial, &theme)),
                             TextFont { font: font.clone(),
                                 font_size: FontSize::Px(hint_style.size), ..default() },
-                            text_color(hint_style.color),
+                            text_color(invisible),
                             TextLayout::new(Justify::Left, LineBreak::NoWrap),
-                            Node { width: percent(100.0),
+                            Node { position_type: PositionType::Absolute,
+                                width: percent(100.0),
                                 min_height: px(hint_style.size * 1.3),
                                 flex_shrink: 0.0, ..default() },
                         ));
+                        let active = if session.finished { 2 }
+                            else if session.choosing { 1 } else { 0 };
+                        for (stage, legend) in [
+                            (0, "Enter: Continue    H: History    P: Pause    M: Menu"),
+                            (1, "↑↓: Move    Enter: Choose    H: History    P: Pause"),
+                            (2, "↑↓: Select    Enter: Confirm    R: Replay"),
+                        ] {
+                            slot.spawn((
+                                StoryHintKeycaps(stage),
+                                Node { position_type: PositionType::Absolute,
+                                    top: px(0.0), left: px(0.0), width: percent(100.0),
+                                    display: if stage == active { Display::Flex }
+                                        else { Display::None },
+                                    ..default() },
+                            )).with_children(|legend_root| {
+                                spawn_keyboard_legend(legend_root, legend, &font);
+                            });
+                        }
                     });
                 } else {
                     parent.spawn((

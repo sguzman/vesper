@@ -775,7 +775,7 @@ pub fn sync_visuals(
     session: Res<Session>, state: Res<SettingsState>,
     assets: Res<AssetServer>,
     mut panels: Query<&mut BackgroundColor, (With<StoryPanel>, Without<SettingsPreviewPanel>)>,
-    mut texts: Query<(&StoryText, &mut TextFont, &mut TextColor), (Without<Preview>, Without<SettingsRowLabel>)>,
+    mut texts: Query<(&StoryText, &mut TextFont, &mut TextColor, Has<HiddenHintText>), (Without<Preview>, Without<SettingsRowLabel>)>,
     mut preview_panels: Query<&mut BackgroundColor, (With<SettingsPreviewPanel>, Without<StoryPanel>, Without<SettingsRow>)>,
     mut previews: Query<(&Preview, &mut TextFont, &mut TextColor), (Without<StoryText>, Without<SettingsRowLabel>)>,
     mut labels: Query<(&SettingsRowLabel, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowValue>)>,
@@ -808,7 +808,7 @@ pub fn sync_visuals(
         for mut color in &mut panels {
             color.0 = Color::srgba(p[0], p[1], p[2], p[3]);
         }
-        for (slot, mut text_font, mut color) in &mut texts {
+        for (slot, mut text_font, mut color, hidden) in &mut texts {
             let style = match slot {
                 StoryText::Speaker => &theme.speaker,
                 StoryText::Body => if session.choosing { &theme.choices } else { &theme.dialogue },
@@ -816,7 +816,9 @@ pub fn sync_visuals(
             };
             text_font.font = font.clone();
             text_font.font_size = FontSize::Px(style.size);
-            *color = text_color(style.color);
+            let mut tint = style.color;
+            if hidden { tint[3] = 0.0; }
+            *color = text_color(tint);
         }
         *last = Some(session.preferences.clone());
     }
