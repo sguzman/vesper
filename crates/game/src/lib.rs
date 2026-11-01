@@ -1498,9 +1498,11 @@ start_phase_seconds = 2.5
             "[pause]\npanel_width_percent = 45.0\nbutton_height = 52.0"
         ).unwrap();
         assert!(valid.pause.unwrap().validate().is_ok());
-        let mut bad = MenuSkin::default();
-        bad.panel_width_percent = 90.0;
-        bad.panel_offset_percent = 20.0;
+        let mut bad = MenuSkin {
+            panel_width_percent: 90.0,
+            panel_offset_percent: 20.0,
+            ..MenuSkin::default()
+        };
         assert!(bad.validate().unwrap_err().contains("viewport"));
         bad.panel_width_percent = 44.0;
         bad.selected_fill = [f32::NAN, 0.3, 0.2, 1.0];
