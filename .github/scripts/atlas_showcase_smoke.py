@@ -554,7 +554,7 @@ def responsive_layout() -> None:
                 time.sleep(0.65)
                 screenshot(win, "menu-main-illustrated.png")
                 capture_menu_viewports("main")
-                assert "Vesper Pause menu backdrop loaded: assets/backgrounds/observatory_night.png" in read_log(log)
+                assert "Vesper Pause menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
                 assert "Vesper Main menu backdrop loaded: assets/backgrounds/observatory_dawn.png" in read_log(log)
                 assert "Vesper settings menu backdrop loaded: assets/backgrounds/observatory_close.png" in read_log(log)
                 for decoration in [
