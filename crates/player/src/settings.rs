@@ -665,12 +665,8 @@ pub fn open(
                     }
                 }
             });
-            panel.spawn((
-                Text::new("↑↓ select    ←→ adjust    Enter activate    Esc back"),
-                TextFont { font, font_size: FontSize::Px(13.0), ..default() },
-                TextColor(Color::srgba(0.76, 0.8, 0.86, 1.0)),
-                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
-            ));
+            spawn_keyboard_legend(panel,
+                "↑↓: select    ←→: adjust    Enter: activate    Esc: back", &font);
         });
     }).id();
     state.overlay = Some(overlay);

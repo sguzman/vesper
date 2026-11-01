@@ -1770,6 +1770,52 @@ fn update_screen(
 
 
 
+/// Keyboard affordances are rendered as individual, bordered keycaps.
+/// Unlike a plain hint sentence, the physical keys are visually distinguishable
+/// from their actions. The same helper is used by menus and Settings.
+fn keyboard_legend_pairs(instructions: &str) -> impl Iterator<Item = (&str, &str)> {
+    instructions.split("    ").filter_map(|part| part.split_once(": "))
+}
+
+fn spawn_keyboard_legend(
+    parent: &mut ChildSpawnerCommands, instructions: &str, font: &FontSource,
+) {
+    parent.spawn((
+        Name::new("Keyboard shortcut keycaps"),
+        Node {
+            width: percent(100.0), flex_direction: FlexDirection::Row,
+            flex_wrap: FlexWrap::Wrap, column_gap: px(12.0), row_gap: px(7.0),
+            margin: UiRect::top(px(9.0)), ..default()
+        },
+    )).with_children(|legend| {
+        for (key, action) in keyboard_legend_pairs(instructions) {
+            legend.spawn((
+                Node { flex_direction: FlexDirection::Row, align_items: AlignItems::Center,
+                    column_gap: px(5.0), flex_shrink: 0.0, ..default() },
+            )).with_children(|pair| {
+                pair.spawn((
+                    Name::new(format!("Keycap {key}")),
+                    Node { border: px(1.0).all(), border_radius: BorderRadius::all(px(3.0)),
+                        padding: UiRect::axes(px(6.0), px(2.0)), ..default() },
+                    BorderColor::all(Color::srgba(0.96, 0.77, 0.39, 1.0)),
+                    BackgroundColor(Color::srgba(0.03, 0.055, 0.12, 0.97)),
+                )).with_children(|cap| {
+                    cap.spawn((
+                        Text::new(key.to_owned()),
+                        TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
+                        TextColor(Color::srgba(1.0, 0.91, 0.72, 1.0)),
+                    ));
+                });
+                pair.spawn((
+                    Text::new(action.to_owned()),
+                    TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
+                    TextColor(Color::srgba(0.83, 0.86, 0.89, 1.0)),
+                ));
+            });
+        }
+    });
+}
+
 /// The overlay layout stays mounted for its entire menu lifetime; moving focus
 /// never despawns entities, rewrites a giant Text node, or resets the story.
 fn spawn_center_menu(
@@ -1893,13 +1939,7 @@ fn spawn_center_menu(
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
             ));
             spawn_menu_rows(panel, kind, options, &font, skin, assets);
-            panel.spawn((
-                Text::new(instructions),
-                TextFont { font, font_size: FontSize::Px(15.0), ..default() },
-                TextColor(Color::srgba(0.72, 0.77, 0.84, 1.0)),
-                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
-                Node { margin: UiRect::top(px(6.0)), ..default() },
-            ));
+            spawn_keyboard_legend(panel, instructions, &font);
         });
     }).id()
 }
@@ -2558,6 +2598,17 @@ mod tests {
     use super::{fade_fraction, viewport_metrics, panel_metrics};
     use bevy::{audio::Decodable, prelude::{AudioSource, Vec2}};
     use std::{fs, path::Path, sync::Arc};
+
+    #[test]
+    fn shortcut_legend_has_individual_physical_key_labels() {
+        let pairs: Vec<_> = super::keyboard_legend_pairs(
+            "Up/Down: select    Enter: confirm    P: resume    Esc: quit"
+        ).collect();
+        assert_eq!(pairs, vec![
+            ("Up/Down", "select"), ("Enter", "confirm"),
+            ("P", "resume"), ("Esc", "quit"),
+        ]);
+    }
 
     #[test]
     fn ending_actions_are_separate_widgets() {
