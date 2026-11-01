@@ -665,6 +665,16 @@ fn spawn_menu_rows(
                 MenuRow { kind, index },
                 feedback::FocusFeedback::menu(kind, index, false),
                 Button, Hovered::default(),
+                // Main/Pause actions should respond on primary mouse-down, not
+                // after the full click/release/Activate cycle. This removes
+                // the user-perceived click latency without changing keyboard
+                // activation or the artwork.
+                observe(move |press: On<bevy::picking::events::PointerPress>,
+                    mut pointer: ResMut<MenuPointer>| {
+                    if press.button == bevy::picking::pointer::PointerButton::Primary {
+                        pointer.action = Some((kind, index));
+                    }
+                }),
                 observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
                     pointer.action = Some((kind, index));
                 }),
@@ -747,6 +757,12 @@ fn spawn_menu_rows(
                 feedback::FocusFeedback::menu(kind, index, false),
                 Button,
                 Hovered::default(),
+                observe(move |press: On<bevy::picking::events::PointerPress>,
+                    mut pointer: ResMut<MenuPointer>| {
+                    if press.button == bevy::picking::pointer::PointerButton::Primary {
+                        pointer.action = Some((kind, index));
+                    }
+                }),
                 observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
                     pointer.action = Some((kind, index));
                 }),
