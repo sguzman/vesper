@@ -448,6 +448,16 @@ struct HintAnchor;
 #[derive(Component)]
 struct MenuBackdrop;
 
+#[derive(Component)]
+struct MenuOverlayRoot;
+
+/// Bevy's UiScale also scales absolute UI pixels. Menu backdrops and their
+/// overlay roots must use unscaled logical dimensions to cover the full
+/// physical window on compact displays.
+fn menu_logical_viewport(viewport: Vec2, scale: f32) -> Vec2 {
+    viewport / scale.max(0.05)
+}
+
 fn menu_backdrop_cover(viewport: Vec2) -> (Vec2, Vec2) {
     let scale = (viewport.x / 1280.0).max(viewport.y / 720.0);
     let drawn = Vec2::new(1280.0 * scale, 720.0 * scale);
@@ -456,12 +466,19 @@ fn menu_backdrop_cover(viewport: Vec2) -> (Vec2, Vec2) {
 
 fn sync_menu_backdrops(
     windows: Query<&Window, With<PrimaryWindow>>,
-    mut backdrops: Query<&mut Node, With<MenuBackdrop>>,
+    ui_scale: Res<UiScale>,
+    mut backdrops: Query<&mut Node, (With<MenuBackdrop>, Without<MenuOverlayRoot>)>,
+    mut overlays: Query<&mut Node, (With<MenuOverlayRoot>, Without<MenuBackdrop>)>,
 ) {
     let Ok(window) = windows.single() else { return; };
-    if backdrops.is_empty() { return; }
-    let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
-    if viewport.x <= 0.0 || viewport.y <= 0.0 { return; }
+    if backdrops.is_empty() && overlays.is_empty() { return; }
+    let physical = Vec2::new(window.resolution.width(), window.resolution.height());
+    if physical.x <= 0.0 || physical.y <= 0.0 { return; }
+    let viewport = menu_logical_viewport(physical, ui_scale.0);
+    for mut root in &mut overlays {
+        if root.width != px(viewport.x) { root.width = px(viewport.x); }
+        if root.height != px(viewport.y) { root.height = px(viewport.y); }
+    }
     let (offset, drawn) = menu_backdrop_cover(viewport);
     for mut node in &mut backdrops {
         if node.width != px(drawn.x) { node.width = px(drawn.x); }
@@ -660,8 +677,16 @@ fn spawn_menu_rows(
                         justify_content: if skin.centered {
                             JustifyContent::Center
                         } else { JustifyContent::FlexStart },
-                        padding: if skin.centered { UiRect::default() }
-                            else { UiRect::left(px(80.0)) },
+                        // Author-sized, resolution-independent interior. Even
+                        // if the text's intrinsic flex width fills the holder,
+                        // its glyphs cannot intrude on the plaque end ornaments.
+                        padding: if skin.centered {
+                            UiRect::horizontal(percent(skin.button_label_inset_percent))
+                        } else if skin.button_label_inset_percent > 0.0 {
+                            UiRect::left(percent(skin.button_label_inset_percent))
+                        } else {
+                            UiRect::left(px(80.0))
+                        },
                         ..default()
                     },
                 )).with_children(|holder| {
@@ -1763,6 +1788,7 @@ fn spawn_center_menu(
     let illustrated = background_image.is_some();
     commands.spawn((
         Name::new(format!("{kind:?} overlay")),
+        MenuOverlayRoot,
         Node {
             position_type: PositionType::Absolute,
             left: percent(0.0), top: percent(0.0),
@@ -2698,6 +2724,17 @@ mod tests {
         assert_ne!(idle, active);
         assert_ne!(idle_ink, active_ink);
         assert_ne!(idle_edge, active_edge);
+    }
+
+    #[test]
+    fn compact_menu_backdrops_cover_the_physical_window_after_ui_scaling() {
+        let physical = bevy::math::Vec2::new(946.0, 511.0);
+        let scale = 0.71;
+        let logical = super::menu_logical_viewport(physical, scale);
+        let (offset, drawn) = super::menu_backdrop_cover(logical);
+        assert!(drawn.x * scale >= physical.x - 0.01);
+        assert!(drawn.y * scale >= physical.y - 0.01);
+        assert!(offset.x <= 0.01 && offset.y <= 0.01);
     }
 
     #[test]

@@ -89,6 +89,9 @@ pub struct MenuSkin {
     pub button_selected_image: Option<String>,
     /// Nine-slice border pixels [left, right, top, bottom] for menu plaques.
     pub button_slice_border: [f32; 4],
+    /// Symmetric safe label gutter, as a percentage of the plaque width.
+    /// Keeps text clear of authored corner and end ornaments.
+    pub button_label_inset_percent: f32,
     /// Optional custom title instead of engine's default menu label.
     pub title: Option<String>,
     pub decor_image: Option<String>,
@@ -111,6 +114,7 @@ impl Default for MenuSkin {
             button_idle_image: None,
             button_selected_image: None,
             button_slice_border: [16.0, 16.0, 16.0, 16.0],
+            button_label_inset_percent: 0.0,
             title: None,
             decor_image: None,
             decor_opacity: 0.24,
@@ -127,6 +131,7 @@ impl MenuSkin {
             ("button_height", self.button_height, 32.0, 82.0),
             ("button_text_size", self.button_text_size, 12.0, 36.0),
             ("button_gap", self.button_gap, 2.0, 30.0),
+            ("button_label_inset_percent", self.button_label_inset_percent, 0.0, 30.0),
         ] {
             if !val.is_finite() || !(lo..=hi).contains(&val) {
                 return Err(format!("menu skin {key} must be in {lo}..={hi}"));
@@ -1578,6 +1583,15 @@ start_phase_seconds = 2.5
         assert!(skin.validate().unwrap_err().contains("overlaps"));
         skin.hint_region = Some([0.255, 0.65, 0.51, 0.11]);
         assert!(skin.validate().is_ok());
+    }
+
+    #[test]
+    fn menu_label_gutter_is_bounded_and_authorable() {
+        let mut skin = super::MenuSkin::default();
+        skin.button_label_inset_percent = 18.0;
+        assert!(skin.validate().is_ok());
+        skin.button_label_inset_percent = 40.0;
+        assert!(skin.validate().is_err());
     }
 
     #[test]

@@ -280,6 +280,7 @@ pub fn open(
     let skin = session.game.manifest.menu_skins.settings.as_ref();
     let overlay = commands.spawn((
         Name::new("Player settings overlay"),
+        MenuOverlayRoot,
         Node {
             position_type: PositionType::Absolute,
             width: percent(100.0), height: percent(100.0),
