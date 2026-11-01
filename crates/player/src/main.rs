@@ -2532,11 +2532,11 @@ mod tests {
     #[test]
     fn authored_hint_rectangle_does_not_inherit_the_lower_border_offset() {
         let (left, top, width, height) =
-            super::hint_region_bounds([0.255, 0.65, 0.51, 0.11], 1000.0, 300.0);
+            super::hint_region_bounds([0.255, 0.57, 0.51, 0.075], 1000.0, 300.0);
         assert!(matches!(left, bevy::ui::Val::Px(v) if (v - 255.0).abs() < 0.01));
-        assert!(matches!(top, bevy::ui::Val::Px(v) if (v - 195.0).abs() < 0.01));
+        assert!(matches!(top, bevy::ui::Val::Px(v) if (v - 171.0).abs() < 0.01));
         assert!(matches!(width, bevy::ui::Val::Px(v) if (v - 510.0).abs() < 0.01));
-        assert!(matches!(height, bevy::ui::Val::Px(v) if (v - 33.0).abs() < 0.01));
+        assert!(matches!(height, bevy::ui::Val::Px(v) if (v - 22.5).abs() < 0.01));
     }
 
     #[test]

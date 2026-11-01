@@ -149,16 +149,17 @@ transparent_background = true
 compact_top_boost = 40.0
 # Explicit protected writing region: no prose on the globe/ivy/compass/trim.
 # Fractions are of the actual panel dimensions, not the viewport.
-safe_area = [0.255, 0.23, 0.36, 0.37]
+safe_area = [0.255, 0.23, 0.36, 0.45]
 # The upper navy label is distinct from the parchment writing region.
 # Horizontal fractions refer to the aspect-preserved left image cap,
 # not the stretchable whole frame; vertical fractions refer to frame height.
 speaker_area = [0.46, 0.15, 0.33, 0.16]
 # [left, right, bottom]. Keep short help visually below body prose.
 hint_area = [0.255, 0.23, 0.335]
-# Dedicated bounded legend, away from the lower gold border and ornamental crest.
+# Dedicated bounded legend inside the *painted paper* above the lower
+# brass filigree. Reserve the body separately so text cannot intersect it.
 # [left, top, width, height] of the panel, independent of prose padding.
-hint_region = [0.255, 0.65, 0.51, 0.11]
+hint_region = [0.255, 0.57, 0.51, 0.075]
 
 # Keep the globe, books and lantern at their original aspect ratio.
 # Nine-region hinge: preserve the globe, blue titleplate, compass, lantern,
