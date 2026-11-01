@@ -56,9 +56,10 @@ gold speaker lettering on the navy label is preserved. Preferences persist witho
 Atlas uses a fixed-size illustrated frame and an explicit protected text-safe
 rectangle measured against the rendered panel. The skin declares an independent
 `speaker_area` relative to the non-stretching illustrated endcap, keeping
-names centered on the navy titleplate at any reader width, and `hint_area` for the smaller instruction
-legend below the body. Prose, speaker and hint no longer compete for the same
-layout space, regardless of text length.
+names centered on the navy titleplate at any reader width, and the dedicated
+`hint_region = [left, top, width, height]` for the smaller instruction legend
+safely above the ornate lower border. Older skins can still use `hint_area`.
+Prose, speaker and hint no longer compete for the same layout space.
 Longer prose is paginated at sentence and word boundaries into short,
 readable pages (at most 22 words / 120 characters each), preserving every
 word of the original novel. The engine still supports height easing for
@@ -66,10 +67,20 @@ unusual content and respects reduced-motion settings.
 
 **Artwork authoring:** the engine also accepts optional two-axis cuts
 (`vertical_slices` and `reference_height`) for **intentionally authored
-stretchable-paper skins**. Atlas's original painting is *not* vertically
-slice-safe—its books, ivy and lantern cross the potential cut—so Atlas itself
-retains the nonwarping, aspect-preserving three-part configuration rather than
-distorting its ornaments.
+stretchable-paper skins**. Atlas therefore uses an authored narrow nine-region hinge and a height
+limit tied to the preserved cap aspect ratio. The ornaments retain their
+original geometry at compact widths instead of stretching to fill the frame.
+
+## Illustrated menus
+
+Atlas now provides three independently selectable backgrounds through its
+`[menu_backgrounds]` manifest section: **observatory dawn** for the main menu,
+**observatory night** for Pause, and **name garden** for Settings. These reuse
+the game's existing full-size illustrations, with a dark scrim and a readable
+native interactive menu above them. The engine supports any valid game-local
+PNG for each slot, so game authors can replace them with dedicated artwork
+without code changes. The UI stays usable for games that specify no menu
+images.
 
 ## Controls
 

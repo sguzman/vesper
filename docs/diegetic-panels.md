@@ -36,6 +36,41 @@ panel default
 
 `panel default` clears the **scene override**; it returns to the theme default, which can itself be a skin. In the Field Notebook example there is no theme default skin, so `panel default` returns to plain dark panel styling. The scene command is not dynamic image generation, scripting or animation.
 
+## Precise text slots for ornate frames
+
+Games can optionally specify `speaker_area = [left, top, width, height]`
+to anchor speaker text to their painted titleplate. The renderer centers the
+speaker text vertically in this region, which follows the non-stretched art
+cap rather than drifting when the panel changes width.
+
+For instruction legends, use `hint_region = [left, top, width, height]`
+under `[panel_skins.<skin>]` instead of nudging padding. These four values are
+fractions of the rendered panel, each from 0 to 1; the rectangle must fit
+within the panel and have a positive width/height. The engine bounds the hint
+to this rectangle and wraps text there rather than overlapping the lower
+ornament. Existing three-number `hint_area = [left, right, bottom]` remains
+supported for older skins. Authors may choose their location to keep hints
+clear of artwork. The hint region is independent of speaker and prose layout.
+
+## Game-specific menu image backdrops
+
+A game may opt into any subset of the three menu images in `game.toml`:
+
+```toml
+[menu_backgrounds]
+main = "assets/backgrounds/observatory_dawn.png"
+pause = "assets/backgrounds/observatory_night.png"
+settings = "assets/backgrounds/name_garden.png"
+```
+
+Each is a separately selected, game-local PNG. Missing entries preserve the
+usual solid-color menus. Menu and settings controls remain native UI with
+their existing keyboard/mouse behavior; a dark readability scrim overlays
+decorative images. The paths follow the same canonicalized root-containment
+and PNG-extension requirements as other authored images, so external file
+references and traversal are rejected. Atlas uses three illustrations it
+already ships; authors can swap in dedicated menu PNGs without changing Rust.
+
 ## Safety, compatibility and accessibility
 
 - Panel keys must use the engine's ordinary identifier rules; `default` is reserved. Every referenced skin key must exist, including references from themes and story commands.
