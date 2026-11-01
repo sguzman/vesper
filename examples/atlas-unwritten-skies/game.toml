@@ -74,6 +74,26 @@ selected_fill = [0.24, 0.17, 0.078, 0.98]
 normal_text = [0.93, 0.86, 0.72, 1.0]
 selected_text = [1.0, 0.96, 0.8, 1.0]
 
+# Diegetic archive control desk: labeled settings rows, value badges,
+# numeric slider rails, toggles and a live parchment preview.
+[menu_skins.settings]
+panel_width_percent = 71.0
+panel_offset_percent = 5.0
+panel_opacity = 0.91
+title_size = 28.0
+button_height = 35.0
+button_text_size = 16.0
+button_gap = 3.0
+centered = false
+show_numbers = false
+panel_color = [0.033, 0.061, 0.105, 1.0]
+border_color = [0.91, 0.7, 0.37, 1.0]
+title_color = [0.97, 0.84, 0.6, 1.0]
+normal_fill = [0.045, 0.09, 0.16, 0.9]
+selected_fill = [0.18, 0.13, 0.055, 0.96]
+normal_text = [0.95, 0.86, 0.69, 1.0]
+selected_text = [1.0, 0.96, 0.8, 1.0]
+
 [music]
 archive = "assets/audio/archive.ogg"
 threshold = "assets/audio/threshold.ogg"

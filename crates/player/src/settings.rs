@@ -574,7 +574,10 @@ pub fn sync_visuals(
     }
     if state.overlay.is_none() { return; }
     for mut position in &mut scrolling {
-        position.0.y = state.selection.saturating_sub(4) as f32 * 31.0;
+        // Themed controls are taller and separated by section headings.
+        let styled = session.game.manifest.menu_skins.settings.is_some();
+        position.0.y = state.selection.saturating_sub(4) as f32
+            * if styled { 43.0 } else { 31.0 };
     }
     let font = text_font(&theme, &assets);
     let mut p = theme.panel.background;
