@@ -149,7 +149,7 @@ transparent_background = true
 compact_top_boost = 40.0
 # Explicit protected writing region: no prose on the globe/ivy/compass/trim.
 # Fractions are of the actual panel dimensions, not the viewport.
-safe_area = [0.255, 0.23, 0.36, 0.45]
+safe_area = [0.255, 0.23, 0.34, 0.45]
 # The upper navy label is distinct from the parchment writing region.
 # Horizontal fractions refer to the aspect-preserved left image cap,
 # not the stretchable whole frame; vertical fractions refer to frame height.
