@@ -1847,9 +1847,19 @@ fn spawn_ornate_menu_heading(
             TextFont { font: font.clone(), font_size: FontSize::Px(skin.title_size), ..default() },
             TextColor(rgba(skin.title_color)),
             TextLayout::new(Justify::Center, LineBreak::WordOrCharacter),
-            Node { width: percent(100.0), padding: UiRect::horizontal(percent(12.0)), ..default() },
+            Node { width: percent(100.0), padding: UiRect::horizontal(percent(17.0)), ..default() },
         ));
     });
+    if let Some(caption) = skin.subtitle.as_deref() {
+        parent.spawn((
+            Name::new("Authored title subtitle"),
+            Text::new(caption.to_owned()),
+            TextFont { font: font.clone(), font_size: FontSize::Px(15.0), ..default() },
+            TextColor(Color::srgba(0.96, 0.78, 0.47, 1.0)),
+            TextLayout::new(Justify::Center, LineBreak::NoWrap),
+            Node { width: percent(100.0), ..default() },
+        ));
+    }
 }
 
 /// Keyboard affordances are rendered as individual, bordered keycaps.

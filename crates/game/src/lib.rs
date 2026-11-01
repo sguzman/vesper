@@ -94,6 +94,8 @@ pub struct MenuSkin {
     pub button_label_inset_percent: f32,
     /// Optional custom title instead of engine's default menu label.
     pub title: Option<String>,
+    /// Optional smaller live-text caption below the illustrated title plaque.
+    pub subtitle: Option<String>,
     pub decor_image: Option<String>,
     pub decor_opacity: f32,
 }
@@ -116,6 +118,7 @@ impl Default for MenuSkin {
             button_slice_border: [16.0, 16.0, 16.0, 16.0],
             button_label_inset_percent: 0.0,
             title: None,
+            subtitle: None,
             decor_image: None,
             decor_opacity: 0.24,
         }
@@ -148,6 +151,9 @@ impl MenuSkin {
         }
         if self.title.as_ref().is_some_and(|v| v.trim().is_empty() || v.chars().count() > 120) {
             return Err("menu skin title must be 1..=120 characters".into());
+        }
+        if self.subtitle.as_ref().is_some_and(|v| v.trim().is_empty() || v.chars().count() > 120) {
+            return Err("menu skin subtitle must be 1..=120 characters".into());
         }
         if self.button_idle_image.is_some() != self.button_selected_image.is_some() {
             return Err("menu skin button images require both idle and selected PNG paths".into());
@@ -1560,6 +1566,15 @@ start_phase_seconds = 2.5
         assert!(images.validate().unwrap_err().contains("both idle and selected"));
         images.button_selected_image = Some("assets/menus/button-selected.png".into());
         assert!(images.validate().is_ok());
+        let caption: MenuSkin = toml::from_str(
+            "title = \"ATLAS\"\nsubtitle = \"The Atlas of Unwritten Skies\""
+        ).unwrap();
+        assert!(caption.validate().is_ok());
+        assert_eq!(caption.subtitle.as_deref(), Some("The Atlas of Unwritten Skies"));
+        let bad_caption = MenuSkin {
+            subtitle: Some(" ".into()), ..MenuSkin::default()
+        };
+        assert!(bad_caption.validate().unwrap_err().contains("subtitle"));
     }
 
     #[test]
