@@ -1002,6 +1002,7 @@ fn main() {
         .insert_resource(settings::SettingsState::default())
         .insert_resource(settings::SettingsClicks::default())
         .insert_resource(settings::SettingsAdjustClicks::default())
+        .insert_resource(settings::SettingsTabClicks::default())
         .insert_resource(font_browser::State::default())
         .insert_resource(font_browser::Click::default())
         .insert_resource(MenuPointer::default())

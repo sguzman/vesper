@@ -35,6 +35,24 @@ pub struct SettingsClicks(pub Option<usize>);
 /// Pointer-activated left/right controls use exactly the keyboard edit path.
 #[derive(Resource, Default)]
 pub struct SettingsAdjustClicks(pub Option<(usize, i32)>);
+#[derive(Resource, Default)]
+pub struct SettingsTabClicks(pub Option<usize>);
+#[derive(Component)]
+pub struct SettingsTab(pub usize);
+#[derive(Component)]
+pub struct SettingsTabLabel(pub usize);
+#[derive(Component)]
+pub struct SettingsSectionHeading(pub usize);
+
+const SECTION_START: [usize; 4] = [0, 4, 8, 11];
+const SECTION_LABEL: [&str; 4] = ["Reading", "Accessibility", "Layout", "Actions"];
+fn section(index: usize) -> usize {
+    if index < 4 { 0 } else if index < 8 { 1 } else if index < 11 { 2 } else { 3 }
+}
+fn section_label(tab: usize, active: bool) -> String {
+    if active { format!("◆ {}", SECTION_LABEL[tab]) }
+    else { SECTION_LABEL[tab].to_owned() }
+}
 #[derive(Component)]
 pub struct SettingsRowLabel(usize);
 #[derive(Component)]
@@ -340,6 +358,44 @@ pub fn open(
                 Node { width: percent(100.0), height: px(2.0), ..default() },
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
             ));
+            if let Some(skin) = skin {
+                panel.spawn((
+                    Name::new("Atlas settings category tabs"),
+                    Node {
+                        width: percent(100.0),
+                        flex_direction: FlexDirection::Row,
+                        column_gap: px(5.0), flex_shrink: 0.0, ..default()
+                    },
+                )).with_children(|tabs| {
+                    for group in 0..SECTION_LABEL.len() {
+                        tabs.spawn((
+                            SettingsTab(group),
+                            Button, Hovered::default(),
+                            Node {
+                                flex_grow: 1.0,
+                                padding: UiRect::axes(px(6.0), px(5.0)),
+                                align_items: AlignItems::Center,
+                                justify_content: JustifyContent::Center,
+                                border: px(1.0).all(), ..default()
+                            },
+                            BorderColor::all(rgba(skin.border_color)),
+                            BackgroundColor(rgba(skin.normal_fill)),
+                            observe(move |mut activate: On<Activate>,
+                                mut tabs: ResMut<SettingsTabClicks>| {
+                                activate.propagate(false);
+                                tabs.0 = Some(group);
+                            }),
+                        )).with_children(|button| {
+                            button.spawn((
+                                SettingsTabLabel(group),
+                                Text::new(section_label(group, group == section(state.selection))),
+                                TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
+                                TextColor(rgba(skin.title_color)),
+                            ));
+                        });
+                    }
+                });
+            }
             for i in 0..ITEMS.len() {
                 if let Some(skin) = skin
                     && matches!(i, 0 | 4 | 8 | 11)
@@ -351,10 +407,16 @@ pub fn open(
                         _ => "✦  ACTIONS  ✦",
                     };
                     panel.spawn((
+                        SettingsSectionHeading(section(i)),
                         Text::new(heading),
                         TextFont { font: font.clone(), font_size: FontSize::Px(12.0), ..default() },
                         TextColor(rgba(skin.title_color)),
-                        Node { margin: UiRect::top(px(6.0)), ..default() },
+                        Node {
+                            display: if section(i) == section(state.selection) {
+                                Display::Flex
+                            } else { Display::None },
+                            margin: UiRect::top(px(6.0)), ..default()
+                        },
                     ));
                 }
                 panel.spawn((
@@ -366,6 +428,9 @@ pub fn open(
                         clicks.0 = Some(i);
                     }),
                     Node {
+                        display: if skin.is_some() && section(i) != section(state.selection) {
+                            Display::None
+                        } else { Display::Flex },
                         width: percent(100.0),
                         min_height: skin.map_or(Val::Auto, |skin| px(skin.button_height.min(45.0))),
                         padding: if skin.is_some() { px(6.0).all() } else { px(3.0).all() },
@@ -566,11 +631,19 @@ pub fn pointer(
     assets: Res<AssetServer>,
     mut clicks: ResMut<SettingsClicks>,
     mut adjust: ResMut<SettingsAdjustClicks>,
+    mut tabs: ResMut<SettingsTabClicks>,
     mut browser: ResMut<font_browser::State>,
 ) {
     if state.overlay.is_none() || browser.overlay.is_some() {
         clicks.0 = None;
         adjust.0 = None;
+        tabs.0 = None;
+        return;
+    }
+    if let Some(group) = tabs.0.take() {
+        clicks.0 = None;
+        adjust.0 = None;
+        state.selection = SECTION_START[group];
         return;
     }
     if let Some((index, direction)) = adjust.0.take() {
@@ -604,8 +677,13 @@ pub fn sync_visuals(
     mut previews: Query<(&Preview, &mut TextFont, &mut TextColor), (Without<StoryText>, Without<SettingsRowLabel>)>,
     mut labels: Query<(&SettingsRowLabel, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowValue>)>,
     mut values: Query<(&SettingsRowValue, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowLabel>)>,
-    mut gauges: Query<(&SettingsSliderFill, &mut Node)>,
-    mut rows: Query<(&SettingsRow, &mut BackgroundColor, &mut BorderColor), (Without<StoryPanel>, Without<SettingsPreviewPanel>)>,
+    mut gauges: Query<(&SettingsSliderFill, &mut Node), Without<SettingsRow>>,
+    mut rows: Query<(&SettingsRow, &mut BackgroundColor, &mut BorderColor, &mut Node),
+        (Without<StoryPanel>, Without<SettingsPreviewPanel>, Without<SettingsSliderFill>, Without<SettingsSectionHeading>, Without<SettingsTab>)>,
+    mut headings: Query<(&SettingsSectionHeading, &mut Node),
+        (Without<SettingsRow>, Without<SettingsSliderFill>, Without<SettingsTab>)>,
+    mut tab_labels: Query<(&SettingsTabLabel, &mut Text),
+        (Without<SettingsRowValue>, Without<SettingsRowLabel>, Without<Preview>, Without<StoryText>)>,
     mut scrolling: Query<&mut ScrollPosition, With<SettingsScroll>>,
     mut last: Local<Option<PlayerPreferences>>,
 ) {
@@ -641,8 +719,8 @@ pub fn sync_visuals(
     for mut position in &mut scrolling {
         // Themed controls are taller and separated by section headings.
         let styled = session.game.manifest.menu_skins.settings.is_some();
-        position.0.y = state.selection.saturating_sub(4) as f32
-            * if styled { 43.0 } else { 31.0 };
+        position.0.y = if styled { 0.0 }
+            else { state.selection.saturating_sub(4) as f32 * 31.0 };
     }
     let font = text_font(&theme, &assets);
     let mut p = theme.panel.background;
@@ -676,8 +754,18 @@ pub fn sync_visuals(
             node.width = percent(frac * 100.0);
         }
     }
-    for (row, mut background, mut border) in &mut rows {
+    for (group, mut node) in &mut headings {
+        let show = skin.is_none() || group.0 == section(state.selection);
+        node.display = if show { Display::Flex } else { Display::None };
+    }
+    for (tab, mut text) in &mut tab_labels {
+        let value = section_label(tab.0, tab.0 == section(state.selection));
+        if text.0 != value { text.0 = value; }
+    }
+    for (row, mut background, mut border, mut node) in &mut rows {
         let selected = row.0 == state.selection;
+        let show = skin.is_none() || section(row.0) == section(state.selection);
+        node.display = if show { Display::Flex } else { Display::None };
         if let Some(skin) = skin {
             let (fill, _, edge) = menu_skin_row_colors(skin, selected);
             if background.0 != fill { background.0 = fill; }
@@ -695,6 +783,19 @@ pub fn sync_visuals(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn section_navigation_is_total_and_stable() {
+        for index in 0..ITEMS.len() {
+            let group = section(index);
+            assert!(group < SECTION_LABEL.len());
+            assert!(index >= SECTION_START[group]);
+        }
+        assert_eq!(section(0), 0);
+        assert_eq!(section(4), 1);
+        assert_eq!(section(8), 2);
+        assert_eq!(section(12), 3);
+        assert!(section_label(2, true).starts_with('◆'));
+    }
     #[test]
     fn stepping_is_bounded() {
         assert!((step_scaled(0.60, -1, 0.60, 1., 0.05) - 0.60).abs() < 0.001);
