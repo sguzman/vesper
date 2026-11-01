@@ -1259,7 +1259,7 @@ fn main() {
                 ambient::sync, ambient::tick_motion, animate_panel_height,
                 sync_menu_backdrops,
             ).chain(),
-            (settings::sync_tab_art, settings::fit_panel_to_viewport).chain(),
+            (settings::sync_tab_art, settings::fit_panel_to_viewport, settings::wheel).chain(),
         ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
@@ -1813,6 +1813,19 @@ fn update_screen(
 
 
 
+/// Full-width flex alignment is necessary: intrinsic Bevy text justified
+/// alone did not center these glyphs or the authored Atlas subtitle.
+fn spawn_centered_caption(parent: &mut ChildSpawnerCommands, value: &str,
+    font: &FontSource, size: f32, color: Color) {
+    parent.spawn((Node { width: percent(100.0), min_width: px(0.0),
+        justify_content: JustifyContent::Center, align_items: AlignItems::Center,
+        flex_shrink: 0.0, ..default() },)).with_children(|holder| {
+        holder.spawn((Text::new(value.to_owned()),
+            TextFont { font: font.clone(), font_size: FontSize::Px(size), ..default() },
+            TextColor(color), TextLayout::new(Justify::Center, LineBreak::NoWrap)));
+    });
+}
+
 /// Native title plaque using the authored nine-sliced brass button art.
 /// Words remain real Bevy text and can never be baked into the illustration.
 fn spawn_ornate_menu_heading(
@@ -1852,14 +1865,8 @@ fn spawn_ornate_menu_heading(
         ));
     });
     if let Some(caption) = skin.subtitle.as_deref() {
-        parent.spawn((
-            Name::new("Authored title subtitle"),
-            Text::new(caption.to_owned()),
-            TextFont { font: font.clone(), font_size: FontSize::Px(15.0), ..default() },
-            TextColor(Color::srgba(0.96, 0.78, 0.47, 1.0)),
-            TextLayout::new(Justify::Center, LineBreak::NoWrap),
-            Node { width: percent(100.0), ..default() },
-        ));
+        spawn_centered_caption(parent, caption, font, 15.0,
+            Color::srgba(0.96, 0.78, 0.47, 1.0));
     }
 }
 
@@ -2036,13 +2043,8 @@ fn spawn_center_menu(
             )),
         )).with_children(|panel| {
             if skin.is_some_and(|s| s.centered) {
-                panel.spawn((
-                    Text::new("✦     ✧     ✦"),
-                    TextFont { font: font.clone(), font_size: FontSize::Px(18.0), ..default() },
-                    TextColor(Color::srgba(0.96, 0.77, 0.43, 1.0)),
-                    TextLayout::new(Justify::Center, LineBreak::NoWrap),
-                    Node { width: percent(100.0), ..default() },
-                ));
+                spawn_centered_caption(panel, "✦     ✧     ✦", &font, 18.0,
+                    Color::srgba(0.96, 0.77, 0.43, 1.0));
             }
             if let Some(skin) = skin.filter(|s| s.centered) {
                 spawn_ornate_menu_heading(panel, title, &font, assets, skin);
@@ -2060,13 +2062,8 @@ fn spawn_center_menu(
             ));
             spawn_menu_rows(panel, kind, options, &font, skin, assets);
             if skin.is_some_and(|s| s.centered) {
-                panel.spawn((
-                    Text::new("✧     ✦     ✧"),
-                    TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
-                    TextColor(Color::srgba(0.96, 0.77, 0.43, 0.94)),
-                    TextLayout::new(Justify::Center, LineBreak::NoWrap),
-                    Node { width: percent(100.0), ..default() },
-                ));
+                spawn_centered_caption(panel, "✧     ✦     ✧", &font, 13.0,
+                    Color::srgba(0.96, 0.77, 0.43, 0.94));
             }
             spawn_keyboard_legend(panel, instructions, &font, false);
         });

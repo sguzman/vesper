@@ -413,13 +413,8 @@ pub fn open(
             ScrollPosition(Vec2::ZERO),
         )).with_children(|panel| {
             if skin.is_some_and(|s| s.centered) {
-                panel.spawn((
-                    Text::new("✦  ✧  ✦"),
-                    TextFont { font: font.clone(), font_size: FontSize::Px(15.0), ..default() },
-                    TextColor(Color::srgba(0.96, 0.78, 0.46, 1.0)),
-                    TextLayout::new(Justify::Center, LineBreak::NoWrap),
-                    Node { width: percent(100.0), ..default() },
-                ));
+                spawn_centered_caption(panel, "✦  ✧  ✦", &font, 15.0,
+                    Color::srgba(0.96, 0.78, 0.46, 1.0));
             }
             if let Some(skin) = skin.filter(|s| s.centered) {
                 let title_font = FontSource::Family("DejaVu Serif".into());
@@ -869,6 +864,33 @@ pub fn fit_panel_to_viewport(
     }
 }
 
+/// Measured, bounded Settings scrolling keeps the lower preview and shortcut
+/// hints reachable on compact displays without touching player preferences.
+fn settings_scroll_max(node: &ComputedNode) -> f32 {
+    ((node.content_size().y - node.size().y).max(0.0)
+        * node.inverse_scale_factor).max(0.0)
+}
+
+pub fn wheel(
+    mut events: MessageReader<bevy::input::mouse::MouseWheel>,
+    state: Res<SettingsState>,
+    mut scrolling: Query<(&mut ScrollPosition, &ComputedNode), With<SettingsScroll>>,
+) {
+    use bevy::input::mouse::MouseScrollUnit;
+    let mut delta = 0.0;
+    for event in events.read() {
+        delta -= event.y * match event.unit {
+            MouseScrollUnit::Line => 65.0,
+            MouseScrollUnit::Pixel => 1.0,
+        };
+    }
+    if state.overlay.is_none() || delta == 0.0 { return; }
+    for (mut pos, node) in &mut scrolling {
+        let max = settings_scroll_max(node);
+        pos.0.y = (pos.0.y + delta).clamp(0.0, max);
+    }
+}
+
 /// Category plaques use authored art while pointer and keyboard focus
 /// remain owned by the same native Bevy SettingsTab entities.
 pub fn sync_tab_art(
@@ -1030,6 +1052,19 @@ pub fn sync_visuals(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn settings_scroll_bounds_follow_measured_content_and_ui_scale() {
+        let mut node = ComputedNode::default();
+        node.size = Vec2::new(780.0, 480.0);
+        node.content_size = Vec2::new(780.0, 760.0);
+        node.inverse_scale_factor = 1.0;
+        assert_eq!(settings_scroll_max(&node), 280.0);
+        node.inverse_scale_factor = 0.75;
+        assert_eq!(settings_scroll_max(&node), 210.0);
+        node.content_size.y = 300.0;
+        assert_eq!(settings_scroll_max(&node), 0.0);
+    }
+
     #[test]
     fn atlas_settings_panel_never_exceeds_compact_logical_viewport() {
         assert_eq!(responsive_panel_width(1280.0, 87.0), 1050.0);
