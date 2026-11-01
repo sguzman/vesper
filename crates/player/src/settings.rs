@@ -44,6 +44,8 @@ pub struct SettingsTabClicks(pub Option<usize>);
 #[derive(Component)]
 pub struct SettingsTab(pub usize);
 #[derive(Component)]
+pub struct SettingsTabArt(pub usize);
+#[derive(Component)]
 pub struct SettingsTabLabel(pub usize);
 #[derive(Component)]
 pub struct SettingsSectionHeading(pub usize);
@@ -458,6 +460,28 @@ pub fn open(
                                 tabs.0 = Some(group);
                             }),
                         )).with_children(|button| {
+                            if let (Some(idle), Some(selected)) = (
+                                &skin.button_idle_image, &skin.button_selected_image,
+                            ) {
+                                button.spawn((
+                                    Name::new(format!("Atlas illustrated category tab {group}")),
+                                    SettingsTabArt(group),
+                                    ImageNode {
+                                        image: assets.load(if group == section(state.selection) {
+                                            selected.clone()
+                                        } else { idle.clone() }),
+                                        image_mode: bevy::ui::widget::NodeImageMode::Sliced(
+                                            menu_button_slicer(skin.button_slice_border)),
+                                        ..default()
+                                    },
+                                    Node {
+                                        position_type: PositionType::Absolute,
+                                        left: px(0.0), top: px(0.0),
+                                        width: percent(100.0), height: percent(100.0),
+                                        ..default()
+                                    },
+                                ));
+                            }
                             button.spawn((
                                 SettingsTabLabel(group),
                                 Text::new(section_label(group, group == section(state.selection))),
@@ -801,6 +825,25 @@ pub fn pointer(
         if index == 12 { close(&mut session, &mut state, &mut commands, &assets); }
         else if index == 2 { font_browser::open(&session, &mut browser, &mut commands); }
         else { change(&mut session, index, 1, &writer); }
+    }
+}
+
+/// Category plaques use authored art while pointer and keyboard focus
+/// remain owned by the same native Bevy SettingsTab entities.
+pub fn sync_tab_art(
+    session: Res<Session>, state: Res<SettingsState>, assets: Res<AssetServer>,
+    mut art: Query<(&SettingsTabArt, &mut ImageNode)>,
+) {
+    if !state.is_changed() || state.overlay.is_none() { return; }
+    let Some(skin) = &session.game.manifest.menu_skins.settings else { return; };
+    for (tab, mut image) in &mut art {
+        let path = if tab.0 == section(state.selection) {
+            &skin.button_selected_image
+        } else { &skin.button_idle_image };
+        if let Some(path) = path {
+            let handle = assets.load(path.clone());
+            if image.image != handle { image.image = handle; }
+        }
     }
 }
 
