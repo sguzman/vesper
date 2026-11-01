@@ -483,6 +483,10 @@ enum MenuKind { Pause, Main, Ending }
 
 #[derive(Component)]
 struct MenuRow { kind: MenuKind, index: usize }
+#[derive(Component)]
+struct MenuRowLabel { kind: MenuKind, index: usize }
+#[derive(Component)]
+struct MenuRowArt { kind: MenuKind, index: usize }
 
 #[derive(Component)]
 struct EndingActions;
@@ -579,79 +583,174 @@ fn menu_row_colors(kind: MenuKind, selected: bool, accent: [f32; 4]) -> (Color, 
     }
 }
 
+fn menu_row_label(kind: MenuKind, index: usize, label: &str,
+    skin: Option<&vesper_game::MenuSkin>) -> String {
+    if skin.is_some_and(|skin| !skin.show_numbers) {
+        label.to_owned()
+    } else {
+        format!("{}. {}", index + 1, label)
+    }
+}
+
+fn menu_button_slicer() -> TextureSlicer {
+    // The illustrated end ornaments are never flattened across the button.
+    TextureSlicer {
+        border: BorderRect { left: 170.0, right: 170.0, top: 40.0, bottom: 40.0 },
+        center_scale_mode: SliceScaleMode::Stretch,
+        sides_scale_mode: SliceScaleMode::Stretch,
+        max_corner_scale: 1.0,
+    }
+}
+
 fn spawn_menu_rows(
     parent: &mut ChildSpawnerCommands,
     kind: MenuKind,
     options: &[&str],
     font: &FontSource,
     skin: Option<&vesper_game::MenuSkin>,
+    assets: &AssetServer,
 ) {
     for (index, label) in options.iter().enumerate() {
-        parent.spawn((
-            Name::new(format!("{kind:?} action {}", index + 1)),
-            MenuRow { kind, index },
-            feedback::FocusFeedback::menu(kind, index, false),
-            Button,
-            Hovered::default(),
-            observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
-                pointer.action = Some((kind, index));
-            }),
-            Text::new(if skin.is_some_and(|skin| !skin.show_numbers) {
-                label.to_string()
-            } else {
-                format!("{}. {}", index + 1, label)
-            }),
-            TextFont {
-                font: font.clone(),
-                font_size: FontSize::Px(skin.map_or(22.0, |skin| skin.button_text_size)),
-                ..default()
-            },
-            TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.normal_text))),
-            TextLayout::new(
-                if skin.is_some_and(|skin| skin.centered) { Justify::Center }
-                else { Justify::Left },
-                LineBreak::WordOrCharacter,
-            ),
-            Node {
-                width: percent(100.0),
-                min_height: skin.map_or(Val::Auto, |skin| px(skin.button_height)),
-                border: if skin.is_some() { px(2.0).all() }
-                    else { UiRect::default() },
-                margin: if skin.is_some() { UiRect::vertical(px(2.0)) }
-                    else { UiRect::default() },
-                padding: px(10.0).all(),
-                ..default()
-            },
-            BorderColor::all(skin.map_or(Color::NONE, |skin| rgba(skin.border_color))),
-            BackgroundColor(skin.map_or(Color::NONE, |skin| rgba(skin.normal_fill))),
-        ));
+        let title = menu_row_label(kind, index, label, skin);
+        if let Some(skin) = skin.filter(|s| s.button_idle_image.is_some()) {
+            parent.spawn((
+                Name::new(format!("{kind:?} illustrated action {}", index + 1)),
+                MenuRow { kind, index },
+                feedback::FocusFeedback::menu(kind, index, false),
+                Button, Hovered::default(),
+                observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
+                    pointer.action = Some((kind, index));
+                }),
+                Node {
+                    width: percent(100.0),
+                    min_height: px(skin.button_height),
+                    margin: UiRect::vertical(px(2.0)),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                BackgroundColor(Color::NONE),
+                BorderColor::all(Color::NONE),
+            )).with_children(|button| {
+                button.spawn((
+                    MenuRowArt { kind, index },
+                    ImageNode {
+                        image: assets.load(skin.button_idle_image.clone().unwrap_or_default()),
+                        image_mode: bevy::ui::widget::NodeImageMode::Sliced(menu_button_slicer()),
+                        ..default()
+                    },
+                    Node {
+                        position_type: PositionType::Absolute,
+                        left: px(0.0), top: px(0.0),
+                        width: percent(100.0), height: percent(100.0),
+                        ..default()
+                    },
+                ));
+                button.spawn((
+                    MenuRowLabel { kind, index },
+                    Text::new(title),
+                    TextFont { font: font.clone(),
+                        font_size: FontSize::Px(skin.button_text_size),
+                        ..default() },
+                    TextColor(rgba(skin.normal_text)),
+                    TextLayout::new(if skin.centered { Justify::Center }
+                        else { Justify::Left }, LineBreak::NoWrap),
+                    Node { width: percent(100.0), ..default() },
+                ));
+            });
+        } else {
+            parent.spawn((
+                Name::new(format!("{kind:?} action {}", index + 1)),
+                MenuRow { kind, index },
+                feedback::FocusFeedback::menu(kind, index, false),
+                Button,
+                Hovered::default(),
+                observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
+                    pointer.action = Some((kind, index));
+                }),
+                Text::new(title),
+                TextFont {
+                    font: font.clone(),
+                    font_size: FontSize::Px(skin.map_or(22.0, |skin| skin.button_text_size)),
+                    ..default()
+                },
+                TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.normal_text))),
+                TextLayout::new(
+                    if skin.is_some_and(|skin| skin.centered) { Justify::Center }
+                    else { Justify::Left },
+                    LineBreak::WordOrCharacter,
+                ),
+                Node {
+                    width: percent(100.0),
+                    min_height: skin.map_or(Val::Auto, |skin| px(skin.button_height)),
+                    border: if skin.is_some() { px(2.0).all() }
+                        else { UiRect::default() },
+                    margin: if skin.is_some() { UiRect::vertical(px(2.0)) }
+                        else { UiRect::default() },
+                    padding: px(10.0).all(),
+                    ..default()
+                },
+                BorderColor::all(skin.map_or(Color::NONE, |skin| rgba(skin.border_color))),
+                BackgroundColor(skin.map_or(Color::NONE, |skin| rgba(skin.normal_fill))),
+            ));
+        }
+    }
+}
+
+fn menu_row_active(session: &Session, kind: MenuKind, index: usize) -> bool {
+    match kind {
+        MenuKind::Pause => session.paused && index == session.pause_selection,
+        MenuKind::Main => session.menu_overlay.is_some() && index == session.menu_selection,
+        MenuKind::Ending => session.finished && index == session.ending_selection,
     }
 }
 
 fn sync_menu_selection(
     session: Res<Session>,
-    mut rows: Query<(&MenuRow, &mut BackgroundColor, &mut TextColor, &mut BorderColor)>,
+    assets: Res<AssetServer>,
+    mut rows: Query<(&MenuRow, &mut BackgroundColor, Option<&mut TextColor>, &mut BorderColor), Without<MenuRowLabel>>,
+    mut labels: Query<(&MenuRowLabel, &mut TextColor), Without<MenuRow>>,
+    mut artwork: Query<(&MenuRowArt, &mut ImageNode)>,
     mut ending: Query<&mut Node, With<EndingActions>>,
 ) {
     for mut node in &mut ending {
         let display = if session.finished { Display::Flex } else { Display::None };
         if node.display != display { node.display = display; }
     }
-    for (row, mut bg, mut fg, mut border) in &mut rows {
-        let active = match row.kind {
-            MenuKind::Pause => session.paused && row.index == session.pause_selection,
-            MenuKind::Main => session.menu_overlay.is_some() && row.index == session.menu_selection,
-            MenuKind::Ending => session.finished && row.index == session.ending_selection,
-        };
+    for (row, mut bg, maybe_fg, mut border) in &mut rows {
+        let active = menu_row_active(&session, row.kind, row.index);
         let (background, foreground, edge) = if let Some(skin) = menu_skin(&session, row.kind) {
-            menu_skin_row_colors(skin, active)
+            if skin.button_idle_image.is_some() {
+                (Color::NONE, rgba(if active { skin.selected_text } else { skin.normal_text }), Color::NONE)
+            } else {
+                menu_skin_row_colors(skin, active)
+            }
         } else {
             let (bg, fg) = menu_row_colors(row.kind, active, session.game.theme.panel.accent);
             (bg, fg, Color::NONE)
         };
         if bg.0 != background { bg.0 = background; }
-        if fg.0 != foreground { fg.0 = foreground; }
+        if let Some(mut fg) = maybe_fg {
+            if fg.0 != foreground { fg.0 = foreground; }
+        }
         if *border != BorderColor::all(edge) { *border = BorderColor::all(edge); }
+    }
+    for (row, mut ink) in &mut labels {
+        if let Some(skin) = menu_skin(&session, row.kind) {
+            let active = menu_row_active(&session, row.kind, row.index);
+            let color = rgba(if active { skin.selected_text } else { skin.normal_text });
+            if ink.0 != color { ink.0 = color; }
+        }
+    }
+    for (row, mut image) in &mut artwork {
+        if let Some(skin) = menu_skin(&session, row.kind) {
+            let active = menu_row_active(&session, row.kind, row.index);
+            let path = if active { &skin.button_selected_image } else { &skin.button_idle_image };
+            if let Some(path) = path {
+                let handle = assets.load(path.clone());
+                if image.image != handle { image.image = handle; }
+            }
+        }
     }
 }
 
@@ -1500,7 +1599,7 @@ fn setup(
                     ..default()
                 },
             )).with_children(|list| {
-                spawn_menu_rows(list, MenuKind::Ending, &ENDING_ITEMS, &font, None);
+                spawn_menu_rows(list, MenuKind::Ending, &ENDING_ITEMS, &font, None, &assets);
             });
             parent.spawn((
                 StorySeparator,
@@ -1714,7 +1813,7 @@ fn spawn_center_menu(
                 Node { width: percent(100.0), height: px(2.0), ..default() },
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
             ));
-            spawn_menu_rows(panel, kind, options, &font, skin);
+            spawn_menu_rows(panel, kind, options, &font, skin, assets);
             panel.spawn((
                 Text::new(instructions),
                 TextFont { font, font_size: FontSize::Px(15.0), ..default() },

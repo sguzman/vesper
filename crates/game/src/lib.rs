@@ -84,6 +84,9 @@ pub struct MenuSkin {
     pub selected_fill: [f32; 4],
     pub normal_text: [f32; 4],
     pub selected_text: [f32; 4],
+    /// Optional game-local PNGs for authored idle/selected button plaques.
+    pub button_idle_image: Option<String>,
+    pub button_selected_image: Option<String>,
 }
 impl Default for MenuSkin {
     fn default() -> Self {
@@ -99,6 +102,8 @@ impl Default for MenuSkin {
             selected_fill: [0.24, 0.19, 0.11, 0.98],
             normal_text: [0.91, 0.88, 0.8, 1.0],
             selected_text: [1.0, 0.94, 0.72, 1.0],
+            button_idle_image: None,
+            button_selected_image: None,
         }
     }
 }
@@ -119,6 +124,9 @@ impl MenuSkin {
         }
         if self.panel_width_percent + self.panel_offset_percent > 96.0 {
             return Err("menu skin panel extends beyond the viewport".into());
+        }
+        if self.button_idle_image.is_some() != self.button_selected_image.is_some() {
+            return Err("menu skin button images require both idle and selected PNG paths".into());
         }
         for (key, color) in [
             ("panel_color", self.panel_color),
@@ -934,6 +942,19 @@ impl Game {
         ] {
             if let Some(skin) = skin {
                 skin.validate().map_err(|e| format!("menu skin '{name}': {e}"))?;
+                for (state, filename) in [
+                    ("idle", skin.button_idle_image.as_deref()),
+                    ("selected", skin.button_selected_image.as_deref()),
+                ] {
+                    if let Some(filename) = filename {
+                        let file = checked_file(&root, filename)?;
+                        if !file.extension().and_then(|ext| ext.to_str())
+                            .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
+                        {
+                            return Err(format!("menu skin '{name}' {state} button must be a PNG"));
+                        }
+                    }
+                }
             }
         }
         for (line, style) in story.inline_style_references() {
@@ -1507,6 +1528,13 @@ start_phase_seconds = 2.5
         bad.panel_width_percent = 44.0;
         bad.selected_fill = [f32::NAN, 0.3, 0.2, 1.0];
         assert!(bad.validate().is_err());
+        let mut images = MenuSkin {
+            button_idle_image: Some("assets/menus/button-idle.png".into()),
+            ..MenuSkin::default()
+        };
+        assert!(images.validate().unwrap_err().contains("both idle and selected"));
+        images.button_selected_image = Some("assets/menus/button-selected.png".into());
+        assert!(images.validate().is_ok());
     }
 
     #[test]
