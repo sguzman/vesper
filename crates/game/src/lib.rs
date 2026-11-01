@@ -270,6 +270,15 @@ impl PanelSkin {
         {
             return Err("panel skin image, content insets or slice border invalid".into());
         }
+        if let (Some(area), Some(footer)) = (self.safe_area, self.hint_region) {
+            // The body owns the area up to its bottom inset. A footer may
+            // never begin inside it: a bounded hint is not collision-safe
+            // unless both regions are validated together.
+            const GAP: f32 = 0.018;
+            if footer[1] < 1.0 - area[3] + GAP {
+                return Err("hint_region overlaps the protected body writing area".into());
+            }
+        }
         if let Some(slices) = &self.horizontal_slices {
             slices.validate()?;
         }
@@ -1396,6 +1405,16 @@ start_phase_seconds = 2.5
         ).unwrap();
         assert_eq!(specified.pause.as_deref(), Some("assets/menus/pause.png"));
         assert!(toml::from_str::<MenuBackgrounds>("unknown = \"menu.png\"").is_err());
+    }
+
+    #[test]
+    fn hint_and_body_regions_must_not_overlap() {
+        let mut skin: PanelSkin = toml::from_str(
+            "image = \"frame.png\"\nsafe_area = [0.255, 0.23, 0.36, 0.37]\nhint_region = [0.255, 0.56, 0.51, 0.12]"
+        ).unwrap();
+        assert!(skin.validate().unwrap_err().contains("overlaps"));
+        skin.hint_region = Some([0.255, 0.65, 0.51, 0.11]);
+        assert!(skin.validate().is_ok());
     }
 
     #[test]

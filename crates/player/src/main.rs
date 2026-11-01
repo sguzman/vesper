@@ -778,11 +778,20 @@ fn reserve_story_text_height(
     session: Res<Session>,
     mut texts: Query<(&StoryText, &TextLayoutInfo, &Text, &mut Node)>,
 ) {
+    let has_bounded_footer = !session.preferences.high_contrast.unwrap_or(false)
+        && panel_art::active_skin(&session)
+            .is_some_and(|skin| skin.hint_region.is_some());
     let lines = session.game.theme.panel.reserve_lines;
     let font_size = session.game.theme.dialogue.size
         * session.preferences.text_scale.unwrap_or(1.0);
     let baseline = lines as f32 * font_size * 1.40 + 10.0;
     for (slot, glyphs, text, mut node) in &mut texts {
+        if has_bounded_footer && matches!(slot, StoryText::Hint) {
+            // An absolute text node with an authored height must never grow
+            // its min-content bounds to escape the safe footer rectangle.
+            if node.min_height != px(0.0) { node.min_height = px(0.0); }
+            continue;
+        }
         if text.0.is_empty() {
             // An empty body must not retain the old dialogue min-height
             // when the separate choice list takes its place.
@@ -2361,11 +2370,11 @@ mod tests {
     #[test]
     fn authored_hint_rectangle_does_not_inherit_the_lower_border_offset() {
         let (left, top, width, height) =
-            super::hint_region_bounds([0.255, 0.56, 0.51, 0.12], 1000.0, 300.0);
+            super::hint_region_bounds([0.255, 0.65, 0.51, 0.11], 1000.0, 300.0);
         assert!(matches!(left, bevy::ui::Val::Px(v) if (v - 255.0).abs() < 0.01));
-        assert!(matches!(top, bevy::ui::Val::Px(v) if (v - 168.0).abs() < 0.01));
+        assert!(matches!(top, bevy::ui::Val::Px(v) if (v - 195.0).abs() < 0.01));
         assert!(matches!(width, bevy::ui::Val::Px(v) if (v - 510.0).abs() < 0.01));
-        assert!(matches!(height, bevy::ui::Val::Px(v) if (v - 36.0).abs() < 0.01));
+        assert!(matches!(height, bevy::ui::Val::Px(v) if (v - 33.0).abs() < 0.01));
     }
 
     #[test]
