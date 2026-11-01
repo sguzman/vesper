@@ -1,7 +1,7 @@
 //! Live player-owned appearance controls. The authored game is never edited.
 //! Settings writes go to a single sequential background worker, not Bevy Update.
 use super::*;
-use bevy::ui_widgets::{Slider, SliderRange, SliderThumb, SliderValue, ValueChange};
+use bevy::ui_widgets::{Slider, SliderRange, SliderThumb, SliderValue, TrackClick, ValueChange};
 use std::sync::mpsc::{self, Sender};
 
 pub const ITEMS: [&str; 13] = [
@@ -616,7 +616,10 @@ pub fn open(
                                 controls.spawn((
                                     Name::new(format!("Settings draggable slider {i}")),
                                     SettingsSliderControl(i),
-                                    Slider::default(), SliderRange::new(0.0, 1.0),
+                                    // Clicking the rail must snap to the indicated value;
+                                    // Drag remains available from the real thumb.
+                                    Slider { track_click: TrackClick::Snap, ..default() },
+                                    SliderRange::new(0.0, 1.0),
                                     SliderValue(frac), Hovered::default(),
                                     Node { width: px(170.0), height: px(22.0),
                                         justify_content: JustifyContent::Center,
