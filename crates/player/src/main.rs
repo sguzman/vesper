@@ -494,24 +494,26 @@ struct MenuPointer { action: Option<(MenuKind, usize)> }
 /// coordinates. CI uses it to catch hidden/clipped text that static region
 /// validation alone cannot detect. Never query the full UI tree every frame.
 fn trace_hint_geometry(
-    hint_anchor: Query<(&ComputedNode, &GlobalTransform), With<HintAnchor>>,
-    text: Query<(&StoryText, &ComputedNode, &TextLayoutInfo, &GlobalTransform), Without<HintAnchor>>,
-    mut observed: Local<bool>,
+    hint_anchor: Query<(&Node, Option<&ComputedNode>, Option<&GlobalTransform>), With<HintAnchor>>,
+    text: Query<(&StoryText, &Text, Option<&ComputedNode>, Option<&TextLayoutInfo>, Option<&GlobalTransform>), Without<HintAnchor>>,
+    mut ticks: Local<usize>,
 ) {
-    if *observed { return; }
-    let Ok((slot, anchor_position)) = hint_anchor.single() else { return; };
-    for (role, computed, glyphs, position) in &text {
-        if !matches!(role, StoryText::Hint) || glyphs.size.y <= 0.0 { continue; }
-        let anchor_top = anchor_position.translation().y - slot.size().y * 0.5;
-        let glyph_top = position.translation().y - computed.size().y * 0.5;
-        let anchor_bottom = anchor_top + slot.size().y;
-        let glyph_bottom = glyph_top + glyphs.size.y;
-        info!("Vesper hint computed: anchor {:.1}..{:.1} (h {:.1}), glyph {:.1}..{:.1} (h {:.1})",
-            anchor_top, anchor_bottom, slot.size().y,
-            glyph_top, glyph_bottom, glyphs.size.y);
-        *observed = true;
-        break;
+    if *ticks >= 35 { return; }
+    *ticks += 1;
+    if *ticks < 35 { return; }
+    let anchors = hint_anchor.iter().count();
+    let (mut n, mut chars, mut glyph_h, mut box_h, mut pos_y) = (0usize, 0usize, -1.0f32, -1.0f32, -1.0f32);
+    for (role, content, node, glyph, position) in &text {
+        if !matches!(role, StoryText::Hint) { continue; }
+        n += 1;
+        chars = content.0.len();
+        glyph_h = glyph.map_or(-1.0, |g| g.size.y);
+        box_h = node.map_or(-1.0, |g| g.size().y);
+        pos_y = position.map_or(-1.0, |g| g.translation().y);
     }
+    let anchor_h = hint_anchor.iter().next()
+        .and_then(|(_, c, _)| c).map_or(-1.0, |c| c.size().y);
+    info!("Vesper hint diagnostic: anchors={anchors} anchor_height={anchor_h:.1} text_nodes={n} chars={chars} glyph_height={glyph_h:.1} box_height={box_h:.1} y={pos_y:.1}");
 }
 
 /// Preserve the previous Up-from-first = Quit navigation shortcut.
