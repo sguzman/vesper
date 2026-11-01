@@ -439,6 +439,32 @@ def assert_native_opacity_slider_drag(window: str, prefs_dir: Path) -> None:
     print(f"Atlas native opacity slider click/drag: {left:.2f} -> {right:.2f}", flush=True)
 
 
+def screenshot_settled_settings(window: str, path: Path,
+                                width: int, height: int,
+                                compact: bool) -> None:
+    """Wait for a *new* native frame after resizing, not a cropped stale frame.
+
+    Xvfb/llvmpipe can report the new window size before Bevy's next swapchain
+    presentation. Check actual in-frame parchment placement and, at compact
+    sizes, both physical gold borders. Retries are bounded: a genuinely
+    broken layout still fails rather than silently passing a screenshot.
+    """
+    deadline = time.monotonic() + 12
+    last_error = None
+    while time.monotonic() < deadline:
+        screenshot(window, path, (width, height))
+        try:
+            if compact:
+                assert_settings_frame_fits(path, width, height)
+            assert_settings_preview_reflows(path, width, height, compact)
+            return
+        except AssertionError as error:
+            last_error = error
+            time.sleep(.35)
+    raise AssertionError(("Settings never produced a settled responsive frame",
+                          path, last_error))
+
+
 def responsive_layout() -> None:
     """Quick visual regression before the much longer four-ending playthrough."""
     OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -480,8 +506,14 @@ def responsive_layout() -> None:
                         run("xdotool", "windowsize", "--sync", win,
                             str(width), str(height))
                         time.sleep(0.55)
-                        screenshot(win, f"menu-{kind}-{suffix}.png",
-                                   (width, height))
+                        path = f"menu-{kind}-{suffix}.png"
+                        if kind == "settings":
+                            screenshot_settled_settings(
+                                win, OUTPUT / path, width, height,
+                                suffix == "compact",
+                            )
+                        else:
+                            screenshot(win, path, (width, height))
                     run("xdotool", "windowsize", "--sync", win,
                         "1280", "720")
                     time.sleep(0.55)
@@ -493,7 +525,8 @@ def responsive_layout() -> None:
                 press(win, "4", 0.35)
                 wait_for_log(log, "Vesper settings menu backdrop loaded:")
                 time.sleep(0.65)
-                screenshot(win, "menu-settings-illustrated.png")
+                screenshot_settled_settings(win,
+                    OUTPUT / "menu-settings-illustrated.png", 1280, 720, False)
                 capture_menu_viewports("settings")
                 assert_settings_frame_fits(
                     OUTPUT / "menu-settings-compact.png", 946, 511,
