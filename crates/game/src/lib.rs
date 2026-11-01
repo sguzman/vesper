@@ -1587,8 +1587,10 @@ start_phase_seconds = 2.5
 
     #[test]
     fn menu_label_gutter_is_bounded_and_authorable() {
-        let mut skin = super::MenuSkin::default();
-        skin.button_label_inset_percent = 18.0;
+        let mut skin = super::MenuSkin {
+            button_label_inset_percent: 18.0,
+            ..Default::default()
+        };
         assert!(skin.validate().is_ok());
         skin.button_label_inset_percent = 40.0;
         assert!(skin.validate().is_err());
