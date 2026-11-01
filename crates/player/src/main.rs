@@ -1876,7 +1876,9 @@ fn spawn_center_menu(
     background_image: Option<&str>,
     skin: Option<&vesper_game::MenuSkin>,
 ) -> Entity {
-    let font = text_font(theme, assets);
+    let font = if skin.is_some_and(|s| s.centered) {
+        FontSource::Family("DejaVu Serif".into())
+    } else { text_font(theme, assets) };
     let accent = theme.panel.accent;
     let title = skin.and_then(|skin| skin.title.as_deref()).unwrap_or(title);
     let illustrated = background_image.is_some();
@@ -1888,8 +1890,9 @@ fn spawn_center_menu(
             left: percent(0.0), top: percent(0.0),
             width: percent(100.0), height: percent(100.0),
             align_items: AlignItems::Center,
-            justify_content: if illustrated { JustifyContent::FlexStart }
-                else { JustifyContent::Center },
+            justify_content: if illustrated && !skin.is_some_and(|s| s.centered) {
+                JustifyContent::FlexStart
+            } else { JustifyContent::Center },
             overflow: Overflow::clip(),
             ..default()
         },
@@ -1949,13 +1952,18 @@ fn spawn_center_menu(
                 width: if let Some(skin) = skin { percent(skin.panel_width_percent) }
                     else if illustrated { percent(49.0) } else { percent(85.0) },
                 min_width: if illustrated { px(275.0) } else { px(0.0) },
-                max_width: if illustrated { px(550.0) } else { px(660.0) },
-                margin: if let Some(skin) = skin { UiRect::left(percent(skin.panel_offset_percent)) }
-                    else if illustrated { UiRect::left(percent(7.0)) }
+                max_width: if illustrated && skin.is_some_and(|s| s.centered) {
+                    px(850.0)
+                } else if illustrated { px(550.0) } else { px(660.0) },
+                margin: if let Some(skin) = skin {
+                    if skin.centered { UiRect::default() }
+                    else { UiRect::left(percent(skin.panel_offset_percent)) }
+                } else if illustrated { UiRect::left(percent(7.0)) }
                     else { UiRect::default() },
-                border: if illustrated { px(2.0).all() } else { UiRect::default() },
+                border: if illustrated { px(if skin.is_some() { 3.0 } else { 2.0 }).all() }
+                    else { UiRect::default() },
                 flex_direction: FlexDirection::Column,
-                padding: px(26.0).all(),
+                padding: px(if skin.is_some_and(|s| s.centered) { 25.0 } else { 26.0 }).all(),
                 row_gap: px(skin.map_or(10.0, |skin| skin.button_gap)),
                 ..default()
             },
@@ -1973,6 +1981,15 @@ fn spawn_center_menu(
                 },
             )),
         )).with_children(|panel| {
+            if skin.is_some_and(|s| s.centered) {
+                panel.spawn((
+                    Text::new("✦     ✧     ✦"),
+                    TextFont { font: font.clone(), font_size: FontSize::Px(18.0), ..default() },
+                    TextColor(Color::srgba(0.96, 0.77, 0.43, 1.0)),
+                    TextLayout::new(Justify::Center, LineBreak::NoWrap),
+                    Node { width: percent(100.0), ..default() },
+                ));
+            }
             panel.spawn((
                 Text::new(title),
                 TextFont { font: font.clone(), font_size: FontSize::Px(skin.map_or(28.0, |skin| skin.title_size)), ..default() },
@@ -1986,6 +2003,15 @@ fn spawn_center_menu(
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
             ));
             spawn_menu_rows(panel, kind, options, &font, skin, assets);
+            if skin.is_some_and(|s| s.centered) {
+                panel.spawn((
+                    Text::new("✧     ✦     ✧"),
+                    TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
+                    TextColor(Color::srgba(0.96, 0.77, 0.43, 0.94)),
+                    TextLayout::new(Justify::Center, LineBreak::NoWrap),
+                    Node { width: percent(100.0), ..default() },
+                ));
+            }
             spawn_keyboard_legend(panel, instructions, &font, false);
         });
     }).id()

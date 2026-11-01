@@ -314,8 +314,9 @@ pub fn open(
             position_type: PositionType::Absolute,
             width: percent(100.0), height: percent(100.0),
             align_items: AlignItems::Center,
-            justify_content: if illustrated { JustifyContent::FlexStart }
-                else { JustifyContent::Center },
+            justify_content: if illustrated && skin.is_none() {
+                JustifyContent::FlexStart
+            } else { JustifyContent::Center },
             overflow: Overflow::clip(),
             ..default()
         },
@@ -374,15 +375,18 @@ pub fn open(
                 width: if let Some(skin) = skin { percent(skin.panel_width_percent) }
                     else if illustrated { percent(70.0) } else { percent(88.0) },
                 min_width: if illustrated { px(300.0) } else { px(0.0) },
-                max_width: px(720.0),
+                max_width: px(if skin.is_some() { 1050.0 } else { 720.0 }),
                 max_height: percent(94.0),
                 margin: if let Some(skin) = skin {
-                    UiRect::left(percent(skin.panel_offset_percent))
+                    if skin.centered { UiRect::default() }
+                    else { UiRect::left(percent(skin.panel_offset_percent)) }
                 } else if illustrated { UiRect::left(percent(5.0)) }
                     else { UiRect::default() },
-                border: if illustrated { px(2.0).all() } else { UiRect::default() },
+                border: if illustrated { px(if skin.is_some() { 3.0 } else { 2.0 }).all() }
+                    else { UiRect::default() },
                 overflow: Overflow::scroll_y(),
-                padding: px(8.0).all(), row_gap: px(2.0),
+                padding: px(if skin.is_some() { 15.0 } else { 8.0 }).all(),
+                row_gap: px(if skin.is_some() { 4.0 } else { 2.0 }),
                 flex_direction: FlexDirection::Column,
                 ..default()
             },
@@ -400,10 +404,24 @@ pub fn open(
             SettingsScroll,
             ScrollPosition(Vec2::ZERO),
         )).with_children(|panel| {
+            if skin.is_some_and(|s| s.centered) {
+                panel.spawn((
+                    Text::new("✦  ✧  ✦"),
+                    TextFont { font: font.clone(), font_size: FontSize::Px(15.0), ..default() },
+                    TextColor(Color::srgba(0.96, 0.78, 0.46, 1.0)),
+                    TextLayout::new(Justify::Center, LineBreak::NoWrap),
+                    Node { width: percent(100.0), ..default() },
+                ));
+            }
             panel.spawn((
                 Text::new(skin.and_then(|skin| skin.title.as_deref()).unwrap_or("Settings")),
-                TextFont { font: font.clone(), font_size: FontSize::Px(skin.map_or(23.0, |skin| skin.title_size)), ..default() },
+                TextFont { font: if skin.is_some() { FontSource::Family("DejaVu Serif".into()) }
+                    else { font.clone() },
+                    font_size: FontSize::Px(skin.map_or(23.0, |skin| skin.title_size)), ..default() },
                 TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.title_color))),
+                TextLayout::new(if skin.is_some_and(|s| s.centered) { Justify::Center }
+                    else { Justify::Left }, LineBreak::WordOrCharacter),
+                Node { width: percent(100.0), ..default() },
             ));
             panel.spawn((
                 Node { width: percent(100.0), height: px(2.0), ..default() },
@@ -543,7 +561,7 @@ pub fn open(
                                     SettingsSliderControl(i),
                                     Slider::default(), SliderRange::new(0.0, 1.0),
                                     SliderValue(frac), Hovered::default(),
-                                    Node { width: px(104.0), height: px(22.0),
+                                    Node { width: px(170.0), height: px(22.0),
                                         justify_content: JustifyContent::Center,
                                         align_items: AlignItems::Center, ..default() },
                                     observe(move |value: On<ValueChange<f32>>,
@@ -565,7 +583,7 @@ pub fn open(
                                     bar.spawn((
                                         SliderThumb, SettingsSliderThumb(i),
                                         Node { position_type: PositionType::Absolute,
-                                            left: px(frac * 92.0), top: px(2.0),
+                                            left: px(frac * 158.0), top: px(2.0),
                                             width: px(12.0), height: px(18.0),
                                             border: px(1.0).all(), ..default() },
                                         BackgroundColor(rgba(skin.selected_text)),
@@ -619,8 +637,8 @@ pub fn open(
                 SettingsPreviewPanel,
                 Node {
                     width: percent(100.0), flex_direction: FlexDirection::Column,
-                    row_gap: px(2.0), padding: px(8.0).all(),
-                    border: if skin.is_some() { px(2.0).all() } else { UiRect::default() },
+                    row_gap: px(4.0), padding: px(if skin.is_some() { 13.0 } else { 8.0 }).all(),
+                    border: if skin.is_some() { px(3.0).all() } else { UiRect::default() },
                     ..default()
                 },
                 BorderColor::all(skin.map_or(Color::NONE, |skin| rgba(skin.border_color))),
@@ -786,7 +804,7 @@ pub fn sync_slider_visuals(
     }
     for (slot, mut node) in &mut thumbs {
         if let Some(frac) = slider_fraction(&session, slot.0) {
-            node.left = px(frac * 92.0);
+            node.left = px(frac * 158.0);
         }
     }
     for (entity, slot, value) in &sliders {
