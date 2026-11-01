@@ -30,6 +30,12 @@ pub struct SettingsRow(pub usize);
 pub struct SettingsScroll;
 #[derive(Component)]
 pub struct SettingsLayoutPanel;
+#[derive(Component)]
+pub struct SettingsContentGrid;
+#[derive(Component)]
+pub struct SettingsOptionsColumn;
+#[derive(Component)]
+pub struct SettingsPreviewColumn;
 
 /// Completed pointer/button activations enter the normal validated settings
 /// input path. Transient Pressed markers are not reliable click events.
@@ -499,6 +505,23 @@ pub fn open(
                     }
                 });
             }
+            panel.spawn((
+                SettingsContentGrid,
+                Node { width: percent(100.0), min_width: px(0.0),
+                    flex_direction: if skin.is_some_and(|s| s.centered) {
+                        FlexDirection::Row
+                    } else { FlexDirection::Column },
+                    column_gap: px(12.0), row_gap: px(5.0), ..default() },
+            )).with_children(|grid| {
+                grid.spawn((
+                    SettingsOptionsColumn,
+                    Node { width: if skin.is_some_and(|s| s.centered) {
+                            percent(57.0)
+                        } else { percent(100.0) },
+                        min_width: px(0.0), flex_shrink: 0.0,
+                        flex_direction: FlexDirection::Column,
+                        row_gap: px(4.0), ..default() },
+                )).with_children(|options| {
             for i in 0..ITEMS.len() {
                 if let Some(skin) = skin
                     && matches!(i, 0 | 4 | 8 | 11)
@@ -509,7 +532,7 @@ pub fn open(
                         8 => "✦  PAGE COMPOSITION  ✦",
                         _ => "✦  ACTIONS  ✦",
                     };
-                    panel.spawn((
+                    options.spawn((
                         SettingsSectionHeading(section(i)),
                         Text::new(heading),
                         TextFont { font: font.clone(), font_size: FontSize::Px(12.0), ..default() },
@@ -522,7 +545,7 @@ pub fn open(
                         },
                     ));
                 }
-                panel.spawn((
+                options.spawn((
                     Name::new(format!("Settings option {}", i + 1)),
                     Button,
                     Hovered::default(),
@@ -664,12 +687,22 @@ pub fn open(
                     }
                 });
             }
-            panel.spawn((
+                });
+                grid.spawn((
+                    SettingsPreviewColumn,
+                    Node { width: if skin.is_some_and(|s| s.centered) {
+                            percent(40.0)
+                        } else { percent(100.0) },
+                        min_width: px(0.0), flex_shrink: 0.0,
+                        flex_direction: FlexDirection::Column,
+                        row_gap: px(5.0), ..default() },
+                )).with_children(|preview_column| {
+            preview_column.spawn((
                 Text::new("LIVE PREVIEW"),
                 TextFont { font: font.clone(), font_size: FontSize::Px(14.0), ..default() },
                 TextColor(Color::srgba(0.8, 0.82, 0.9, 1.0)),
             ));
-            panel.spawn((
+            preview_column.spawn((
                 SettingsPreviewPanel,
                 Node {
                     width: percent(100.0), flex_direction: FlexDirection::Column,
@@ -731,6 +764,8 @@ pub fn open(
                         preview.spawn(content_node);
                     }
                 }
+            });
+                });
             });
             spawn_keyboard_legend(panel,
                 "↑↓: select    ←→: adjust    Enter: activate    Esc: back", &font, false);
@@ -880,6 +915,34 @@ pub fn fit_panel_to_viewport(
                 key.0, key.1, ui_scale.0, width, actual.size().x, transform.translation.x,
             );
         }
+    }
+}
+
+/// Native Settings options and live sample share a spacious two-column row,
+/// but stack inside the wheel-scrollable viewport on compact windows.
+fn settings_side_by_side(width: f32, height: f32) -> bool {
+    width >= 1150.0 && height >= 650.0
+}
+
+pub fn sync_content_layout(
+    windows: Query<&Window, With<PrimaryWindow>>,
+    session: Res<Session>, state: Res<SettingsState>,
+    mut grids: Query<&mut Node, (With<SettingsContentGrid>, Without<SettingsOptionsColumn>, Without<SettingsPreviewColumn>)>,
+    mut options: Query<&mut Node, (With<SettingsOptionsColumn>, Without<SettingsContentGrid>, Without<SettingsPreviewColumn>)>,
+    mut previews: Query<&mut Node, (With<SettingsPreviewColumn>, Without<SettingsContentGrid>, Without<SettingsOptionsColumn>)>,
+) {
+    if state.overlay.is_none() { return; }
+    if !session.game.manifest.menu_skins.settings.as_ref().is_some_and(|s| s.centered) { return; }
+    let Ok(window) = windows.single() else { return; };
+    let side = settings_side_by_side(window.resolution.width(), window.resolution.height());
+    for mut node in &mut grids {
+        node.flex_direction = if side { FlexDirection::Row } else { FlexDirection::Column };
+    }
+    for mut node in &mut options {
+        node.width = percent(if side { 57.0 } else { 100.0 });
+    }
+    for mut node in &mut previews {
+        node.width = percent(if side { 40.0 } else { 100.0 });
     }
 }
 
@@ -1071,6 +1134,15 @@ pub fn sync_visuals(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn atlas_settings_columns_reflow_only_with_sufficient_window_room() {
+        assert!(settings_side_by_side(1280.0, 720.0));
+        assert!(settings_side_by_side(1900.0, 1035.0));
+        assert!(!settings_side_by_side(946.0, 511.0));
+        assert!(!settings_side_by_side(1100.0, 700.0));
+        assert!(!settings_side_by_side(1280.0, 600.0));
+    }
+
     #[test]
     fn settings_scroll_bounds_follow_measured_content_and_ui_scale() {
         let mut node = ComputedNode::default();
