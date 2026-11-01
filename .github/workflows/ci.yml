@@ -108,7 +108,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vesper-atlas-responsive-panel
-          path: /tmp/vesper-atlas-qa/panel-*
+          path: |
+            /tmp/vesper-atlas-qa/panel-*
+            /tmp/vesper-atlas-qa/menu-*
           if-no-files-found: ignore
           retention-days: 14
       - name: Play Atlas through all four original endings and test F5/F9
