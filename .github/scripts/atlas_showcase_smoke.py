@@ -347,6 +347,33 @@ def responsive_layout() -> None:
             try:
                 win = window_id()
                 time.sleep(2.5)
+                # Atlas exercises three independent, optional menu illustrations.
+                # Existing games without menu_backgrounds retain plain overlays.
+                screenshot(win, "panel-before-illustrated-menus.png")
+                press(win, "p", 0.35)
+                time.sleep(0.65)
+                screenshot(win, "menu-pause-illustrated.png")
+                press(win, "4", 0.35)
+                wait_for_log(log, "Vesper settings menu backdrop loaded:")
+                time.sleep(0.65)
+                screenshot(win, "menu-settings-illustrated.png")
+                press(win, "Escape", 0.30)
+                press(win, "p", 0.30)
+                press(win, "m", 0.35)
+                time.sleep(0.65)
+                screenshot(win, "menu-main-illustrated.png")
+                assert "Vesper Pause menu backdrop loaded:" in read_log(log)
+                assert "Vesper Main menu backdrop loaded:" in read_log(log)
+                for previous_name, current_name in [
+                    ("panel-before-illustrated-menus.png", "menu-pause-illustrated.png"),
+                    ("menu-pause-illustrated.png", "menu-settings-illustrated.png"),
+                    ("menu-settings-illustrated.png", "menu-main-illustrated.png"),
+                ]:
+                    assert changed(OUTPUT / previous_name, OUTPUT / current_name) > 2500, (
+                        "Custom menu state did not render distinct pixels",
+                        previous_name, current_name,
+                    )
+                press(win, "m", 0.35)
                 # Capture fully revealed prose rather than timing-dependent
                 # partial glyph output while the first line is animating.
                 press(win, "Return", 0.35)

@@ -1386,6 +1386,30 @@ start_phase_seconds = 2.5
     }
 
     #[test]
+    fn menu_backdrops_are_optional_and_explicitly_named() {
+        let absent: MenuBackgrounds = toml::from_str("").unwrap();
+        assert!(absent.main.is_none());
+        assert!(absent.pause.is_none());
+        assert!(absent.settings.is_none());
+        let specified: MenuBackgrounds = toml::from_str(
+            "main = \"assets/menus/main.png\"\npause = \"assets/menus/pause.png\"\nsettings = \"assets/menus/settings.png\"\n"
+        ).unwrap();
+        assert_eq!(specified.pause.as_deref(), Some("assets/menus/pause.png"));
+        assert!(toml::from_str::<MenuBackgrounds>("unknown = \"menu.png\"").is_err());
+    }
+
+    #[test]
+    fn authored_hint_region_is_bounded() {
+        let skin: PanelSkin = toml::from_str(
+            "image = \"art.png\"\nhint_region = [0.2, 0.66, 0.5, 0.12]"
+        ).unwrap();
+        assert!(skin.validate().is_ok());
+        let mut invalid = skin.clone();
+        invalid.hint_region = Some([0.8, 0.66, 0.5, 0.12]);
+        assert!(invalid.validate().is_err());
+    }
+
+    #[test]
     fn author_defined_motion_rejects_unbounded_waypoints_and_frame_rates() {
         let valid: AmbientMotion = toml::from_str(
             "waypoints = [[0.05, 0.6], [0.5, 0.4], [0.95, 0.6]]\nperiod_seconds = 8.0\nmode = \"ping_pong\"\nframe_fps = 12.0\n"

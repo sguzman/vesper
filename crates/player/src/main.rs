@@ -1459,6 +1459,7 @@ fn spawn_center_menu(
         BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 0.78)),
     )).with_children(|parent| {
         if let Some(path) = background_image {
+            info!("Vesper {kind:?} menu backdrop loaded: {path}");
             parent.spawn((
                 Name::new(format!("{kind:?} custom backdrop")),
                 ImageNode {
@@ -2315,6 +2316,16 @@ mod tests {
             Vec2::new(810.0, 720.0), &panel, None, Some(85.0),
         );
         assert_eq!(no_skin.min_height, 430.0);
+    }
+
+    #[test]
+    fn authored_hint_rectangle_does_not_inherit_the_lower_border_offset() {
+        let (left, top, width, height) =
+            super::hint_region_bounds([0.255, 0.69, 0.51, 0.12], 1000.0, 300.0);
+        assert!(matches!(left, bevy::ui::Val::Px(v) if (v - 255.0).abs() < 0.01));
+        assert!(matches!(top, bevy::ui::Val::Px(v) if (v - 207.0).abs() < 0.01));
+        assert!(matches!(width, bevy::ui::Val::Px(v) if (v - 510.0).abs() < 0.01));
+        assert!(matches!(height, bevy::ui::Val::Px(v) if (v - 36.0).abs() < 0.01));
     }
 
     #[test]
