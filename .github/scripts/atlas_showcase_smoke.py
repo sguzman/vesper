@@ -473,6 +473,35 @@ def screenshot_settled_settings(window: str, path: Path,
                           path, last_error))
 
 
+def assert_pause_click_activates_on_mouse_down(window: str, log: Path) -> None:
+    """Resume must execute before mouse-up, not after Activate on release.
+
+    Keep the primary button held while observing the game log. An ordinary
+    release-driven button would fail, even if its visual transition is quick.
+    Coordinates are the center of the real Pause 'Resume story' plaque at
+    1280x720, after the viewport smoke restores its original dimensions.
+    """
+    run("xdotool", "windowfocus", "--sync", window)
+    before = read_log(log).count("Vesper story resumed")
+    run("xdotool", "mousemove", "--window", window, "640", "285")
+    begin = time.monotonic()
+    run("xdotool", "mousedown", "1")
+    try:
+        deadline = time.monotonic() + 0.8
+        while time.monotonic() < deadline:
+            if read_log(log).count("Vesper story resumed") > before:
+                elapsed = (time.monotonic() - begin) * 1000
+                print(f"Native Pause button resumed on mouse-down in {elapsed:.1f} ms", flush=True)
+                return
+            time.sleep(.02)
+        raise AssertionError(
+            "Resume did not activate while primary mouse button was held "
+            "(waiting for release is not acceptable for menu responsiveness)"
+        )
+    finally:
+        run("xdotool", "mouseup", "1")
+
+
 def responsive_layout() -> None:
     """Quick visual regression before the much longer four-ending playthrough."""
     OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -530,6 +559,10 @@ def responsive_layout() -> None:
                 time.sleep(0.65)
                 screenshot(win, "menu-pause-illustrated.png")
                 capture_menu_viewports("pause")
+                assert_pause_click_activates_on_mouse_down(win, log)
+                # The pointer test resumes the story. Reopen Pause for the
+                # existing Settings, responsive and preference tests.
+                press(win, "p", 0.35)
                 press(win, "4", 0.35)
                 wait_for_log(log, "Vesper settings menu backdrop loaded:")
                 time.sleep(0.65)
