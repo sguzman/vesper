@@ -376,7 +376,10 @@ pub fn open(
             Node {
                 width: if let Some(skin) = skin { percent(skin.panel_width_percent) }
                     else if illustrated { percent(70.0) } else { percent(88.0) },
-                min_width: if illustrated { px(300.0) } else { px(0.0) },
+                // The four illustrated tabs must never force the panel's
+                // intrinsic min-content width beyond the compact viewport.
+                min_width: if illustrated && skin.is_none() { px(300.0) }
+                    else { px(0.0) },
                 max_width: px(if skin.is_some() { 1050.0 } else { 720.0 }),
                 max_height: percent(94.0),
                 margin: if let Some(skin) = skin {
@@ -437,7 +440,7 @@ pub fn open(
                 panel.spawn((
                     Name::new("Atlas settings category tabs"),
                     Node {
-                        width: percent(100.0),
+                        width: percent(100.0), min_width: px(0.0),
                         flex_direction: FlexDirection::Row,
                         column_gap: px(5.0), flex_shrink: 0.0, ..default()
                     },
@@ -447,8 +450,11 @@ pub fn open(
                             SettingsTab(group),
                             Button, Hovered::default(),
                             Node {
-                                flex_grow: 1.0,
-                                padding: UiRect::axes(px(6.0), px(5.0)),
+                                // Equal-size tab columns, rather than four unbounded
+                                // text/image min-content boxes that clip at 946px.
+                                flex_grow: 1.0, flex_shrink: 1.0,
+                                flex_basis: px(0.0), min_width: px(0.0),
+                                padding: UiRect::axes(px(4.0), px(5.0)),
                                 align_items: AlignItems::Center,
                                 justify_content: JustifyContent::Center,
                                 border: px(1.0).all(), ..default()
@@ -487,6 +493,9 @@ pub fn open(
                                 Text::new(section_label(group, group == section(state.selection))),
                                 TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
                                 TextColor(rgba(skin.title_color)),
+                                TextLayout::new(Justify::Center, LineBreak::WordOrCharacter),
+                                Node { width: percent(100.0), min_width: px(0.0),
+                                    flex_shrink: 1.0, ..default() },
                             ));
                         });
                     }
@@ -527,7 +536,7 @@ pub fn open(
                         display: if skin.is_some() && section(i) != section(state.selection) {
                             Display::None
                         } else { Display::Flex },
-                        width: percent(100.0),
+                        width: percent(100.0), min_width: px(0.0),
                         min_height: skin.map_or(Val::Auto, |skin| px(skin.button_height.min(45.0))),
                         padding: if skin.is_some() { px(6.0).all() } else { px(3.0).all() },
                         border: if skin.is_some() { px(1.5).all() } else { UiRect::default() },
@@ -554,7 +563,8 @@ pub fn open(
                             Node {
                                 flex_direction: FlexDirection::Row,
                                 align_items: AlignItems::Center,
-                                column_gap: px(10.0),
+                                column_gap: px(6.0), min_width: px(0.0),
+                                flex_shrink: 1.0,
                                 ..default()
                             },
                         )).with_children(|controls| {
