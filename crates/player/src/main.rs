@@ -2008,7 +2008,8 @@ fn spawn_center_menu(
         },
         // Fully opaque while artwork is loading: never expose live actors or
         // the story between menu transitions.
-        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 1.0)),
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07,
+            if illustrated { 1.0 } else { 0.78 })),
     )).with_children(|parent| {
         if let Some(path) = background_image {
             info!("Vesper {kind:?} menu backdrop loaded: {path}");
