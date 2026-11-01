@@ -329,6 +329,41 @@ def adjust_width(win: str, prefs: Path, direction: str, accept: Callable[[float]
     raise AssertionError("Reader width setting did not persist: " + str(width_preference(prefs)))
 
 
+def assert_settings_frame_fits(path: Path, width: int, height: int) -> None:
+    """Both solid gold vertical frame sides must be visible in the image.
+
+    Earlier smoke only checked that screenshots existed; a 1050px Settings
+    frame could be truncated at 946px yet still pass. The Atlas skin's exact
+    border RGB is (232, 178, 94), and Bevy renders the three-pixel side as a
+    continuous solid column. Require real pixels on both sides of the viewport.
+    """
+    result = subprocess.run(
+        ["convert", str(path), "-depth", "8", "rgb:-"],
+        capture_output=True, check=True,
+    )
+    pixels = result.stdout
+    assert len(pixels) == width * height * 3, "Unexpected screenshot pixel data"
+    top, bottom = 65, min(400, height - 15)
+    threshold = int((bottom - top) * 0.86)
+
+    def framed_column(x: int) -> bool:
+        total = 0
+        for y in range(top, bottom):
+            index = (y * width + x) * 3
+            rgb = pixels[index:index + 3]
+            if all(abs(actual - expected) <= 3 for actual, expected in
+                   zip(rgb, (232, 178, 94))):
+                total += 1
+        return total >= threshold
+
+    assert any(framed_column(x) for x in range(20, width // 2)), (
+        "Settings left frame missing", path,
+    )
+    assert any(framed_column(x) for x in range(width // 2, width - 20)), (
+        "Settings right frame clipped outside the compact window", path,
+    )
+
+
 def responsive_layout() -> None:
     """Quick visual regression before the much longer four-ending playthrough."""
     OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -385,6 +420,9 @@ def responsive_layout() -> None:
                 time.sleep(0.65)
                 screenshot(win, "menu-settings-illustrated.png")
                 capture_menu_viewports("settings")
+                assert_settings_frame_fits(
+                    OUTPUT / "menu-settings-compact.png", 946, 511,
+                )
                 press(win, "Escape", 0.30)
                 press(win, "p", 0.30)
                 press(win, "m", 0.35)
