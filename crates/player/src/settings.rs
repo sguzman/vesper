@@ -52,7 +52,11 @@ pub struct SettingsTabClicks(pub Option<usize>);
 #[derive(Component)]
 pub struct SettingsTab(pub usize);
 #[derive(Component)]
-pub struct SettingsTabArt(pub usize);
+pub struct SettingsTabArt {
+    group: usize,
+    idle: Handle<Image>,
+    selected: Handle<Image>,
+}
 #[derive(Component)]
 pub struct SettingsTabLabel(pub usize);
 #[derive(Component)]
@@ -475,16 +479,20 @@ pub fn open(
                                 tabs.0 = Some(group);
                             }),
                         )).with_children(|button| {
-                            if let (Some(idle), Some(selected)) = (
+                            if let (Some(idle_path), Some(selected_path)) = (
                                 &skin.button_idle_image, &skin.button_selected_image,
                             ) {
+                                let idle: Handle<Image> = assets.load(idle_path.clone());
+                                let selected: Handle<Image> = assets.load(selected_path.clone());
                                 button.spawn((
                                     Name::new(format!("Atlas illustrated category tab {group}")),
-                                    SettingsTabArt(group),
+                                    SettingsTabArt {
+                                        group, idle: idle.clone(), selected: selected.clone(),
+                                    },
                                     ImageNode {
-                                        image: assets.load(if group == section(state.selection) {
-                                            selected.clone()
-                                        } else { idle.clone() }),
+                                        image: if group == section(state.selection) {
+                                            selected
+                                        } else { idle },
                                         color: if group == section(state.selection) {
                                             Color::WHITE
                                         } else { Color::srgba(0.68, 0.75, 0.83, 1.0) },
@@ -1006,22 +1014,18 @@ pub fn wheel(
 /// Category plaques use authored art while pointer and keyboard focus
 /// remain owned by the same native Bevy SettingsTab entities.
 pub fn sync_tab_art(
-    session: Res<Session>, state: Res<SettingsState>, assets: Res<AssetServer>,
+    session: Res<Session>, state: Res<SettingsState>,
     mut art: Query<(&SettingsTabArt, &mut ImageNode)>,
 ) {
     if !state.is_changed() || state.overlay.is_none() { return; }
-    let Some(skin) = &session.game.manifest.menu_skins.settings else { return; };
+    if session.game.manifest.menu_skins.settings.is_none() { return; }
     for (tab, mut image) in &mut art {
-        let active = tab.0 == section(state.selection);
-        let path = if active { &skin.button_selected_image }
-            else { &skin.button_idle_image };
-        if let Some(path) = path {
-            let handle = assets.load(path.clone());
-            if image.image != handle { image.image = handle; }
-            let tint = if active { Color::WHITE }
-                else { Color::srgba(0.68, 0.75, 0.83, 1.0) };
-            if image.color != tint { image.color = tint; }
-        }
+        let active = tab.group == section(state.selection);
+        let handle = if active { &tab.selected } else { &tab.idle };
+        if image.image != *handle { image.image = handle.clone(); }
+        let tint = if active { Color::WHITE }
+            else { Color::srgba(0.68, 0.75, 0.83, 1.0) };
+        if image.color != tint { image.color = tint; }
     }
 }
 

@@ -521,7 +521,13 @@ struct MenuRow { kind: MenuKind, index: usize }
 #[derive(Component)]
 struct MenuRowLabel { kind: MenuKind, index: usize }
 #[derive(Component)]
-struct MenuRowArt { kind: MenuKind, index: usize }
+struct MenuRowArt {
+    kind: MenuKind,
+    index: usize,
+    // Menu focus only swaps already-loaded handles; no per-frame path lookup.
+    idle: Handle<Image>,
+    selected: Handle<Image>,
+}
 
 #[derive(Component)]
 struct EndingActions;
@@ -651,6 +657,9 @@ fn spawn_menu_rows(
     for (index, label) in options.iter().enumerate() {
         let title = menu_row_label(kind, index, label, skin);
         if let Some(skin) = skin.filter(|s| s.button_idle_image.is_some()) {
+            let idle: Handle<Image> = assets.load(skin.button_idle_image.clone().unwrap_or_default());
+            let selected: Handle<Image> = skin.button_selected_image.as_ref()
+                .map_or_else(|| idle.clone(), |path| assets.load(path.clone()));
             parent.spawn((
                 Name::new(format!("{kind:?} illustrated action {}", index + 1)),
                 MenuRow { kind, index },
@@ -671,9 +680,9 @@ fn spawn_menu_rows(
                 BorderColor::all(Color::NONE),
             )).with_children(|button| {
                 button.spawn((
-                    MenuRowArt { kind, index },
+                    MenuRowArt { kind, index, idle: idle.clone(), selected },
                     ImageNode {
-                        image: assets.load(skin.button_idle_image.clone().unwrap_or_default()),
+                        image: idle,
                         image_mode: bevy::ui::widget::NodeImageMode::Sliced(
                             menu_button_slicer(skin.button_slice_border)
                         ),
@@ -780,7 +789,6 @@ fn menu_row_active(session: &Session, kind: MenuKind, index: usize) -> bool {
 
 fn sync_menu_selection(
     session: Res<Session>,
-    assets: Res<AssetServer>,
     mut rows: Query<(&MenuRow, &mut BackgroundColor, Option<&mut TextColor>, &mut BorderColor), Without<MenuRowLabel>>,
     mut labels: Query<(&MenuRowLabel, &mut TextColor), Without<MenuRow>>,
     mut artwork: Query<(&MenuRowArt, &mut ImageNode)>,
@@ -816,14 +824,10 @@ fn sync_menu_selection(
         }
     }
     for (row, mut image) in &mut artwork {
-        if let Some(skin) = menu_skin(&session, row.kind) {
-            let active = menu_row_active(&session, row.kind, row.index);
-            let path = if active { &skin.button_selected_image } else { &skin.button_idle_image };
-            if let Some(path) = path {
-                let handle = assets.load(path.clone());
-                if image.image != handle { image.image = handle; }
-            }
-        }
+        let desired = if menu_row_active(&session, row.kind, row.index) {
+            &row.selected
+        } else { &row.idle };
+        if image.image != *desired { image.image = desired.clone(); }
     }
 }
 
