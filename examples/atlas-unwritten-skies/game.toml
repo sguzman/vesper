@@ -66,7 +66,7 @@ selected_text = [1.0, 0.96, 0.81, 1.0]
 [menu_skins.pause]
 decor_image = "assets/menus/pause.png"
 decor_opacity = 0.24
-title = "✦  PAUSE  ✦"
+title = "PAUSE"
 button_slice_border = [170.0, 170.0, 40.0, 40.0]
 button_label_inset_percent = 18.0
 button_idle_image = "assets/menus/button-idle.png"
@@ -93,7 +93,7 @@ selected_text = [1.0, 0.96, 0.8, 1.0]
 [menu_skins.settings]
 decor_image = "assets/menus/settings.png"
 decor_opacity = 0.24
-title = "✦  SETTINGS  ✦"
+title = "SETTINGS"
 panel_width_percent = 71.0
 panel_offset_percent = 5.0
 panel_opacity = 0.91

@@ -1,6 +1,7 @@
 //! Live player-owned appearance controls. The authored game is never edited.
 //! Settings writes go to a single sequential background worker, not Bevy Update.
 use super::*;
+use bevy::ui_widgets::{Slider, SliderRange, SliderThumb, SliderValue, ValueChange};
 use std::sync::mpsc::{self, Sender};
 
 pub const ITEMS: [&str; 13] = [
@@ -35,6 +36,9 @@ pub struct SettingsClicks(pub Option<usize>);
 /// Pointer-activated left/right controls use exactly the keyboard edit path.
 #[derive(Resource, Default)]
 pub struct SettingsAdjustClicks(pub Option<(usize, i32)>);
+/// Sliders emit normalized absolute positions while dragging or clicking the rail.
+#[derive(Resource, Default)]
+pub struct SettingsSliderClicks(pub Option<(usize, f32)>);
 #[derive(Resource, Default)]
 pub struct SettingsTabClicks(pub Option<usize>);
 #[derive(Component)]
@@ -59,6 +63,10 @@ pub struct SettingsRowLabel(usize);
 pub struct SettingsRowValue(usize);
 #[derive(Component)]
 pub struct SettingsSliderFill(usize);
+#[derive(Component)]
+pub struct SettingsSliderThumb(usize);
+#[derive(Component)]
+pub struct SettingsSliderControl(usize);
 #[derive(Component)]
 pub struct SettingsPreviewPanel;
 #[derive(Component, Clone, Copy)]
@@ -182,6 +190,34 @@ fn slider_fraction(session: &Session, index: usize) -> Option<f32> {
     Some(((value - low) / (high - low)).clamp(0.0, 1.0))
 }
 
+/// Snap a normalized drag to the same legal steps used by keyboard arrows.
+/// Dragging does not accumulate rounding error across repeated updates.
+fn slider_preferences(session: &Session, index: usize, fraction: f32) -> Option<PlayerPreferences> {
+    if !fraction.is_finite() { return None; }
+    let fraction = fraction.clamp(0.0, 1.0);
+    let mut prefs = session.preferences.clone();
+    match index {
+        0 => prefs.panel_opacity = Some(0.60 + (fraction * 8.0).round() * 0.05),
+        1 => prefs.text_scale = Some(0.80 + (fraction * 8.0).round() * 0.10),
+        6 => prefs.auto_advance_delay = Some(0.5 + (fraction * 39.0).round() * 0.5),
+        8 => prefs.panel_width_percent = Some(50.0 + (fraction * 10.0).round() * 5.0),
+        9 => prefs.panel_bottom_percent = Some((fraction * 20.0).round()),
+        _ => return None,
+    }
+    Some(prefs)
+}
+
+fn apply_preferences(session: &mut Session, next: PlayerPreferences, writer: &PreferencesWriter, name: &str) {
+    if next == session.preferences { return; }
+    if let Err(error) = next.validate() {
+        warn!("Rejected invalid player setting: {error}");
+        return;
+    }
+    session.preferences = next;
+    persist(session, writer);
+    info!("Vesper settings applied: {name}");
+}
+
 fn control_value(session: &Session, index: usize) -> String {
     let string = label(session, index);
     if let Some((_, tail)) = string.split_once("   <  ") {
@@ -252,14 +288,7 @@ fn edited(session: &Session, index: usize, delta: i32) -> PlayerPreferences {
 pub fn change(session: &mut Session, index: usize, delta: i32, writer: &PreferencesWriter) {
     if index == 12 || index >= ITEMS.len() { return; }
     let next = edited(session, index, delta);
-    if next == session.preferences { return; }
-    if let Err(error) = next.validate() {
-        warn!("Rejected invalid player setting: {error}");
-        return;
-    }
-    session.preferences = next;
-    persist(session, writer);
-    info!("Vesper settings applied: {}", ITEMS[index]);
+    apply_preferences(session, next, writer, ITEMS[index]);
 }
 
 pub fn open(
@@ -507,14 +536,40 @@ pub fn open(
                                 });
                             }
                             if let Some(frac) = slider_fraction(session, i) {
+                                // A real Bevy slider: drag the thumb or click the track.
+                                // Its model is player preferences, also edited by arrows.
                                 controls.spawn((
-                                    Node { width: px(83.0), height: px(7.0), ..default() },
-                                    BackgroundColor(Color::srgba(0.12, 0.16, 0.22, 1.0)),
+                                    Name::new(format!("Settings draggable slider {i}")),
+                                    SettingsSliderControl(i),
+                                    Slider::default(), SliderRange::new(0.0, 1.0),
+                                    SliderValue(frac), Hovered::default(),
+                                    Node { width: px(104.0), height: px(22.0),
+                                        justify_content: JustifyContent::Center,
+                                        align_items: AlignItems::Center, ..default() },
+                                    observe(move |value: On<ValueChange<f32>>,
+                                        mut sliders: ResMut<SettingsSliderClicks>| {
+                                        sliders.0 = Some((i, value.value));
+                                    }),
                                 )).with_children(|bar| {
                                     bar.spawn((
-                                        SettingsSliderFill(i),
-                                        Node { width: percent(frac * 100.0), height: percent(100.0), ..default() },
-                                        BackgroundColor(rgba(skin.border_color)),
+                                        Node { width: percent(100.0), height: px(7.0), ..default() },
+                                        BackgroundColor(Color::srgba(0.12, 0.16, 0.22, 1.0)),
+                                    )).with_children(|rail| {
+                                        rail.spawn((
+                                            SettingsSliderFill(i),
+                                            Node { width: percent(frac * 100.0),
+                                                height: percent(100.0), ..default() },
+                                            BackgroundColor(rgba(skin.border_color)),
+                                        ));
+                                    });
+                                    bar.spawn((
+                                        SliderThumb, SettingsSliderThumb(i),
+                                        Node { position_type: PositionType::Absolute,
+                                            left: px(frac * 92.0), top: px(2.0),
+                                            width: px(12.0), height: px(18.0),
+                                            border: px(1.0).all(), ..default() },
+                                        BackgroundColor(rgba(skin.selected_text)),
+                                        BorderColor::all(rgba(skin.border_color)),
                                     ));
                                 });
                             }
@@ -671,19 +726,31 @@ pub fn pointer(
     assets: Res<AssetServer>,
     mut clicks: ResMut<SettingsClicks>,
     mut adjust: ResMut<SettingsAdjustClicks>,
+    mut sliders: ResMut<SettingsSliderClicks>,
     mut tabs: ResMut<SettingsTabClicks>,
     mut browser: ResMut<font_browser::State>,
 ) {
     if state.overlay.is_none() || browser.overlay.is_some() {
         clicks.0 = None;
         adjust.0 = None;
+        sliders.0 = None;
         tabs.0 = None;
         return;
     }
     if let Some(group) = tabs.0.take() {
         clicks.0 = None;
         adjust.0 = None;
+        sliders.0 = None;
         state.selection = SECTION_START[group];
+        return;
+    }
+    if let Some((index, fraction)) = sliders.0.take() {
+        clicks.0 = None;
+        adjust.0 = None;
+        state.selection = index;
+        if let Some(next) = slider_preferences(&session, index, fraction) {
+            apply_preferences(&mut session, next, &writer, ITEMS[index]);
+        }
         return;
     }
     if let Some((index, direction)) = adjust.0.take() {
@@ -718,6 +785,8 @@ pub fn sync_visuals(
     mut labels: Query<(&SettingsRowLabel, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowValue>)>,
     mut values: Query<(&SettingsRowValue, &mut Text), (Without<Preview>, Without<StoryText>, Without<SettingsRowLabel>)>,
     mut gauges: Query<(&SettingsSliderFill, &mut Node), Without<SettingsRow>>,
+    mut slider_thumbs: Query<(&SettingsSliderThumb, &mut Node), Without<SettingsRow>>,
+    mut slider_values: Query<(&SettingsSliderControl, &mut SliderValue)>,
     mut rows: Query<(&SettingsRow, &mut BackgroundColor, &mut BorderColor, &mut Node),
         (Without<StoryPanel>, Without<SettingsPreviewPanel>, Without<SettingsSliderFill>, Without<SettingsSectionHeading>, Without<SettingsTab>)>,
     mut headings: Query<(&SettingsSectionHeading, &mut Node),
@@ -792,6 +861,16 @@ pub fn sync_visuals(
     for (slot, mut node) in &mut gauges {
         if let Some(frac) = slider_fraction(&session, slot.0) {
             node.width = percent(frac * 100.0);
+        }
+    }
+    for (slot, mut node) in &mut slider_thumbs {
+        if let Some(frac) = slider_fraction(&session, slot.0) {
+            node.left = px(frac * 92.0);
+        }
+    }
+    for (slot, mut slider) in &mut slider_values {
+        if let Some(frac) = slider_fraction(&session, slot.0) {
+            if (slider.0 - frac).abs() > 0.0001 { slider.0 = frac; }
         }
     }
     for (group, mut node) in &mut headings {
