@@ -494,26 +494,36 @@ struct MenuPointer { action: Option<(MenuKind, usize)> }
 /// coordinates. CI uses it to catch hidden/clipped text that static region
 /// validation alone cannot detect. Never query the full UI tree every frame.
 fn trace_hint_geometry(
-    hint_anchor: Query<(&Node, Option<&ComputedNode>, Option<&GlobalTransform>), With<HintAnchor>>,
-    text: Query<(&StoryText, &Text, Option<&ComputedNode>, Option<&TextLayoutInfo>, Option<&GlobalTransform>), Without<HintAnchor>>,
+    panels: Query<(&ComputedNode, &UiGlobalTransform), With<StoryPanel>>,
+    hint_anchor: Query<(&ComputedNode, &UiGlobalTransform), With<HintAnchor>>,
+    text: Query<(&StoryText, &Text, &ComputedNode, &TextLayoutInfo, &UiGlobalTransform), Without<HintAnchor>>,
     mut ticks: Local<usize>,
 ) {
     if *ticks >= 35 { return; }
     *ticks += 1;
     if *ticks < 35 { return; }
     let anchors = hint_anchor.iter().count();
-    let (mut n, mut chars, mut glyph_h, mut box_h, mut pos_y) = (0usize, 0usize, -1.0f32, -1.0f32, -1.0f32);
+    let (mut n, mut chars, mut glyph_h, mut box_h, mut pos_y) =
+        (0usize, 0usize, -1.0f32, -1.0f32, -1.0f32);
+    let mut glyph_top = -1.0f32;
     for (role, content, node, glyph, position) in &text {
         if !matches!(role, StoryText::Hint) { continue; }
         n += 1;
         chars = content.0.len();
-        glyph_h = glyph.map_or(-1.0, |g| g.size.y);
-        box_h = node.map_or(-1.0, |g| g.size().y);
-        pos_y = position.map_or(-1.0, |g| g.translation().y);
+        glyph_h = glyph.size.y;
+        box_h = node.size().y;
+        pos_y = position.translation.y;
+        glyph_top = pos_y - box_h * 0.5;
     }
-    let anchor_h = hint_anchor.iter().next()
-        .and_then(|(_, c, _)| c).map_or(-1.0, |c| c.size().y);
-    info!("Vesper hint diagnostic: anchors={anchors} anchor_height={anchor_h:.1} text_nodes={n} chars={chars} glyph_height={glyph_h:.1} box_height={box_h:.1} y={pos_y:.1}");
+    let (anchor_h, anchor_top) = hint_anchor.iter().next()
+        .map_or((-1.0, -1.0), |(size, transform)| {
+            (size.size().y, transform.translation.y - size.size().y * 0.5)
+        });
+    let (panel_h, panel_top) = panels.iter().next()
+        .map_or((-1.0, -1.0), |(size, transform)| {
+            (size.size().y, transform.translation.y - size.size().y * 0.5)
+        });
+    info!("Vesper hint diagnostic: anchors={anchors} anchor_height={anchor_h:.1} text_nodes={n} chars={chars} glyph_height={glyph_h:.1} box_height={box_h:.1} y={pos_y:.1} anchor_top={anchor_top:.1} glyph_top={glyph_top:.1} panel_top={panel_top:.1} panel_height={panel_h:.1}");
 }
 
 /// Preserve the previous Up-from-first = Quit navigation shortcut.
