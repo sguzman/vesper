@@ -626,7 +626,19 @@ pub fn open(
                                         align_items: AlignItems::Center, ..default() },
                                     observe(move |value: On<ValueChange<f32>>,
                                         mut sliders: ResMut<SettingsSliderClicks>| {
+                                        info!("Vesper Settings native slider {i} value={:.3} final={}",
+                                            value.value, value.is_final);
                                         sliders.0 = Some((i, value.value));
+                                    }),
+                                    observe(move |_e: On<Pointer<bevy::picking::events::DragStart>>| {
+                                        info!("Vesper Settings native slider {i} DragStart");
+                                    }),
+                                    observe(move |e: On<Pointer<bevy::picking::events::Drag>>| {
+                                        info!("Vesper Settings native slider {i} Drag distance={:?}",
+                                            e.distance);
+                                    }),
+                                    observe(move |_e: On<Pointer<bevy::picking::events::DragEnd>>| {
+                                        info!("Vesper Settings native slider {i} DragEnd");
                                     }),
                                 )).with_children(|bar| {
                                     bar.spawn((
