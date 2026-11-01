@@ -630,14 +630,14 @@ pub fn open(
                                             value.value, value.is_final);
                                         sliders.0 = Some((i, value.value));
                                     }),
-                                    observe(move |_e: On<Pointer<bevy::picking::events::DragStart>>| {
+                                    observe(move |_e: On<bevy::picking::events::PointerDragStart>| {
                                         info!("Vesper Settings native slider {i} DragStart");
                                     }),
-                                    observe(move |e: On<Pointer<bevy::picking::events::Drag>>| {
+                                    observe(move |e: On<bevy::picking::events::PointerDrag>| {
                                         info!("Vesper Settings native slider {i} Drag distance={:?}",
                                             e.distance);
                                     }),
-                                    observe(move |_e: On<Pointer<bevy::picking::events::DragEnd>>| {
+                                    observe(move |_e: On<bevy::picking::events::PointerDragEnd>| {
                                         info!("Vesper Settings native slider {i} DragEnd");
                                     }),
                                 )).with_children(|bar| {
