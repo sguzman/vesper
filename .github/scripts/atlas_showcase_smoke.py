@@ -360,18 +360,37 @@ def responsive_layout() -> None:
                 assert float(diagnosis[5]) > 0 and float(diagnosis[6]) > 0, (
                     "Hint exists but has no rendered geometry", diagnosis.groups()
                 )
+                def capture_menu_viewports(kind: str) -> None:
+                    # Protect diegetic button-label readability at narrow and
+                    # spacious sizes, not only the default 1280x720 window.
+                    for width, height, suffix in (
+                        (946, 511, "compact"),
+                        (1900, 1035, "large"),
+                    ):
+                        run("xdotool", "windowsize", "--sync", win,
+                            str(width), str(height))
+                        time.sleep(0.55)
+                        screenshot(win, f"menu-{kind}-{suffix}.png",
+                                   (width, height))
+                    run("xdotool", "windowsize", "--sync", win,
+                        "1280", "720")
+                    time.sleep(0.55)
+
                 press(win, "p", 0.35)
                 time.sleep(0.65)
                 screenshot(win, "menu-pause-illustrated.png")
+                capture_menu_viewports("pause")
                 press(win, "4", 0.35)
                 wait_for_log(log, "Vesper settings menu backdrop loaded:")
                 time.sleep(0.65)
                 screenshot(win, "menu-settings-illustrated.png")
+                capture_menu_viewports("settings")
                 press(win, "Escape", 0.30)
                 press(win, "p", 0.30)
                 press(win, "m", 0.35)
                 time.sleep(0.65)
                 screenshot(win, "menu-main-illustrated.png")
+                capture_menu_viewports("main")
                 assert "Vesper Pause menu backdrop loaded: assets/backgrounds/observatory_night.png" in read_log(log)
                 assert "Vesper Main menu backdrop loaded: assets/backgrounds/observatory_dawn.png" in read_log(log)
                 assert "Vesper settings menu backdrop loaded: assets/backgrounds/observatory_close.png" in read_log(log)
