@@ -672,8 +672,19 @@ fn spawn_menu_rows(
                             font_size: FontSize::Px(skin.button_text_size),
                             ..default() },
                         TextColor(rgba(skin.normal_text)),
-                        TextLayout::new(Justify::Left, LineBreak::NoWrap),
-                        Node { flex_shrink: 0.0, ..default() },
+                        // A text node can occupy the whole flex row even when
+                        // its holder uses justify_content: Center. Explicitly
+                        // center the glyphs inside that row so they never sit
+                        // over the plaque's left-hand ornament.
+                        TextLayout::new(
+                            if skin.centered { Justify::Center } else { Justify::Left },
+                            LineBreak::NoWrap,
+                        ),
+                        Node {
+                            width: if skin.centered { percent(100.0) } else { Val::Auto },
+                            flex_shrink: 0.0,
+                            ..default()
+                        },
                     ));
                 });
             });
