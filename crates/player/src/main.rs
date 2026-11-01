@@ -490,6 +490,34 @@ const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Qui
 const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
 
 /// Retain row identity while focus changes: only selected row colors update.
+fn rgba(value: [f32; 4]) -> Color {
+    Color::srgba(value[0], value[1], value[2], value[3])
+}
+
+fn menu_skin<'a>(session: &'a Session, kind: MenuKind) -> Option<&'a vesper_game::MenuSkin> {
+    let skins = &session.game.manifest.menu_skins;
+    match kind {
+        MenuKind::Main => skins.main.as_ref(),
+        MenuKind::Pause => skins.pause.as_ref(),
+        MenuKind::Ending => None,
+    }
+}
+
+fn menu_skin_row_colors(
+    skin: &vesper_game::MenuSkin, selected: bool,
+) -> (Color, Color, Color) {
+    let fill = if selected { skin.selected_fill } else { skin.normal_fill };
+    let ink = if selected { skin.selected_text } else { skin.normal_text };
+    let edge = if selected { skin.border_color }
+        else { [
+            skin.border_color[0] * 0.65,
+            skin.border_color[1] * 0.65,
+            skin.border_color[2] * 0.65,
+            skin.border_color[3] * 0.75,
+        ] };
+    (rgba(fill), rgba(ink), rgba(edge))
+}
+
 fn menu_row_colors(kind: MenuKind, selected: bool, accent: [f32; 4]) -> (Color, Color) {
     if selected {
         let alpha = if kind == MenuKind::Ending { 0.50 } else { 0.94 };
@@ -507,6 +535,7 @@ fn spawn_menu_rows(
     kind: MenuKind,
     options: &[&str],
     font: &FontSource,
+    skin: Option<&vesper_game::MenuSkin>,
 ) {
     for (index, label) in options.iter().enumerate() {
         parent.spawn((
@@ -518,35 +547,62 @@ fn spawn_menu_rows(
             observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
                 pointer.action = Some((kind, index));
             }),
-            Text::new(format!("{}. {}", index + 1, label)),
-            TextFont { font: font.clone(), font_size: FontSize::Px(22.0), ..default() },
-            TextColor(Color::WHITE),
-            TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
-            Node { width: percent(100.0), padding: px(10.0).all(), ..default() },
-            BackgroundColor(Color::NONE),
+            Text::new(if skin.is_some_and(|skin| !skin.show_numbers) {
+                label.to_string()
+            } else {
+                format!("{}. {}", index + 1, label)
+            }),
+            TextFont {
+                font: font.clone(),
+                font_size: FontSize::Px(skin.map_or(22.0, |skin| skin.button_text_size)),
+                ..default()
+            },
+            TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.normal_text))),
+            TextLayout::new(
+                if skin.is_some_and(|skin| skin.centered) { Justify::Center }
+                else { Justify::Left },
+                LineBreak::WordOrCharacter,
+            ),
+            Node {
+                width: percent(100.0),
+                min_height: skin.map_or(Val::Auto, |skin| px(skin.button_height)),
+                border: if skin.is_some() { px(2.0).all() }
+                    else { UiRect::default() },
+                margin: if skin.is_some() { UiRect::vertical(px(2.0)) }
+                    else { UiRect::default() },
+                padding: px(10.0).all(),
+                ..default()
+            },
+            BorderColor::all(skin.map_or(Color::NONE, |skin| rgba(skin.border_color))),
+            BackgroundColor(skin.map_or(Color::NONE, |skin| rgba(skin.normal_fill))),
         ));
     }
 }
 
 fn sync_menu_selection(
     session: Res<Session>,
-    mut rows: Query<(&MenuRow, &mut BackgroundColor, &mut TextColor)>,
+    mut rows: Query<(&MenuRow, &mut BackgroundColor, &mut TextColor, &mut BorderColor)>,
     mut ending: Query<&mut Node, With<EndingActions>>,
 ) {
     for mut node in &mut ending {
         let display = if session.finished { Display::Flex } else { Display::None };
         if node.display != display { node.display = display; }
     }
-    for (row, mut bg, mut fg) in &mut rows {
+    for (row, mut bg, mut fg, mut border) in &mut rows {
         let active = match row.kind {
             MenuKind::Pause => session.paused && row.index == session.pause_selection,
             MenuKind::Main => session.menu_overlay.is_some() && row.index == session.menu_selection,
             MenuKind::Ending => session.finished && row.index == session.ending_selection,
         };
-        let (background, foreground) =
-            menu_row_colors(row.kind, active, session.game.theme.panel.accent);
+        let (background, foreground, edge) = if let Some(skin) = menu_skin(&session, row.kind) {
+            menu_skin_row_colors(skin, active)
+        } else {
+            let (bg, fg) = menu_row_colors(row.kind, active, session.game.theme.panel.accent);
+            (bg, fg, Color::NONE)
+        };
         if bg.0 != background { bg.0 = background; }
         if fg.0 != foreground { fg.0 = foreground; }
+        if *border != BorderColor::all(edge) { *border = BorderColor::all(edge); }
     }
 }
 
@@ -1374,7 +1430,7 @@ fn setup(
                     ..default()
                 },
             )).with_children(|list| {
-                spawn_menu_rows(list, MenuKind::Ending, &ENDING_ITEMS, &font);
+                spawn_menu_rows(list, MenuKind::Ending, &ENDING_ITEMS, &font, None);
             });
             parent.spawn((
                 StorySeparator,
@@ -1481,6 +1537,7 @@ fn spawn_center_menu(
     options: &[&str],
     instructions: &str,
     background_image: Option<&str>,
+    skin: Option<&vesper_game::MenuSkin>,
 ) -> Entity {
     let font = text_font(theme, assets);
     let accent = theme.panel.accent;
@@ -1529,32 +1586,46 @@ fn spawn_center_menu(
         parent.spawn((
             Name::new(format!("{kind:?} panel")),
             Node {
-                width: if illustrated { percent(49.0) } else { percent(85.0) },
+                width: if let Some(skin) = skin { percent(skin.panel_width_percent) }
+                    else if illustrated { percent(49.0) } else { percent(85.0) },
                 min_width: if illustrated { px(275.0) } else { px(0.0) },
                 max_width: if illustrated { px(550.0) } else { px(660.0) },
-                margin: if illustrated { UiRect::left(percent(7.0)) }
+                margin: if let Some(skin) = skin { UiRect::left(percent(skin.panel_offset_percent)) }
+                    else if illustrated { UiRect::left(percent(7.0)) }
                     else { UiRect::default() },
                 border: if illustrated { px(2.0).all() } else { UiRect::default() },
                 flex_direction: FlexDirection::Column,
                 padding: px(26.0).all(),
-                row_gap: px(10.0),
+                row_gap: px(skin.map_or(10.0, |skin| skin.button_gap)),
                 ..default()
             },
-            BorderColor::all(Color::srgba(0.86, 0.68, 0.38, 0.95)),
-            BackgroundColor(Color::srgba(0.055, 0.072, 0.12,
-                if illustrated { 0.85 } else { 0.97 })),
+            BorderColor::all(skin.map_or(
+                Color::srgba(0.86, 0.68, 0.38, 0.95),
+                |skin| rgba(skin.border_color),
+            )),
+            BackgroundColor(skin.map_or(
+                Color::srgba(0.055, 0.072, 0.12,
+                    if illustrated { 0.85 } else { 0.97 }),
+                |skin| {
+                    let mut rgba_color = skin.panel_color;
+                    rgba_color[3] *= skin.panel_opacity;
+                    rgba(rgba_color)
+                },
+            )),
         )).with_children(|panel| {
             panel.spawn((
                 Text::new(title),
-                TextFont { font: font.clone(), font_size: FontSize::Px(28.0), ..default() },
-                TextColor(Color::srgba(1.0, 0.98, 0.92, 1.0)),
-                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+                TextFont { font: font.clone(), font_size: FontSize::Px(skin.map_or(28.0, |skin| skin.title_size)), ..default() },
+                TextColor(skin.map_or(Color::srgba(1.0, 0.98, 0.92, 1.0), |skin| rgba(skin.title_color))),
+                TextLayout::new(if skin.is_some_and(|skin| skin.centered) {
+                    Justify::Center
+                } else { Justify::Left }, LineBreak::WordOrCharacter),
             ));
             panel.spawn((
                 Node { width: percent(100.0), height: px(2.0), ..default() },
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
             ));
-            spawn_menu_rows(panel, kind, options, &font);
+            spawn_menu_rows(panel, kind, options, &font, skin);
             panel.spawn((
                 Text::new(instructions),
                 TextFont { font, font_size: FontSize::Px(15.0), ..default() },
@@ -1585,6 +1656,7 @@ fn show_pause_menu(
         &PAUSE_ITEMS,
         "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
         session.game.manifest.menu_backgrounds.pause.as_deref(),
+        menu_skin(session, MenuKind::Pause),
     );
     session.pause_overlay = Some(overlay);
     session.paused = true;
@@ -1608,6 +1680,7 @@ fn show_main_menu(
         commands, assets, &effective_theme(session), &title, MenuKind::Main, &MAIN_ITEMS,
         "Up/Down: select    Enter: confirm    M: close    Esc: quit",
         session.game.manifest.menu_backgrounds.main.as_deref(),
+        menu_skin(session, MenuKind::Main),
     );
     session.menu_overlay = Some(overlay);
     session.menu_selection = selected;
@@ -2375,6 +2448,16 @@ mod tests {
         assert!(matches!(top, bevy::ui::Val::Px(v) if (v - 195.0).abs() < 0.01));
         assert!(matches!(width, bevy::ui::Val::Px(v) if (v - 510.0).abs() < 0.01));
         assert!(matches!(height, bevy::ui::Val::Px(v) if (v - 33.0).abs() < 0.01));
+    }
+
+    #[test]
+    fn menu_focus_is_authored_with_distinct_frames_and_text_ink() {
+        let skin = vesper_game::MenuSkin::default();
+        let (idle, idle_ink, idle_edge) = super::menu_skin_row_colors(&skin, false);
+        let (active, active_ink, active_edge) = super::menu_skin_row_colors(&skin, true);
+        assert_ne!(idle, active);
+        assert_ne!(idle_ink, active_ink);
+        assert_ne!(idle_edge, active_edge);
     }
 
     #[test]
