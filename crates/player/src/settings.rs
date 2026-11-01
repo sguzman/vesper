@@ -666,7 +666,7 @@ pub fn open(
                 }
             });
             spawn_keyboard_legend(panel,
-                "↑↓: select    ←→: adjust    Enter: activate    Esc: back", &font);
+                "↑↓: select    ←→: adjust    Enter: activate    Esc: back", &font, false);
         });
     }).id();
     state.overlay = Some(overlay);
