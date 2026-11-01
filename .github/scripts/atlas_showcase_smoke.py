@@ -618,6 +618,29 @@ def responsive_layout() -> None:
                 time.sleep(0.65)
                 screenshot(win, "menu-main-illustrated.png")
                 capture_menu_viewports("main")
+                # Regression for Main -> Settings -> Main. Both UI trees
+                # already exist and must be reused without exposing the
+                # underlying story or creating a new set of image controls.
+                settings_before = read_log(log).count("Vesper appearance settings opened")
+                main_before = read_log(log).count("Vesper main menu opened")
+                main_reuse_before = read_log(log).count("Vesper Main menu UI reused")
+                press(win, "4", 0.35)
+                deadline = time.monotonic() + 10
+                while read_log(log).count("Vesper appearance settings opened") <= settings_before:
+                    assert time.monotonic() < deadline, "Main -> Settings transition stalled"
+                    time.sleep(.05)
+                screenshot(win, "menu-settings-from-main.png")
+                assert changed(OUTPUT / "menu-main-illustrated.png",
+                               OUTPUT / "menu-settings-from-main.png") > 2500
+                press(win, "Escape", 0.35)
+                deadline = time.monotonic() + 10
+                while read_log(log).count("Vesper main menu opened") <= main_before:
+                    assert time.monotonic() < deadline, "Settings -> Main transition stalled"
+                    time.sleep(.05)
+                assert read_log(log).count("Vesper Main menu UI reused") > main_reuse_before
+                screenshot(win, "menu-main-returned.png")
+                assert changed(OUTPUT / "menu-settings-from-main.png",
+                               OUTPUT / "menu-main-returned.png") > 2500
                 assert "Vesper Pause menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
                 assert "Vesper Main menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
                 assert "Vesper settings menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
