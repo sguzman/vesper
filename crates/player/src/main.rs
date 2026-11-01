@@ -281,7 +281,8 @@ fn fit_viewport(
     ), (With<CharacterVisual>, Without<BackgroundVisual>)>,
     mut panels: Query<&mut Node, With<StoryPanel>>,
     mut text_nodes: Query<(&StoryText, &mut Node), (Without<StoryPanel>, Without<NameplateAnchor>)>,
-    mut nameplate_anchors: Query<&mut Node, (With<NameplateAnchor>, Without<StoryPanel>, Without<StoryText>)>,
+    mut nameplate_anchors: Query<&mut Node, (With<NameplateAnchor>, Without<StoryPanel>, Without<StoryText>, Without<HintAnchor>)>,
+    mut hint_anchors: Query<&mut Node, (With<HintAnchor>, Without<StoryPanel>, Without<StoryText>, Without<NameplateAnchor>)>,
     mut previous: Local<(Vec2, [u32; 16])>,
 ) {
     let Ok(window) = windows.single() else { return; };
@@ -351,28 +352,37 @@ fn fit_viewport(
                 }
                 let (hint_left, hint_right, hint_bottom) =
                     hint_bounds(skin.and_then(|skin| skin.hint_area), width, geometry.min_height, padding);
+                if let Some(area) = skin.and_then(|skin| skin.hint_region) {
+                    let (left, top, w, h) = hint_region_bounds(area, width, geometry.min_height);
+                    for mut anchor in &mut hint_anchors {
+                        anchor.left = left;
+                        anchor.top = top;
+                        anchor.width = w;
+                        anchor.height = h;
+                        anchor.display = Display::Flex;
+                    }
+                } else {
+                    for mut anchor in &mut hint_anchors { anchor.display = Display::None; }
+                }
                 for (slot, mut node) in &mut text_nodes {
                     match slot {
                         StoryText::Hint => {
-                            node.position_type = PositionType::Absolute;
-                            if let Some(area) = skin.and_then(|skin| skin.hint_region) {
-                                let (left, top, width, height) =
-                                    hint_region_bounds(area, width, geometry.min_height);
-                                node.left = left;
-                                node.top = top;
+                            if skin.and_then(|skin| skin.hint_region).is_some() {
+                                node.position_type = PositionType::Relative;
+                                node.left = Val::Auto;
+                                node.top = Val::Auto;
                                 node.right = Val::Auto;
                                 node.bottom = Val::Auto;
-                                node.width = width;
-                                node.height = height;
-                                node.overflow = Overflow::clip();
+                                node.width = percent(100.0);
+                                node.height = Val::Auto;
                             } else {
+                                node.position_type = PositionType::Absolute;
                                 node.left = hint_left;
                                 node.top = Val::Auto;
                                 node.right = hint_right;
                                 node.bottom = hint_bottom;
                                 node.width = Val::Auto;
                                 node.height = Val::Auto;
-                                node.overflow = Overflow::visible();
                             }
                             node.margin = UiRect::default();
                             node.padding = UiRect::default();
@@ -429,6 +439,9 @@ struct StoryPanel;
 
 #[derive(Component)]
 struct NameplateAnchor;
+
+#[derive(Component)]
+struct HintAnchor;
 
 /// Full-bleed optional menu illustration. Reflow to aspect-preserving cover,
 /// never stretching illustrated instruments when window dimensions change.
@@ -1471,30 +1484,49 @@ fn setup(
                     width, geometry.min_height, inset,
                 );
                 let authored_hint = panel_art::active_skin(&session)
+                    .filter(|_| !session.preferences.high_contrast.unwrap_or(false))
                     .and_then(|skin| skin.hint_region);
-                let hint_bounds = authored_hint
-                    .map(|area| hint_region_bounds(area, width, geometry.min_height));
-                parent.spawn((
-                    StoryText::Hint,
-                    Text::new(panel_hint(&initial, &theme)),
-                    TextFont { font: font.clone(), font_size: FontSize::Px(hint_style.size), ..default() },
-                    text_color(hint_style.color),
-                    TextLayout::new(Justify::Left,
-                        if authored_hint.is_some() { LineBreak::WordOrCharacter }
-                        else { LineBreak::NoWrap }),
-                    Node {
-                        position_type: PositionType::Absolute,
-                        left: hint_bounds.map_or(hint_left, |v| v.0),
-                        top: hint_bounds.map_or(Val::Auto, |v| v.1),
-                        width: hint_bounds.map_or(Val::Auto, |v| v.2),
-                        height: hint_bounds.map_or(Val::Auto, |v| v.3),
-                        right: if authored_hint.is_some() { Val::Auto } else { hint_right },
-                        bottom: if authored_hint.is_some() { Val::Auto } else { hint_bottom },
-                        overflow: if authored_hint.is_some() { Overflow::clip() }
-                            else { Overflow::visible() },
-                        ..default()
-                    },
-                ));
+                if let Some(area) = authored_hint {
+                    let (left, top, w, h) =
+                        hint_region_bounds(area, width, geometry.min_height);
+                    parent.spawn((
+                        Name::new("Safe hint region"),
+                        HintAnchor,
+                        Node {
+                            position_type: PositionType::Absolute,
+                            left, top, width: w, height: h,
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::FlexStart,
+                            justify_content: JustifyContent::FlexStart,
+                            overflow: Overflow::clip(),
+                            ..default()
+                        },
+                    )).with_children(|slot| {
+                        slot.spawn((
+                            StoryText::Hint,
+                            Text::new(panel_hint(&initial, &theme)),
+                            TextFont { font: font.clone(),
+                                font_size: FontSize::Px(hint_style.size), ..default() },
+                            text_color(hint_style.color),
+                            TextLayout::new(Justify::Left, LineBreak::NoWrap),
+                            Node { width: percent(100.0),
+                                min_height: px(hint_style.size * 1.3),
+                                flex_shrink: 0.0, ..default() },
+                        ));
+                    });
+                } else {
+                    parent.spawn((
+                        StoryText::Hint,
+                        Text::new(panel_hint(&initial, &theme)),
+                        TextFont { font: font.clone(),
+                            font_size: FontSize::Px(hint_style.size), ..default() },
+                        text_color(hint_style.color),
+                        TextLayout::new(Justify::Left, LineBreak::NoWrap),
+                        Node { position_type: PositionType::Absolute,
+                            left: hint_left, right: hint_right,
+                            bottom: hint_bottom, ..default() },
+                    ));
+                }
             } else {
                 add_text(parent, StoryText::Hint, panel_hint(&initial, &theme),
                     &hint_style, &font, panel.hint_inside);
