@@ -110,10 +110,12 @@ show_numbers = false
 panel_color = [0.033, 0.061, 0.105, 1.0]
 border_color = [0.91, 0.7, 0.37, 1.0]
 title_color = [0.97, 0.84, 0.6, 1.0]
-normal_fill = [0.045, 0.09, 0.16, 0.9]
-selected_fill = [0.18, 0.13, 0.055, 0.96]
-normal_text = [0.95, 0.86, 0.69, 1.0]
-selected_text = [1.0, 0.96, 0.8, 1.0]
+# Author-controlled warm paper rows, rather than generic navy UI bands.
+# Distinct ink is needed so value text and button arrows stay legible.
+normal_fill = [0.92, 0.85, 0.72, 0.98]
+selected_fill = [0.98, 0.92, 0.79, 1.0]
+normal_text = [0.18, 0.13, 0.075, 1.0]
+selected_text = [0.24, 0.16, 0.075, 1.0]
 
 [music]
 archive = "assets/audio/archive.ogg"

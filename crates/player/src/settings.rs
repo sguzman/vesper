@@ -646,8 +646,10 @@ pub fn open(
                                             left: px(frac * 158.0), top: px(2.0),
                                             width: px(12.0), height: px(18.0),
                                             border: px(1.0).all(), ..default() },
-                                        BackgroundColor(rgba(skin.selected_text)),
-                                        BorderColor::all(rgba(skin.border_color)),
+                                        // Gold on a dark track remains visible even when
+                                        // the Settings row itself uses dark ink on paper.
+                                        BackgroundColor(rgba(skin.border_color)),
+                                        BorderColor::all(rgba(skin.selected_text)),
                                     ));
                                 });
                             }
