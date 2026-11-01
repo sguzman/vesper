@@ -1812,6 +1812,46 @@ fn update_screen(
 
 
 
+/// Native title plaque using the authored nine-sliced brass button art.
+/// Words remain real Bevy text and can never be baked into the illustration.
+fn spawn_ornate_menu_heading(
+    parent: &mut ChildSpawnerCommands,
+    title: &str,
+    font: &FontSource,
+    assets: &AssetServer,
+    skin: &vesper_game::MenuSkin,
+) {
+    parent.spawn((
+        Name::new("Art Nouveau title plaque"),
+        Node { width: percent(100.0), height: px(67.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_shrink: 0.0, ..default() },
+    )).with_children(|heading| {
+        if let Some(path) = &skin.button_idle_image {
+            heading.spawn((
+                Name::new("Decorative brass title plaque artwork"),
+                ImageNode {
+                    image: assets.load(path.clone()),
+                    image_mode: bevy::ui::widget::NodeImageMode::Sliced(
+                        menu_button_slicer(skin.button_slice_border)),
+                    ..default()
+                },
+                Node { position_type: PositionType::Absolute,
+                    left: px(0.0), top: px(0.0),
+                    width: percent(100.0), height: percent(100.0), ..default() },
+            ));
+        }
+        heading.spawn((
+            Text::new(title.to_owned()),
+            TextFont { font: font.clone(), font_size: FontSize::Px(skin.title_size), ..default() },
+            TextColor(rgba(skin.title_color)),
+            TextLayout::new(Justify::Center, LineBreak::WordOrCharacter),
+            Node { width: percent(100.0), padding: UiRect::horizontal(percent(12.0)), ..default() },
+        ));
+    });
+}
+
 /// Keyboard affordances are rendered as individual, bordered keycaps.
 /// Unlike a plain hint sentence, the physical keys are visually distinguishable
 /// from their actions. The same helper is used by menus and Settings.
@@ -1827,8 +1867,10 @@ fn spawn_keyboard_legend(
         Name::new("Keyboard shortcut keycaps"),
         Node {
             width: percent(100.0), flex_direction: FlexDirection::Row,
-            flex_wrap: FlexWrap::Wrap, column_gap: px(12.0), row_gap: px(7.0),
-            margin: UiRect::top(px(9.0)), ..default()
+            flex_wrap: FlexWrap::Wrap,
+            column_gap: px(if on_paper { 6.0 } else { 12.0 }),
+            row_gap: px(if on_paper { 1.0 } else { 7.0 }),
+            margin: UiRect::top(px(if on_paper { 0.0 } else { 9.0 })), ..default()
         },
     )).with_children(|legend| {
         for (key, action) in keyboard_legend_pairs(instructions) {
@@ -1839,19 +1881,20 @@ fn spawn_keyboard_legend(
                 pair.spawn((
                     Name::new(format!("Keycap {key}")),
                     Node { border: px(1.0).all(), border_radius: BorderRadius::all(px(3.0)),
-                        padding: UiRect::axes(px(6.0), px(2.0)), ..default() },
+                        padding: UiRect::axes(px(if on_paper { 3.0 } else { 6.0 }),
+                            px(if on_paper { 1.0 } else { 2.0 })), ..default() },
                     BorderColor::all(Color::srgba(0.96, 0.77, 0.39, 1.0)),
                     BackgroundColor(Color::srgba(0.03, 0.055, 0.12, 0.97)),
                 )).with_children(|cap| {
                     cap.spawn((
                         Text::new(key.to_owned()),
-                        TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
+                        TextFont { font: font.clone(), font_size: FontSize::Px(if on_paper { 11.0 } else { 13.0 }), ..default() },
                         TextColor(Color::srgba(1.0, 0.91, 0.72, 1.0)),
                     ));
                 });
                 pair.spawn((
                     Text::new(action.to_owned()),
-                    TextFont { font: font.clone(), font_size: FontSize::Px(13.0), ..default() },
+                    TextFont { font: font.clone(), font_size: FontSize::Px(if on_paper { 11.0 } else { 13.0 }), ..default() },
                     TextColor(if on_paper {
                         Color::srgba(0.24, 0.16, 0.10, 1.0)
                     } else {
@@ -1990,14 +2033,16 @@ fn spawn_center_menu(
                     Node { width: percent(100.0), ..default() },
                 ));
             }
-            panel.spawn((
-                Text::new(title),
-                TextFont { font: font.clone(), font_size: FontSize::Px(skin.map_or(28.0, |skin| skin.title_size)), ..default() },
-                TextColor(skin.map_or(Color::srgba(1.0, 0.98, 0.92, 1.0), |skin| rgba(skin.title_color))),
-                TextLayout::new(if skin.is_some_and(|skin| skin.centered) {
-                    Justify::Center
-                } else { Justify::Left }, LineBreak::WordOrCharacter),
-            ));
+            if let Some(skin) = skin.filter(|s| s.centered) {
+                spawn_ornate_menu_heading(panel, title, &font, assets, skin);
+            } else {
+                panel.spawn((
+                    Text::new(title),
+                    TextFont { font: font.clone(), font_size: FontSize::Px(skin.map_or(28.0, |skin| skin.title_size)), ..default() },
+                    TextColor(skin.map_or(Color::srgba(1.0, 0.98, 0.92, 1.0), |skin| rgba(skin.title_color))),
+                    TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+                ));
+            }
             panel.spawn((
                 Node { width: percent(100.0), height: px(2.0), ..default() },
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),

@@ -93,6 +93,8 @@ selected_text = [1.0, 0.96, 0.8, 1.0]
 [menu_skins.settings]
 decor_image = "assets/menus/settings.png"
 decor_opacity = 0.24
+button_idle_image = "assets/menus/button-idle.png"
+button_slice_border = [170.0, 170.0, 40.0, 40.0]
 title = "SETTINGS"
 panel_width_percent = 87.0
 panel_offset_percent = 0.0

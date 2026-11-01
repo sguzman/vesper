@@ -413,16 +413,20 @@ pub fn open(
                     Node { width: percent(100.0), ..default() },
                 ));
             }
-            panel.spawn((
-                Text::new(skin.and_then(|skin| skin.title.as_deref()).unwrap_or("Settings")),
-                TextFont { font: if skin.is_some() { FontSource::Family("DejaVu Serif".into()) }
-                    else { font.clone() },
-                    font_size: FontSize::Px(skin.map_or(23.0, |skin| skin.title_size)), ..default() },
-                TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.title_color))),
-                TextLayout::new(if skin.is_some_and(|s| s.centered) { Justify::Center }
-                    else { Justify::Left }, LineBreak::WordOrCharacter),
-                Node { width: percent(100.0), ..default() },
-            ));
+            if let Some(skin) = skin.filter(|s| s.centered) {
+                let title_font = FontSource::Family("DejaVu Serif".into());
+                spawn_ornate_menu_heading(panel,
+                    skin.title.as_deref().unwrap_or("Settings"), &title_font, assets, skin);
+            } else {
+                panel.spawn((
+                    Text::new(skin.and_then(|skin| skin.title.as_deref()).unwrap_or("Settings")),
+                    TextFont { font: font.clone(),
+                        font_size: FontSize::Px(skin.map_or(23.0, |skin| skin.title_size)), ..default() },
+                    TextColor(skin.map_or(Color::WHITE, |skin| rgba(skin.title_color))),
+                    TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+                    Node { width: percent(100.0), ..default() },
+                ));
+            }
             panel.spawn((
                 Node { width: percent(100.0), height: px(2.0), ..default() },
                 BackgroundColor(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
@@ -650,6 +654,19 @@ pub fn open(
                     (Preview::Choice, "1. Continue the sample story", &theme.choices),
                     (Preview::Hint, "Enter: continue    P: pause", &theme.hint),
                 ] {
+                    if matches!(slot, Preview::Hint) && skin.is_some() {
+                        // Keep the model slot for live preview/font sync, but
+                        // render the example help as recognizable physical keys.
+                        preview.spawn((
+                            slot, Text::new(content),
+                            TextFont { font: font.clone(), font_size: FontSize::Px(style.size), ..default() },
+                            text_color(style.color),
+                            Node { display: Display::None, ..default() },
+                        ));
+                        spawn_keyboard_legend(preview,
+                            "Enter: Continue    P: Pause", &font, true);
+                        continue;
+                    }
                     let content_node = (
                         slot, Text::new(content),
                         TextFont {
