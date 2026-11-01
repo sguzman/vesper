@@ -32,6 +32,9 @@ pub struct SettingsScroll;
 /// input path. Transient Pressed markers are not reliable click events.
 #[derive(Resource, Default)]
 pub struct SettingsClicks(pub Option<usize>);
+/// Pointer-activated left/right controls use exactly the keyboard edit path.
+#[derive(Resource, Default)]
+pub struct SettingsAdjustClicks(pub Option<(usize, i32)>);
 #[derive(Component)]
 pub struct SettingsRowLabel(usize);
 #[derive(Component)]
@@ -164,10 +167,10 @@ fn slider_fraction(session: &Session, index: usize) -> Option<f32> {
 fn control_value(session: &Session, index: usize) -> String {
     let string = label(session, index);
     if let Some((_, tail)) = string.split_once("   <  ") {
-        return format!("‹ {} ›", tail.trim_end_matches("  >"));
+        return tail.trim_end_matches("  >").to_owned();
     }
     if let Some((_, tail)) = string.split_once("   [ ") {
-        return format!("▾ {}", tail.trim_end_matches(" ]"));
+        return tail.trim_end_matches(" ]").to_owned();
     }
     if matches!(index, 11 | 12) { return "↵".into(); }
     string
@@ -394,6 +397,30 @@ pub fn open(
                                 ..default()
                             },
                         )).with_children(|controls| {
+                            if i < 11 {
+                                controls.spawn((
+                                    Name::new(format!("Settings decrease {}", i)),
+                                    Button, Hovered::default(),
+                                    Node {
+                                        width: px(22.0), min_height: px(27.0),
+                                        align_items: AlignItems::Center,
+                                        justify_content: JustifyContent::Center, ..default()
+                                    },
+                                    BackgroundColor(rgba(skin.normal_fill)),
+                                    BorderColor::all(rgba(skin.border_color)),
+                                    observe(move |mut activate: On<Activate>,
+                                        mut adjust: ResMut<SettingsAdjustClicks>| {
+                                        activate.propagate(false);
+                                        adjust.0 = Some((i, -1));
+                                    }),
+                                )).with_children(|arrow| {
+                                    arrow.spawn((
+                                        Text::new("‹"),
+                                        TextFont { font: font.clone(), font_size: FontSize::Px(20.0), ..default() },
+                                        TextColor(rgba(skin.selected_text)),
+                                    ));
+                                });
+                            }
                             if let Some(frac) = slider_fraction(session, i) {
                                 controls.spawn((
                                     Node { width: px(83.0), height: px(7.0), ..default() },
@@ -416,6 +443,30 @@ pub fn open(
                                 },
                                 TextColor(rgba(skin.selected_text)),
                             ));
+                            if i < 11 {
+                                controls.spawn((
+                                    Name::new(format!("Settings increase {}", i)),
+                                    Button, Hovered::default(),
+                                    Node {
+                                        width: px(22.0), min_height: px(27.0),
+                                        align_items: AlignItems::Center,
+                                        justify_content: JustifyContent::Center, ..default()
+                                    },
+                                    BackgroundColor(rgba(skin.normal_fill)),
+                                    BorderColor::all(rgba(skin.border_color)),
+                                    observe(move |mut activate: On<Activate>,
+                                        mut adjust: ResMut<SettingsAdjustClicks>| {
+                                        activate.propagate(false);
+                                        adjust.0 = Some((i, 1));
+                                    }),
+                                )).with_children(|arrow| {
+                                    arrow.spawn((
+                                        Text::new("›"),
+                                        TextFont { font: font.clone(), font_size: FontSize::Px(20.0), ..default() },
+                                        TextColor(rgba(skin.selected_text)),
+                                    ));
+                                });
+                            }
                         });
                     }
                 });
@@ -514,10 +565,24 @@ pub fn pointer(
     writer: Res<PreferencesWriter>, mut commands: Commands,
     assets: Res<AssetServer>,
     mut clicks: ResMut<SettingsClicks>,
+    mut adjust: ResMut<SettingsAdjustClicks>,
     mut browser: ResMut<font_browser::State>,
 ) {
     if state.overlay.is_none() || browser.overlay.is_some() {
         clicks.0 = None;
+        adjust.0 = None;
+        return;
+    }
+    if let Some((index, direction)) = adjust.0.take() {
+        // Child controls stop propagation to the row. Ignore any row click
+        // captured in the same frame to avoid duplicate adjustments.
+        clicks.0 = None;
+        state.selection = index;
+        if index == 2 {
+            font_browser::open(&session, &mut browser, &mut commands);
+        } else {
+            change(&mut session, index, direction, &writer);
+        }
         return;
     }
     if let Some(index) = clicks.0.take() {
