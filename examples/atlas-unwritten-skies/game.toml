@@ -34,6 +34,26 @@ main = "assets/menus/main.png"
 pause = "assets/menus/pause.png"
 settings = "assets/menus/settings.png"
 
+# Illustrated menu composition and native diegetic controls. Distinct
+# frames, palettes and focus plaques; not just scenery behind generic rows.
+[menu_skins.main]
+panel_width_percent = 42.0
+panel_offset_percent = 7.0
+panel_opacity = 0.78
+title_size = 27.0
+button_height = 45.0
+button_text_size = 19.0
+button_gap = 7.0
+centered = true
+show_numbers = false
+panel_color = [0.032, 0.058, 0.115, 1.0]
+border_color = [0.93, 0.74, 0.41, 1.0]
+title_color = [0.99, 0.87, 0.68, 1.0]
+normal_fill = [0.051, 0.12, 0.21, 0.88]
+selected_fill = [0.25, 0.17, 0.078, 0.98]
+normal_text = [0.96, 0.89, 0.76, 1.0]
+selected_text = [1.0, 0.96, 0.81, 1.0]
+
 # Diegetic brass-and-navy button plaques, independent from backdrop art.
 # Native menu hit targets, keyboard focus and number shortcuts remain engine-owned.
 [menu_skins.pause]
