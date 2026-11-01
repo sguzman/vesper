@@ -577,7 +577,7 @@ pub fn open(
                     (Preview::Choice, "1. Continue the sample story", &theme.choices),
                     (Preview::Hint, "Enter: continue    P: pause", &theme.hint),
                 ] {
-                    preview.spawn((
+                    let content_node = (
                         slot, Text::new(content),
                         TextFont {
                             font: font.clone(), font_size: FontSize::Px(style.size),
@@ -586,7 +586,28 @@ pub fn open(
                         text_color(style.color),
                         TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
                         Node { width: percent(100.0), flex_shrink: 0.0, ..default() },
-                    ));
+                    );
+                    if matches!(slot, Preview::Speaker) && let Some(skin) = skin {
+                        // The actual gold speaker label sits on an opaque
+                        // navy titleplate, not on parchment. Match that
+                        // contrast in the live sample instead of painting
+                        // pale gold directly over the light paper background.
+                        preview.spawn((
+                            Name::new("Illustrated speaker preview titleplate"),
+                            Node {
+                                width: percent(100.0),
+                                padding: px(8.0).all(),
+                                border: px(1.0).all(),
+                                ..default()
+                            },
+                            BorderColor::all(rgba(skin.border_color)),
+                            BackgroundColor(rgba(skin.panel_color)),
+                        )).with_children(|nameplate| {
+                            nameplate.spawn(content_node);
+                        });
+                    } else {
+                        preview.spawn(content_node);
+                    }
                 }
             });
             panel.spawn((
