@@ -367,7 +367,8 @@ fn spawn_overlay(
         },
         // The image may still be decoding: opaque backing blocks any flash
         // of the live game while the Settings frame is made visible.
-        BackgroundColor(Color::srgba(0.02, 0.03, 0.07, 1.0)),
+        BackgroundColor(Color::srgba(0.02, 0.03, 0.07,
+            if illustrated { 1.0 } else { 0.88 })),
     )).with_children(|screen| {
         if let Some(path) = session.game.manifest.menu_backgrounds.settings.as_deref() {
             info!("Vesper settings menu backdrop loaded: {path}");
