@@ -350,7 +350,16 @@ def responsive_layout() -> None:
                 # Atlas exercises three independent, optional menu illustrations.
                 # Existing games without menu_backgrounds retain plain overlays.
                 screenshot(win, "panel-before-illustrated-menus.png")
-                wait_for_log(log, "Vesper hint computed:")
+                wait_for_log(log, "Vesper hint diagnostic:")
+                diagnosis = re.search(
+                    r"Vesper hint diagnostic: anchors=(\d+) anchor_height=([-.\d]+) text_nodes=(\d+) chars=(\d+) glyph_height=([-.\d]+) box_height=([-.\d]+)",
+                    read_log(log),
+                )
+                assert diagnosis, "Missing parsed hint diagnostic"
+                assert int(diagnosis[1]) == 1 and int(diagnosis[3]) == 1 and int(diagnosis[4]) > 0, diagnosis.groups()
+                assert float(diagnosis[5]) > 0 and float(diagnosis[6]) > 0, (
+                    "Hint exists but has no rendered geometry", diagnosis.groups()
+                )
                 press(win, "p", 0.35)
                 time.sleep(0.65)
                 screenshot(win, "menu-pause-illustrated.png")
