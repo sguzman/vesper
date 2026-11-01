@@ -380,9 +380,8 @@ pub fn open(
                             },
                             BorderColor::all(rgba(skin.border_color)),
                             BackgroundColor(rgba(skin.normal_fill)),
-                            observe(move |mut activate: On<Activate>,
+                            observe(move |_activate: On<Activate>,
                                 mut tabs: ResMut<SettingsTabClicks>| {
-                                activate.propagate(false);
                                 tabs.0 = Some(group);
                             }),
                         )).with_children(|button| {
@@ -473,9 +472,8 @@ pub fn open(
                                     },
                                     BackgroundColor(rgba(skin.normal_fill)),
                                     BorderColor::all(rgba(skin.border_color)),
-                                    observe(move |mut activate: On<Activate>,
+                                    observe(move |_activate: On<Activate>,
                                         mut adjust: ResMut<SettingsAdjustClicks>| {
-                                        activate.propagate(false);
                                         adjust.0 = Some((i, -1));
                                     }),
                                 )).with_children(|arrow| {
@@ -519,9 +517,8 @@ pub fn open(
                                     },
                                     BackgroundColor(rgba(skin.normal_fill)),
                                     BorderColor::all(rgba(skin.border_color)),
-                                    observe(move |mut activate: On<Activate>,
+                                    observe(move |_activate: On<Activate>,
                                         mut adjust: ResMut<SettingsAdjustClicks>| {
-                                        activate.propagate(false);
                                         adjust.0 = Some((i, 1));
                                     }),
                                 )).with_children(|arrow| {
