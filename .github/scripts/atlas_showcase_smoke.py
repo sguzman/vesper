@@ -649,12 +649,13 @@ def responsive_layout() -> None:
                 assert "Vesper Settings menu UI reused" in read_log(log)
                 assert "Vesper Pause menu UI reused" in read_log(log)
                 assert "Vesper Main menu UI reused" in read_log(log)
-                for decoration in [
-                    "Vesper Pause menu decoration loaded: assets/menus/pause.png",
-                    "Vesper Main menu decoration loaded: assets/menus/main.png",
-                    "Vesper settings menu decoration loaded: assets/menus/settings.png",
-                ]:
-                    assert decoration in read_log(log), decoration
+                # The legacy translucent abstract menu art was removed.
+                # Only the painterly observatory backdrop and native controls
+                # should remain for all three menus.
+                for kind in ("Pause", "Main", "settings"):
+                    assert f"Vesper {kind} menu decoration loaded:" not in read_log(log), (
+                        kind, "obsolete low-opacity menu overlay is still loading"
+                    )
                 for previous_name, current_name in [
                     ("panel-before-illustrated-menus.png", "menu-pause-illustrated.png"),
                     ("menu-pause-illustrated.png", "menu-settings-illustrated.png"),

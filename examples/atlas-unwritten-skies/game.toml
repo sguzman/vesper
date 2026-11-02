@@ -36,11 +36,9 @@ main = "assets/backgrounds/observatory_evening.png"
 pause = "assets/backgrounds/observatory_evening.png"
 settings = "assets/backgrounds/observatory_evening.png"
 
-# Illustrated menu composition and native diegetic controls. Distinct
-# frames, palettes and focus plaques; not just scenery behind generic rows.
+# Illustrated menu composition with native diegetic controls, without
+# the obsolete low-opacity decorative image overlays.
 [menu_skins.main]
-decor_image = "assets/menus/main.png"
-decor_opacity = 0.24
 title = "ATLAS"
 subtitle = "The Atlas of Unwritten Skies"
 button_slice_border = [170.0, 170.0, 40.0, 40.0]
@@ -67,8 +65,6 @@ selected_text = [1.0, 0.96, 0.81, 1.0]
 # Diegetic brass-and-navy button plaques, independent from backdrop art.
 # Native menu hit targets, keyboard focus and number shortcuts remain engine-owned.
 [menu_skins.pause]
-decor_image = "assets/menus/pause.png"
-decor_opacity = 0.24
 title = "PAUSE"
 button_slice_border = [170.0, 170.0, 40.0, 40.0]
 button_label_inset_percent = 18.0
@@ -94,8 +90,6 @@ selected_text = [1.0, 0.96, 0.8, 1.0]
 # Diegetic archive control desk: labeled settings rows, value badges,
 # numeric slider rails, toggles and a live parchment preview.
 [menu_skins.settings]
-decor_image = "assets/menus/settings.png"
-decor_opacity = 0.24
 button_idle_image = "assets/menus/button-idle.png"
 button_selected_image = "assets/menus/button-selected.png"
 button_slice_border = [170.0, 170.0, 40.0, 40.0]
