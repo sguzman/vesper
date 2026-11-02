@@ -1,4 +1,4 @@
-name: Render Atlas menu illustrations
+name: Render Atlas menu control artwork
 on:
   push:
     paths:
@@ -16,13 +16,11 @@ jobs:
           persist-credentials: true
       - name: Install vector artwork renderer
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends librsvg2-bin
-      - name: Rasterize independent menu illustrations
+      - name: Rasterize menu button artwork
         run: |
           mkdir -p examples/atlas-unwritten-skies/assets/menus
-          for name in main pause settings; do
-            rsvg-convert --width 1280 --height 720 --keep-aspect-ratio               --output "examples/atlas-unwritten-skies/assets/menus/${name}.png"               "examples/atlas-unwritten-skies/assets/menus/${name}.svg"
-            file "examples/atlas-unwritten-skies/assets/menus/${name}.png"
-          done
+          # The obsolete abstract main/pause/settings overlays were removed.
+          # Only the native diegetic button plaques remain.
           for name in button-idle button-selected; do
             rsvg-convert --width 1024 --height 128 --output "examples/atlas-unwritten-skies/assets/menus/${name}.png" "examples/atlas-unwritten-skies/assets/menus/${name}.svg"
             file "examples/atlas-unwritten-skies/assets/menus/${name}.png"
@@ -35,6 +33,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Rendered menu PNGs are current"
           else
-            git commit -m "Ship dedicated rendered Atlas menu backdrops"
+            git commit -m "Render Atlas menu button artwork"
             git push origin HEAD:main
           fi
