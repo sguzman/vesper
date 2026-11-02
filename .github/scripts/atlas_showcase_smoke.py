@@ -594,8 +594,17 @@ def responsive_layout() -> None:
                 # The pointer test resumes the story. Reopen Pause for the
                 # existing Settings, responsive and preference tests.
                 press(win, "p", 0.35)
+                settings_before = read_log(log).count("Vesper appearance settings opened")
                 press(win, "4", 0.35)
-                wait_for_log(log, "Vesper settings menu backdrop loaded:")
+                # Backdrops are prewarmed at startup. Their logged load is
+                # NOT evidence the Settings UI actually opened. Guard the
+                # mouse-release ghost action after clicking Resume above.
+                deadline = time.monotonic() + 10
+                while read_log(log).count("Vesper appearance settings opened") <= settings_before:
+                    assert time.monotonic() < deadline, (
+                        "Pause digit 4 was hijacked by a stale pointer release"
+                    )
+                    time.sleep(.05)
                 time.sleep(0.65)
                 screenshot_settled_settings(win,
                     OUTPUT / "menu-settings-illustrated.png", 1280, 720, False)

@@ -1,6 +1,6 @@
 //! Bevy 0.20 presentation shell. All authored content and artwork is external.
 
-use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui_widgets::{observe, Activate, Button}, window::PrimaryWindow};
+use bevy::{asset::{AssetPlugin, LoadState}, picking::hover::Hovered, prelude::*, text::TextLayoutInfo, ui_widgets::{observe, Button}, window::PrimaryWindow};
 use bevy::ecs::system::SystemParam;
 mod reload;
 mod settings;
@@ -667,18 +667,15 @@ fn spawn_menu_rows(
                 MenuRow { kind, index },
                 feedback::FocusFeedback::menu(kind, index, false),
                 Button, Hovered::default(),
-                // Main/Pause actions should respond on primary mouse-down, not
-                // after the full click/release/Activate cycle. This removes
-                // the user-perceived click latency without changing keyboard
-                // activation or the artwork.
+                // The primary press is the *only* pointer activation.
+                // On<Activate> also fires on mouse release, which can queue
+                // a stale action after the menu closes and hijack the next
+                // keyboard choice when Pause is reopened.
                 observe(move |press: On<bevy::picking::events::PointerPress>,
                     mut pointer: ResMut<MenuPointer>| {
                     if press.button == bevy::picking::pointer::PointerButton::Primary {
                         pointer.action = Some((kind, index));
                     }
-                }),
-                observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
-                    pointer.action = Some((kind, index));
                 }),
                 Node {
                     width: percent(100.0),
@@ -764,9 +761,6 @@ fn spawn_menu_rows(
                     if press.button == bevy::picking::pointer::PointerButton::Primary {
                         pointer.action = Some((kind, index));
                     }
-                }),
-                observe(move |_activate: On<Activate>, mut pointer: ResMut<MenuPointer>| {
-                    pointer.action = Some((kind, index));
                 }),
                 Text::new(title),
                 TextFont {
