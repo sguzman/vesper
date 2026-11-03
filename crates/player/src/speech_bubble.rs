@@ -262,12 +262,17 @@ pub fn sync(
             node.max_height = px(geometry.max_height);
         }
         if node.min_height != px(90.0) { node.min_height = px(90.0); }
-        node.border = px(2.0).all();
-        node.padding = px(skin.padding).all();
-        node.row_gap = px(6.0);
-        // Scrolling prevents a long translation or increased reader font
-        // from leaving the physical viewport. Frame/tail ignore the offset.
-        node.overflow = Overflow::scroll_y();
+        // Bevy's Mut<Node> marks the layout dirty on any field write.
+        // A typical dialogue lasts hundreds of frames, so do not write
+        // identical padding, border and scroll mode every Update.
+        let next_edge = px(2.0).all();
+        if node.border != next_edge { node.border = next_edge; }
+        let next_padding = px(skin.padding).all();
+        if node.padding != next_padding { node.padding = next_padding; }
+        if node.row_gap != px(6.0) { node.row_gap = px(6.0); }
+        // Scrolling prevents long dialogue or reader zoom clipping.
+        let next_overflow = Overflow::scroll_y();
+        if node.overflow != next_overflow { node.overflow = next_overflow; }
         let next_rounding = BorderRadius::all(px(skin.corner_radius));
         if node.border_radius != next_rounding { node.border_radius = next_rounding; }
         if fill.0 != background { fill.0 = background; }
@@ -312,17 +317,24 @@ pub fn sync(
             {
                 if part.display != Display::None { part.display = Display::None; }
             } else if nameplate {
-                part.display = Display::Flex;
-                part.position_type = PositionType::Relative;
-                part.left = Val::Auto;
-                part.top = Val::Auto;
-                part.width = percent(100.0);
-                part.height = Val::Auto;
+                if part.display != Display::Flex { part.display = Display::Flex; }
+                if part.position_type != PositionType::Relative {
+                    part.position_type = PositionType::Relative;
+                }
+                if part.left != Val::Auto { part.left = Val::Auto; }
+                if part.top != Val::Auto { part.top = Val::Auto; }
+                if part.width != percent(100.0) { part.width = percent(100.0); }
+                if part.height != Val::Auto { part.height = Val::Auto; }
             } else if tail {
                 let show = geometry.tail_x.is_some();
-                part.display = if show { Display::Flex } else { Display::None };
-                if let Some(x) = geometry.tail_x { part.left = px(x - 8.0); }
-                if let Some(mut color) = color { color.0 = background; }
+                let display = if show { Display::Flex } else { Display::None };
+                if part.display != display { part.display = display; }
+                if let Some(x) = geometry.tail_x {
+                    if part.left != px(x - 8.0) { part.left = px(x - 8.0); }
+                }
+                if let Some(mut color) = color {
+                    if color.0 != background { color.0 = background; }
+                }
             }
         }
         previous.0 = true;
