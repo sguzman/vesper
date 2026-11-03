@@ -71,7 +71,11 @@ configuration. This protects the original example as a compatibility control.
 GitHub CI launches both **real** Bevy games under a virtual X11 display, checks
 distinct bubble/legacy pixel output at 1280×720, renders a 946×511 compact
 bubble, advances to a staged character and confirms the unchanged choice-panel
-fallback. Screenshots are retained as the `vesper-speech-bubbles` artifact.
+fallback. It also uses F5/F9 to verify that a **per-line panel override survives
+a real quick-save/load and returns to subsequent bubble dialogue**. A separate
+high-contrast/reduced-motion/large-type launch checks that reader preferences
+change the authored bubble safely. Screenshots are retained as the
+`vesper-speech-bubbles` artifact.
 
 **Still pending acceptance:** integrated saved override and graphical
 round-trip checks for per-line commands (NA03), exploration NPC anchors
