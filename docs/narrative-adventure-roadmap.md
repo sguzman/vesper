@@ -36,7 +36,7 @@ Either mode may transition to the other through authored narrative commands.
 
 ## Weighted delivery plan
 
-The ledger [narrative-adventure-roadmap.json](narrative-adventure-roadmap.json) is the source of truth for dependencies, exact evidence and verification status. The [NA01 architecture and authoring contract](narrative-adventure-architecture.md) defines the two independent modes, explicit transitions and backwards-compatibility requirements. The separate [NA04 exploration schema](exploration-schema.md) specifies the game-relative bounded location/NPC/exit format (validation only until movement work begins). **Engine: 60 points; example: 40 points.** Full implementation and passing tests, not planning alone, earn points.
+The ledger [narrative-adventure-roadmap.json](narrative-adventure-roadmap.json) is the source of truth for dependencies, exact evidence and verification status. The [NA01 architecture and authoring contract](narrative-adventure-architecture.md) defines the two independent modes, explicit transitions and backwards-compatibility requirements. The separate [NA04 exploration schema](exploration-schema.md) specifies the game-relative bounded location/NPC/exit format and its implemented optional walking and interaction behavior. **Engine: 60 points; example: 40 points.** Full implementation and passing tests, not planning alone, earn points.
 
 | ID | Points | Milestone | Required outcome |
 | --- | ---: | --- | --- |

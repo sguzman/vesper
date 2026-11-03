@@ -1,6 +1,6 @@
 # NA01 — Optional exploration and dialogue-surface architecture
 
-**Status:** Decision contract for the new narrative-adventure phase. This document specifies interfaces to implement, **not** a claim that exploration or speech bubbles are already rendered. See the [separate 100-point ledger](narrative-adventure-roadmap.json).
+**Status:** The decision contract is implemented incrementally in Rust/Bevy. Optional exploration, bubble rendering, authored mode and surface commands, and version-two world saves are now running; the [separate 100-point ledger](narrative-adventure-roadmap.json) records which acceptance milestones have actually been verified.
 
 ## Existing engine boundary (verified before the extension)
 
@@ -57,10 +57,14 @@ Example optional authoring shape (supported; individual example assets must exis
 [dialogue]
 default_surface = "panel"   # omitted means the existing dialogue box
 
-[bubble_skins.default]
-# Optional PNG frame and tail artwork; fallback is a native UI color panel.
-# All safe areas, colors, offsets and text sizes must be bounded and validated.
+[dialogue.bubble]
+# Optional game-local PNG frame; native bordered-color fallback.
+# Speaker tail is rendered by the engine, not authored as a separate image.
 image = "assets/ui/bubble.png"
+max_width_percent = 58.0
+padding = 16.0
+corner_radius = 18.0
+slice_border = 16.0
 
 [exploration]
 schema_version = 1
