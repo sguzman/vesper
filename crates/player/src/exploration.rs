@@ -253,11 +253,12 @@ mod tests {
     }
 
     #[test]
-    fn visible_world_area_remains_sized_in_logical_pixels() {
-        let area: vesper_game::exploration::Location = toml::from_str(
-            "background = 'street.png'\nwidth = 1280.0\nheight = 720.0\n[spawns.home]\nx=150.0"
-        ).unwrap();
-        assert!(area.camera.follow_x);
-        assert_eq!(area.width, 1280.0);
+    fn viewport_projection_keeps_single_screen_camera_stationary() {
+        let camera = vesper_game::exploration::CameraFrame::default();
+        let view = View::for_area(
+            1280.0, 720.0, 1280.0, 720.0, camera.zoom, 150.0, camera.follow_x,
+        );
+        assert_eq!(view.center_x, 640.0);
+        assert_eq!(view.world_to_screen, 1.0);
     }
 }
