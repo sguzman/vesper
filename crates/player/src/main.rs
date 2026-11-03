@@ -1276,7 +1276,8 @@ fn main() {
         .add_systems(Update, (
             (
                 font_browser::wheel, font_browser::pointer, settings::pointer,
-                sync_story_hint_keycaps, advance_from_keyboard, exploration::input, history::wheel,
+                sync_story_hint_keycaps, advance_from_keyboard, exploration::input,
+                history::wheel, speech_bubble::scroll,
                 choices::sync_rows, choices::sync_row_style,
                 choices::scroll_selected, choices::sync_viewport,
                 choices::reserve_row_height, readout::tick, readout::sync_spans,
@@ -1684,6 +1685,7 @@ fn setup(
                 background[0], background[1], background[2], background[3],
             )),
             StoryPanel,
+            ScrollPosition::default(),
             BorderColor::all(Color::NONE),
         ))
         .with_children(|parent| {

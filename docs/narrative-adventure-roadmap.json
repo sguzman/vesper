@@ -70,7 +70,8 @@
       "status": "active",
       "verified_weight": 0,
       "evidence": [
-        "Experimental opt-in bubble manifest, native Bevy panel morph/tail, responsive geometry tests, pure-VN external fixture and visual CI smoke authored; pending compilation, virtual-display test and accessibility review. No verified points credited."
+        "Experimental opt-in bubble manifest, native Bevy panel morph/tail, responsive geometry tests, pure-VN external fixture and visual CI smoke authored; pending compilation, virtual-display test and accessibility review. No verified points credited.",
+        "Bounded native bubble viewport, scroll position, wheel/PageUp/PageDown/Home/End keyboard controls and long multilingual/high-contrast 946x511 native regression authored; awaiting full CI and visual confirmation, no weight credited."
       ]
     },
     {

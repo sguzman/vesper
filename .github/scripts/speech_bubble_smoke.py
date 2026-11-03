@@ -11,6 +11,7 @@ import os
 import json
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import tempfile
 import time
@@ -155,6 +156,72 @@ def run_game(directory: str, title: str, filename: str,
                     process.wait(timeout=3)
 
 
+
+def long_dialogue_scroll() -> None:
+    """One real Bevy process exercises a lengthy multilingual bubble."""
+    with tempfile.TemporaryDirectory(prefix="vesper-long-bubble-") as folder:
+        game = Path(folder) / "game"
+        shutil.copytree(ROOT / "examples/bubble-showcase", game)
+        story = game / "scripts/story.vn"
+        contents = story.read_text(encoding="utf-8")
+        original = (
+            "At the far end of a quiet valley, a little fox named Pip "
+            "carried a lantern no bigger than an apple."
+        )
+        sample = (
+            "En la estación había una pequeña lámpara. "
+            "Árboles y corazones, mañana y café; "
+            "日本語の文字と絵文字 🌙✨, 그리고 안녕하세요. "
+            "The road kept winding gently through the valley. "
+        ) * 12
+        assert contents.count(original) == 1
+        story.write_text(contents.replace(original, sample), encoding="utf-8")
+        preferences = Path(folder) / "prefs"
+        preferences.mkdir()
+        (preferences / "player-preferences.json").write_text(
+            json.dumps({
+                "format_version": 1, "high_contrast": True,
+                "text_scale": 1.6, "reduced_motion": True,
+                "reveal_speed": "instant",
+            }), encoding="utf-8",
+        )
+        env = dict(os.environ, LIBGL_ALWAYS_SOFTWARE="1",
+                   VESPER_PREFERENCES_DIR=str(preferences),
+                   VESPER_SAVE_DIR=str(Path(folder) / "saves"))
+        log = OUTPUT / "long-multilingual.log"
+        with log.open("w", encoding="utf-8") as stream:
+            player = subprocess.Popen(
+                [str(PLAYER), str(game)],
+                stdout=stream, stderr=subprocess.STDOUT, env=env,
+            )
+            try:
+                win = wait_window("Speech Bubble Rendering Fixture")
+                call("xdotool", "windowsize", "--sync", win, "946", "511")
+                time.sleep(1.7)
+                top = grab(win, "long-compact-top.png", (946, 511))
+                press(win, "Next")  # PageDown
+                wait_for_phrase(log, "Vesper bubble scroll:")
+                lower = grab(win, "long-compact-scrolled.png", (946, 511))
+                assert diff(top, lower) > 200, (
+                    "Long multilingual bubble did not show scrolling content"
+                )
+                press(win, "Home")
+                returned = grab(win, "long-compact-back-top.png", (946, 511))
+                assert diff(top, returned) < 800, (
+                    "Bubble did not return to top of viewport after Home"
+                )
+                assert player.poll() is None
+                print("Native long multilingual bubble remains scrollable at 946x511: passed",
+                      flush=True)
+            finally:
+                player.terminate()
+                try:
+                    player.wait(timeout=6)
+                except subprocess.TimeoutExpired:
+                    player.kill()
+                    player.wait(timeout=3)
+
+
 def main() -> None:
     bubble, _, choices = run_game(
         "examples/bubble-showcase", "Speech Bubble Rendering Fixture", "bubble"
@@ -181,6 +248,7 @@ def main() -> None:
     assert diff(bubble, high_contrast) > 2000, (
         "High contrast/large text preferences were not applied to bubbles"
     )
+    long_dialogue_scroll()
     print(f"Native optional bubble vs legacy panel: {difference} different pixels", flush=True)
     print("Speech bubbles, saved panel restoration, contrast, font scale, choices, compact layout: passed",
           flush=True)

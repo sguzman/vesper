@@ -17,6 +17,8 @@ struct BubbleGeometry {
     left: f32,
     top: f32,
     width: f32,
+    /// Maximum on-screen bubble content height; longer passages scroll.
+    max_height: f32,
     /// Horizontal position of the bubble-tail center within the bubble.
     tail_x: Option<f32>,
 }
@@ -40,6 +42,7 @@ fn bubble_geometry(
     });
     BubbleGeometry {
         left, top, width,
+        max_height: (viewport.y - top - 12.0).max(90.0),
         tail_x: anchor.map(|head| {
             (head.x - left).clamp(22.0, (width - 22.0).max(22.0))
         }),
@@ -59,6 +62,7 @@ pub fn spawn(parent: &mut ChildSpawnerCommands) {
     parent.spawn((
         Name::new("Optional native speech bubble image"),
         BubbleFrame,
+        IgnoreScroll(BVec2::TRUE),
         ImageNode::default(),
         Node {
             position_type: PositionType::Absolute,
@@ -71,6 +75,8 @@ pub fn spawn(parent: &mut ChildSpawnerCommands) {
     parent.spawn((
         Name::new("Native speech bubble tail"),
         BubbleTail,
+        IgnoreScroll(BVec2::TRUE),
+        OverrideClip,
         Node {
             position_type: PositionType::Absolute,
             width: px(16.0), height: px(16.0),
@@ -97,7 +103,7 @@ pub fn sync(
     characters: Query<(&CharacterVisual, &Transform)>,
     assets: Res<AssetServer>,
     mut roots: Query<(
-        &mut Node, &mut BackgroundColor, &mut BorderColor
+        &mut Node, &mut BackgroundColor, &mut BorderColor, &mut ScrollPosition
     ), (With<StoryPanel>, Without<BubbleFrame>)>,
     mut frames: Query<(&mut Node, &mut ImageNode),
         (With<BubbleFrame>, Without<StoryPanel>)>,
@@ -120,6 +126,7 @@ pub fn sync(
         )>,
     )>,
     mut previous: Local<(bool, Option<String>)>,
+    mut previous_line: Local<Option<String>>,
 ) {
     let active = active_bubble(&session);
     // With no bubble configured, legacy panels don't acquire additional
@@ -129,7 +136,7 @@ pub fn sync(
     let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
     if viewport.x <= 0.0 || viewport.y <= 0.0 { return; }
     let logical = viewport / ui_scale.0.max(0.05);
-    let Ok((mut node, mut fill, mut border)) = roots.single_mut()
+    let Ok((mut node, mut fill, mut border, mut scroll)) = roots.single_mut()
         else { return; };
     let skin = &session.game.manifest.dialogue.bubble;
     let contrast = session.preferences.high_contrast.unwrap_or(false);
@@ -186,6 +193,18 @@ pub fn sync(
             }
         }
         let geometry = bubble_geometry(logical, skin.max_width_percent, position);
+        // Advancing dialogue or loading a different line starts at the top.
+        // Never retain a scroll offset from a previous long bubble.
+        if let Some(line) = match session.machine.last_output() {
+            Some(Output::Dialogue { text, .. } | Output::RichDialogue { text, .. }) =>
+                Some(text.as_str()),
+            _ => None,
+        } {
+            if previous_line.as_deref() != Some(line) {
+                scroll.0 = Vec2::ZERO;
+                *previous_line = Some(line.to_owned());
+            }
+        }
         // Mut<Node> projects through DerefMut: update sequentially rather
         // than borrowing several fields of the wrapper simultaneously.
         if node.left != px(geometry.left) { node.left = px(geometry.left); }
@@ -193,12 +212,16 @@ pub fn sync(
         if node.bottom != Val::Auto { node.bottom = Val::Auto; }
         if node.width != px(geometry.width) { node.width = px(geometry.width); }
         if node.height != Val::Auto { node.height = Val::Auto; }
-        if node.max_height != Val::Auto { node.max_height = Val::Auto; }
+        if node.max_height != px(geometry.max_height) {
+            node.max_height = px(geometry.max_height);
+        }
         if node.min_height != px(90.0) { node.min_height = px(90.0); }
         node.border = px(2.0).all();
         node.padding = px(skin.padding).all();
         node.row_gap = px(6.0);
-        node.overflow = Overflow::visible();
+        // Scrolling prevents a long translation or increased reader font
+        // from leaving the physical viewport. Frame/tail ignore the offset.
+        node.overflow = Overflow::scroll_y();
         let next_rounding = BorderRadius::all(px(skin.corner_radius));
         if node.border_radius != next_rounding { node.border_radius = next_rounding; }
         if fill.0 != background { fill.0 = background; }
@@ -247,6 +270,8 @@ pub fn sync(
     // Restore the legacy illustrated-panel geometry after a bubble line
     // changes into choices or an ending. The original text/choice entities
     // never moved or re-created, so reading state and focus are untouched.
+    if previous.0 { scroll.0 = Vec2::ZERO; }
+    *previous_line = None;
     let theme = effective_theme(&session);
     let p = &theme.panel;
     let panel_skin = if contrast { None } else { panel_art::active_skin(&session) };
@@ -308,6 +333,49 @@ pub fn sync(
     previous.0 = false;
 }
 
+
+/// The scroll host is the existing StoryPanel, not a second text renderer.
+/// Mouse wheel and PageUp/PageDown reach the complete content without
+/// intercepting Enter/Space, reader reveal pacing or authored story choices.
+pub fn scroll(
+    mut wheel: MessageReader<bevy::input::mouse::MouseWheel>,
+    keyboard: Res<ButtonInput<KeyCode>>,
+    session: Res<Session>,
+    mut panels: Query<(&mut ScrollPosition, &ComputedNode), With<StoryPanel>>,
+) {
+    use bevy::input::mouse::MouseScrollUnit;
+    let mut wheel_delta = 0.0;
+    for event in wheel.read() {
+        wheel_delta -= event.y * match event.unit {
+            MouseScrollUnit::Line => 60.0,
+            MouseScrollUnit::Pixel => 1.0,
+        };
+    }
+    if !active_bubble(&session) || session.paused
+        || session.menu_overlay.is_some() || session.history.visible()
+    {
+        return;
+    }
+    let Ok((mut position, computed)) = panels.single_mut() else { return; };
+    let page = (computed.size().y * 0.75).max(90.0);
+    let mut requested = wheel_delta;
+    if keyboard.just_pressed(KeyCode::PageDown) { requested += page; }
+    if keyboard.just_pressed(KeyCode::PageUp) { requested -= page; }
+    let to_top = keyboard.just_pressed(KeyCode::Home);
+    let to_end = keyboard.just_pressed(KeyCode::End);
+    if requested == 0.0 && !to_top && !to_end { return; }
+
+    let max_scroll = ((computed.content_size().y - computed.size().y)
+        * computed.inverse_scale_factor()).max(0.0);
+    let next = if to_top { 0.0 }
+        else if to_end { max_scroll }
+        else { (position.y + requested).clamp(0.0, max_scroll) };
+    if (next - position.y).abs() > 0.1 {
+        position.y = next;
+        info!("Vesper bubble scroll: offset {:.0}/{:.0}", next, max_scroll);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -321,6 +389,8 @@ mod tests {
                 let g = bubble_geometry(viewport, 58.0, anchor);
                 assert!(g.left >= 0.0 && g.left + g.width <= viewport.x);
                 assert!(g.top >= 0.0 && g.top <= viewport.y * 0.5);
+                assert!(g.top + g.max_height <= viewport.y - 11.0);
+                assert!(g.max_height >= 90.0);
                 if let Some(tail) = g.tail_x {
                     assert!(tail >= 0.0 && tail <= g.width);
                 }
