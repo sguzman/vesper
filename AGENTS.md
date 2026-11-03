@@ -27,6 +27,19 @@ The weighted, evidence-backed acceptance ledger is [docs/roadmap.json](docs/road
 
 Do not ask the owner to download generated YAML/scripts/specifications or manually execute work supported by available tools. Request participation only when a genuine access or hardware boundary makes automation impossible.
 
+## New authorized roadmap (planning only)
+
+The owner approved **planning** a separate optional narrative-adventure phase:
+[docs/narrative-adventure-roadmap.md](docs/narrative-adventure-roadmap.md) and the
+[original urban slice-of-life example brief](docs/urban-slice-of-life-brief.md).
+Its independent 0/100 baseline is [docs/narrative-adventure-roadmap.json](docs/narrative-adventure-roadmap.json).
+Do not change the completed MVP/QoL/visual/Atlas acceptance weights.
+The new scope is **not implemented** by adding its plan; begin work when the
+owner explicitly authorizes starting the phase (or continuing it after start).
+Speech bubbles and exploration must remain independent, optional systems;
+pure VNs and existing saves remain compatible. No mandatory travel filler or
+new genre-wide physics/scripting scope.
+
 ## 100% definition
 
 A complete externally authored reference visual novel runs in an unchanged compiled executable with dialogue, branching, variables, backgrounds, character expressions, fonts, themes, audio, saves, safe development hot reload and Linux packaging. All relevant checks pass, release-blocking defects are resolved, and the final state is committed and recoverable. Do not treat compilation or a starting window as equivalent to end-to-end release readiness.

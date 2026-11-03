@@ -1,0 +1,263 @@
+{
+  "schema": 1,
+  "project": "Vesper",
+  "phase": "Optional narrative-adventure exploration and speech-bubble dialogue",
+  "created_date": "2026-11-02",
+  "status": "planned; implementation not started",
+  "baseline_commit": "e912f55b3007905b954c7fad872de9d4ceb163da",
+  "scope_weight": 100,
+  "verified_weight": 0,
+  "prior_scopes_unchanged": true,
+  "tracks": [
+    {
+      "id": "engine",
+      "weight": 60,
+      "verified_weight": 0,
+      "name": "Generic optional exploration and independent speech bubbles"
+    },
+    {
+      "id": "example",
+      "weight": 40,
+      "verified_weight": 0,
+      "name": "Original anime-urban slice-of-life narrative adventure"
+    }
+  ],
+  "source_of_truth": "docs/narrative-adventure-roadmap.json",
+  "example_brief": "docs/urban-slice-of-life-brief.md",
+  "rules": {
+    "separation": "Dialogue presentation (standard custom illustrated VN box/nameplate or speech bubble) is independent of whether a scene is explorable. Pure visual novels require neither movement nor exploration authoring.",
+    "backwards_compatibility": "Do not change semantics or required manifest fields for existing games. Preserve existing save compatibility or ship explicit backward-compatible versioned migration.",
+    "technical": "Bevy 0.20 and stable Rust, deterministic story interpreter, game-owned external TOML/.vn/assets, Linux/Wayland first, no Lua, no npm, no game-specific engine code.",
+    "player_experience": "Exploration is entirely optional, small-scale and narrative-serving. No mandatory filler walking, excessive backtracking, grind, combat, jumping or broad game-physics scope.",
+    "author_vs_player": "Authors define bubble/panel defaults and art; player accessibility controls (font/size/high contrast/reduced motion) override them safely.",
+    "verification": "Points earned only with actual passing code/tests and where appropriate graphical evidence, CI and human QA. Documentation, planning, proposals or pending CI earn 0. Report overall and per-track percentages and delta; don't reset completed earlier phase."
+  },
+  "creative_status": "Original setting, cast, working title and duration provisional until owner supplies story-specific brief; engine work should not assume their details.",
+  "tasks": [
+    {
+      "id": "NA01",
+      "emoji": "🧭",
+      "title": "Mode architecture and authoring contract",
+      "weight": 6,
+      "track": "engine",
+      "depends_on": [],
+      "acceptance": [
+        "Document distinct narrative, exploration, and dialogue-surface states; define valid transitions (exploration -> conversation -> exploration, exploration -> cinematic VN -> exploration, and pure VN start-to-finish) without implicit player travel.",
+        "Choose versioned, external manifest/.vn extensions and engine-owned ECS responsibilities; errors must identify the offending file and field/line, with no arbitrary author code execution.",
+        "Confirm all old example manifests, original .vn grammar, completed presentation, existing menus, and existing saved games remain playable unchanged; architecture decision reviewed before implementing new syntax."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "NA02",
+      "emoji": "💬",
+      "title": "Accessible native speech-bubble renderer",
+      "weight": 10,
+      "track": "engine",
+      "depends_on": [
+        "NA01"
+      ],
+      "acceptance": [
+        "Bevy text bubble widget supports Unicode, rich text/reveal speed, optional external nine-slice bubble art, speaker tails/anchors, wrapped text, sensible typography, keyboard/pointer advance, player text-size overrides and history.",
+        "Anchor bubbles above the active staged speaker or in-world NPC; clamp to every supported viewport with no cropped text, covered faces or uncontrolled overlaps; offer an explicit readable fallback when an anchor is absent/offscreen.",
+        "Unit and graphical tests cover long text, multilingual glyphs, 946x511 and 1280x720, scaling, reduced motion, and high contrast; no per-line asset decoding or blocking render-thread work."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "NA03",
+      "emoji": "🎭",
+      "title": "Per-scene and per-line dialogue presentation",
+      "weight": 6,
+      "track": "engine",
+      "depends_on": [
+        "NA02"
+      ],
+      "acceptance": [
+        "Authors can select standard illustrated panel, speech bubble, or inherited game/scene default without coupling the choice to exploration.",
+        "Switch surfaces during one conversation or between scenes without losing text, focus, choices, animation progress, or speaker names; custom dialogue panel image and separate nameplate remain intact.",
+        "Choices remain engine-owned accessible controls; authored bubble appearance never requires a new custom scripting runtime; pure VN game can opt into bubble dialogue and old projects use unchanged defaults."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "NA04",
+      "emoji": "🏙️",
+      "title": "External explorable-location schema",
+      "weight": 7,
+      "track": "engine",
+      "depends_on": [
+        "NA01"
+      ],
+      "acceptance": [
+        "Game-local versioned data describes locations, horizontal bounds, camera framing, layers, avatar sprite set, spawn points, NPCs, props, safe interaction zones and location links; no named example appears in Rust.",
+        "Validation rejects missing locations, unreachable interaction placement, duplicate IDs, unsafe asset paths, bad destination references and out-of-range coordinates with actionable diagnostics.",
+        "Static VN scenes remain valid with no exploration fields; animation and illustration assets are optional/defaulted, and a location can be fully traversable within one screen."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "NA05",
+      "emoji": "🚶",
+      "title": "Deliberate 2D walking and camera",
+      "weight": 8,
+      "track": "engine",
+      "depends_on": [
+        "NA04"
+      ],
+      "acceptance": [
+        "Keyboard-first left/right movement, idle/walk animation, stable facing and stop behavior; optional pointer interaction is not a requirement for movement and no jumping, combat, inventory economy or physics engine is introduced.",
+        "Camera follows only when the authored location exceeds the view; stop at bounds; visual layers retain aspect, scale and safe cropping at compact and widescreen sizes.",
+        "Pauses, modal dialogue, menus and window focus interruptions stop or appropriately freeze movement; repeated transitions do not leak entities or image assets; performance measured on Linux native and CI software rendering."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "NA06",
+      "emoji": "🤝",
+      "title": "NPC/object interactions and narrative bridge",
+      "weight": 10,
+      "track": "engine",
+      "depends_on": [
+        "NA03",
+        "NA05"
+      ],
+      "acceptance": [
+        "Approach a named NPC/object and invoke Interact; show a visible accessible focus/interaction cue without requiring pixel-perfect positioning.",
+        "Interaction dispatches a validated authored .vn scene; existing choices, story variables, expression, sound, backlog and dialogue surfaces function with that scene.",
+        "On conversation completion, return to the correct exploration location and prior avatar position by explicit author intent; support authored scene transfer to full VN mode and back, not implicit forced walking.",
+        "NPC visibility/interactions can conditionally change from persistent story state; test cancellation, repeated interaction, two simultaneous candidates, and no double-trigger on press/release."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "NA07",
+      "emoji": "💾",
+      "title": "Save, load and safe authored reload",
+      "weight": 7,
+      "track": "engine",
+      "depends_on": [
+        "NA06"
+      ],
+      "acceptance": [
+        "Persist current presentation mode, location ID, bounded player position/facing, narrative snapshot and relevant authored world state through F5/F9 and save slots; never serialize ECS entity IDs.",
+        "Versioned migration/fallback preserves existing save format and old saves, rejects invalid/unknown locations, and restores mid-dialogue vs mid-exploration correctly across process restart.",
+        "Hot reload safely updates valid exploration/bubble assets and rejects incompatible edits while preserving the last good runtime state; loading and filesystem work do not block the render thread."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "NA08",
+      "emoji": "♿",
+      "title": "Comfort, interoperability and complete regressions",
+      "weight": 6,
+      "track": "engine",
+      "depends_on": [
+        "NA02",
+        "NA03",
+        "NA04",
+        "NA05",
+        "NA06",
+        "NA07"
+      ],
+      "acceptance": [
+        "Every authored destination and conversation needed for completion is reachable without tedious backtracking; optional direct location selection, quick travel or immediate interaction is supported as author/UX policy.",
+        "Reduced motion, high contrast, adjustable text, focus cues, keyboard-first navigation, windowed/fullscreen responsiveness and accessible bubble fallback work without requiring movement for a pure VN.",
+        "CI runs existing Atlas and traditional VN tests plus new pure-VN-bubbles, exploration-only and mixed-mode save/reload/hot-reload graphical scenarios, with artifact screenshots; final hardware/Hyprland QA is recorded."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "UR01",
+      "emoji": "📝",
+      "title": "Creative brief and production bible",
+      "weight": 5,
+      "track": "example",
+      "depends_on": [],
+      "acceptance": [
+        "Agree with the owner on original setting, protagonist/cast, story premise, intended length, language, emotional tone and final title; defaults in the brief remain proposals until decided.",
+        "Deliver consistent art-direction sheets, environment/costume references, character silhouettes, relationship/story outline, interactive map and a branching scene/ending graph.",
+        "Reference genre mechanics rather than copying Afterlove EP characters, city assets, scripts, artwork, music or particular plot."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "UR02",
+      "emoji": "🎨",
+      "title": "Original anime-urban art and audio pipeline",
+      "weight": 9,
+      "track": "example",
+      "depends_on": [
+        "UR01",
+        "NA04",
+        "NA05"
+      ],
+      "acceptance": [
+        "Produce a visually coherent original contemporary urban setting: layered backgrounds across multiple reachable locations, matching player/NPC walk and idle cycles, expressions, talk-bubble styling and optionally custom VN panel/nameplate art.",
+        "Create day/evening ambience, discreet sound cues and scene-appropriate original/licensed audio; source/provenance, external manifest references and deterministic validation are documented.",
+        "Real game screenshots show a grounded, casual anime art direction with consistent perspective, legible interaction cues and no abstract decorative backdrops unintentionally composited over the approved art."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "UR03",
+      "emoji": "🌇",
+      "title": "Complete authored slice-of-life narrative example",
+      "weight": 15,
+      "track": "example",
+      "depends_on": [
+        "UR01",
+        "UR02",
+        "NA06",
+        "NA07"
+      ],
+      "acceptance": [
+        "Publish a standalone examples/urban-slice-of-life directory with game.toml, .vn narrative, themes, original assets, controls/README and no game-specific Rust paths.",
+        "Deliver a coherent complete beginning/middle/ending and meaningful authored dialogue choices, with a real urban setting, a small recurring cast and ordinary interpersonal stakes; exact length/characters/endings are set after owner story brief.",
+        "Demonstrate speech bubbles in a VN-only segment, exploration with NPC bubble conversation, illustrated panel/nameplate dialogue, per-line surface switching, transition back to exploration, condition-dependent NPC dialogue and no forced errands."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    },
+    {
+      "id": "UR04",
+      "emoji": "🎬",
+      "title": "Polish, full playthroughs and acceptance",
+      "weight": 11,
+      "track": "example",
+      "depends_on": [
+        "UR03",
+        "NA08"
+      ],
+      "acceptance": [
+        "Automated real-player start-to-ending tests follow each accepted story branch with no dead ends, include keyboard and pointer interactions, quick save/load in every mode and backwards-compatible launch of the earlier examples.",
+        "Capture and review graphical evidence at 946x511, 1280x720 and wide/fullscreen sizes for bubble readability, movement, all menu transitions, in-scene VN panels, no character-flashing or unnecessary loading stalls.",
+        "Publish working Linux package with external assets and no build-time hardcoded story, record green merged-main narrative + Bevy CI and owner-approved physical Hyprland presentation/interaction QA before marking complete."
+      ],
+      "status": "not started",
+      "verified_weight": 0,
+      "evidence": []
+    }
+  ]
+}

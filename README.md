@@ -4,6 +4,16 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 
 **Status:** scoped Vesper MVP verified complete (100/100 weighted roadmap points; GitHub Actions run 40571573177). Both demonstration branches, presentation, hot reload, sound asset decoding, save/load and compiler-free Linux packaging passed automated tests. Hardware audio output and exhaustive coverage of every possible Linux configuration were not directly tested.
 
+## Future optional narrative adventures (planned)
+
+[Next-phase roadmap](docs/narrative-adventure-roadmap.md) · [weighted 0/100 ledger](docs/narrative-adventure-roadmap.json) · [anime urban slice-of-life example brief](docs/urban-slice-of-life-brief.md).
+The completed visual novel experience remains unchanged. This future phase
+would add independent, optional 2D exploration and author-selectable native
+speech bubbles **or** existing custom illustrated dialogue boxes/nameplates,
+including per-scene/line switching. No exploration is required for traditional
+visual novels. The example's original story, title, city and cast will be
+finalized with its owner before production; no features are claimed shipped.
+
 ## Standalone external visual novels
 
 - **[The Little Lantern](examples/little-lantern/)** — the smallest complete visual novel: a little fox, one background, two choices and a shared ending.
