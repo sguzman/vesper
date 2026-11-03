@@ -31,6 +31,9 @@ pub struct Manifest {
     /// Optional visual compositions and widget skins for each menu.
     #[serde(default)]
     pub menu_skins: MenuSkins,
+    /// Optional dialogue-surface default. Absent preserves the normal VN panel.
+    #[serde(default)]
+    pub dialogue: DialogueDefaults,
     /// Optional external dialogue surfaces. Never compiled into the engine.
     #[serde(default)]
     pub panel_skins: BTreeMap<String, PanelSkin>,
@@ -43,6 +46,59 @@ pub struct Manifest {
     /// Background/non-speaking scene sprites; independent from named speakers.
     #[serde(default)]
     pub ambient_actors: BTreeMap<String, AmbientActor>,
+}
+
+/// Author-owned default surface; entirely independent of exploration.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct DialogueDefaults {
+    pub default_surface: experience::DialogueSurface,
+    pub bubble: BubbleStyle,
+}
+
+/// A compact native speech bubble, optionally backed by a game-owned
+/// nine-slice PNG. Existing dialogue theme fonts/colors and accessibility
+/// preferences continue to apply to its real text.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct BubbleStyle {
+    pub image: Option<String>,
+    pub max_width_percent: f32,
+    pub padding: f32,
+    pub corner_radius: f32,
+    pub slice_border: f32,
+    pub background: [f32; 4],
+    pub border_color: [f32; 4],
+}
+impl Default for BubbleStyle {
+    fn default() -> Self {
+        Self {
+            image: None, max_width_percent: 58.0, padding: 16.0,
+            corner_radius: 18.0, slice_border: 16.0,
+            background: [0.035, 0.065, 0.12, 0.98],
+            border_color: [0.86, 0.76, 0.57, 0.96],
+        }
+    }
+}
+impl BubbleStyle {
+    pub fn validate(&self) -> Result<(), String> {
+        for (label, value, min, max) in [
+            ("max_width_percent", self.max_width_percent, 30.0, 80.0),
+            ("padding", self.padding, 8.0, 48.0),
+            ("corner_radius", self.corner_radius, 2.0, 45.0),
+            ("slice_border", self.slice_border, 2.0, 80.0),
+        ] {
+            if !value.is_finite() || !(min..=max).contains(&value) {
+                return Err(format!("dialogue.bubble.{label} must be finite and in {min}..={max}"));
+            }
+        }
+        for (label, value) in [("background", self.background), ("border_color", self.border_color)] {
+            if value.iter().any(|v| !v.is_finite() || !(0.0..=1.0).contains(v)) {
+                return Err(format!("dialogue.bubble.{label} must have RGBA values in 0..=1"));
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Each overlay may use its own validated, game-relative PNG image.
@@ -966,6 +1022,17 @@ impl Game {
             Theme::default()
         };
         theme.validate()?;
+        manifest.dialogue.bubble.validate()?;
+        if let Some(filename) = &manifest.dialogue.bubble.image {
+            let file = checked_file(&root, filename)?;
+            if !file.extension().and_then(|ext| ext.to_str())
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
+            {
+                return Err("dialogue.bubble.image must be a PNG".into());
+            }
+            validate_panel_image(&file, manifest.dialogue.bubble.slice_border)
+                .map_err(|error| format!("dialogue.bubble.image: {error}"))?;
+        }
         for (name, skin) in [
             ("main", manifest.menu_skins.main.as_ref()),
             ("pause", manifest.menu_skins.pause.as_ref()),
@@ -1643,4 +1710,36 @@ start_phase_seconds = 2.5
         }
     }
 
+}
+
+#[cfg(test)]
+mod narrative_bubble_defaults_tests {
+    use super::*;
+
+    #[test]
+    fn optional_dialogue_surface_keeps_the_classic_vn_default() {
+        let manifest: Manifest = toml::from_str(
+            "format_version=1\nid='classic'\ntitle='Classic'\nstory='scripts/story.vn'\nentry='start'\n"
+        ).unwrap();
+        assert_eq!(manifest.dialogue.default_surface, experience::DialogueSurface::Panel);
+        assert!(manifest.dialogue.bubble.image.is_none());
+        assert!(manifest.dialogue.bubble.validate().is_ok());
+    }
+
+    #[test]
+    fn bubble_surface_has_bounded_author_styles_and_rejects_unknown_fields() {
+        let manifest: Manifest = toml::from_str(
+            "format_version=1\nid='test'\ntitle='Test'\nstory='scripts/story.vn'\nentry='start'\n[dialogue]\ndefault_surface='bubble'\n[dialogue.bubble]\nmax_width_percent=65.0\n"
+        ).unwrap();
+        assert_eq!(manifest.dialogue.default_surface, experience::DialogueSurface::Bubble);
+        assert_eq!(manifest.dialogue.bubble.max_width_percent, 65.0);
+        assert!(manifest.dialogue.bubble.validate().is_ok());
+        let invalid: DialogueDefaults = toml::from_str(
+            "default_surface='bubble'\n[bubble]\nmax_width_percent=NaN\n"
+        ).unwrap();
+        assert!(invalid.bubble.validate().is_err());
+        assert!(toml::from_str::<DialogueDefaults>(
+            "default_surface='bubble'\nfuture_not_supported=1\n"
+        ).is_err());
+    }
 }

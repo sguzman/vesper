@@ -3,7 +3,7 @@
   "project": "Vesper",
   "phase": "Optional narrative-adventure exploration and speech-bubble dialogue",
   "created_date": "2026-11-02",
-  "status": "planned; implementation not started",
+  "status": "active; incremental implementation and verification",
   "baseline_commit": "e912f55b3007905b954c7fad872de9d4ceb163da",
   "scope_weight": 100,
   "verified_weight": 0,
@@ -46,9 +46,11 @@
         "Choose versioned, external manifest/.vn extensions and engine-owned ECS responsibilities; errors must identify the offending file and field/line, with no arbitrary author code execution.",
         "Confirm all old example manifests, original .vn grammar, completed presentation, existing menus, and existing saved games remain playable unchanged; architecture decision reviewed before implementing new syntax."
       ],
-      "status": "not started",
+      "status": "active",
       "verified_weight": 0,
-      "evidence": []
+      "evidence": [
+        "Architecture contract committed at 78c9596; typed Rust state transitions and five unit tests passed the narrative job in CI 41554108427. Legacy Bevy build, live settings, saves and responsive Atlas screenshot tests passed in this run; long playthrough/full CI was still pending when the NA02 implementation was staged."
+      ]
     },
     {
       "id": "NA02",
@@ -64,9 +66,11 @@
         "Anchor bubbles above the active staged speaker or in-world NPC; clamp to every supported viewport with no cropped text, covered faces or uncontrolled overlaps; offer an explicit readable fallback when an anchor is absent/offscreen.",
         "Unit and graphical tests cover long text, multilingual glyphs, 946x511 and 1280x720, scaling, reduced motion, and high contrast; no per-line asset decoding or blocking render-thread work."
       ],
-      "status": "not started",
+      "status": "active",
       "verified_weight": 0,
-      "evidence": []
+      "evidence": [
+        "Experimental opt-in bubble manifest, native Bevy panel morph/tail, responsive geometry tests, pure-VN external fixture and visual CI smoke authored; pending compilation, virtual-display test and accessibility review. No verified points credited."
+      ]
     },
     {
       "id": "NA03",
@@ -259,5 +263,14 @@
       "verified_weight": 0,
       "evidence": []
     }
-  ]
+  ],
+  "checkpoint": {
+    "last_reported_verified_percent": 0,
+    "active": [
+      "NA01",
+      "NA02"
+    ],
+    "pending": "Run narrative/Bevy CI for optional speech bubbles; fix compile or runtime failures, verify legacy panel regressions and finish NA01 criteria before crediting any points.",
+    "previous_preserved_complete": true
+  }
 }

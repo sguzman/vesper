@@ -7,12 +7,15 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 ## Future optional narrative adventures (planned)
 
 [Next-phase roadmap](docs/narrative-adventure-roadmap.md) · [weighted 0/100 ledger](docs/narrative-adventure-roadmap.json) · [anime urban slice-of-life example brief](docs/urban-slice-of-life-brief.md).
-The completed visual novel experience remains unchanged. This future phase
-would add independent, optional 2D exploration and author-selectable native
-speech bubbles **or** existing custom illustrated dialogue boxes/nameplates,
-including per-scene/line switching. No exploration is required for traditional
-visual novels. The example's original story, title, city and cast will be
-finalized with its owner before production; no features are claimed shipped.
+The completed visual novel experience remains unchanged. Development of
+independent, optional 2D exploration and speech-bubble presentation is now
+underway. The first experimental authoring fixture is
+[Bubble Showcase](examples/bubble-showcase/), using a globally authored
+bubble surface in an otherwise traditional visual novel; see the
+[speech-bubble authoring guide](docs/native-speech-bubbles.md).
+Per-scene/per-line surface switching and movement are later milestones,
+not existing engine features. Traditional VNs need no exploration data.
+The urban example's final title, city and cast remain to be decided.
 
 ## Standalone external visual novels
 

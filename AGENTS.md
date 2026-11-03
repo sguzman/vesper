@@ -40,6 +40,17 @@ Speech bubbles and exploration must remain independent, optional systems;
 pure VNs and existing saves remain compatible. No mandatory travel filler or
 new genre-wide physics/scripting scope.
 
+## Additional stewardship controls for the authorized expansion
+
+- The newly authorized narrative-adventure roadmap is **independent** of the already verified Vesper VN milestones. Reuse their evidence; do not restart the old scopes or reclassify completed work simply because this is a new phase.
+- Adopt the applicable owner-supplied existing-Rust-project protocol (D V5 / A V3). Calibrate the full 100-point lifecycle against actual integration, save migrations, UI QA, example production, packaging and release work; do not hide hard work in the last ten points. Rebaseline transparently if truly necessary.
+- Keep source modules cohesive by responsibility across the codebase; actively refactor mixed-purpose god files when relevant to authorized work. **No hard or soft source-line limits.**
+- Maintain an approachable README, detailed architecture/authoring guides under `docs/`, and a separate chronological changelog if the project uses one. Do not turn the README into an internal worklog or publicize private reasoning/context.
+- Apply the relevant provisional Nomos profile requirements by actual preconditions, not as permission for unrelated changes, new project registration or rebranding. Preserve existing Rust/Bevy toolchain, MIT license, project identity, dependencies and Linux/Wayland assumptions unless a justified approved decision changes them. Never invoke npm.
+- For new work distinguish **planned, written, compiled, CI tested, visually verified and accepted**. Only credit weighted roadmap points after every associated acceptance condition is supported by passing evidence.
+- Report prior/current/Δ percentages beside visual bars for the *new* active scope and only the milestones touched in the session; include concrete CI state and actionable next step. Do not repeatedly announce previously completed scopes.
+- End a substantial development report with **User action:** either specific genuinely required approvals/QA or **None required**. Never delegate available repository work or imply mandatory owner action when no blocker exists.
+
 ## 100% definition
 
 A complete externally authored reference visual novel runs in an unchanged compiled executable with dialogue, branching, variables, backgrounds, character expressions, fonts, themes, audio, saves, safe development hot reload and Linux packaging. All relevant checks pass, release-blocking defects are resolved, and the final state is committed and recoverable. Do not treat compilation or a starting window as equivalent to end-to-end release readiness.

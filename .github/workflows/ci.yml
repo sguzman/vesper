@@ -26,6 +26,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game game
           cargo run --locked -p vesper-cli -- check-game game-alternate
           cargo run --locked -p vesper-cli -- check-game examples/little-lantern
+          cargo run --locked -p vesper-cli -- check-game examples/bubble-showcase
           cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
           cargo run --locked -p vesper-cli -- check-game examples/dawn-post-office
           cargo run --locked -p vesper-cli -- check-game examples/panel-showcase
@@ -87,6 +88,19 @@ jobs:
       # Fast, sensitive UI regression first: fail before the lengthy four-ending run.
       - name: Exercise live player appearance settings and save/restart/reset
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/settings_smoke.py
+      # Speech bubbles remain completely optional for a pure visual novel.
+      # Screenshot a bubble fixture and the unchanged original at identical
+      # narrative positions, including a compact layout and choice fallback.
+      - name: Verify optional native speech bubbles and legacy VN visual compatibility
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/speech_bubble_smoke.py
+      - name: Preserve native speech-bubble screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-speech-bubbles
+          path: /tmp/vesper-speech-bubbles-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       # Fast Settings and reader-control checks run before long novel routes.
       - name: Verify grapheme-safe text reveal, skip-once, reduced motion and opt-in auto
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/readout_smoke.py

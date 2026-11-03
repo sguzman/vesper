@@ -16,13 +16,16 @@ mod history;
 mod save_slots;
 mod panel_art;
 mod ambient;
+mod speech_bubble;
 use std::{collections::{BTreeMap, VecDeque}, env, path::PathBuf, process, sync::{Arc, Mutex}};
-use vesper_game::{Game, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
+use vesper_game::{Game, experience::ExperienceState, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, MachineSnapshot, Output, Visual, rich_text::InlineSpan};
 
 #[derive(Resource)]
 struct Session {
     game: Game,
+    /// Exploration is independent of whether the reader uses a speech bubble.
+    experience: ExperienceState,
     /// Player-owned overrides loaded once before entering Bevy's update loop.
     preferences: PlayerPreferences,
     /// Cached installed system font families, enumerated once during startup.
@@ -1197,6 +1200,10 @@ fn main() {
             PlayerPreferences::default()
         }
     };
+    let experience = ExperienceState {
+        dialogue_surface: game.manifest.dialogue.default_surface,
+        ..Default::default()
+    };
     let asset_folder = game.root.to_string_lossy().into_owned();
     let title = game.manifest.title.clone();
     let ui_scale = game.theme.ui_scale;
@@ -1243,7 +1250,7 @@ fn main() {
         .insert_resource(save_slots::Click::default())
         .insert_resource(save_slots::Pending::default())
         .insert_resource(Session {
-            game, preferences, font_families: Vec::new(), machine, choosing: false, finished: false,
+            game, experience, preferences, font_families: Vec::new(), machine, choosing: false, finished: false,
             ending_selection: 0,
             paused: false, pause_overlay: None, pause_cache: None,
             pause_selection: 0,
@@ -1279,7 +1286,8 @@ fn main() {
                 sync_menu_backdrops,
             ).chain(),
             (settings::sync_tab_art, settings::fit_panel_to_viewport,
-                settings::sync_content_layout, settings::wheel).chain(),
+                settings::sync_content_layout, settings::wheel,
+                speech_bubble::sync).chain(),
         ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
@@ -1608,8 +1616,13 @@ fn setup(
                 background[0], background[1], background[2], background[3],
             )),
             StoryPanel,
+            BorderColor::all(Color::NONE),
+            BorderRadius::all(px(0.0)),
         ))
         .with_children(|parent| {
+            // Optional native bubble art sits behind the *existing* reader
+            // text, preserving rich spans, pacing, choices and accessibility.
+            speech_bubble::spawn(parent);
             // Stretchable infill paints first. Then edges and corners
             // cover the shared underlap, hiding seams at noninteger DPI.
             let mut art_parts = vec![

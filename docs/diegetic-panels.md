@@ -68,11 +68,11 @@ usual solid-color menus. Menu and settings controls remain native UI with
 their existing keyboard/mouse behavior; a dark readability scrim overlays
 decorative images. The paths follow the same canonicalized root-containment
 and PNG-extension requirements as other authored images, so external file
-references and traversal are rejected. Atlas ships three separate, authored celestial menu illustrations
-in `assets/menus/` with editable SVG sources and committed PNG renderings.
-This is distinct from simply reusing a story location. Authors can swap the
-three PNGs without changing Rust. The engine renders menu artwork with
-aspect-preserving cover cropping, not stretched dimensions.
+references and traversal are rejected. Atlas currently reuses one painterly observatory background for all
+three menus. Its obsolete translucent abstract illustration overlays were
+removed from the external game data and source assets. Other games may still
+supply distinct menu PNGs if they wish; the engine renders those backgrounds
+with aspect-preserving cover cropping, not stretched dimensions.
 
 ## Safety, compatibility and accessibility
 
