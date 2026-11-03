@@ -15,7 +15,10 @@ bubble surface in an otherwise traditional visual novel; see the
 [speech-bubble authoring guide](docs/native-speech-bubbles.md).
 Per-scene/per-line `surface panel | bubble | default` commands are
 implemented with a dedicated regression fixture, pending final CI verification.
-Optional movement is a later milestone; traditional VNs need no exploration data.
+A first **optional walk-first preview** is now implemented and awaiting
+Bevy graphical acceptance. Only packages with `[exploration.start]` enter
+it; traditional VNs need no exploration data. Movement is separate from
+the future NPC-to-story interaction and world save/load work.
 The [optional exploration-location schema](docs/exploration-schema.md)
 now validates external maps and scene interactions, without yet enabling
 movement. Its [authoring-only fixture](examples/exploration-schema/) is not

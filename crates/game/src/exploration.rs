@@ -17,11 +17,21 @@ const MAX_LAYERS: usize = 12;
 pub struct Exploration {
     /// Separate from the legacy visual novel's game format version.
     pub schema_version: u32,
+    /// An optional standalone walk-first opening. Omit it for pure VNs.
+    #[serde(default)]
+    pub start: Option<Start>,
     /// Optional sprites. Missing artwork will use an engine-owned placeholder
     /// at the future movement milestone; no texture path is synthesized.
     #[serde(default)]
     pub avatar: Avatar,
     pub locations: BTreeMap<String, Location>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Start {
+    pub location: String,
+    pub spawn: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -165,6 +175,16 @@ fn scene(story: &Story, id: &str, label: &str) -> Result<(), String> {
 }
 
 impl Exploration {
+    /// Only an explicit [exploration.start] opts into the walk-first preview.
+    /// Standalone VNs have no player-world position to initialize.
+    pub fn start_position(&self) -> Option<super::experience::WorldPosition> {
+        let start = self.start.as_ref()?;
+        let spawn = self.locations.get(&start.location)?.spawns.get(&start.spawn)?;
+        super::experience::WorldPosition::new(
+            start.location.clone(), spawn.x, spawn.facing
+        ).ok()
+    }
+
     /// Every reference is checked before Bevy sees this data; a hot reload may
     /// atomically reject invalid world state without disturbing the old world.
     pub fn validate(&self, root: &Path, story: &Story) -> Result<(), String> {
@@ -174,6 +194,17 @@ impl Exploration {
         }
         if self.locations.is_empty() || self.locations.len() > MAX_LOCATIONS {
             return Err(format!("exploration.locations must contain 1..={MAX_LOCATIONS} locations"));
+        }
+        if let Some(start) = &self.start {
+            identifier(&start.location, "exploration.start.location")?;
+            identifier(&start.spawn, "exploration.start.spawn")?;
+            let target = self.locations.get(&start.location).ok_or_else(|| format!(
+                "exploration.start.location: missing location '{}'", start.location
+            ))?;
+            if !target.spawns.contains_key(&start.spawn) {
+                return Err(format!("exploration.start.spawn: missing spawn '{}' in location '{}'",
+                    start.spawn, start.location));
+            }
         }
         let avatar = &self.avatar;
         for (field, value, lo, hi) in [
@@ -297,6 +328,9 @@ mod tests {
 
     const GOOD: &str = r#"
 schema_version = 1
+[start]
+location = "street"
+spawn = "home"
 [avatar]
 speed = 250.0
 [locations.street]
@@ -356,6 +390,8 @@ interact_scene = "chat"
         world.validate(&fixture.0, &story).unwrap();
         assert_eq!(world.locations["street"].spawns["home"].x, 120.0);
         assert_eq!(world.locations["street"].camera.zoom, 1.1);
+        assert_eq!(world.start.as_ref().unwrap().location, "street");
+        assert_eq!(world.start_position().unwrap().x, 120.0);
         assert_eq!(world.locations["cafe"].camera.zoom, 1.0);
         assert_eq!(world.locations["cafe"].spawns["door"].facing,
             super::super::experience::Facing::Left);
@@ -373,6 +409,7 @@ interact_scene = "chat"
             ("width = 640.0", "width = -1.0", "dimensions"),
             ("schema_version = 1", "schema_version = 9", "schema_version"),
             ("zoom = 1.1", "zoom = 0.1", "camera"),
+            ("spawn = \"home\"", "spawn = \"not_here\"", "start.spawn"),
             ("background = \"scene.png\"", "background = \"../outside.png\"", "background"),
         ] {
             let (world, fixture, story) = load(&GOOD.replacen(from, to, 1));

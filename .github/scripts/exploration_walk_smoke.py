@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+"""Run an actual opt-in walk-first Vesper location in the Bevy player.
+
+The fixture only supplies external authoring data. No engine source-path
+hardcoding, simulated keyboard state, fake screenshots or parsed game code.
+"""
+from __future__ import annotations
+
+import os
+from pathlib import Path
+import re
+import subprocess
+import tempfile
+import time
+
+ROOT = Path(__file__).resolve().parents[2]
+PLAYER = ROOT / "target/debug/vesper-player"
+GAME = ROOT / "examples/exploration-schema"
+OUTPUT = Path("/tmp/vesper-exploration-walk-qa")
+OUTPUT.mkdir(parents=True, exist_ok=True)
+START = re.compile(r"Vesper exploration preview entered: street at x=([\d.]+)")
+STOP = re.compile(r"Vesper exploration stopped: street at x=([\d.]+)")
+
+
+def call(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(args, text=True, capture_output=True, check=check)
+
+
+def log_text(log: Path) -> str:
+    return log.read_text(encoding="utf-8", errors="replace")
+
+
+def wait_for_log(log: Path, phrase: str, previous: int = 0) -> None:
+    deadline = time.monotonic() + 15
+    while time.monotonic() < deadline:
+        if log.exists() and log_text(log).count(phrase) > previous:
+            return
+        time.sleep(.1)
+    raise AssertionError(f"Expected {phrase!r} after {previous} occurrences:\n{log_text(log)[-3500:]}")
+
+
+def window_id() -> str:
+    deadline = time.monotonic() + 35
+    while time.monotonic() < deadline:
+        result = call("xdotool", "search", "--name",
+                      "Optional Walkable Location Schema", check=False)
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.splitlines()[0]
+        time.sleep(.2)
+    raise AssertionError("Walk-first fixture window never opened")
+
+
+def frame(window: str, filename: str, width: int, height: int) -> Path:
+    out = OUTPUT / filename
+    for _ in range(30):
+        call("import", "-window", window, str(out))
+        dims = call("identify", "-format", "%w %h %k", str(out)).stdout
+        w, h, colors = [int(value) for value in dims.split()]
+        if (w, h) == (width, height) and colors > 80:
+            return out
+        time.sleep(.25)
+    raise AssertionError(f"Rendered frame has wrong dimensions for {filename}")
+
+
+def changed(left: Path, right: Path) -> int:
+    out = call("compare", "-metric", "AE", str(left), str(right),
+               "null:", check=False)
+    match = re.search(r"^\s*(\d+)", out.stderr)
+    assert match, out.stderr
+    return int(match[1])
+
+
+def key(window: str, button: str) -> None:
+    call("xdotool", "windowfocus", "--sync", window)
+    call("xdotool", "key", "--clearmodifiers", button)
+    time.sleep(.45)
+
+
+def walk(window: str, button: str, seconds: float) -> None:
+    call("xdotool", "windowfocus", "--sync", window)
+    call("xdotool", "keydown", "--clearmodifiers", button)
+    try:
+        time.sleep(seconds)
+    finally:
+        call("xdotool", "keyup", "--clearmodifiers", button)
+
+
+def position_after_stop(log: Path, old_count: int) -> float:
+    wait_for_log(log, "Vesper exploration stopped:", old_count)
+    values = [float(x) for x in STOP.findall(log_text(log))]
+    assert values, "Missing walk-position log"
+    return values[-1]
+
+
+def main() -> None:
+    with tempfile.TemporaryDirectory(prefix="vesper-walk-") as folder:
+        env = dict(os.environ,
+                   LIBGL_ALWAYS_SOFTWARE="1",
+                   VESPER_PREFERENCES_DIR=folder,
+                   VESPER_SAVE_DIR=str(Path(folder) / "saves"))
+        log = OUTPUT / "walk.log"
+        with log.open("w", encoding="utf-8") as stream:
+            proc = subprocess.Popen(
+                [str(PLAYER), str(GAME)],
+                env=env, stdout=stream, stderr=subprocess.STDOUT,
+            )
+            try:
+                window = window_id()
+                wait_for_log(log, "Vesper exploration preview entered:")
+                assert START.search(log_text(log)), "Didn't enter the authored street"
+                time.sleep(1.5)
+                initial = frame(window, "walk-initial.png", 1280, 720)
+                old = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "Right", .85)
+                x1 = position_after_stop(log, old)
+                assert 215.0 < x1 < 480.0, f"Keyboard movement didn't advance correctly: {x1}"
+                moved = frame(window, "walk-moved.png", 1280, 720)
+                assert changed(initial, moved) > 100, (
+                    "Exploration avatar did not visibly move in the actual rendered frame"
+                )
+
+                # Pause owns controls. Holding the walking key while the pause
+                # overlay is up must not move the avatar in world coordinates.
+                key(window, "p")
+                wait_for_log(log, "Vesper story paused")
+                walk(window, "Right", .75)
+                key(window, "p")
+                old = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "Right", .15)
+                x2 = position_after_stop(log, old)
+                assert 2.0 < x2 - x1 < 70.0, (
+                    f"Paused movement leaked into the world: {x1} -> {x2}"
+                )
+
+                # Focus/resize state should re-project instead of modifying
+                # logical player position or stretching source artwork.
+                call("xdotool", "windowsize", "--sync", window, "946", "511")
+                time.sleep(.7)
+                frame(window, "walk-compact.png", 946, 511)
+
+                # Until NA07 introduces a valid migration that stores world
+                # position, F5 deliberately refuses incomplete quick saves.
+                key(window, "F5")
+                assert not (Path(folder) / "saves" / "exploration-schema.json").exists(), (
+                    "Walk preview incorrectly wrote an incomplete VN-only save"
+                )
+                print(f"Exploration movement x={x1:.1f}->{x2:.1f}; paused controls ignored",
+                      flush=True)
+                print("Native walk-first visual, resize, bounds, and incomplete-save guard: passed",
+                      flush=True)
+            finally:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=6)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait(timeout=3)
+
+
+if __name__ == "__main__":
+    main()

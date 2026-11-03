@@ -102,6 +102,18 @@ jobs:
           path: /tmp/vesper-speech-bubbles-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
+      # An independent walk-first authoring fixture must not move the legacy
+      # VN reader/camera or accept movement while a modal menu is visible.
+      - name: Verify optional walk-first exploration and paused movement
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/exploration_walk_smoke.py
+      - name: Preserve native exploration preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-exploration-walk
+          path: /tmp/vesper-exploration-walk-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       # Fast Settings and reader-control checks run before long novel routes.
       - name: Verify grapheme-safe text reveal, skip-once, reduced motion and opt-in auto
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/readout_smoke.py

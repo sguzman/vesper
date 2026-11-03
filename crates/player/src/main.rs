@@ -17,8 +17,9 @@ mod save_slots;
 mod panel_art;
 mod ambient;
 mod speech_bubble;
+mod exploration;
 use std::{collections::{BTreeMap, VecDeque}, env, path::PathBuf, process, sync::{Arc, Mutex}};
-use vesper_game::{Game, experience::ExperienceState, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
+use vesper_game::{Game, experience::{ExperienceMode, ExperienceState}, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, MachineSnapshot, Output, Visual, DialogueSurfaceDirective, rich_text::InlineSpan};
 
 #[derive(Resource)]
@@ -1200,10 +1201,15 @@ fn main() {
             PlayerPreferences::default()
         }
     };
-    let experience = ExperienceState {
+    let mut experience = ExperienceState {
         dialogue_surface: game.manifest.dialogue.default_surface,
         ..Default::default()
     };
+    if let Some(start) = game.manifest.exploration.as_ref()
+        .and_then(vesper_game::exploration::Exploration::start_position)
+    {
+        experience.enter_exploration(start);
+    }
     let asset_folder = game.root.to_string_lossy().into_owned();
     let title = game.manifest.title.clone();
     let ui_scale = game.theme.ui_scale;
@@ -1263,12 +1269,12 @@ fn main() {
         })
         .add_systems(Startup, (
             font_browser::discover, atmosphere::setup, setup, ambient::spawn,
-            prewarm_menus, settings::prewarm,
+            exploration::setup, prewarm_menus, settings::prewarm,
         ).chain())
         .add_systems(Update, (
             (
                 font_browser::wheel, font_browser::pointer, settings::pointer,
-                sync_story_hint_keycaps, advance_from_keyboard, history::wheel,
+                sync_story_hint_keycaps, advance_from_keyboard, exploration::input, history::wheel,
                 choices::sync_rows, choices::sync_row_style,
                 choices::scroll_selected, choices::sync_viewport,
                 choices::reserve_row_height, readout::tick, readout::sync_spans,
@@ -1283,7 +1289,7 @@ fn main() {
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
                 ambient::sync, ambient::tick_motion, animate_panel_height,
-                sync_menu_backdrops,
+                sync_menu_backdrops, exploration::sync,
             ).chain(),
             (settings::sync_tab_art, settings::fit_panel_to_viewport,
                 settings::sync_content_layout, settings::wheel,
@@ -2256,6 +2262,13 @@ fn restart_story(
             session.presentation = PresentationState::default();
             session.experience.dialogue_surface =
                 session.game.manifest.dialogue.default_surface;
+            if let Some(start) = session.game.manifest.exploration.as_ref()
+                .and_then(vesper_game::exploration::Exploration::start_position)
+            {
+                session.experience.enter_exploration(start);
+            } else {
+                session.experience.enter_visual_novel();
+            }
             session.history.reset();
             session.machine = machine;
             session.choosing = false;
@@ -2333,6 +2346,12 @@ fn advance_from_keyboard(
         return;
     }
     if input.just_pressed(KeyCode::F6) {
+        // Exploration saves need logical position migration (NA07); do not
+        // offer a slot UI that would only persist the underlying story.
+        if matches!(session.experience.mode, ExperienceMode::Exploring(_)) {
+            warn!("Vesper exploration save slots require NA07; no partial save written");
+            return;
+        }
         let theme=effective_theme(&session);
         save_slots::open(&mut overlays.save_ui, &mut overlays.save_pending, &mut commands,
             &assets, &theme);
@@ -2436,6 +2455,11 @@ fn advance_from_keyboard(
                 _ => {}
             }
         }
+        return;
+    }
+    // The walk-first preview has no narrative interaction yet. Never let
+    // arrow keys, Enter, Space, or debug rewind progress a hidden VN scene.
+    if matches!(session.experience.mode, ExperienceMode::Exploring(_)) {
         return;
     }
     // Backspace is a developer-friendly, bounded undo of the last visible
@@ -2583,6 +2607,10 @@ fn trigger_save_load(
     let quick_save = keyboard.just_pressed(KeyCode::F5);
     let quick_load = keyboard.just_pressed(KeyCode::F9);
     if request.is_none() && !quick_save && !quick_load { return; }
+    if matches!(session.experience.mode, ExperienceMode::Exploring(_)) {
+        warn!("Vesper exploration quick-save/load deferred until NA07");
+        return;
+    }
     if request.is_none()
         && (session.paused || session.menu_overlay.is_some()
             || session.history.visible() || slot_ui.visible()) {

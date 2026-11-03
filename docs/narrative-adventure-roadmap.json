@@ -126,9 +126,11 @@
         "Camera follows only when the authored location exceeds the view; stop at bounds; visual layers retain aspect, scale and safe cropping at compact and widescreen sizes.",
         "Pauses, modal dialogue, menus and window focus interruptions stop or appropriately freeze movement; repeated transitions do not leak entities or image assets; performance measured on Linux native and CI software rendering."
       ],
-      "status": "not started",
+      "status": "active",
       "verified_weight": 0,
-      "evidence": []
+      "evidence": [
+        "Author-owned optional [exploration.start] validation, deterministic horizontal walk/frame-cap and camera projection, Bevy walk-first stage preview, paused/modal/focus input guards, optional sprite cycles, independent fixture, and native screenshot CI smoke authored. CI and manual QA still pending; no verified points credited."
+      ]
     },
     {
       "id": "NA06",
@@ -274,9 +276,10 @@
       "NA01",
       "NA02",
       "NA03",
-      "NA04"
+      "NA04",
+      "NA05"
     ],
-    "pending": "Verify native bubble geometry, persistence/high contrast, legacy VN and new exploration schema in CI. Resolve any failures; full Atlas multi-ending regression must pass before awarding NA01; NA02–NA04 remain subject to their full criteria.",
+    "pending": "Verify NA05's native walk-first player and all legacy VN/Atlas regressions on the latest commit; fix failures before counting any milestones. NA06 interaction and NA07 world-position saves are explicitly not implemented.",
     "previous_preserved_complete": true
   }
 }

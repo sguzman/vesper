@@ -1,9 +1,10 @@
 # NA04 — Optional external explorable-location data
 
-**Implementation status:** Versioned parsing, validation and standalone
-authoring fixture are implemented. There is **no player movement or world
-rendering yet**; those belong to NA05 and NA06. Do not confuse this with a
-playable map or the forthcoming original anime urban example.
+**Implementation status:** Versioned parsing, validation and a small
+**walk-first Bevy preview** exist. This is deliberately not a full narrative
+adventure: NPC conversations, location transfers, interactive objects and
+exploration save/load still belong to NA06–NA07. It is not the original anime
+urban slice-of-life game.
 
 ## Separation from visual novels
 
@@ -19,8 +20,13 @@ A minimal example:
 [exploration]
 schema_version = 1
 
+# Optional, explicit walk-first opening; omit for an ordinary VN.
+[exploration.start]
+location = "street"
+spawn = "home"
+
 [exploration.avatar]
-speed = 230.0 # logical px / second; future movement speed
+speed = 230.0 # logical px / second; bounded walking speed
 # idle = "assets/avatar/idle.png"
 # walk = ["assets/avatar/walk-1.png", "assets/avatar/walk-2.png"]
 # walk_fps = 8.0
@@ -104,14 +110,24 @@ The same spelling in two distinct namespaces is not an engine collision.
 ## Ownership / transition boundary
 
 The contract deliberately **does not** add `explore ...` commands to the
-existing story parser yet. NA05 will consume a validated location with a
-bounded avatar/camera controller; NA06 will connect interaction to the
-deterministic `.vn` interpreter, including explicit return-to-position
-events. NA07 will persist the logical area ID and position, never Bevy
-entity handles.
+existing story parser yet. A game with validated `[exploration.start]`
+opens directly into a bounded side-on world instead of advancing the hidden
+VN script. Author-controlled keyboard walking, viewport projection, optional
+PNG sprites and simple stand-ins run in the isolated player module.
+If `start` is missing, the player remains a traditional VN; merely declaring
+locations never starts walking.
 
-The fixture `examples/exploration-schema` is authoring-only and uses reused
-test background art. It must not be reported as the actual playable
+**Current preview scope:** Left/Right or A/D walking with a capped frame step,
+camera following only when necessary, optional walk/idle frame animation,
+and pause/menu/focus input ownership. Background PNGs retain aspect through
+uniform cover scaling. The completed VN UI and story camera remain separate.
+NPCs/objects and exits are rendered but have **no interaction action yet**;
+NA06 will connect them to story events and return-to-position. F5/F9/F6
+saves are intentionally unavailable during exploration until NA07 persists
+its logical world position. No fake/incomplete VN-only save is written.
+
+The `examples/exploration-schema` walk-first fixture uses reused test
+background art. It must not be reported as the original playable urban
 slice-of-life example.
 
 ## Test coverage
@@ -121,6 +137,11 @@ slice-of-life example.
   and target spawns, bad radius/coordinate, path traversal and unknown fields.
 - `cargo run --locked -p vesper-cli -- check-game examples/exploration-schema`
   validates a complete externally authored package in CI.
+- Pure locomotion and camera tests under `crates/game/src/walk.rs` enforce
+  frame-time caps, level bounds, single-screen framing and resize independence.
+- The native `.github/scripts/exploration_walk_smoke.py` drives actual
+  Bevy keyboard movement, paused movement suppression, source-art rendering
+  and compact-window resizing under CI and archives graphical frames.
 - Existing VN-only games and all original `.vn` commands remain unchanged and
   continue running under the regular CLI/Bevy regressions.
 

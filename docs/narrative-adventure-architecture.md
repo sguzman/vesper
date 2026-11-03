@@ -38,7 +38,11 @@ This is an **additive** extension. The existing version-1 script grammar and pan
 
 ## External authoring contract to implement
 
-**New authoring is additive and versioned; the following names are a chosen contract for subsequent milestones, not keys already supported in the running game.** Existing `format_version = 1` manifests remain valid. Use an optional isolated `[exploration]` subsection with its own `schema_version = 1` and referenced locations; validate that optional section only when present. Preserve the existing game-relative secure path policy.
+**New authoring is additive and versioned.** The optional `[dialogue]`
+surface authoring, `[exploration]` location data, and the opt-in
+`[exploration.start]` walk-first preview are now implemented; the
+`explore`/conversation commands shown below are **planned, not runnable**.
+Existing `format_version = 1` manifests remain valid. Use an optional isolated `[exploration]` subsection with its own `schema_version = 1` and referenced locations; validate that optional section only when present. Preserve the existing game-relative secure path policy.
 
 Example **planned manifest shape**, not yet runnable:
 
@@ -53,6 +57,9 @@ image = "assets/ui/bubble.png"
 
 [exploration]
 schema_version = 1
+[exploration.start]
+location = "street"
+spawn = "cafe"
 
 [exploration.locations.street]
 background = "assets/streets/street.png"

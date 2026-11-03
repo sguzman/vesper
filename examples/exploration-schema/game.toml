@@ -9,6 +9,11 @@ entry = "intro"
 [exploration]
 schema_version = 1
 
+# Only an explicit opening enters walk mode. Omit this to run the ordinary VN.
+[exploration.start]
+location = "street"
+spawn = "home"
+
 [exploration.avatar]
 speed = 230.0
 walk_fps = 8.0
