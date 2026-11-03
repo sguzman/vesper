@@ -82,7 +82,11 @@ jobs:
             sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' /etc/apt/apt-mirrors.txt
           fi
           sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
-          sudo timeout 600s apt-get install -y --no-install-recommends libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1-dev xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
+          sudo timeout 600s apt-get install -y --no-install-recommends libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1-dev fontconfig fonts-noto-cjk xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
+      - name: Confirm multilingual system-font fallback
+        run: |
+          fc-match -f '%{family}\n' ':lang=ja' | grep -q 'Noto Sans CJK'
+          fc-match -f '%{family}\n' ':lang=ko' | grep -q 'Noto Sans CJK'
       - name: Build Bevy 0.20 player
         run: cargo build --locked -p vesper-player
       - name: Test fade interpolation

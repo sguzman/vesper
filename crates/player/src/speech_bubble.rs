@@ -11,6 +11,8 @@ use vesper_game::experience::DialogueSurface;
 pub struct BubbleFrame;
 #[derive(Component)]
 pub struct BubbleTail;
+#[derive(Component)]
+pub struct BubbleScrollCue;
 
 #[derive(Clone, Copy, Debug)]
 struct BubbleGeometry {
@@ -73,6 +75,20 @@ pub fn spawn(parent: &mut ChildSpawnerCommands) {
         },
     ));
     parent.spawn((
+        Name::new("Long bubble scroll hint"),
+        BubbleScrollCue,
+        IgnoreScroll(BVec2::TRUE),
+        OverrideClip,
+        Text::new("PgDn ↓"),
+        TextFont { font_size: FontSize::Px(13.0), ..default() },
+        TextColor(Color::WHITE),
+        Node {
+            position_type: PositionType::Absolute,
+            right: px(9.0), bottom: px(3.0),
+            display: Display::None, ..default()
+        },
+    ));
+    parent.spawn((
         Name::new("Native speech bubble tail"),
         BubbleTail,
         IgnoreScroll(BVec2::TRUE),
@@ -103,7 +119,8 @@ pub fn sync(
     characters: Query<(&CharacterVisual, &Transform)>,
     assets: Res<AssetServer>,
     mut roots: Query<(
-        &mut Node, &mut BackgroundColor, &mut BorderColor, &mut ScrollPosition
+        &mut Node, &mut BackgroundColor, &mut BorderColor, &mut ScrollPosition,
+        &ComputedNode
     ), (With<StoryPanel>, Without<BubbleFrame>)>,
     mut frames: Query<(&mut Node, &mut ImageNode),
         (With<BubbleFrame>, Without<StoryPanel>)>,
@@ -116,13 +133,14 @@ pub fn sync(
         Has<NameplateAnchor>,
         Has<HintAnchor>,
         Has<BubbleTail>,
+        Has<BubbleScrollCue>,
         Option<&mut BackgroundColor>,
     ), (
         Without<StoryPanel>, Without<BubbleFrame>,
         Or<(
             With<StoryText>, With<panel_art::StoryPanelArt>,
             With<StoryAccent>, With<StorySeparator>, With<NameplateAnchor>,
-            With<HintAnchor>, With<BubbleTail>,
+            With<HintAnchor>, With<BubbleTail>, With<BubbleScrollCue>,
         )>,
     )>,
     mut previous: Local<(bool, Option<String>)>,
@@ -136,7 +154,7 @@ pub fn sync(
     let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
     if viewport.x <= 0.0 || viewport.y <= 0.0 { return; }
     let logical = viewport / ui_scale.0.max(0.05);
-    let Ok((mut node, mut fill, mut border, mut scroll)) = roots.single_mut()
+    let Ok((mut node, mut fill, mut border, mut scroll, computed)) = roots.single_mut()
         else { return; };
     let skin = &session.game.manifest.dialogue.bubble;
     let contrast = session.preferences.high_contrast.unwrap_or(false);
@@ -244,8 +262,12 @@ pub fn sync(
         previous.1 = if contrast { None } else { skin.image.clone() };
         // A bubble is a dialogue surface, never an instruction banner.
         // Hidden native hints remain in the accessibility/reader model.
-        for (mut part, text, art, accent, divider, nameplate, hint_slot, tail, color) in &mut details {
-            if art || accent || divider || hint_slot
+        let has_more = computed.content_size().y > computed.size().y + 2.0;
+        for (mut part, text, art, accent, divider, nameplate, hint_slot, tail, cue, color) in &mut details {
+            if cue {
+                let display = if has_more { Display::Flex } else { Display::None };
+                if part.display != display { part.display = display; }
+            } else if art || accent || divider || hint_slot
                 || matches!(text, Some(StoryText::Hint))
             {
                 if part.display != Display::None { part.display = Display::None; }
@@ -308,8 +330,8 @@ pub fn sync(
         panel_skin.and_then(|skin| skin.speaker_area),
         nameplate_width, geometry.min_height,
     );
-    for (mut part, text, art, accent, divider, nameplate, hint_slot, tail, _) in &mut details {
-        if tail {
+    for (mut part, text, art, accent, divider, nameplate, hint_slot, tail, cue, _) in &mut details {
+        if tail || cue {
             part.display = Display::None;
         } else if art {
             // panel_art::sync owns restored illustrated-cell visibility.
