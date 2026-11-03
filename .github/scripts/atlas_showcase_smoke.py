@@ -99,6 +99,28 @@ def changed(first: Path, last: Path) -> int:
     return int(match.group(1))
 
 
+def screenshot_after_transition(window: str, previous: Path,
+                                name: str, min_difference: int = 2500) -> Path:
+    """Wait for the GPU-rendered new menu, not just the ECS/log transition.
+
+    Bevy can log a cached overlay reopening before the display server presents
+    its new frame. Compare real window pixels with the prior menu, retrying
+    with a bounded deadline rather than assuming a fixed sleep is sufficient.
+    """
+    deadline = time.monotonic() + 12
+    last_difference = 0
+    while time.monotonic() < deadline:
+        path = screenshot(window, name)
+        last_difference = changed(previous, path)
+        if last_difference > min_difference:
+            return path
+        time.sleep(.25)
+    raise AssertionError(
+        f"Menu image did not change after transition to {name}: "
+        f"{last_difference} pixels (required > {min_difference})"
+    )
+
+
 def read_log(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
@@ -638,18 +660,20 @@ def responsive_layout() -> None:
                 while read_log(log).count("Vesper appearance settings opened") <= settings_before:
                     assert time.monotonic() < deadline, "Main -> Settings transition stalled"
                     time.sleep(.05)
-                screenshot(win, "menu-settings-from-main.png")
-                assert changed(OUTPUT / "menu-main-illustrated.png",
-                               OUTPUT / "menu-settings-from-main.png") > 2500
+                screenshot_after_transition(
+                    win, OUTPUT / "menu-main-illustrated.png",
+                    "menu-settings-from-main.png",
+                )
                 press(win, "Escape", 0.35)
                 deadline = time.monotonic() + 10
                 while read_log(log).count("Vesper main menu opened") <= main_before:
                     assert time.monotonic() < deadline, "Settings -> Main transition stalled"
                     time.sleep(.05)
                 assert read_log(log).count("Vesper Main menu UI reused") > main_reuse_before
-                screenshot(win, "menu-main-returned.png")
-                assert changed(OUTPUT / "menu-settings-from-main.png",
-                               OUTPUT / "menu-main-returned.png") > 2500
+                screenshot_after_transition(
+                    win, OUTPUT / "menu-settings-from-main.png",
+                    "menu-main-returned.png",
+                )
                 assert "Vesper Pause menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
                 assert "Vesper Main menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)
                 assert "Vesper settings menu backdrop loaded: assets/backgrounds/observatory_evening.png" in read_log(log)

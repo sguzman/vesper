@@ -1,0 +1,123 @@
+# NA01 — Optional exploration and dialogue-surface architecture
+
+**Status:** Decision contract for the new narrative-adventure phase. This document specifies interfaces to implement, **not** a claim that exploration or speech bubbles are already rendered. See the [separate 100-point ledger](narrative-adventure-roadmap.json).
+
+## Existing engine boundary (verified before the extension)
+
+- The `vesper-story` Rust crate owns deterministic `.vn` parsing, script choices, variables and machine snapshots. A scene currently yields dialogue, choices, visual instructions or the ending; it never polls the world or the render frame.
+- The `vesper-game` crate owns game-local `game.toml`, theme and asset path validation, as well as the existing backwards-compatible version-1 save wrapper.
+- The Bevy `vesper-player` crate owns ECS entities, camera, reading state, modal menus, text layout, artwork, audio and input. The existing author-specified `panel <skin>` command controls **art on a traditional dialogue panel**, not whether a bubble or a panel is used.
+- Pure visual novels already launch directly into authored narrative scenes. Old games are not required to declare locations, input mappings, avatar sprites, bubble art or additional fields.
+
+This is an **additive** extension. The existing version-1 script grammar and panel art semantics must continue to work. Use responsibility-oriented modules (not mixed-purpose large files), and keep the deterministic story core free of Bevy dependencies.
+
+## Two independent axes
+
+**Experience mode**, owned by an engine state machine:
+
+| Mode | Owner | Authoritative position | Dialogue behavior |
+| --- | --- | --- | --- |
+| `visual_novel` | existing story machine and player | staged character slots / backgrounds | standard VN dialogue, no movement input |
+| `exploring` | future bounded exploration controller | current named external location + logical X + facing | movement and interaction prompts, no automatic dialogue advance |
+| `conversation` | story machine while exploration is suspended | an explicit saved return point | modal dialogue/choices; player movement disabled until explicit outcome |
+
+**Dialogue surface**, separate from mode: `panel` (default; existing artwork and speaker nameplate) or `bubble` (anchored text and optional artist-supplied bubble frame). An ordinary VN may use a bubble; an exploration conversation may use the full illustrated panel; either may switch within one conversation.
+
+`crates/game/src/experience.rs` provides the pure typed model and transition guards. This model is deliberately **not wired to a new player mode yet**: NA04–NA07 will connect it to assets, inputs and persistence, and NA02–NA03 will connect dialogue surfaces to the renderer.
+
+## Explicit transitions and invariants
+
+- **VN → exploration:** the author names a validated location and spawn point. The player loads its bounded world and changes to exploration. The story interpreter must yield rather than executing an unbounded loop.
+- **Exploration → conversation:** a focused, reachable NPC/object links to an authored `.vn` scene. Interact snapshots its world return point (location, logical X and facing), freezes locomotion, and enters a modal conversation. The narrative machine retains story variables and state.
+- **Conversation → exploration:** an explicit author-directed return resumes that **exact** world location and position. Repeating an interaction doesn't double-fire a choice or move the protagonist.
+- **Conversation → cinematic VN:** an explicit authored transfer drops the pending world return; the story enters ordinary VN staging, including any `panel` or `bubble` selection. No automatic walk back is imposed.
+- **VN → VN:** unchanged. If no exploration instructions or manifest sections are present, legacy games never construct exploration controllers, walkable scenes or interaction prompts.
+- **Presentation changes:** switching the surface **never** triggers an experience-mode change, story branch, camera move, save or relocation. The author controls dialogue surface independently; the reader's font size, text speed, accessibility and high-contrast preferences retain precedence.
+- A live menu/pause/settings overlay always suspends movement and consumes input first; focus loss suspends walking; no double activation through press and release. A headless story machine cannot observe camera positions, pointer events, or the frame clock.
+- No silent fallback that changes story progression. Invalid IDs, missing assets, bad location bounds and out-of-range spawn positions receive game-file/line diagnostics and reject the invalid load/hot reload while preserving the last valid world.
+
+## External authoring contract to implement
+
+**New authoring is additive and versioned; the following names are a chosen contract for subsequent milestones, not keys already supported in the running game.** Existing `format_version = 1` manifests remain valid. Use an optional isolated `[exploration]` subsection with its own `schema_version = 1` and referenced locations; validate that optional section only when present. Preserve the existing game-relative secure path policy.
+
+Example **planned manifest shape**, not yet runnable:
+
+```toml
+[dialogue]
+default_surface = "panel"   # omitted means the existing dialogue box
+
+[bubble_skins.default]
+# Optional PNG frame and tail artwork; fallback is a native UI color panel.
+# All safe areas, colors, offsets and text sizes must be bounded and validated.
+image = "assets/ui/bubble.png"
+
+[exploration]
+schema_version = 1
+
+[exploration.locations.street]
+background = "assets/streets/street.png"
+width = 1920.0
+height = 720.0
+
+[exploration.locations.street.spawns.cafe]
+x = 640.0
+facing = "right"
+
+[exploration.locations.street.npcs.friend]
+x = 810.0
+interact_scene = "friend_talk"
+interaction_radius = 80.0
+```
+
+Authoring policy: IDs use the existing constrained scene/asset-identifier family; world coordinates are finite, nonnegative logical pixels with validated viewport/location bounds; paths are game-local. Backgrounds use aspect-preserving display rules. NPC talk targets must exist in the parsed `.vn` story; aliases, scene IDs, spawn IDs, and location IDs are distinct namespaces. The initial controller is **side-on horizontal walking only**; maintain an isolated viewport/locomotion interface so future view types need not rewrite narrative logic.
+
+**Planned additive `.vn` commands** (syntax is intentionally explicit and will be ratified with tests when parser support is added):
+
+```text
+@scene intro
+surface bubble
+friend: "You're early."
+surface panel
+friend: "There's something we should talk about."
+surface default
+explore street at cafe
+
+@scene friend_talk
+surface bubble
+friend: "Want some coffee?"
+* "Sure" -> coffee_yes
+* "Later" -> coffee_later
+
+@scene coffee_yes
+set friendship += 1
+explore return
+
+@scene important
+mode visual_novel
+panel ornate
+friend: "Let's talk somewhere quiet."
+```
+
+- `surface panel` selects the existing dialogue box; `surface bubble` selects an anchored bubble; `surface default` restores the author default (and the legacy box if no new section exists). The switch can occur immediately before **any line** and persists until the next explicit switch or new scene default; this permits per-line use without a new embedded markup syntax.
+- `explore <location> at <spawn>` explicitly yields into exploration.
+- `explore return` is valid only while a modal world conversation is pending; it returns to its snapped location/position instead of automatically walking there.
+- `mode visual_novel` explicitly transfers into cinematic staging from any mode and clears the pending exploration return.
+- Parser and runtime must add typed commands instead of interpreting TOML or source strings as executable code, while preserving file/line diagnostics. Cross-reference validation must reject missing scenes or locations before starting play.
+
+**Unresolved until implementation:** precise format of bubble tail and safe-area geometry, narrative yield/resume mechanics, choice widget position in bubble mode and multi-NPC collision/occlusion handling. These are existing NA02/NA04/NA06 tasks, **not additional scope**.
+
+## Persistence and hot reload
+
+The existing `SaveData` version 1 has `#[serde(deny_unknown_fields)]` and embeds the narrative snapshot plus a `PresentationState` of character/background/UI data. No old save may be invalidated by the new phase. NA07 must introduce **optional versioned experience fields with defaults**, or an explicitly backward-compatible version migration, and tests from saved pre-feature fixtures. Save the stable authored IDs, world X/facing, current mode and pending conversation return. Never serialize entity IDs, active texture handles or frame-time state.
+
+Atomic save writes and worker-thread I/O remain unchanged. Script/manifest hot reload validates new references and preserves last good authored content if a location is removed or a conversation target becomes invalid.
+
+## Verification matrix and completion gate
+
+1. **Contract and Rust state model:** normal VN+panel default, bubbles while still in pure VN, modal conversation→exact return, explicit VN exit, invalid location and nested interaction rejected, JSON round trip.
+2. **Legacy compatibility:** current CLI validates all existing external game manifests unchanged; parser, game and player unit tests pass, existing menu/Atlas graphical regressions and saves survive.
+3. **Future independent fixtures:** (a) pure VN with bubble switching and existing choice panel, (b) one single-screen street with interaction, (c) mixed-mode game with persistent world return. Reuse one compiled player; no hardcoded example logic.
+4. **Graphical QA:** capture real Bevy frames at 946×511 and 1280×720 and wide resolution; nameplate and bubble legibility, occlusion/fallback, focus, movement freeze, frame transition, reduced motion and high contrast.
+5. **Final manual acceptance:** physical Linux/Hyprland UI quality and actual response latency remain separate from green virtual-display CI.
+
+**NA01 earns its 6 weight only when** this adopted decision is committed, the typed state contract has passing tests and all relevant legacy validation plus full CI are green on the tested code. **NA02 and later earn nothing** merely from this design or the Rust model.

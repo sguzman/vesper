@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub mod save;
 pub mod preferences;
 pub mod ambient_motion;
+pub mod experience;
 use std::{
     collections::BTreeMap,
     fs,
