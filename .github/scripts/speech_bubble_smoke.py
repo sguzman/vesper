@@ -123,8 +123,8 @@ def run_game(directory: str, title: str, filename: str,
                 wait_for_phrase(logfile, "Vesper save restored", after=previous_loads)
                 time.sleep(0.8)
                 restored_panel = grab(win, filename + "-restored-panel.png", (1280, 720))
-                assert diff(restored_panel, panel) < diff(restored_panel, speaker), (
-                    "F9 did not restore the selected panel surface"
+                assert diff(restored_panel, panel) < 15000, (
+                    "F9 restored the surface but changed its original panel geometry"
                 )
                 # Once restored, advancing should honor the next authored
                 # surface command rather than keeping a stale restored panel.

@@ -233,6 +233,10 @@ pub fn sync(
     );
     geometry.bottom = viewport.y * session.preferences.panel_bottom_percent
         .unwrap_or(p.bottom_percent) / 100.0;
+    // A bubble uses absolute top-positioning, while a traditional panel is
+    // bottom-anchored. Clear the old top constraint before restoring layout:
+    // leaving both top and bottom set stretches/shifts the panel after F9.
+    if node.top != Val::Auto { node.top = Val::Auto; }
     apply_panel_metrics(
         &mut node, p, geometry, viewport, session.preferences.panel_width_percent,
     );
