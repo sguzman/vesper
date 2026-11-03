@@ -206,6 +206,8 @@ pub fn sync(
                 && let Some(area) = session.game.manifest.exploration.as_ref()
                     .and_then(|world| world.locations.get(&return_to.location))
                 && let Some(npc) = area.npcs.get(name)
+                && npc.visible_if.as_ref().is_none_or(|condition|
+                    condition.matches(session.machine.variables()))
             {
                 let view = vesper_game::walk::View::for_area(
                     area.width, area.height, viewport.x, viewport.y,
@@ -372,6 +374,9 @@ pub fn scroll(
     mut wheel: MessageReader<bevy::input::mouse::MouseWheel>,
     keyboard: Res<ButtonInput<KeyCode>>,
     session: Res<Session>,
+    settings: Res<settings::SettingsState>,
+    font_browser: Res<font_browser::State>,
+    slots: Res<save_slots::SaveUi>,
     mut panels: Query<(&mut ScrollPosition, &ComputedNode), With<StoryPanel>>,
 ) {
     use bevy::input::mouse::MouseScrollUnit;
@@ -384,6 +389,8 @@ pub fn scroll(
     }
     if !active_bubble(&session) || session.paused
         || session.menu_overlay.is_some() || session.history.visible()
+        || settings.overlay.is_some() || font_browser.overlay.is_some()
+        || slots.visible()
     {
         return;
     }
