@@ -42,30 +42,37 @@ fn bubble_geometry(
     // onscreen yet have no such headroom: use the narration fallback
     // rather than covering their face with a forced minimum-height panel.
     let min_head_y = (8.0 + 90.0 + 14.0_f32).max(safe_y);
-    let anchor = anchor.filter(|head| head.is_finite()
+    let visible_head = anchor.filter(|head| head.is_finite()
         && head.x >= safe_x && head.x <= viewport.x - safe_x
-        && head.y >= min_head_y && head.y <= viewport.y - safe_y);
+        && head.y >= safe_y && head.y <= viewport.y - safe_y);
+    let low_head = visible_head.filter(|head| head.y < min_head_y);
+    let anchor = visible_head.filter(|head| head.y >= min_head_y);
     let gutter = safe_x;
     let available = (viewport.x - gutter * 2.0).max(1.0);
     let width = (viewport.x * width_percent / 100.0).min(available);
-    let left = anchor.map_or((viewport.x - width) * 0.5, |head| {
+    let left = visible_head.map_or((viewport.x - width) * 0.5, |head| {
         (head.x - width * 0.5).clamp(gutter, (viewport.x - width - gutter).max(gutter))
     });
-    // A character's head can already be near the top of the viewport.
-    // Clamp the bubble above / near it without pushing text offscreen.
-    let top = anchor.map_or(viewport.y * 0.09, |head| {
-        (head.y - 172.0).clamp(8.0, (viewport.y * 0.50).max(8.0))
-    });
+    // With inadequate headroom, a tail-free bubble goes *below* the
+    // visible speaker. Centering the fallback near the top would otherwise
+    // cover the very face this geometry is supposed to protect.
+    let top = if let Some(head) = low_head {
+        head.y + 18.0
+    } else {
+        anchor.map_or(viewport.y * 0.09, |head| {
+            (head.y - 172.0).clamp(8.0, (viewport.y * 0.50).max(8.0))
+        })
+    };
     // Long passages are scrollable, not full-screen veils. Limit the panel
     // to the upper 43% of the scene, leaving the central character's face
     // and the exploration focus area visible. Anchored dialogue additionally
     // stops above the speaker's head. Never exceed the physical viewport.
     let viewport_cap = (viewport.y - top - 12.0).max(90.0);
     let face_safe_bottom = viewport.y * 0.43;
-    // Narration uses the upper safe band; a *speaker-anchored* bubble
-    // instead follows the head, stopping just above it so the tail still
-    // connects visually. Applying the narrator cap to an anchored bubble
-    // would detach it from low-set characters and force <90px content.
+    // Narration and top-edge speaker fallbacks use the upper safe band;
+    // an above-head bubble instead follows the speaker, stopping above
+    // their face so the tail connects visually. The top-edge fallback
+    // has no tail and begins below the head, preserving their face.
     let max_bottom = anchor.map_or(face_safe_bottom, |head| head.y - 14.0);
     let max_height = (max_bottom - top).clamp(90.0, viewport_cap);
     BubbleGeometry {
@@ -504,10 +511,6 @@ mod tests {
                 Vec2::new(viewport.x + 1.0, 220.0),
                 Vec2::new(320.0, -20.0),
                 Vec2::new(320.0, viewport.y + 20.0),
-                // A visible head near the top has no room for a 90px
-                // bubble + tail, so it must not be covered by the panel.
-                Vec2::new(viewport.x * 0.5, 60.0),
-                Vec2::new(viewport.x * 0.5, 110.0),
                 Vec2::new(f32::NAN, 200.0),
                 Vec2::new(200.0, f32::INFINITY),
             ] {
@@ -518,7 +521,17 @@ mod tests {
                 assert_eq!(g.width, fallback.width);
                 assert_eq!(g.max_height, fallback.max_height);
             }
-            // Fully onscreen speakers retain their anchored bubble and tail.
+            // A speaker visible near the top has no room for a bubble
+            // above their face. The readable tail-free fallback goes
+            // below their head, never covering it.
+            for head_y in [60.0, 110.0] {
+                let below = bubble_geometry(viewport, 58.0,
+                    Some(Vec2::new(viewport.x * 0.5, head_y)));
+                assert!(below.tail_x.is_none());
+                assert!(below.top >= head_y + 17.0);
+                assert!(below.top + below.max_height < viewport.y - 11.0);
+            }
+            // Fully onscreen speakers with headroom retain the tail.
             let visible = bubble_geometry(viewport, 58.0,
                 Some(Vec2::new(viewport.x - 24.0, viewport.y * 0.5)));
             assert!(visible.tail_x.is_some());
