@@ -175,7 +175,13 @@ def long_dialogue_scroll() -> None:
             "The road kept winding gently through the valley. "
         ) * 12
         assert contents.count(original) == 1
-        story.write_text(contents.replace(original, sample), encoding="utf-8")
+        # Consecutive identical, overlong bubble lines must not inherit
+        # each other's scroll offset. This also tests position, not text,
+        # as the reader's progression identity.
+        story.write_text(
+            contents.replace(f'"{original}"', f'"{sample}"\n"{sample}"'),
+            encoding="utf-8",
+        )
         preferences = Path(folder) / "prefs"
         preferences.mkdir()
         (preferences / "player-preferences.json").write_text(
@@ -205,6 +211,19 @@ def long_dialogue_scroll() -> None:
                 assert diff(top, lower) > 200, (
                     "Long multilingual bubble did not show scrolling content"
                 )
+                # A second *identical* dialogue line is a distinct authored
+                # event; it must start unscrolled, even though the text is
+                # byte-for-byte identical to the previous line.
+                press(win, "Return")
+                reset = grab(win, "long-duplicate-line-reset.png", (946, 511))
+                assert diff(top, reset) < 800, (
+                    "An identical second line inherited the first line's scroll"
+                )
+                previous_scrolls = log.read_text(encoding="utf-8").count(
+                    "Vesper bubble scroll:"
+                )
+                press(win, "Next")
+                wait_for_phrase(log, "Vesper bubble scroll:", previous_scrolls)
                 press(win, "Home")
                 returned = grab(win, "long-compact-back-top.png", (946, 511))
                 assert diff(top, returned) < 800, (

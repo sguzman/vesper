@@ -632,6 +632,10 @@ impl Machine {
 
     pub fn scene(&self) -> &str { &self.scene }
 
+    /// Index of the next authored instruction. Together with scene(),
+    /// distinguishes repeated dialogue lines without cloning save state.
+    pub fn cursor(&self) -> usize { self.cursor }
+
     /// Enter an authored interaction scene without discarding persistent
     /// variables. Exactly one story machine serves VNs and walkable scenes.
     /// Reject attempts to abandon a currently pending choice.

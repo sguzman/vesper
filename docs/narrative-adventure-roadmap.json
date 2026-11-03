@@ -73,7 +73,8 @@
         "Experimental opt-in bubble manifest, native Bevy panel morph/tail, responsive geometry tests, pure-VN external fixture and visual CI smoke authored; pending compilation, virtual-display test and accessibility review. No verified points credited.",
         "Bounded native bubble viewport, scroll position, wheel/PageUp/PageDown/Home/End keyboard controls and long multilingual/high-contrast 946x511 native regression authored; awaiting full CI and visual confirmation, no weight credited.",
         "Noto CJK JP/KR system-font QA coverage, and visible page-down scroll cue for overlong bubbles; CI and screenshot review pending; no credit awarded yet.",
-        "Offscreen/invalid speaker coordinates now use centered tail-free fallback; compact, normal and widescreen unit tests added. CI and native visual acceptance still pending; no new points credited."
+        "Offscreen/invalid speaker coordinates now use centered tail-free fallback; compact, normal and widescreen unit tests added. CI and native visual acceptance still pending; no new points credited.",
+        "Added scroll-reset by stable narrative scene/cursor/load epoch (rather than duplicate dialogue text), and native compact multilingual regression with two identical long lines. QA branch validation pending; no point awarded."
       ]
     },
     {

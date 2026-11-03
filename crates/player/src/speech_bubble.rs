@@ -153,7 +153,7 @@ pub fn sync(
         )>,
     )>,
     mut previous: Local<(bool, Option<String>)>,
-    mut previous_line: Local<Option<String>>,
+    mut previous_line: Local<Option<(String, usize, u64)>>,
 ) {
     let active = active_bubble(&session);
     // With no bubble configured, legacy panels don't acquire additional
@@ -222,17 +222,18 @@ pub fn sync(
             }
         }
         let geometry = bubble_geometry(logical, skin.max_width_percent, position);
-        // Advancing dialogue or loading a different line starts at the top.
-        // Never retain a scroll offset from a previous long bubble.
-        if let Some(line) = match session.machine.last_output() {
-            Some(Output::Dialogue { text, .. } | Output::RichDialogue { text, .. }) =>
-                Some(text.as_str()),
-            _ => None,
-        } {
-            if previous_line.as_deref() != Some(line) {
-                scroll.0 = Vec2::ZERO;
-                *previous_line = Some(line.to_owned());
-            }
+        // Each distinct *authored position*, including identical consecutive
+        // dialogue strings, starts at the top. An F9 load must also reset a
+        // previously scrolled bubble at the same scene/cursor. Do not clone
+        // the complete narrative snapshot or hash the long text each frame.
+        let scene = session.machine.scene();
+        let cursor = session.machine.cursor();
+        let epoch = session.ambient_restore_epoch;
+        if !previous_line.as_ref().is_some_and(|(old_scene, old_cursor, old_epoch)|
+            old_scene == scene && *old_cursor == cursor && *old_epoch == epoch)
+        {
+            scroll.0 = Vec2::ZERO;
+            *previous_line = Some((scene.to_owned(), cursor, epoch));
         }
         // Mut<Node> projects through DerefMut: update sequentially rather
         // than borrowing several fields of the wrapper simultaneously.
