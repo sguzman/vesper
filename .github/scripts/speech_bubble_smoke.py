@@ -159,6 +159,33 @@ def run_game(directory: str, title: str, filename: str,
                 log = logfile.read_text(encoding="utf-8", errors="replace")
                 assert "Vesper dialogue surface: Panel" in log
                 assert "Vesper dialogue surface: Bubble" in log
+                # NA03: A choice crosses into an authored panel-only scene.
+                # The later goodnight scene's 'surface default' must
+                # restore this game's bubble default without a new runtime,
+                # losing the speaker, or replacing the engine-owned choice.
+                old_panels = log.count("Vesper dialogue surface: Panel")
+                press(win, "1")  # Select hold_light
+                wait_for_phrase(logfile, "Vesper dialogue surface: Panel", old_panels)
+                selected = grab(win, filename + "-choice-selected-panel.png", (1280, 720))
+                assert diff(choices, selected) > 3000, (
+                    "Choosing a branch did not enter its authored panel scene"
+                )
+                old_bubbles = logfile.read_text(
+                    encoding="utf-8", errors="replace"
+                ).count("Vesper dialogue surface: Bubble")
+                for _ in range(10):
+                    if logfile.read_text(
+                        encoding="utf-8", errors="replace"
+                    ).count("Vesper dialogue surface: Bubble") > old_bubbles:
+                        break
+                    press(win, "Return")
+                wait_for_phrase(logfile, "Vesper dialogue surface: Bubble", old_bubbles)
+                inherited = grab(win, filename + "-scene-default-bubble.png", (1280, 720))
+                assert diff(selected, inherited) > 3000, (
+                    "Cross-scene surface default did not restore the bubble presentation"
+                )
+                print("NA03 authored choice -> panel scene -> inherited bubble: passed",
+                      flush=True)
                 return initial, logfile, choices
             finally:
                 process.terminate()

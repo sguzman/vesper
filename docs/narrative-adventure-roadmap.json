@@ -99,7 +99,8 @@
       "status": "active",
       "verified_weight": 0,
       "evidence": [
-        "Typed `surface panel|bubble|default` narrative command, optional saved override, restart/hot-reload semantics and independent Bubble Showcase fixture authored; CI verification pending; no weighted points credited."
+        "Typed `surface panel|bubble|default` narrative command, optional saved override, restart/hot-reload semantics and independent Bubble Showcase fixture authored; CI verification pending; no weighted points credited.",
+        "Added native authored branch regression: choose an engine-owned option, transition to a panel-only scene, then use scene-level surface default to inherit the game bubble without losing dialogue; QA branch and full CI pending."
       ]
     },
     {
