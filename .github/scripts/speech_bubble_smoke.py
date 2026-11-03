@@ -93,10 +93,13 @@ def run_game(directory: str, title: str, filename: str,
                 win = wait_window(title)
                 time.sleep(2.0)
                 initial = grab(win, filename + "-initial.png", (1280, 720))
-                if directory == "examples/bubble-showcase":
+                if directory == "examples/bubble-showcase" and prefs is None:
                     assert "Vesper bubble scroll hint visible" not in logfile.read_text(
                         encoding="utf-8", errors="replace"
-                    ), "An ordinary short dialogue should not show a paging hint"
+                    ), "Default-size short dialogue should not show a paging hint"
+                # Text at 160% scale may genuinely fill the capped safe
+                # region even for a short line. That is valid scrolling,
+                # not a decorative cue regression.
                 if directory != "examples/bubble-showcase" or not full_route:
                     return initial, logfile, None
                 press(win, "Return")
