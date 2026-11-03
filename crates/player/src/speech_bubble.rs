@@ -76,10 +76,10 @@ pub fn spawn(parent: &mut ChildSpawnerCommands) {
             width: px(16.0), height: px(16.0),
             bottom: px(-8.0), left: px(30.0),
             display: Display::None,
+            border_radius: BorderRadius::all(px(2.0)),
             ..default()
         },
         BackgroundColor(Color::srgba(0.035, 0.065, 0.12, 0.98)),
-        BorderRadius::all(px(2.0)),
         UiTransform {
             rotation: Rot2::degrees(45.0),
             ..default()
@@ -97,7 +97,7 @@ pub fn sync(
     characters: Query<(&CharacterVisual, &Transform)>,
     assets: Res<AssetServer>,
     mut roots: Query<(
-        &mut Node, &mut BackgroundColor, &mut BorderColor, &mut BorderRadius
+        &mut Node, &mut BackgroundColor, &mut BorderColor
     ), (With<StoryPanel>, Without<BubbleFrame>)>,
     mut frames: Query<(&mut Node, &mut ImageNode),
         (With<BubbleFrame>, Without<StoryPanel>)>,
@@ -129,7 +129,7 @@ pub fn sync(
     let viewport = Vec2::new(window.resolution.width(), window.resolution.height());
     if viewport.x <= 0.0 || viewport.y <= 0.0 { return; }
     let logical = viewport / ui_scale.0.max(0.05);
-    let Ok((mut node, mut fill, mut border, mut corners)) = roots.single_mut()
+    let Ok((mut node, mut fill, mut border)) = roots.single_mut()
         else { return; };
     let skin = &session.game.manifest.dialogue.bubble;
     let contrast = session.preferences.high_contrast.unwrap_or(false);
@@ -164,23 +164,21 @@ pub fn sync(
             }
         }
         let geometry = bubble_geometry(logical, skin.max_width_percent, position);
-        for (slot, desired) in [
-            (&mut node.left, px(geometry.left)),
-            (&mut node.top, px(geometry.top)),
-            (&mut node.bottom, Val::Auto),
-            (&mut node.width, px(geometry.width)),
-            (&mut node.height, Val::Auto),
-            (&mut node.max_height, Val::Auto),
-            (&mut node.min_height, px(90.0)),
-        ] {
-            if *slot != desired { *slot = desired; }
-        }
+        // Mut<Node> projects through DerefMut: update sequentially rather
+        // than borrowing several fields of the wrapper simultaneously.
+        if node.left != px(geometry.left) { node.left = px(geometry.left); }
+        if node.top != px(geometry.top) { node.top = px(geometry.top); }
+        if node.bottom != Val::Auto { node.bottom = Val::Auto; }
+        if node.width != px(geometry.width) { node.width = px(geometry.width); }
+        if node.height != Val::Auto { node.height = Val::Auto; }
+        if node.max_height != Val::Auto { node.max_height = Val::Auto; }
+        if node.min_height != px(90.0) { node.min_height = px(90.0); }
         node.border = px(2.0).all();
         node.padding = px(skin.padding).all();
         node.row_gap = px(6.0);
         node.overflow = Overflow::visible();
         let next_rounding = BorderRadius::all(px(skin.corner_radius));
-        if *corners != next_rounding { *corners = next_rounding; }
+        if node.border_radius != next_rounding { node.border_radius = next_rounding; }
         if fill.0 != background { fill.0 = background; }
         let next_border = BorderColor::all(edge);
         if *border != next_border { *border = next_border; }
@@ -242,7 +240,7 @@ pub fn sync(
         node.padding = padding;
     }
     node.border = UiRect::default();
-    *corners = BorderRadius::all(px(0.0));
+    node.border_radius = BorderRadius::all(px(0.0));
     *border = BorderColor::all(Color::NONE);
     let mut panel_color = p.background;
     if panel_skin.is_some_and(|skin| skin.transparent_background) {

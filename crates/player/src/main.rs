@@ -1617,7 +1617,6 @@ fn setup(
             )),
             StoryPanel,
             BorderColor::all(Color::NONE),
-            BorderRadius::all(px(0.0)),
         ))
         .with_children(|parent| {
             // Optional native bubble art sits behind the *existing* reader

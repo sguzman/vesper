@@ -1735,7 +1735,7 @@ mod narrative_bubble_defaults_tests {
         assert_eq!(manifest.dialogue.bubble.max_width_percent, 65.0);
         assert!(manifest.dialogue.bubble.validate().is_ok());
         let invalid: DialogueDefaults = toml::from_str(
-            "default_surface='bubble'\n[bubble]\nmax_width_percent=NaN\n"
+            "default_surface='bubble'\n[bubble]\nmax_width_percent=85.0\n"
         ).unwrap();
         assert!(invalid.bubble.validate().is_err());
         assert!(toml::from_str::<DialogueDefaults>(
