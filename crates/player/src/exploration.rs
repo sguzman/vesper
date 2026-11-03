@@ -10,7 +10,7 @@ use vesper_game::{
 };
 
 #[derive(Component)]
-enum AreaVisual {
+pub(super) enum AreaVisual {
     Backdrop,
     Avatar,
     Npc(f32),
