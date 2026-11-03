@@ -6,13 +6,13 @@
   "status": "active; incremental implementation and verification",
   "baseline_commit": "e912f55b3007905b954c7fad872de9d4ceb163da",
   "scope_weight": 100,
-  "verified_weight": 23,
+  "verified_weight": 29,
   "prior_scopes_unchanged": true,
   "tracks": [
     {
       "id": "engine",
       "weight": 60,
-      "verified_weight": 23,
+      "verified_weight": 29,
       "name": "Generic optional exploration and independent speech bubbles"
     },
     {
@@ -97,11 +97,12 @@
         "Switch surfaces during one conversation or between scenes without losing text, focus, choices, animation progress, or speaker names; custom dialogue panel image and separate nameplate remain intact.",
         "Choices remain engine-owned accessible controls; authored bubble appearance never requires a new custom scripting runtime; pure VN game can opt into bubble dialogue and old projects use unchanged defaults."
       ],
-      "status": "active",
-      "verified_weight": 0,
+      "status": "verified",
+      "verified_weight": 6,
       "evidence": [
         "Typed `surface panel|bubble|default` narrative command, optional saved override, restart/hot-reload semantics and independent Bubble Showcase fixture authored; CI verification pending; no weighted points credited.",
-        "Added native authored branch regression: choose an engine-owned option, transition to a panel-only scene, then use scene-level surface default to inherit the game bubble without losing dialogue; QA branch and full CI pending."
+        "Added native authored branch regression: choose an engine-owned option, transition to a panel-only scene, then use scene-level surface default to inherit the game bubble without losing dialogue; QA branch and full CI pending.",
+        "Accepted after full narrative and native Bevy CI 41732958846 passed at 11728a0 (2026-11-03); the five-commit QA descendant was fast-forwarded into main after the previous main run 41733296834 completed successfully. Native Bubble Showcase verified per-line panel/bubble overrides, externally authored illustrated-panel preservation, F5/F9 restoration, accessible engine-owned choices, choice -> panel scene -> surface default inherited bubble, retained dialogue speaker, and original pure-VN compatibility. Compact layout and existing Atlas/Dawn regressions also passed. Physical Linux/Hyprland owner QA remains gated separately under NA08."
       ]
     },
     {
