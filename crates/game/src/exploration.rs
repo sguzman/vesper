@@ -47,6 +47,10 @@ pub struct Location {
     /// Logical world pixels; a single screen is perfectly valid.
     pub width: f32,
     pub height: f32,
+    /// Camera framing is an author-owned preference, not a forced scrolling
+    /// camera. A single-screen location can opt out of following entirely.
+    #[serde(default)]
+    pub camera: CameraFrame,
     pub spawns: BTreeMap<String, Spawn>,
     #[serde(default)]
     pub npcs: BTreeMap<String, Npc>,
@@ -56,6 +60,21 @@ pub struct Location {
     pub exits: BTreeMap<String, Exit>,
     #[serde(default)]
     pub layers: BTreeMap<String, Layer>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CameraFrame {
+    /// Logical zoom, independent of physical display size.
+    pub zoom: f32,
+    /// Normalized vertical focus, so the avatar may sit above/below center.
+    pub horizon: f32,
+    pub follow_x: bool,
+}
+impl Default for CameraFrame {
+    fn default() -> Self {
+        Self { zoom: 1.0, horizon: 0.5, follow_x: true }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -186,8 +205,15 @@ impl Exploration {
                 return Err(format!("{label}: world dimensions must be finite and within 320..=8192 by 360..=2160"));
             }
             image(root, &location.background, &format!("{label}.background"))?;
-            if location.spawns.is_empty() {
-                return Err(format!("{label}.spawns must contain at least one entry"));
+            if !location.camera.zoom.is_finite()
+                || !(0.5..=2.0).contains(&location.camera.zoom)
+                || !location.camera.horizon.is_finite()
+                || !(0.0..=1.0).contains(&location.camera.horizon)
+            {
+                return Err(format!("{label}.camera: zoom/horizon must be finite within bounds"));
+            }
+            if location.spawns.is_empty() || location.spawns.len() > 64 {
+                return Err(format!("{label}.spawns must contain 1..=64 entries"));
             }
             if location.npcs.len() + location.props.len() + location.exits.len() > MAX_INTERACTABLES {
                 return Err(format!("{label} exceeds {MAX_INTERACTABLES} NPCs/props/exits"));
@@ -277,6 +303,9 @@ speed = 250.0
 background = "scene.png"
 width = 1280.0
 height = 720.0
+[locations.street.camera]
+zoom = 1.1
+horizon = 0.55
 [locations.street.spawns.home]
 x = 120.0
 [locations.street.npcs.friend]
@@ -326,6 +355,8 @@ interact_scene = "chat"
         let (world, fixture, story) = load(GOOD);
         world.validate(&fixture.0, &story).unwrap();
         assert_eq!(world.locations["street"].spawns["home"].x, 120.0);
+        assert_eq!(world.locations["street"].camera.zoom, 1.1);
+        assert_eq!(world.locations["cafe"].camera.zoom, 1.0);
         assert_eq!(world.locations["cafe"].spawns["door"].facing,
             super::super::experience::Facing::Left);
         assert!(world.avatar.walk.is_empty());
@@ -341,6 +372,7 @@ interact_scene = "chat"
             ("interaction_radius = 75.0", "interaction_radius = 999.0", "npcs"),
             ("width = 640.0", "width = -1.0", "dimensions"),
             ("schema_version = 1", "schema_version = 9", "schema_version"),
+            ("zoom = 1.1", "zoom = 0.1", "camera"),
             ("background = \"scene.png\"", "background = \"../outside.png\"", "background"),
         ] {
             let (world, fixture, story) = load(&GOOD.replacen(from, to, 1));

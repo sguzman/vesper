@@ -30,6 +30,11 @@ background = "assets/backgrounds/street.png"
 width = 1280.0
 height = 720.0
 
+[exploration.locations.street.camera]
+zoom = 1.0
+horizon = 0.55
+follow_x = true
+
 [exploration.locations.street.spawns.home]
 x = 160.0
 facing = "right"
@@ -73,7 +78,11 @@ running the Bevy player. Failed hot reload should preserve the prior validated
 game. Errors include the game manifest path and precise exploration field.
 
 - Up to 24 locations with logical dimensions width 320–8192 and height
-  360–2160. Every location needs a PNG background and at least one spawn.
+  360–2160. Every location needs a PNG background and 1–64 named spawns.
+  Optional `[exploration.locations.<id>.camera]` provides bounded
+  `zoom = 1.0` (0.5–2.0), `horizon = 0.5` (0–1) and `follow_x = true`;
+  omission preserves these defaults. Single-screen locations need no camera
+  scrolling.
 - All spawn, NPC, prop and exit X positions are finite, nonnegative and within
   the authored location width. Facing is `left` or `right`.
 - Up to 32 combined NPC/prop/exit interactions and 12 visual layers per area.

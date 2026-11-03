@@ -59,6 +59,11 @@ background = "assets/streets/street.png"
 width = 1920.0
 height = 720.0
 
+[exploration.locations.street.camera]
+zoom = 1.0
+horizon = 0.5
+follow_x = true
+
 [exploration.locations.street.spawns.cafe]
 x = 640.0
 facing = "right"
