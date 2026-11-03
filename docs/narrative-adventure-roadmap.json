@@ -173,7 +173,8 @@
       "status": "active",
       "verified_weight": 0,
       "evidence": [
-        "World-aware version-two save/load and v1 compatibility, location validation, hot-reload guard, player F5/F9/F6, and native QA tests authored. Compilation, process restart, and full acceptance pending; zero weighted points awarded."
+        "World-aware version-two save/load and v1 compatibility, location validation, hot-reload guard, player F5/F9/F6, and native QA tests authored. Compilation, process restart, and full acceptance pending; zero weighted points awarded.",
+        "Native `--watch` regression added for changed NPC geometry, alternate background art, active modal bubble style, rejected invalid scene, rejected valid-but-incompatible world shrink, and preserved walking state; CI pending."
       ]
     },
     {

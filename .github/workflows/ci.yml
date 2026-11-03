@@ -100,6 +100,15 @@ jobs:
           path: /tmp/vesper-exploration-walk-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
+      - name: Verify live exploration, artwork, and bubble hot reload
+        run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/exploration_reload_smoke.py
+      - name: Preserve exploration hot reload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-exploration-reload
+          path: /tmp/vesper-exploration-reload-qa/**/*
+          if-no-files-found: ignore
       - name: Verify VN-to-world and cinematic-to-world authored transitions
         run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/exploration_bridge_smoke.py
       - name: Preserve mixed-mode native screenshots
