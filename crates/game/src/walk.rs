@@ -4,6 +4,11 @@
 //! procedural quests, hidden movement triggers, or forced travel.
 use crate::experience::{Facing, WorldPosition};
 
+/// Bound a single movement/animation step to 100 ms: a 15 FPS software
+/// renderer takes about 67 ms per frame, and must still honor the author's
+/// walk speed. Truly stalled/unfocused frames must not teleport the avatar.
+pub const MAX_STEP_SECONDS: f32 = 0.10;
+
 /// A bounded movement step in logical game-space pixels.
 /// Time spikes are capped: losing focus or opening a menu cannot teleport.
 pub fn walk(position: &mut WorldPosition, axis: i8, delta_seconds: f32,
@@ -18,7 +23,7 @@ pub fn walk(position: &mut WorldPosition, axis: i8, delta_seconds: f32,
     let direction = axis.signum();
     if direction == 0 { return false; }
     let before = position.x;
-    position.x = (before + f32::from(direction) * speed * delta_seconds.min(0.05))
+    position.x = (before + f32::from(direction) * speed * delta_seconds.min(MAX_STEP_SECONDS))
         .clamp(0.0, width);
     // Facing remains stable when pushing against the end of a street.
     if position.x != before {
@@ -78,11 +83,26 @@ mod tests {
     fn focus_loss_cannot_jump_player_to_end_of_location() {
         let mut a = actor();
         assert!(walk(&mut a, 1, 20.0, 200.0, 1280.0));
-        assert_eq!(a.x, 110.0);
+        assert_eq!(a.x, 120.0);
         for _ in 0..500 { walk(&mut a, 1, 0.05, 200.0, 1280.0); }
         assert_eq!(a.x, 1280.0);
         assert!(!walk(&mut a, 1, 0.01, 200.0, 1280.0));
         assert_eq!(a.facing, Facing::Right);
+    }
+
+    #[test]
+    fn movement_speed_is_stable_at_15_fps_without_allowing_large_stall_jumps() {
+        let mut at_15_fps = actor();
+        // A 15 FPS software renderer runs at 66.7 ms per frame.
+        // This should be one full authored second of movement, not
+        // 15 truncated 50 ms frames (which under-travel by ~25%).
+        for _ in 0..15 {
+            assert!(walk(&mut at_15_fps, 1, 1.0 / 15.0, 230.0, 1280.0));
+        }
+        assert!((at_15_fps.x - 330.0).abs() < 0.01, "{at_15_fps:?}");
+        let mut after_stall = actor();
+        assert!(walk(&mut after_stall, 1, 2.0, 230.0, 1280.0));
+        assert!((after_stall.x - 123.0).abs() < 0.01, "{after_stall:?}");
     }
 
     #[test]

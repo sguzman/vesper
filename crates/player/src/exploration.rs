@@ -273,7 +273,11 @@ pub fn input(
     let width = area.width;
     let ExperienceMode::Exploring(position) = &mut session.experience.mode else { return; };
     runtime.moving = walk::walk(position, axis, time.delta_secs(), speed, width);
-    if runtime.moving { runtime.elapsed += time.delta_secs().min(0.05); }
+    // Animate on the same bounded game-time clock used for locomotion.
+    // Otherwise walking textures drift behind the avatar at low frame rates.
+    if runtime.moving {
+        runtime.elapsed += time.delta_secs().min(walk::MAX_STEP_SECONDS);
+    }
 }
 
 /// Switch only the owned authored-area sprites on an explicit location

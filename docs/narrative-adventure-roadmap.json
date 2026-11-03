@@ -142,7 +142,8 @@
       "verified_weight": 0,
       "evidence": [
         "Author-owned optional [exploration.start] validation, deterministic horizontal walk/frame-cap and camera projection, Bevy walk-first stage preview, paused/modal/focus input guards, optional sprite cycles, independent fixture, and native screenshot CI smoke authored. CI and manual QA still pending; no verified points credited.",
-        "Added opt-in actual Bevy frame-time sampling for 120 exploration frames and CI JSON artifact recording mean FPS, p95 and max on software rendering; awaiting native CI verification and physical Linux feel review; no points credited."
+        "Added opt-in actual Bevy frame-time sampling for 120 exploration frames and CI JSON artifact recording mean FPS, p95 and max on software rendering; awaiting native CI verification and physical Linux feel review; no points credited.",
+        "Corrected authored walking and idle/walk cycle timing at software renderer rates near 15 FPS: single movement/animation frame cap 100ms instead of 50ms, deterministic 15 FPS speed and 2s stall-bound unit tests added; pending full CI, hardware responsiveness review still open."
       ]
     },
     {
