@@ -71,6 +71,7 @@ pub fn setup(
         AreaVisual::Backdrop,
         sprite_art(Some(&area.background), &assets, Color::WHITE, Vec2::new(1280.0, 720.0)),
         Transform::from_xyz(0.0, 0.0, -6.0),
+        Visibility::Visible,
     ));
     for (id, layer) in &area.layers {
         commands.spawn((
@@ -78,6 +79,7 @@ pub fn setup(
             AreaVisual::Layer { parallax: layer.parallax },
             sprite_art(Some(&layer.image), &assets, Color::WHITE, Vec2::new(1280.0, 720.0)),
             Transform::from_xyz(0.0, 0.0, -5.5 + layer.depth * 0.08),
+            Visibility::Visible,
         ));
     }
     for (id, npc) in &area.npcs {
@@ -87,6 +89,7 @@ pub fn setup(
             sprite_art(npc.image.as_ref(), &assets,
                 Color::srgb(0.36, 0.68, 0.77), Vec2::new(40.0, 85.0)),
             Transform::from_xyz(0.0, 0.0, 2.0),
+            Visibility::Visible,
         ));
     }
     for (id, prop) in &area.props {
@@ -96,6 +99,7 @@ pub fn setup(
             sprite_art(prop.image.as_ref(), &assets,
                 Color::srgb(0.86, 0.65, 0.34), Vec2::new(34.0, 46.0)),
             Transform::from_xyz(0.0, 0.0, 1.5),
+            Visibility::Visible,
         ));
     }
     commands.spawn((
@@ -104,6 +108,7 @@ pub fn setup(
         sprite_art(world.avatar.idle.as_ref(), &assets,
             Color::srgb(0.84, 0.45, 0.63), Vec2::new(35.0, 85.0)),
         Transform::from_xyz(0.0, 0.0, 4.0),
+        Visibility::Visible,
     ));
     commands.spawn((
         Name::new("Exploration preview controls (not a VN choice)"),
