@@ -326,12 +326,23 @@ fn sprite_height(sprite: &Sprite, images: &Assets<Image>, fallback: f32) -> f32 
     ).unwrap_or(fallback).max(1.0)
 }
 
+/// The world focus prompt is actionable only when movement/interaction
+/// owns the keyboard and no higher-priority overlay intercepts input.
+fn focus_prompt_available(
+    exploring: bool, modal: bool, overlay: bool, window_focused: bool,
+) -> bool {
+    exploring && !modal && !overlay && window_focused
+}
+
 /// UI camera remains fixed for traditional VN scenes. Instead, this
 /// lightweight world projection scrolls only exploration sprites, allowing
 /// the same menus/reader/accessibility scale to remain stable.
 pub fn sync(
     session: Res<Session>, runtime: Res<WalkPreview>,
     windows: Query<&Window, With<PrimaryWindow>>,
+    settings: Res<settings::SettingsState>,
+    font_browser: Res<font_browser::State>,
+    slots: Res<save_slots::SaveUi>,
     images: Res<Assets<Image>>,
     mut sprites: Query<(&AreaVisual, &mut Sprite, &mut Transform, &mut Visibility)>,
     mut prompts: Query<&mut Node, (With<InteractionPrompt>, Without<StoryPanel>)>,
@@ -366,8 +377,16 @@ pub fn sync(
             .and_then(|world| world.locations.get(&point.location))
             .and_then(|area| interaction::focus(area, point, session.machine.variables()))
     });
-    let focused = exploring && !session.paused && session.menu_overlay.is_none()
-        && !session.history.visible() && windows.single().is_ok_and(|window| window.focused);
+    // The interaction prompt must follow the same input-ownership policy
+    // as the movement controller. No actionable "E" cue under modal
+    // settings/font/save overlays that intentionally swallow E presses.
+    let focused = focus_prompt_available(
+        exploring,
+        session.paused || session.menu_overlay.is_some(),
+        session.history.visible() || settings.overlay.is_some()
+            || font_browser.overlay.is_some() || slots.visible(),
+        windows.single().is_ok_and(|window| window.focused),
+    );
     for mut prompt in &mut prompts {
         let display = if focused && target.is_some() { Display::Flex } else { Display::None };
         if prompt.display != display { prompt.display = display; }
@@ -440,7 +459,10 @@ pub fn sync(
                 let desired_x = view.x(position.x);
                 if transform.translation.x != desired_x { transform.translation.x = desired_x; }
                 if transform.translation.y != ground_y { transform.translation.y = ground_y; }
-                sprite.flip_x = position.facing == Facing::Left;
+                // An unconditional Sprite write marks this component
+                // changed on every Bevy frame, even when facing is stable.
+                let flip = position.facing == Facing::Left;
+                if sprite.flip_x != flip { sprite.flip_x = flip; }
                 let handle = if runtime.moving && !runtime.walk.is_empty() {
                     let index = ((runtime.elapsed * world.avatar.walk_fps) as usize)
                         % runtime.walk.len();
@@ -510,6 +532,20 @@ pub(super) fn sample_frame_timing(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn world_focus_prompt_never_survives_modal_input_ownership() {
+        assert!(focus_prompt_available(true, false, false, true));
+        for (exploring, modal, overlay, focus) in [
+            (false, false, false, true),
+            (true, true, false, true),
+            (true, false, true, true),
+            (true, false, false, false),
+            (true, true, true, false),
+        ] {
+            assert!(!focus_prompt_available(exploring, modal, overlay, focus));
+        }
+    }
 
     #[test]
     fn preview_disables_all_story_input_when_world_mode_is_active() {
