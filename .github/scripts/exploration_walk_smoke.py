@@ -62,6 +62,33 @@ def frame(window: str, filename: str, width: int, height: int) -> Path:
     raise AssertionError(f"Rendered frame has wrong dimensions for {filename}")
 
 
+def scenery_frame(window: str, filename: str, width: int,
+                  height: int, log: Path) -> Path:
+    """Wait for asynchronous Bevy texture readiness, not just an open window.
+
+    The HUD may be ready while scenery is still a flat background. Preserve
+    the last captured frame and fail with the actual render log if scenery
+    never appears; never accept a single-color frame as a passing test.
+    """
+    deadline = time.monotonic() + 15
+    colors = 0
+    while time.monotonic() < deadline:
+        image = frame(window, filename, width, height)
+        colors = int(call(
+            "convert", str(image), "-crop", "480x300+200+120",
+            "+repage", "-format", "%k", "info:",
+        ).stdout.strip())
+        # Reused Little Lantern scenery is deliberately low-palette (~34
+        # colors in this area), whereas the failed frame had 1.
+        if colors > 12:
+            return image
+        time.sleep(.3)
+    raise AssertionError(
+        f"World backdrop never appeared ({colors} colors); "
+        f"see {OUTPUT / filename} and {log}:\\n{log_text(log)[-3000:]}"
+    )
+
+
 def changed(left: Path, right: Path) -> int:
     out = call("compare", "-metric", "AE", str(left), str(right),
                "null:", check=False)
@@ -108,21 +135,8 @@ def main() -> None:
                 window = window_id()
                 wait_for_log(log, "Vesper exploration preview entered:")
                 assert START.search(log_text(log)), "Didn't enter the authored street"
-                time.sleep(1.5)
-                initial = frame(window, "walk-initial.png", 1280, 720)
-                # Exclude the text/control HUD. A fullscreen placeholder
-                # previously hid the entire location while movement logs
-                # still looked correct; require actual scenery texture.
-                central_colors = int(call(
-                    "convert", str(initial),
-                    "-crop", "480x300+200+120", "+repage",
-                    "-format", "%k", "info:",
-                ).stdout.strip())
-                # The reused Little Lantern art is intentionally low-palette
-                # (about 34 colors in this crop); a solid fullscreen avatar
-                # previously left only one. Require textured scenery, not 50+.
-                assert central_colors > 12, (
-                    f"World backdrop concealed or missing ({central_colors} colors)"
+                initial = scenery_frame(
+                    window, "walk-initial.png", 1280, 720, log
                 )
                 old = log_text(log).count("Vesper exploration stopped:")
                 walk(window, "Right", .85)
@@ -225,7 +239,9 @@ def main() -> None:
                 wait_for_log(log, "Vesper exploration exit: street/cafe_door -> cafe at x=65.0")
                 wait_for_log(log, "Vesper exploration area loaded: cafe; replaced 5 entities")
                 time.sleep(.5)
-                cafe = frame(window, "cafe-after-exit.png", 946, 511)
+                cafe = scenery_frame(
+                    window, "cafe-after-exit.png", 946, 511, log
+                )
                 assert changed(cafe, resumed) > 800, (
                     "Entering café failed to reframe/rebuild the authored location"
                 )
@@ -233,7 +249,9 @@ def main() -> None:
                 wait_for_log(log, "Vesper exploration exit: cafe/street_door -> street at x=150.0")
                 wait_for_log(log, "Vesper exploration area loaded: street; replaced 2 entities")
                 time.sleep(.5)
-                frame(window, "street-after-return-exit.png", 946, 511)
+                scenery_frame(
+                    window, "street-after-return-exit.png", 946, 511, log
+                )
 
                 # Until NA07 introduces a valid migration that stores world
                 # position, F5 deliberately refuses incomplete quick saves.
