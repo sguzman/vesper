@@ -223,8 +223,10 @@ mod tests {
         let fixture = Fixture::new();
         let game = Game::load(&fixture.0).unwrap();
         let machine = Machine::new(&game.story, &game.manifest.entry).unwrap();
-        let mut state = PresentationState::default();
-        state.dialogue_surface = Some(DialogueSurface::Bubble);
+        let state = PresentationState {
+            dialogue_surface: Some(DialogueSurface::Bubble),
+            ..Default::default()
+        };
         let save = SaveData::new(&game, &machine, state);
         let bytes = save.encode().unwrap();
         let decoded = SaveData::decode(&bytes).unwrap();
