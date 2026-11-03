@@ -1289,11 +1289,11 @@ fn main() {
                 poll_completed_io, save_slots::sync, sync_menu_selection, feedback::tick,
                 animate_fades, monitor_audio_assets, escape_to_quit, fit_viewport,
                 ambient::sync, ambient::tick_motion, animate_panel_height,
-                sync_menu_backdrops, exploration::sync,
+                sync_menu_backdrops,
             ).chain(),
             (settings::sync_tab_art, settings::fit_panel_to_viewport,
                 settings::sync_content_layout, settings::wheel,
-                speech_bubble::sync).chain(),
+                speech_bubble::sync, exploration::sync).chain(),
         ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
