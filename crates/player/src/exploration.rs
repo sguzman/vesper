@@ -28,9 +28,9 @@ pub struct WalkPreview {
 }
 
 #[derive(Component)]
-struct InteractionPrompt;
+pub(super) struct InteractionPrompt;
 #[derive(Component)]
-struct InteractionPromptText;
+pub(super) struct InteractionPromptText;
 
 fn sprite_art(path: Option<&String>, assets: &AssetServer,
     color: Color, size: Vec2) -> Sprite {

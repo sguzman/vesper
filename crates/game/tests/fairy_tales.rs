@@ -58,6 +58,9 @@ fn play(game: &Game, decisions: &[usize]) -> ResultState {
                     }
                 }
                 Visual::Surface(surface) => trace.surfaces.push(surface),
+                Visual::ExploreReturn | Visual::EnterVisualNovel => {
+                    panic!("pure VN fairytale unexpectedly switched exploration mode");
+                }
                 Visual::Hide(_) => {}
                 Visual::AmbientShow(id) | Visual::AmbientHide(id) => {
                     assert!(game.manifest.ambient_actors.contains_key(&id));
