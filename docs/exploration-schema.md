@@ -3,7 +3,9 @@
 **Implementation status:** Versioned parsing, validation, walking, NPC/prop
 dialogue, typed story-variable visibility conditions, and E-triggered authored
 exits are implemented. This is not the final narrative adventure:
-Exploration persistence and safe reload remain unfinished. The explicit
+Version-two exploration-aware F5/F9/F6 saves and safe authored hot reload
+now pass the native regression suite (CI 41696094392); the original
+visual novel format remains compatible. The explicit
 `explore location at spawn` command is implemented with load-time checks
 for both location and spawn IDs. This is not the original anime urban slice-of-life game.
 
@@ -116,8 +118,8 @@ The same spelling in two distinct namespaces is not an engine collision.
 
 ## Ownership / transition boundary
 
-The contract deliberately **does not** add `explore ...` commands to the
-existing story parser yet. A game with validated `[exploration.start]`
+The story parser now supports explicit typed `explore ...` transfers while
+preserving original VN command semantics. A game with validated `[exploration.start]`
 opens directly into a bounded side-on world instead of advancing the hidden
 VN script. Author-controlled keyboard walking, viewport projection, optional
 PNG sprites and simple stand-ins run in the isolated player module.

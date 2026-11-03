@@ -26,7 +26,9 @@ This is an **additive** extension. The existing version-1 script grammar and pan
 `crates/game/src/experience.rs` provides the pure typed model and transition guards. The walk-first controller, native bubbles, and first NPC/prop interaction
 bridge now use this model. E-only named exits and typed variable-gated
 NPC/prop availability and typed VN-to-location transitions are implemented.
-Exploration persistence and hot reload remain incomplete.
+Version-two world persistence and live authored hot reload are implemented
+and passed full merged-main CI 41696094392; NA07 formal weighted acceptance
+remains dependency-gated behind the unverified NA02/NA03/NA05/NA06 milestones.
 
 ## Explicit transitions and invariants
 
@@ -138,8 +140,9 @@ No ECS IDs, texture handles or frame-time state are serialized.
 
 Atomic writes and background-worker I/O are retained. Hot reload rejects
 edits incompatible with the current authored world position and rebuilds only
-exploration-owned sprites after an accepted manifest change. Full graphical
-reload and process-restart acceptance remain separate verification gates.
+exploration-owned sprites after an accepted manifest change. Native hot-reload and cold-process walking, modal conversation and VN-first
+restore acceptance passed CI 41696094392. Final human UI quality acceptance
+remains a separate NA08/UR04 gate.
 
 ## Verification matrix and completion gate
 

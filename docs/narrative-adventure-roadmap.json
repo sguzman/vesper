@@ -6,13 +6,13 @@
   "status": "active; incremental implementation and verification",
   "baseline_commit": "e912f55b3007905b954c7fad872de9d4ceb163da",
   "scope_weight": 100,
-  "verified_weight": 0,
+  "verified_weight": 13,
   "prior_scopes_unchanged": true,
   "tracks": [
     {
       "id": "engine",
       "weight": 60,
-      "verified_weight": 0,
+      "verified_weight": 13,
       "name": "Generic optional exploration and independent speech bubbles"
     },
     {
@@ -46,10 +46,11 @@
         "Choose versioned, external manifest/.vn extensions and engine-owned ECS responsibilities; errors must identify the offending file and field/line, with no arbitrary author code execution.",
         "Confirm all old example manifests, original .vn grammar, completed presentation, existing menus, and existing saved games remain playable unchanged; architecture decision reviewed before implementing new syntax."
       ],
-      "status": "active",
-      "verified_weight": 0,
+      "status": "verified",
+      "verified_weight": 6,
       "evidence": [
-        "Architecture contract committed at 78c9596; typed Rust state transitions and five unit tests passed the narrative job in CI 41554108427. Legacy Bevy build, live settings, saves and responsive Atlas screenshot tests passed in this run; long playthrough/full CI was still pending when the NA02 implementation was staged."
+        "Architecture contract committed at 78c9596; typed Rust state transitions and five unit tests passed the narrative job in CI 41554108427. Legacy Bevy build, live settings, saves and responsive Atlas screenshot tests passed in this run; long playthrough/full CI was still pending when the NA02 implementation was staged.",
+        "Decision contract and typed mode/surface transitions reviewed; full merged-main CI 41696094392 green in both narrative and Bevy jobs at b3839db, with legacy examples, source validation, V1 saves, all Atlas endings, and native regressions intact."
       ]
     },
     {
@@ -106,10 +107,11 @@
         "Validation rejects missing locations, unreachable interaction placement, duplicate IDs, unsafe asset paths, bad destination references and out-of-range coordinates with actionable diagnostics.",
         "Static VN scenes remain valid with no exploration fields; animation and illustration assets are optional/defaulted, and a location can be fully traversable within one screen."
       ],
-      "status": "active",
-      "verified_weight": 0,
+      "status": "verified",
+      "verified_weight": 7,
       "evidence": [
-        "Optional versioned exploration TOML schema, bounded NPC/prop/exit/spawn/asset validation, Rust unit tests, external schema-only fixture and CLI CI check authored; all await green committed CI before earning points."
+        "Optional versioned exploration TOML schema, bounded NPC/prop/exit/spawn/asset validation, Rust unit tests, external schema-only fixture and CLI CI check authored; all await green committed CI before earning points.",
+        "Version-one opt-in external exploration schema, bounded camera/world/interaction/asset validation, named spawns and exits, conditional NPCs, strict authoring diagnostics and no-world legacy defaults passed Rust, CLI and native two-location graphical regression under merged-main CI 41696094392 (b3839db)."
       ]
     },
     {
@@ -278,16 +280,15 @@
     }
   ],
   "checkpoint": {
-    "last_reported_verified_percent": 0,
+    "last_reported_verified_percent": 13,
     "active": [
-      "NA01",
       "NA02",
       "NA03",
-      "NA04",
       "NA05",
-      "NA06"
+      "NA06",
+      "NA07"
     ],
-    "pending": "Verify CI for explicit VN→world→cinematic VN→world transitions and existing full native regressions. NA07 exploration-aware save/load and asset hot reload remain incomplete; formal roadmap credit waits all acceptance.",
+    "pending": "NA02 speech bubble long/multilingual/small-screen readability and accessibility still need full acceptance; NA03→NA06→NA07 remain dependency-gated although all NA07 native persistence/hot-reload cases passed CI 41696094392. NA05 performance/manual feel and NA08 full physical QA also pending.",
     "previous_preserved_complete": true
   }
 }
