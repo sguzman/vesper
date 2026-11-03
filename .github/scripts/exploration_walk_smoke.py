@@ -118,7 +118,10 @@ def main() -> None:
                     "-crop", "480x300+200+120", "+repage",
                     "-format", "%k", "info:",
                 ).stdout.strip())
-                assert central_colors > 50, (
+                # The reused Little Lantern art is intentionally low-palette
+                # (about 34 colors in this crop); a solid fullscreen avatar
+                # previously left only one. Require textured scenery, not 50+.
+                assert central_colors > 12, (
                     f"World backdrop concealed or missing ({central_colors} colors)"
                 )
                 old = log_text(log).count("Vesper exploration stopped:")
