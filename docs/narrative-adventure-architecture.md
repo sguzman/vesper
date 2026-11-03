@@ -122,14 +122,24 @@ friend: "Let's talk somewhere quiet."
 - Parser and runtime must add typed commands instead of interpreting TOML or source strings as executable code, while preserving file/line diagnostics. Cross-reference validation must reject missing scenes or locations before starting play.
 
 **Still pending acceptance:** comprehensive bubble/choice geometry and
-multi-NPC occlusion on all display sizes, plus world-aware saves/reload and
-safe authoring hot reload. These remain existing NA02/NA04/NA06–08 scope.
+multi-NPC occlusion across supported sizes, plus full hot-reload and
+save-compatibility acceptance. These remain NA02/NA04/NA06–08 scope.
 
 ## Persistence and hot reload
 
-The existing `SaveData` version 1 has `#[serde(deny_unknown_fields)]` and embeds the narrative snapshot plus a `PresentationState` of character/background/UI data. No old save may be invalidated by the new phase. NA07 must introduce **optional versioned experience fields with defaults**, or an explicitly backward-compatible version migration, and tests from saved pre-feature fixtures. Save the stable authored IDs, world X/facing, current mode and pending conversation return. Never serialize entity IDs, active texture handles or frame-time state.
+Legacy `SaveData` version 1 continues to encode the narrative snapshot plus
+`PresentationState` for games with no exploration. Version 2 adds an optional
+`ExperienceState` with a typed mode, stable location ID, bounded world X,
+avatar facing, and a modal conversation return point. The same `MachineSnapshot`
+retains variables and authored dialogue state. Old version-one saves load
+without migration; invalid world locations, coordinates, missing scenes, or
+inconsistent save versions are rejected before replacing the live session.
+No ECS IDs, texture handles or frame-time state are serialized.
 
-Atomic save writes and worker-thread I/O remain unchanged. Script/manifest hot reload validates new references and preserves last good authored content if a location is removed or a conversation target becomes invalid.
+Atomic writes and background-worker I/O are retained. Hot reload rejects
+edits incompatible with the current authored world position and rebuilds only
+exploration-owned sprites after an accepted manifest change. Full graphical
+reload and process-restart acceptance remain separate verification gates.
 
 ## Verification matrix and completion gate
 

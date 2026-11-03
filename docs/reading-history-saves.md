@@ -12,12 +12,18 @@ Press **F6** to open the structured Save/Load overlay. It provides three named s
 
 Slot filenames reside beside the game-bound quick save:
 
-- **F5 / F9**: `<game-id>.json` (unchanged, identical version-1 format)
+- **F5 / F9**: `<game-id>.json` (unchanged path; version 1 for pure VNs, version 2 for exploration-capable games)
 - **Manual slot 1..3**: `<game-id>.slot1.json`, `<game-id>.slot2.json`, `<game-id>.slot3.json`
 
 All slot scanning, JSON decode, metadata reads, writes, and load validation use the existing background worker, bounded by the original 8 MiB decoder, game ID checks and story fingerprint matching. Saving still writes a temporary file, flushes it, atomically renames it and synchronizes the parent directory on Unix. Invalid, empty, and incompatible slots are shown rather than silently loaded. Loading a slot restores a valid saved story and closes the overlay only after validation completes.
 
-The save format remains **version 1** and existing quick saves remain loadable without migration. The additional UI never changes saved character entity IDs, scripts, audio, preferences or externally authored assets.
+The original VN save schema remains **version 1** and every existing quick
+save remains readable without migration. The optional exploration phase adds
+**version 2** when a game defines locations; it stores location ID, bounded
+position/facing, current narrative mode and modal return state alongside the
+existing narrative snapshot. F5/F9 and F6 slots use that version when needed,
+without serializing character entities, audio handles or authored assets.
+This is an extension of persistence, not a reopening of completed VX08 work.
 
 ## Verification
 

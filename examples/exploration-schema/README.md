@@ -26,11 +26,14 @@ A new NPC, `friend`, only becomes visible and interactable when the
 persistent story variable `met_neighbor` becomes true after dialogue.
 No visit is required to advance the original visual novel.
 
-World-aware saves and authored VN-to-exploration commands remain future work
-(NA06–NA07). F5/F9/F6 are disabled in exploration and modal conversations.
+The explicit `explore location at spawn` command is demonstrated by the
+separate [mixed-mode fixture](../exploration-bridge/). **F5/F9** write and
+restore logical world and modal conversation state, and **F6** opens three
+manual save slots in both modes. These use version-two JSON saves. Pure VNs
+continue writing version one and existing saves remain readable.
 
-Native CI exercises Bevy movement, NPC interactions, Q cancellation, exact
-return position, the conditional friend, two E-only location transfers,
-old-area sprite teardown, pause and resize, and incomplete-save guards. Legacy VNs remain unaffected.
+Native CI exercises Bevy movement, NPC interaction, cancellation, conditional
+story state, street/café transfers, sprite teardown, resize, and F5/F9/F6
+world-state persistence across a process restart. Legacy VNs remain unaffected.
 See [schema authoring](../../docs/exploration-schema.md) and the
 [expansion roadmap](../../docs/narrative-adventure-roadmap.md).

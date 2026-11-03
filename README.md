@@ -4,7 +4,7 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 
 **Status:** scoped Vesper MVP verified complete (100/100 weighted roadmap points; GitHub Actions run 40571573177). Both demonstration branches, presentation, hot reload, sound asset decoding, save/load and compiler-free Linux packaging passed automated tests. Hardware audio output and exhaustive coverage of every possible Linux configuration were not directly tested.
 
-## Future optional narrative adventures (planned)
+## Optional narrative adventures (in development)
 
 [Next-phase roadmap](docs/narrative-adventure-roadmap.md) · [weighted 0/100 ledger](docs/narrative-adventure-roadmap.json) · [anime urban slice-of-life example brief](docs/urban-slice-of-life-brief.md).
 The completed visual novel experience remains unchanged. The optional
@@ -19,9 +19,13 @@ illustrated panel and exact-position return. Pure VNs require no walking
 data and existing save behavior remains unchanged. An additional mixed-mode
 fixture now tests the explicit `explore location at spawn` .vn command,
 including a VN-only opening followed by author-directed exploration.
-Exploration saves and the original anime urban slice-of-life example
-remain future milestones. The example's title, cast and setting
-remain owner decisions, not assumptions.
+Version-two saves for exploration and modal conversations now preserve the
+world's logical location, avatar position/facing, narrative state and dialogue
+surface without saving ECS entities. F5/F9 and F6 slots remain backward
+compatible with version-one pure VN saves. Native walking and cold-restart
+regressions exercise this implementation; full roadmap acceptance, additional
+hot-reload QA, and the original urban example remain unfinished. The example's
+title, cast and setting remain owner decisions, not assumptions.
 
 ## Standalone external visual novels
 
