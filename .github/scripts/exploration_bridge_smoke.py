@@ -2,6 +2,7 @@
 """Exercise explicit author-driven VN -> world -> VN -> world mode changes."""
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -50,6 +51,16 @@ def main() -> None:
                     "The no-start manifest incorrectly entered walking automatically"
                 )
 
+                # The VN-first opening is still saveable as a v2 VisualNovel
+                # state, with no fabricated world position.
+                old_saves = qa.log_text(log).count("Vesper save written")
+                qa.key(window, "F5")
+                qa.wait_for_log(log, "Vesper save written", old_saves)
+                quick = Path(folder) / "saves" / "exploration-bridge.json"
+                saved = json.loads(quick.read_text(encoding="utf-8"))
+                assert saved["format_version"] == 2
+                assert saved["experience"]["mode"] == "visual_novel"
+
                 # A source-authored transition follows the VN opening line.
                 for _ in range(5):
                     qa.key(window, "Return")
@@ -59,6 +70,37 @@ def main() -> None:
                 world = qa.scenery_frame(window, "street-entered.png", 1280, 720, log)
                 assert qa.changed(initial_vn, world) > 800, (
                     "Author command failed to replace VN staging with the walkable street"
+                )
+
+                # F9 from the street restores the VN opening, despawns the
+                # walking sprites, and permits the authored transfer again.
+                old_loaded = qa.log_text(log).count("Vesper save restored: VisualNovel")
+                old_cleared = qa.log_text(log).count(
+                    "Vesper exploration area released for cinematic VN"
+                )
+                qa.key(window, "F9")
+                qa.wait_for_log(log, "Vesper save restored: VisualNovel", old_loaded)
+                qa.wait_for_log(
+                    log, "Vesper exploration area released for cinematic VN", old_cleared
+                )
+                resumed_vn = qa.frame(window, "vn-restored-from-street.png", 1280, 720)
+                assert qa.changed(resumed_vn, world) > 800, (
+                    "World sprites were not cleared after loading a VN save"
+                )
+                old_streets = qa.log_text(log).count(
+                    "Vesper exploration area loaded: street"
+                )
+                for _ in range(5):
+                    qa.key(window, "Return")
+                    if qa.log_text(log).count(
+                        "Vesper exploration area loaded: street"
+                    ) > old_streets:
+                        break
+                qa.wait_for_log(
+                    log, "Vesper exploration area loaded: street", old_streets
+                )
+                qa.scenery_frame(
+                    window, "street-reentered-after-save.png", 1280, 720, log
                 )
 
                 # Enter the neighbor's choice-driven scene and choose cinematic
@@ -98,8 +140,16 @@ def main() -> None:
                     "Explicit VN-to-cafe command did not restore world rendering"
                 )
                 assert "Vesper authored exploration entered at named spawn entry" in qa.log_text(log)
-                print("VN-only opening, story-authored walk, cinematic VN and direct cafe entry: passed",
-                      flush=True)
+                old_saves = qa.log_text(log).count("Vesper save written")
+                qa.key(window, "F5")
+                qa.wait_for_log(log, "Vesper save written", old_saves)
+                saved = json.loads(quick.read_text(encoding="utf-8"))
+                assert saved["format_version"] == 2
+                assert saved["experience"]["mode"]["exploring"]["location"] == "cafe"
+                print(
+                    "VN opening, save-to-VN restore, cinematic transition, "
+                    "and direct café save: passed", flush=True
+                )
             finally:
                 proc.terminate()
                 try:
@@ -108,6 +158,37 @@ def main() -> None:
                     proc.kill()
                     proc.wait(timeout=3)
 
+        cold_log = qa.OUTPUT / "bridge-cold-restore.log"
+        with cold_log.open("w", encoding="utf-8") as stream:
+            restored = subprocess.Popen(
+                [str(PLAYER), str(GAME)], env=env,
+                stdout=stream, stderr=subprocess.STDOUT,
+            )
+            try:
+                window = window_id()
+                time.sleep(.9)
+                before = qa.frame(window, "cold-vn-opening.png", 1280, 720)
+                assert "Vesper exploration area loaded" not in qa.log_text(cold_log)
+                qa.key(window, "F9")
+                qa.wait_for_log(cold_log, "Vesper save restored: Exploring")
+                qa.wait_for_log(cold_log, "Vesper exploration area loaded: cafe")
+                cafe_restored = qa.scenery_frame(
+                    window, "cold-cafe-restored.png", 1280, 720, cold_log
+                )
+                assert qa.changed(before, cafe_restored) > 800, (
+                    "Cold process did not restore VN-first game into authored café"
+                )
+                print("VN-first cold-process world restore: passed", flush=True)
+            finally:
+                restored.terminate()
+                try:
+                    restored.wait(timeout=6)
+                except subprocess.TimeoutExpired:
+                    restored.kill()
+                    restored.wait(timeout=3)
 
+
+# A fresh VN-first process must recover its saved authored café, rather
+# than requiring an exploration.start or rerunning the opening script.
 if __name__ == "__main__":
     main()
