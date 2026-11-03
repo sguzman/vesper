@@ -1,10 +1,10 @@
 # NA04 — Optional external explorable-location data
 
-**Implementation status:** Versioned parsing, validation, walking, and the
-first **NPC/prop-to-.vn interaction bridge** exist. This is not yet a full
-narrative adventure: location transfers, conditional NPC states, and
-exploration-aware persistence/reload remain unfinished. This is not the
-original anime urban slice-of-life game.
+**Implementation status:** Versioned parsing, validation, walking, NPC/prop
+dialogue, typed story-variable visibility conditions, and E-triggered authored
+exits are implemented. This is not the final narrative adventure:
+VN-to-location story commands, exploration persistence and safe reload remain
+unfinished. This is not the original anime urban slice-of-life game.
 
 ## Separation from visual novels
 
@@ -49,6 +49,8 @@ facing = "right"
 x = 425.0
 interact_scene = "neighbor_chat"
 interaction_radius = 80.0
+# Optional (absent means always visible):
+# visible_if = { variable = "met_neighbor", equals = true }
 
 [exploration.locations.street.props.poster]
 x = 720.0
@@ -96,6 +98,10 @@ game. Errors include the game manifest path and precise exploration field.
 - Every NPC's `interact_scene` must name an existing authored `.vn` scene.
   Props may omit `interact_scene`. An exit's destination location and named
   spawn must both exist, with no implicit teleport to an unknown ID.
+- NPCs and props may declare `visible_if = { variable = "met_neighbor",
+  equals = true }`. The expected value must be a boolean, integer or
+  quoted string, and the variable identifier is validated. Missing
+  variables and mismatched types make the actor unavailable, not an error.
 - Images are game-local, checked for path traversal/symlinks and require
   `.png` extension. Maximum 16 optional walk animation frames, with avatar
   speeds, scale, frame rate, parallax and depth constrained to bounded ranges.
@@ -131,9 +137,17 @@ conversation without selecting an option; already-run story assignments
 are not rolled back. World art stays visible under modal dialogue.
 Bubbles may anchor to an authored NPC ID.
 
-Authored exits have not been connected to movement yet. F5/F9/F6 saves
-remain unavailable in both exploration and modal conversation until NA07
-persists complete world state; no incomplete VN-only save is written.
+Authored exits appear in the same nearest-focus cue as NPCs and props.
+**E** transfers only within the exit's author-defined interaction radius,
+instantly to its validated named destination spawn and facing. There is no
+forced backtracking or automatic walking. Changing area despawns only
+exploration-owned sprites (background, NPCs, props, avatar and layers) before
+building the new area; the VN UI and menu entities are preserved. NPCs/props
+can become visible or disappear on story-variable changes without world
+rebuilding or a second quest system.
+
+F5/F9/F6 saves remain unavailable in exploration and modal conversation
+until NA07 persists complete world state; no incomplete VN-only save is written.
 
 The `examples/exploration-schema` walk-first fixture uses reused test
 background art. It must not be reported as the original playable urban
@@ -149,9 +163,9 @@ slice-of-life example.
 - Pure locomotion and camera tests under `crates/game/src/walk.rs` enforce
   frame-time caps, level bounds, single-screen framing and resize independence.
 - The native `.github/scripts/exploration_walk_smoke.py` drives actual
-  Bevy movement, NPC conversation, cancellation, authored return,
-  paused movement suppression, sprite rendering and compact-window resize,
-  archiving graphical frames.
+  Bevy movement, NPC conversation, cancellation, authored return, conditional
+  friend, street/café roundtrip, old-area entity removal, pause, sprite
+  rendering and compact-window resize, archiving graphical frames.
 - Existing VN-only games and all original `.vn` commands remain unchanged and
   continue running under the regular CLI/Bevy regressions.
 

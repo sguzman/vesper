@@ -24,8 +24,9 @@ This is an **additive** extension. The existing version-1 script grammar and pan
 **Dialogue surface**, separate from mode: `panel` (default; existing artwork and speaker nameplate) or `bubble` (anchored text and optional artist-supplied bubble frame). An ordinary VN may use a bubble; an exploration conversation may use the full illustrated panel; either may switch within one conversation.
 
 `crates/game/src/experience.rs` provides the pure typed model and transition guards. The walk-first controller, native bubbles, and first NPC/prop interaction
-bridge now use this model. Multi-location transitions, conditional NPC
-states, persistence and hot reload are still incomplete.
+bridge now use this model. E-only named exits and typed variable-gated
+NPC/prop availability are implemented. Script-command VN-to-location
+transitions, persistence and hot reload are still incomplete.
 
 ## Explicit transitions and invariants
 
@@ -119,7 +120,7 @@ friend: "Let's talk somewhere quiet."
 - `mode visual_novel` explicitly transfers into cinematic staging from any mode and clears the pending exploration return.
 - Parser and runtime must add typed commands instead of interpreting TOML or source strings as executable code, while preserving file/line diagnostics. Cross-reference validation must reject missing scenes or locations before starting play.
 
-**Still pending acceptance:** authored multi-location transitions, conditional NPC visibility, full bubble/choice geometry and multi-NPC occlusion on all display sizes, plus world-aware saves/reload. These remain existing NA02/NA04/NA06–08 scope.
+**Still pending acceptance:** VN-authored `explore location at spawn` transitions, full bubble/choice geometry and multi-NPC occlusion on all display sizes, plus world-aware saves/reload. These remain existing NA02/NA04/NA06–08 scope.
 
 ## Persistence and hot reload
 

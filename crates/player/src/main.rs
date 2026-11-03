@@ -1293,7 +1293,8 @@ fn main() {
             ).chain(),
             (settings::sync_tab_art, settings::fit_panel_to_viewport,
                 settings::sync_content_layout, settings::wheel,
-                speech_bubble::sync, exploration::sync).chain(),
+                speech_bubble::sync, exploration::refresh_area,
+                exploration::sync).chain(),
         ).chain());
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);

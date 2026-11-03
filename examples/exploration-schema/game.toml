@@ -38,6 +38,14 @@ interact_scene = "neighbor_chat"
 # Comfortable, non-pixel-perfect keyboard interaction.
 interaction_radius = 180.0
 
+# The friend only appears after an authored conversation assigns a
+# persistent narrative variable; no separate quest engine is involved.
+[exploration.locations.street.npcs.friend]
+x = 610.0
+interact_scene = "friend_chat"
+interaction_radius = 95.0
+visible_if = { variable = "met_neighbor", equals = true }
+
 [exploration.locations.street.props.noticeboard]
 x = 690.0
 interact_scene = "read_notice"

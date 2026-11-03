@@ -6,6 +6,7 @@ set visits = 0
 
 @scene neighbor_chat
 set visits += 1
+set met_neighbor = true
 surface bubble
 neighbor: "Hey! Good to see you around the neighborhood."
 * "Just saying hello" -> neighbor_hello
@@ -25,4 +26,9 @@ neighbor: "Let's talk somewhere quiet."
 @scene read_notice
 surface panel
 "The noticeboard lists today's community gatherings."
+explore return
+
+@scene friend_chat
+surface bubble
+friend: "I heard you met our neighbor. Welcome to the block."
 explore return

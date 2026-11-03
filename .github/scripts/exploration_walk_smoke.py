@@ -195,15 +195,55 @@ def main() -> None:
                     f"Modal conversation changed the return X: {x2} -> {x3}"
                 )
 
+                # The friend is gated behind met_neighbor=true, set by
+                # the first real conversation (not by a separate quest store).
+                old = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "Right", .90)
+                x4 = position_after_stop(log, old)
+                assert 520.0 < x4 < 710.0, (
+                    f"Could not reach the conditional friend: {x4}"
+                )
+                key(window, "e")
+                wait_for_log(log, "Vesper exploration interacting: friend -> friend_chat")
+                frame(window, "conditional-friend-dialogue.png", 946, 511)
+                old_returns = log_text(log).count("Vesper exploration resumed")
+                for _ in range(4):
+                    key(window, "Return")
+                    if log_text(log).count("Vesper exploration resumed") > old_returns:
+                        break
+                wait_for_log(log, "Vesper exploration resumed", old_returns)
+
+                # An authored E-only exit replaces street sprites with the
+                # café's area and lands at its named spawn, not at a random X.
+                old = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "Right", 2.35)
+                x5 = position_after_stop(log, old)
+                assert 1090.0 < x5 <= 1240.0, (
+                    f"Could not reach the café exit: {x5}"
+                )
+                key(window, "e")
+                wait_for_log(log, "Vesper exploration exit: street/cafe_door -> cafe at x=65.0")
+                wait_for_log(log, "Vesper exploration area loaded: cafe; replaced 5 entities")
+                time.sleep(.5)
+                cafe = frame(window, "cafe-after-exit.png", 946, 511)
+                assert changed(cafe, resumed) > 800, (
+                    "Entering café failed to reframe/rebuild the authored location"
+                )
+                key(window, "e")
+                wait_for_log(log, "Vesper exploration exit: cafe/street_door -> street at x=150.0")
+                wait_for_log(log, "Vesper exploration area loaded: street; replaced 2 entities")
+                time.sleep(.5)
+                frame(window, "street-after-return-exit.png", 946, 511)
+
                 # Until NA07 introduces a valid migration that stores world
                 # position, F5 deliberately refuses incomplete quick saves.
                 key(window, "F5")
                 assert not (Path(folder) / "saves" / "exploration-schema.json").exists(), (
                     "Walk preview incorrectly wrote an incomplete VN-only save"
                 )
-                print(f"Exploration movement x={x1:.1f}->{x2:.1f}->{x3:.1f}; pause and return preserved",
+                print(f"Exploration movement x={x1:.1f}->{x2:.1f}->{x3:.1f}->{x4:.1f}->{x5:.1f}",
                       flush=True)
-                print("Native walking, NPC interaction, cancellation, explicit return, dialogue and incomplete-save guard: passed",
+                print("Native NPC/cancellation, gated friend, E-only café roundtrip, entity cleanup, explicit return and save guard: passed",
                       flush=True)
             finally:
                 proc.terminate()

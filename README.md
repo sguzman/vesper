@@ -7,24 +7,19 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 ## Future optional narrative adventures (planned)
 
 [Next-phase roadmap](docs/narrative-adventure-roadmap.md) · [weighted 0/100 ledger](docs/narrative-adventure-roadmap.json) · [anime urban slice-of-life example brief](docs/urban-slice-of-life-brief.md).
-The completed visual novel experience remains unchanged. Development of
-independent, optional 2D exploration and speech-bubble presentation is now
-underway. The first experimental authoring fixture is
-[Bubble Showcase](examples/bubble-showcase/), using a globally authored
-bubble surface in an otherwise traditional visual novel; see the
-[speech-bubble authoring guide](docs/native-speech-bubbles.md).
-Per-scene/per-line `surface panel | bubble | default` commands are
-implemented with a dedicated regression fixture, pending final CI verification.
-A first **optional walk-first preview** is now implemented and awaiting
-Bevy graphical acceptance. Only packages with `[exploration.start]` enter
-it; traditional VNs need no exploration data. Movement is independent of the now-implemented initial NPC-to-story
-interaction bridge, currently pending CI. Exploration-aware save/load and
-multi-location transitions remain later work.
-The [optional exploration-location schema](docs/exploration-schema.md)
-now validates external maps and scene interactions, without yet enabling
-movement. Its [authoring-only fixture](examples/exploration-schema/) is not
-the future playable urban example. The urban example's final title, city
-and cast remain to be decided.
+The completed visual novel experience remains unchanged. The optional
+speech-bubble and per-line panel switching systems are exercised under native
+CI. The independent [exploration schema](docs/exploration-schema.md) supports
+bounded side-on walking and authored **E-to-interact** NPC conversations.
+
+The [exploration regression fixture](examples/exploration-schema/) now tests a
+two-location street/café roundtrip via explicit E-only exits, a conditional NPC
+visible after a story variable changes, speech-bubble conversations, an
+illustrated panel and exact-position return. Pure VNs require no walking
+data and existing save behavior remains unchanged. Exploration saves,
+authored VN-to-location commands and the original anime urban slice-of-life
+example remain future milestones. The example's title, cast and setting
+remain owner decisions, not assumptions.
 
 ## Standalone external visual novels
 

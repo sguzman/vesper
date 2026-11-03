@@ -5,7 +5,7 @@
 //! an exploration controller and a deterministic story/event bridge.
 use std::{collections::BTreeMap, path::Path};
 use serde::Deserialize;
-use vesper_story::Story;
+use vesper_story::{Story, Value};
 use super::{checked_file, id_valid};
 
 const MAX_LOCATIONS: usize = 24;
@@ -104,6 +104,9 @@ pub struct Npc {
     pub image: Option<String>,
     #[serde(default = "default_radius")]
     pub interaction_radius: f32,
+    /// Optional story-state gate; missing variables are treated as false.
+    #[serde(default)]
+    pub visible_if: Option<VisibilityCondition>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -116,6 +119,40 @@ pub struct Prop {
     pub image: Option<String>,
     #[serde(default = "default_radius")]
     pub interaction_radius: f32,
+    #[serde(default)]
+    pub visible_if: Option<VisibilityCondition>,
+}
+
+/// Simple equality against persistent, typed .vn variables.
+//// No script evaluation, time-dependent behavior, or hidden quest state.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct VisibilityCondition {
+    pub variable: String,
+    pub equals: ConditionValue,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum ConditionValue {
+    Number(i64),
+    Boolean(bool),
+    Text(String),
+}
+
+impl VisibilityCondition {
+    pub fn matches(&self, variables: &BTreeMap<String, Value>) -> bool {
+        match (variables.get(&self.variable), &self.equals) {
+            (Some(Value::Number(actual)), ConditionValue::Number(expected)) => actual == expected,
+            (Some(Value::Boolean(actual)), ConditionValue::Boolean(expected)) => actual == expected,
+            (Some(Value::Text(actual)), ConditionValue::Text(expected)) => actual == expected,
+            _ => false,
+        }
+    }
+
+    pub fn validate(&self, label: &str) -> Result<(), String> {
+        identifier(&self.variable, &format!("{label}.visible_if.variable"))
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -183,6 +220,30 @@ impl Exploration {
         super::experience::WorldPosition::new(
             start.location.clone(), spawn.x, spawn.facing
         ).ok()
+    }
+
+    /// Resolve a declared destination only while inside the named exit's
+    /// interaction radius. No forced traversal or implicit teleport.
+    pub fn exit_position(
+        &self, current: &super::experience::WorldPosition, exit_name: &str
+    ) -> Result<super::experience::WorldPosition, String> {
+        let area = self.locations.get(&current.location)
+            .ok_or_else(|| format!("unknown current location '{}'", current.location))?;
+        if !valid_coordinate(current.x, area.width) {
+            return Err("current world X is outside authored walking bounds".into());
+        }
+        let exit = area.exits.get(exit_name)
+            .ok_or_else(|| format!("unknown exit '{}' in '{}'", exit_name, current.location))?;
+        if (current.x - exit.x).abs() > exit.interaction_radius {
+            return Err(format!("exit '{exit_name}' is outside the interaction radius"));
+        }
+        let to = self.locations.get(&exit.to_location)
+            .ok_or_else(|| format!("missing exit destination '{}'", exit.to_location))?;
+        let spawn = to.spawns.get(&exit.to_spawn)
+            .ok_or_else(|| format!("missing destination spawn '{}'", exit.to_spawn))?;
+        super::experience::WorldPosition::new(
+            exit.to_location.clone(), spawn.x, spawn.facing
+        )
     }
 
     /// Every reference is checked before Bevy sees this data; a hot reload may
@@ -268,6 +329,9 @@ impl Exploration {
                     return Err(format!("{slot}: invalid interaction position/radius"));
                 }
                 scene(story, &npc.interact_scene, &format!("{slot}.interact_scene"))?;
+                if let Some(condition) = &npc.visible_if {
+                    condition.validate(&slot)?;
+                }
                 if let Some(path) = &npc.image {
                     image(root, path, &format!("{slot}.image"))?;
                 }
@@ -282,6 +346,9 @@ impl Exploration {
                 }
                 if let Some(scene_id) = &prop.interact_scene {
                     scene(story, scene_id, &format!("{slot}.interact_scene"))?;
+                }
+                if let Some(condition) = &prop.visible_if {
+                    condition.validate(&slot)?;
                 }
                 if let Some(path) = &prop.image {
                     image(root, path, &format!("{slot}.image"))?;
@@ -416,6 +483,48 @@ interact_scene = "chat"
             let error = world.validate(&fixture.0, &story).unwrap_err();
             assert!(error.contains(key), "expected {key} in: {error}");
         }
+    }
+
+    #[test]
+    fn exit_requires_proximity_and_uses_named_destination_spawn() {
+        let (world, fixture, story) = load(GOOD);
+        world.validate(&fixture.0, &story).unwrap();
+        let near = super::super::experience::WorldPosition::new(
+            "street", 970.0, super::super::experience::Facing::Right
+        ).unwrap();
+        let arrival = world.exit_position(&near, "cafe").unwrap();
+        assert_eq!(arrival.location, "cafe");
+        assert_eq!(arrival.x, 50.0);
+        assert_eq!(arrival.facing, super::super::experience::Facing::Left);
+        let far = super::super::experience::WorldPosition::new(
+            "street", 100.0, super::super::experience::Facing::Right
+        ).unwrap();
+        assert!(world.exit_position(&far, "cafe").is_err());
+        assert!(world.exit_position(&near, "unknown").is_err());
+    }
+
+    #[test]
+    fn conditional_visibility_uses_persistent_typed_story_variables() {
+        let gate: VisibilityCondition = toml::from_str(
+            "variable='met_friend'\nequals=true"
+        ).unwrap();
+        let mut vars = BTreeMap::new();
+        assert!(!gate.matches(&vars));
+        vars.insert("met_friend".into(), Value::Boolean(false));
+        assert!(!gate.matches(&vars));
+        vars.insert("met_friend".into(), Value::Boolean(true));
+        assert!(gate.matches(&vars));
+        vars.insert("met_friend".into(), Value::Text("true".into()));
+        assert!(!gate.matches(&vars));
+        assert!(gate.validate("test").is_ok());
+
+        let bad: VisibilityCondition = toml::from_str(
+            "variable='bad name'\nequals=1"
+        ).unwrap();
+        assert!(bad.validate("test").is_err());
+        assert!(toml::from_str::<VisibilityCondition>(
+            "variable='valid'\nequals=1.2"
+        ).is_err());
     }
 
     #[test]

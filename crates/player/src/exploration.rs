@@ -6,7 +6,8 @@
 use super::*;
 use vesper_game::{
     experience::{ExperienceMode, Facing},
-    interaction::{self, TargetKind},
+    interaction::{self, Focus, TargetKind},
+    exploration::{Exploration, Location},
     walk::{self, View},
 };
 
@@ -14,8 +15,8 @@ use vesper_game::{
 pub(super) enum AreaVisual {
     Backdrop,
     Avatar,
-    Npc(f32),
-    Prop(f32),
+    Npc { id: String, x: f32 },
+    Prop { id: String, x: f32 },
     Layer { parallax: f32 },
 }
 
@@ -25,8 +26,11 @@ pub struct WalkPreview {
     walk: Vec<Handle<Image>>,
     elapsed: f32,
     moving: bool,
+    loaded_location: Option<String>,
 }
 
+#[derive(Component)]
+pub(super) struct WalkHud;
 #[derive(Component)]
 pub(super) struct InteractionPrompt;
 #[derive(Component)]
@@ -37,6 +41,56 @@ fn sprite_art(path: Option<&String>, assets: &AssetServer,
     path.map_or_else(|| Sprite::from_color(color, size), |path| Sprite {
         image: assets.load(path.clone()), ..default()
     })
+}
+
+/// Spawn exactly one authored area; entity ownership is isolated to this
+/// subsystem, so transitions can despawn the previous area atomically.
+fn spawn_area(commands: &mut Commands, world: &Exploration,
+    area: &Location, assets: &AssetServer) {
+    commands.spawn((
+        Name::new("Exploration: authored location background"),
+        AreaVisual::Backdrop,
+        sprite_art(Some(&area.background), assets, Color::WHITE, Vec2::new(1280.0, 720.0)),
+        Transform::from_xyz(0.0, 0.0, -6.0),
+        Visibility::Visible,
+    ));
+    for (id, layer) in &area.layers {
+        commands.spawn((
+            Name::new(format!("Exploration layer: {id}")),
+            AreaVisual::Layer { parallax: layer.parallax },
+            sprite_art(Some(&layer.image), assets, Color::WHITE, Vec2::new(1280.0, 720.0)),
+            Transform::from_xyz(0.0, 0.0, -5.5 + layer.depth * 0.08),
+            Visibility::Visible,
+        ));
+    }
+    for (id, npc) in &area.npcs {
+        commands.spawn((
+            Name::new(format!("Exploration NPC: {id}")),
+            AreaVisual::Npc { id: id.clone(), x: npc.x },
+            sprite_art(npc.image.as_ref(), assets,
+                Color::srgb(0.36, 0.68, 0.77), Vec2::new(40.0, 85.0)),
+            Transform::from_xyz(0.0, 0.0, 2.0),
+            Visibility::Visible,
+        ));
+    }
+    for (id, prop) in &area.props {
+        commands.spawn((
+            Name::new(format!("Exploration prop: {id}")),
+            AreaVisual::Prop { id: id.clone(), x: prop.x },
+            sprite_art(prop.image.as_ref(), assets,
+                Color::srgb(0.86, 0.65, 0.34), Vec2::new(34.0, 46.0)),
+            Transform::from_xyz(0.0, 0.0, 1.5),
+            Visibility::Visible,
+        ));
+    }
+    commands.spawn((
+        Name::new("Exploration: player avatar"),
+        AreaVisual::Avatar,
+        sprite_art(world.avatar.idle.as_ref(), assets,
+            Color::srgb(0.84, 0.45, 0.63), Vec2::new(35.0, 85.0)),
+        Transform::from_xyz(0.0, 0.0, 4.0),
+        Visibility::Visible,
+    ));
 }
 
 /// Spawn only when the author's optional [exploration.start] exists.
@@ -66,52 +120,11 @@ pub fn setup(
         .map(|path| assets.load::<Image>(path.clone())).collect();
     for mut node in &mut panels { node.display = Display::None; }
 
-    commands.spawn((
-        Name::new("Exploration: authored location background"),
-        AreaVisual::Backdrop,
-        sprite_art(Some(&area.background), &assets, Color::WHITE, Vec2::new(1280.0, 720.0)),
-        Transform::from_xyz(0.0, 0.0, -6.0),
-        Visibility::Visible,
-    ));
-    for (id, layer) in &area.layers {
-        commands.spawn((
-            Name::new(format!("Exploration layer: {id}")),
-            AreaVisual::Layer { parallax: layer.parallax },
-            sprite_art(Some(&layer.image), &assets, Color::WHITE, Vec2::new(1280.0, 720.0)),
-            Transform::from_xyz(0.0, 0.0, -5.5 + layer.depth * 0.08),
-            Visibility::Visible,
-        ));
-    }
-    for (id, npc) in &area.npcs {
-        commands.spawn((
-            Name::new(format!("Exploration NPC: {id}")),
-            AreaVisual::Npc(npc.x),
-            sprite_art(npc.image.as_ref(), &assets,
-                Color::srgb(0.36, 0.68, 0.77), Vec2::new(40.0, 85.0)),
-            Transform::from_xyz(0.0, 0.0, 2.0),
-            Visibility::Visible,
-        ));
-    }
-    for (id, prop) in &area.props {
-        commands.spawn((
-            Name::new(format!("Exploration prop: {id}")),
-            AreaVisual::Prop(prop.x),
-            sprite_art(prop.image.as_ref(), &assets,
-                Color::srgb(0.86, 0.65, 0.34), Vec2::new(34.0, 46.0)),
-            Transform::from_xyz(0.0, 0.0, 1.5),
-            Visibility::Visible,
-        ));
-    }
-    commands.spawn((
-        Name::new("Exploration: player avatar"),
-        AreaVisual::Avatar,
-        sprite_art(world.avatar.idle.as_ref(), &assets,
-            Color::srgb(0.84, 0.45, 0.63), Vec2::new(35.0, 85.0)),
-        Transform::from_xyz(0.0, 0.0, 4.0),
-        Visibility::Visible,
-    ));
+    spawn_area(&mut commands, world, area, &assets);
+    runtime.loaded_location = Some(position.location.clone());
     commands.spawn((
         Name::new("Exploration preview controls (not a VN choice)"),
+        WalkHud,
         Node {
             position_type: PositionType::Absolute,
             top: px(14.0), right: px(16.0),
@@ -121,7 +134,7 @@ pub fn setup(
         BackgroundColor(Color::srgba(0.03, 0.06, 0.1, 0.78)),
     )).with_children(|parent| {
         parent.spawn((
-            Text::new("← → or A/D: Walk  ·  P: Pause  ·  M: Menu"),
+            Text::new("← → or A/D: Walk  ·  E: Interact/Exit  ·  P: Pause  ·  M: Menu"),
             TextFont { font_size: FontSize::Px(15.0), ..default() },
             TextColor(Color::WHITE),
         ));
@@ -174,20 +187,34 @@ pub fn begin_interaction(
         .and_then(|world| world.locations.get(&position.location)) else {
         return Err("current authored exploration location is unavailable".into());
     };
-    let Some(target) = interaction::nearest(area, position) else {
+    let Some(target) = interaction::focus(area, position, session.machine.variables()) else {
         return Ok(None);
     };
-    let scene = target.scene.to_owned();
-    let label = target.id.to_owned();
-    // Entering the scene can fail for a pending choice or invalid hot-reload
-    // target. Do not switch the world mode until that succeeds.
-    session.machine.enter_scene(&scene)?;
-    session.experience.begin_interaction(scene.clone())?;
-    session.choosing = false;
-    session.finished = false;
-    let screen = next_screen(session, commands, assets);
-    info!("Vesper exploration interacting: {label} -> {scene}");
-    Ok(Some(screen))
+    match target {
+        Focus::Scene(target) => {
+            let scene = target.scene.to_owned();
+            let label = target.id.to_owned();
+            // Failure cannot change the authoritative exploration position.
+            session.machine.enter_scene(&scene)?;
+            session.experience.begin_interaction(scene.clone())?;
+            session.choosing = false;
+            session.finished = false;
+            let screen = next_screen(session, commands, assets);
+            info!("Vesper exploration interacting: {label} -> {scene}");
+            Ok(Some(screen))
+        }
+        Focus::Exit(target) => {
+            let from = position.location.clone();
+            let exit_id = target.id.to_owned();
+            let world = session.game.manifest.exploration.as_ref()
+                .ok_or("exploration manifest unexpectedly unavailable")?;
+            let arrival = world.exit_position(position, &exit_id)?;
+            info!("Vesper exploration exit: {from}/{exit_id} -> {} at x={:.1}",
+                arrival.location, arrival.x);
+            session.experience.enter_exploration(arrival);
+            Ok(None)
+        }
+    }
 }
 
 /// No gameplay controls run when focus or a modal menu owns the keyboard.
@@ -232,6 +259,45 @@ pub fn input(
     if runtime.moving { runtime.elapsed += time.delta_secs().min(0.05); }
 }
 
+/// Switch only the owned authored-area sprites on an explicit location
+/// change, without leaking old NPCs, image handles, or invisible entities.
+/// The existing VN UI and menu entities are not touched.
+pub fn refresh_area(
+    mut commands: Commands,
+    session: Res<Session>,
+    assets: Res<AssetServer>,
+    mut runtime: ResMut<WalkPreview>,
+    old: Query<Entity, With<AreaVisual>>,
+) {
+    let next = match &session.experience.mode {
+        ExperienceMode::Exploring(position)
+        | ExperienceMode::Conversation { return_to: position, .. } =>
+            Some(position.location.clone()),
+        ExperienceMode::VisualNovel => None,
+    };
+    if runtime.loaded_location == next { return; }
+    let mut replaced = 0_usize;
+    for entity in &old {
+        commands.entity(entity).despawn();
+        replaced += 1;
+    }
+    runtime.loaded_location.clone_from(&next);
+    runtime.moving = false;
+    runtime.elapsed = 0.0;
+    if let Some(location) = next {
+        if let Some(world) = &session.game.manifest.exploration
+            && let Some(area) = world.locations.get(&location)
+        {
+            spawn_area(&mut commands, world, area, &assets);
+            info!("Vesper exploration area loaded: {location}; replaced {replaced} entities");
+        } else {
+            error!("Vesper exploration area missing after validated transition");
+        }
+    } else {
+        info!("Vesper exploration area released for cinematic VN");
+    }
+}
+
 /// Placeholder rectangles have an explicit custom_size even though their
 /// built-in white backing texture is 1×1. Respect that authored display size
 /// before consulting the raw image dimensions, or a placeholder can grow to
@@ -253,8 +319,15 @@ pub fn sync(
     mut sprites: Query<(&AreaVisual, &mut Sprite, &mut Transform, &mut Visibility)>,
     mut prompts: Query<&mut Node, (With<InteractionPrompt>, Without<StoryPanel>)>,
     mut labels: Query<&mut Text, With<InteractionPromptText>>,
+    mut huds: Query<&mut Node, (With<WalkHud>, Without<StoryPanel>, Without<InteractionPrompt>)>,
     mut panels: Query<&mut Node, (With<StoryPanel>, Without<InteractionPrompt>)>,
 ) {
+    // Pure VNs never enter this optional player subsystem or have their
+    // panel display state rewritten by the exploration renderer.
+    if session.game.manifest.exploration.as_ref()
+        .is_none_or(|world| world.start.is_none()) {
+        return;
+    }
     // World artwork remains visible during modal conversations, so the
     // speaker can still be seen under a bubble or illustrated VN panel.
     let position = match &session.experience.mode {
@@ -264,6 +337,10 @@ pub fn sync(
         ExperienceMode::VisualNovel => None,
     };
     let exploring = matches!(session.experience.mode, ExperienceMode::Exploring(_));
+    for mut hud in &mut huds {
+        let display = if exploring { Display::Flex } else { Display::None };
+        if hud.display != display { hud.display = display; }
+    }
     for mut panel in &mut panels {
         let display = if exploring { Display::None } else { Display::Flex };
         if panel.display != display { panel.display = display; }
@@ -271,7 +348,7 @@ pub fn sync(
     let target = position.and_then(|point| {
         session.game.manifest.exploration.as_ref()
             .and_then(|world| world.locations.get(&point.location))
-            .and_then(|area| interaction::nearest(area, point))
+            .and_then(|area| interaction::focus(area, point, session.machine.variables()))
     });
     let focused = exploring && !session.paused && session.menu_overlay.is_none()
         && !session.history.visible() && windows.single().is_ok_and(|window| window.focused);
@@ -281,15 +358,37 @@ pub fn sync(
     }
     if focused {
         if let Some(target) = target {
-            let verb = if target.kind == TargetKind::Npc { "Talk to" } else { "Inspect" };
-            let next = format!("E: {verb} {}", target.id);
+            let next = match target {
+                Focus::Scene(scene) => {
+                    let verb = if scene.kind == TargetKind::Npc { "Talk to" } else { "Inspect" };
+                    format!("E: {verb} {}", scene.id)
+                }
+                Focus::Exit(exit) => format!("E: Enter {}", exit.to_location),
+            };
             for mut label in &mut labels {
                 if label.0 != next { label.0.clone_from(&next); }
             }
         }
     }
-    for (_, _, _, mut visibility) in &mut sprites {
-        let value = if position.is_some() { Visibility::Visible } else { Visibility::Hidden };
+    let current_area = position.and_then(|point| session.game.manifest.exploration.as_ref()
+        .and_then(|world| world.locations.get(&point.location)));
+    for (part, _, _, mut visibility) in &mut sprites {
+        let enabled = match part {
+            AreaVisual::Npc { id, .. } => current_area
+                .and_then(|area| area.npcs.get(id))
+                .is_some_and(|npc| npc.visible_if.as_ref()
+                    .is_none_or(|gate| gate.matches(session.machine.variables()))),
+            AreaVisual::Prop { id, .. } => current_area
+                .and_then(|area| area.props.get(id))
+                .is_some_and(|prop| prop.visible_if.as_ref()
+                    .is_none_or(|gate| gate.matches(session.machine.variables()))),
+            _ => true,
+        };
+        let value = if position.is_some() && enabled {
+            Visibility::Visible
+        } else {
+            Visibility::Hidden
+        };
         if *visibility != value { *visibility = value; }
     }
     let Some(position) = position else { return; };
@@ -343,15 +442,15 @@ pub fn sync(
                 let scale = Vec3::splat(view.world_to_screen * world.avatar.scale * fit);
                 if transform.scale != scale { transform.scale = scale; }
             }
-            AreaVisual::Npc(x) | AreaVisual::Prop(x) => {
+            AreaVisual::Npc { x, .. } | AreaVisual::Prop { x, .. } => {
                 let desired_x = view.x(*x);
                 if transform.translation.x != desired_x { transform.translation.x = desired_x; }
                 if transform.translation.y != ground_y { transform.translation.y = ground_y; }
                 let natural_height = sprite_height(
                     &sprite, &images,
-                    if matches!(part, AreaVisual::Npc(_)) { 85.0 } else { 46.0 },
+                    if matches!(part, AreaVisual::Npc { .. }) { 85.0 } else { 46.0 },
                 );
-                let height = if matches!(part, AreaVisual::Npc(_)) { 85.0 } else { 46.0 };
+                let height = if matches!(part, AreaVisual::Npc { .. }) { 85.0 } else { 46.0 };
                 let scale = Vec3::splat(view.world_to_screen * height / natural_height);
                 if transform.scale != scale { transform.scale = scale; }
             }
