@@ -479,11 +479,11 @@ pub fn sync(
 /// during normal gameplay. CI reports observed FPS/p95 rather than inventing
 /// a fixed throughput guarantee for software llvmpipe.
 #[derive(Default)]
-struct FrameTiming {
+pub(super) struct FrameTiming {
     milliseconds: Vec<f32>,
 }
 
-pub fn sample_frame_timing(
+pub(super) fn sample_frame_timing(
     time: Res<Time>,
     session: Res<Session>,
     mut timing: Local<FrameTiming>,
