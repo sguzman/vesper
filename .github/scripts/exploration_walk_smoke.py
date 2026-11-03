@@ -304,8 +304,20 @@ def main() -> None:
                 key(window, "F5")
                 wait_for_log(log, "Vesper save written", old_saves)
                 persisted = json.loads(saved_path.read_text(encoding="utf-8"))
-                saved_x = persisted["experience"]["mode"]["exploring"]["x"]
+                saved_point = persisted["experience"]["mode"]["exploring"]
+                saved_x = saved_point["x"]
                 assert 152.0 < saved_x < 218.0, saved_x
+                assert saved_point["facing"] == "right", saved_point
+
+                # Face the other way before saving a manual slot. Distinct
+                # facing states let cold-process QA catch a loader that
+                # silently defaults all avatars to the authored start facing.
+                old_stops = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "Left", .15)
+                manual_x = position_after_stop(log, old_stops)
+                assert saved_x - 70.0 < manual_x < saved_x - 2.0, (
+                    f"Could not prepare left-facing slot: {saved_x} -> {manual_x}"
+                )
 
                 # The same v2 world snapshot is supported in manual F6 slots.
                 key(window, "F6")
@@ -316,7 +328,9 @@ def main() -> None:
                 manual_path = Path(folder) / "saves" / "exploration-schema.slot1.json"
                 manual = json.loads(manual_path.read_text(encoding="utf-8"))
                 assert manual["format_version"] == 2
-                assert abs(manual["experience"]["mode"]["exploring"]["x"] - saved_x) < 0.1
+                manual_point = manual["experience"]["mode"]["exploring"]
+                assert abs(manual_point["x"] - manual_x) < 0.1, manual_point
+                assert manual_point["facing"] == "left", manual_point
                 key(window, "F6")
                 print(f"Exploration movement x={x1:.1f}->{x2:.1f}->{x3:.1f}->{x4:.1f}->{x5:.1f}",
                       flush=True)
@@ -383,13 +397,24 @@ def main() -> None:
                 old_loads = log_text(restarted_log).count("Vesper save restored:")
                 key(window, "Return")
                 wait_for_log(restarted_log, "Vesper save restored:", old_loads)
+                # Save immediately, before any new movement changes facing.
+                # The serialized snapshot proves that the loaded manual
+                # slot's left-facing state was applied to the live player.
+                old_saves = log_text(restarted_log).count("Vesper save written")
+                key(window, "F5")
+                wait_for_log(restarted_log, "Vesper save written", old_saves)
+                restored_point = json.loads(
+                    saved_path.read_text(encoding="utf-8")
+                )["experience"]["mode"]["exploring"]
+                assert restored_point["facing"] == "left", restored_point
+                assert abs(restored_point["x"] - manual_x) < 0.1, restored_point
                 old_stops = log_text(restarted_log).count("Vesper exploration stopped:")
                 walk(window, "Right", .15)
                 slot_x = position_after_stop(restarted_log, old_stops)
-                assert saved_x + 2.0 < slot_x < saved_x + 70.0, (
-                    f"Cold-start slot load lost world X: {saved_x} -> {slot_x}"
+                assert manual_x + 2.0 < slot_x < manual_x + 70.0, (
+                    f"Cold-start slot load lost world X: {manual_x} -> {slot_x}"
                 )
-                print("Cold-process quicksave and manual slot world restore: passed",
+                print("Cold-process quicksave/right and manual slot/left facing + world X restore: passed",
                       flush=True)
             finally:
                 restarted.terminate()
