@@ -170,8 +170,22 @@ def main() -> None:
                 compact = frame(window, "walk-compact.png", 946, 511)
 
                 # A focused NPC opens a real .vn scene while freezing walking.
-                key(window, "e")
+                # Hold E across OS key-repeat and release. A single
+                # explicit press must enter the authored conversation once;
+                # it may not trigger again while the dialogue owns input.
+                earlier = log_text(log).count("Vesper exploration interacting:")
+                call("xdotool", "windowfocus", "--sync", window)
+                call("xdotool", "keydown", "--clearmodifiers", "e")
+                try:
+                    time.sleep(1.05)
+                finally:
+                    call("xdotool", "keyup", "--clearmodifiers", "e")
                 wait_for_log(log, "Vesper exploration interacting: neighbor -> neighbor_chat")
+                count = log_text(log).count("Vesper exploration interacting:")
+                assert count == earlier + 1, (
+                    "Held E repeated an authored interaction instead of entering once",
+                    earlier, count,
+                )
                 time.sleep(.4)
                 bubble = frame(window, "npc-bubble.png", 946, 511)
                 assert changed(compact, bubble) > 800, (

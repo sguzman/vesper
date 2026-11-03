@@ -165,7 +165,8 @@
       "evidence": [
         "Typed explore return/mode visual_novel commands, variable-preserving machine enter_scene, deterministic nearest NPC/prop target, accessible E cue and Q cancel, in-world bubble anchored to speaker, and native CI scenario committed pending full verification. Multi-location transfer and conditional NPC state remain unfinished.",
         "Author-defined E-only named exits with proximity checks, deterministic mixed NPC/prop/exit focus, variable-gated NPC/prop visibility, world-entity replacement, and native café roundtrip/conditional-NPC regression added; CI pending for this checkpoint.",
-        "Typed .vn `explore <location> at <spawn>` transfers with authored path/line validation, standalone VN-first mixed-mode fixture and real native VN→street→cinematic VN→café regression added; full CI acceptance pending."
+        "Typed .vn `explore <location> at <spawn>` transfers with authored path/line validation, standalone VN-first mixed-mode fixture and real native VN→street→cinematic VN→café regression added; full CI acceptance pending.",
+        "Added native held-E/key-repeat regression: a single press must enter the authored NPC scene exactly once despite holding/releasing E; awaiting CI."
       ]
     },
     {
