@@ -124,7 +124,7 @@ pub struct Prop {
 }
 
 /// Simple equality against persistent, typed .vn variables.
-//// No script evaluation, time-dependent behavior, or hidden quest state.
+/// No script evaluation, time-dependent behavior, or hidden quest state.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct VisibilityCondition {
