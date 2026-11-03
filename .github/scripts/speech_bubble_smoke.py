@@ -245,6 +245,18 @@ def long_dialogue_scroll() -> None:
                 )
                 press(win, "Next")
                 wait_for_phrase(log, "Vesper bubble scroll:", previous_scrolls)
+                # Saving while the second identical line is scrolled and
+                # restoring it must reset to the first visible paragraph,
+                # even when scene/cursor/text are identical after the load.
+                press(win, "F5")
+                wait_for_phrase(log, "Vesper save written")
+                press(win, "F9")
+                wait_for_phrase(log, "Vesper save restored")
+                time.sleep(.5)
+                reloaded = grab(win, "long-compact-reloaded-top.png", (946, 511))
+                assert diff(top, reloaded) < 800, (
+                    "F9 restored bubble narrative position but leaked old scroll offset"
+                )
                 press(win, "Home")
                 returned = grab(win, "long-compact-back-top.png", (946, 511))
                 assert diff(top, returned) < 800, (
