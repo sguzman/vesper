@@ -57,9 +57,11 @@ fn bubble_geometry(
     // stops above the speaker's head. Never exceed the physical viewport.
     let viewport_cap = (viewport.y - top - 12.0).max(90.0);
     let face_safe_bottom = viewport.y * 0.43;
-    let max_bottom = anchor.map_or(face_safe_bottom, |head| {
-        face_safe_bottom.min(head.y - 14.0)
-    });
+    // Narration uses the upper safe band; a *speaker-anchored* bubble
+    // instead follows the head, stopping just above it so the tail still
+    // connects visually. Applying the narrator cap to an anchored bubble
+    // would detach it from low-set characters and force <90px content.
+    let max_bottom = anchor.map_or(face_safe_bottom, |head| head.y - 14.0);
     let max_height = (max_bottom - top).clamp(90.0, viewport_cap);
     BubbleGeometry {
         left, top, width, max_height,
@@ -471,7 +473,7 @@ mod tests {
             let anchored = bubble_geometry(viewport, 58.0, Some(speaker));
             assert!(anchored.tail_x.is_some());
             assert!(anchored.top + anchored.max_height < speaker.y - 12.0);
-            assert!(anchored.top + anchored.max_height <= viewport.y * 0.43 + 0.1);
+            assert!(anchored.max_height >= 90.0);
         }
     }
 
