@@ -150,7 +150,50 @@ def main() -> None:
                 # logical player position or stretching source artwork.
                 call("xdotool", "windowsize", "--sync", window, "946", "511")
                 time.sleep(.7)
-                frame(window, "walk-compact.png", 946, 511)
+                compact = frame(window, "walk-compact.png", 946, 511)
+
+                # A focused NPC opens a real .vn scene while freezing walking.
+                key(window, "e")
+                wait_for_log(log, "Vesper exploration interacting: neighbor -> neighbor_chat")
+                time.sleep(.4)
+                bubble = frame(window, "npc-bubble.png", 946, 511)
+                assert changed(compact, bubble) > 800, (
+                    "Real NPC dialogue did not appear in the world"
+                )
+                # World position must not change under dialogue.
+                walk(window, "Right", .35)
+                key(window, "F5")
+                assert not (Path(folder) / "saves" / "exploration-schema.json").exists(), (
+                    "Modal NPC conversation wrote a world-incomplete save"
+                )
+                key(window, "q")
+                wait_for_log(log, "Vesper exploration conversation cancelled")
+                restored = frame(window, "npc-cancelled.png", 946, 511)
+                assert changed(restored, bubble) > 800, (
+                    "Cancel did not dismiss the modal dialogue"
+                )
+                # Cancellation does not select a choice or consume the NPC:
+                # a second E opens the authored scene again.
+                old_interactions = log_text(log).count("Vesper exploration interacting:")
+                key(window, "e")
+                wait_for_log(log, "Vesper exploration interacting:", old_interactions)
+                old_returns = log_text(log).count("Vesper exploration resumed")
+                for button in ("Return", "Return", "Return", "1", "Return", "Return"):
+                    key(window, button)
+                    if log_text(log).count("Vesper exploration resumed") > old_returns:
+                        break
+                wait_for_log(log, "Vesper exploration resumed", old_returns)
+                resumed = frame(window, "npc-returned.png", 946, 511)
+                assert changed(resumed, bubble) > 800, (
+                    "Authored explore return did not reveal walking again"
+                )
+                # Resume at the same X rather than teleporting to a spawn.
+                old = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "Right", .15)
+                x3 = position_after_stop(log, old)
+                assert 2.0 < x3 - x2 < 70.0, (
+                    f"Modal conversation changed the return X: {x2} -> {x3}"
+                )
 
                 # Until NA07 introduces a valid migration that stores world
                 # position, F5 deliberately refuses incomplete quick saves.
@@ -158,9 +201,9 @@ def main() -> None:
                 assert not (Path(folder) / "saves" / "exploration-schema.json").exists(), (
                     "Walk preview incorrectly wrote an incomplete VN-only save"
                 )
-                print(f"Exploration movement x={x1:.1f}->{x2:.1f}; paused controls ignored",
+                print(f"Exploration movement x={x1:.1f}->{x2:.1f}->{x3:.1f}; pause and return preserved",
                       flush=True)
-                print("Native walk-first visual, resize, bounds, and incomplete-save guard: passed",
+                print("Native walking, NPC interaction, cancellation, explicit return, dialogue and incomplete-save guard: passed",
                       flush=True)
             finally:
                 proc.terminate()

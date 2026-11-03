@@ -7,6 +7,7 @@ pub mod preferences;
 pub mod ambient_motion;
 pub mod experience;
 pub mod exploration;
+pub mod interaction;
 pub mod walk;
 use std::{
     collections::BTreeMap,

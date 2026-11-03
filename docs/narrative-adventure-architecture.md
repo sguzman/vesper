@@ -18,12 +18,14 @@ This is an **additive** extension. The existing version-1 script grammar and pan
 | Mode | Owner | Authoritative position | Dialogue behavior |
 | --- | --- | --- | --- |
 | `visual_novel` | existing story machine and player | staged character slots / backgrounds | standard VN dialogue, no movement input |
-| `exploring` | future bounded exploration controller | current named external location + logical X + facing | movement and interaction prompts, no automatic dialogue advance |
+| `exploring` | bounded walk-first exploration controller | current named external location + logical X + facing | movement and interaction prompts, no automatic dialogue advance |
 | `conversation` | story machine while exploration is suspended | an explicit saved return point | modal dialogue/choices; player movement disabled until explicit outcome |
 
 **Dialogue surface**, separate from mode: `panel` (default; existing artwork and speaker nameplate) or `bubble` (anchored text and optional artist-supplied bubble frame). An ordinary VN may use a bubble; an exploration conversation may use the full illustrated panel; either may switch within one conversation.
 
-`crates/game/src/experience.rs` provides the pure typed model and transition guards. This model is deliberately **not wired to a new player mode yet**: NA04–NA07 will connect it to assets, inputs and persistence, and NA02–NA03 will connect dialogue surfaces to the renderer.
+`crates/game/src/experience.rs` provides the pure typed model and transition guards. The walk-first controller, native bubbles, and first NPC/prop interaction
+bridge now use this model. Multi-location transitions, conditional NPC
+states, persistence and hot reload are still incomplete.
 
 ## Explicit transitions and invariants
 
@@ -41,7 +43,8 @@ This is an **additive** extension. The existing version-1 script grammar and pan
 **New authoring is additive and versioned.** The optional `[dialogue]`
 surface authoring, `[exploration]` location data, and the opt-in
 `[exploration.start]` walk-first preview are now implemented; the
-`explore`/conversation commands shown below are **planned, not runnable**.
+`explore return` and `mode visual_novel` commands are implemented while
+`explore <location> at <spawn>` remains planned.
 Existing `format_version = 1` manifests remain valid. Use an optional isolated `[exploration]` subsection with its own `schema_version = 1` and referenced locations; validate that optional section only when present. Preserve the existing game-relative secure path policy.
 
 Example **planned manifest shape**, not yet runnable:
@@ -116,7 +119,7 @@ friend: "Let's talk somewhere quiet."
 - `mode visual_novel` explicitly transfers into cinematic staging from any mode and clears the pending exploration return.
 - Parser and runtime must add typed commands instead of interpreting TOML or source strings as executable code, while preserving file/line diagnostics. Cross-reference validation must reject missing scenes or locations before starting play.
 
-**Unresolved until implementation:** precise format of bubble tail and safe-area geometry, narrative yield/resume mechanics, choice widget position in bubble mode and multi-NPC collision/occlusion handling. These are existing NA02/NA04/NA06 tasks, **not additional scope**.
+**Still pending acceptance:** authored multi-location transitions, conditional NPC visibility, full bubble/choice geometry and multi-NPC occlusion on all display sizes, plus world-aware saves/reload. These remain existing NA02/NA04/NA06–08 scope.
 
 ## Persistence and hot reload
 

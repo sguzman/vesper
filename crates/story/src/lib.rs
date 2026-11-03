@@ -40,6 +40,10 @@ pub enum Visual {
     /// Non-speaking scene sprites declared by the external manifest.
     AmbientShow(String),
     AmbientHide(String),
+    /// Explicit authored return to the exact pre-conversation world position.
+    ExploreReturn,
+    /// Explicitly drop an exploration return and enter cinematic VN mode.
+    EnterVisualNovel,
 }
 
 /// An additive author command. Panel artwork ('panel skin_name') remains
@@ -157,6 +161,18 @@ fn dialogue_output(command: &Command) -> Option<Output> {
 }
 
 fn command(line: &str) -> Result<Command, String> {
+    if line == "explore return" {
+        return Ok(Command::Visual(Visual::ExploreReturn));
+    }
+    if line == "mode visual_novel" {
+        return Ok(Command::Visual(Visual::EnterVisualNovel));
+    }
+    if line.starts_with("explore ") {
+        return Err("explore syntax: explore return (location transfers not implemented yet)".into());
+    }
+    if line.starts_with("mode ") {
+        return Err("mode syntax: mode visual_novel".into());
+    }
     if let Some(value) = line.strip_prefix("surface ") {
         return Ok(Command::Visual(Visual::Surface(match value {
             "panel" => DialogueSurfaceDirective::Panel,
@@ -589,7 +605,32 @@ impl Machine {
     }
 
     pub fn scene(&self) -> &str { &self.scene }
+
+    /// Enter an authored interaction scene without discarding persistent
+    /// variables. Exactly one story machine serves VNs and walkable scenes.
+    /// Reject attempts to abandon a currently pending choice.
+    pub fn enter_scene(&mut self, scene: &str) -> Result<(), String> {
+        if self.pending.is_some() {
+            return Err("cannot enter an interaction while a choice is pending".into());
+        }
+        if !self.story.scenes.contains_key(scene) {
+            return Err(format!("unknown interaction scene '{scene}'"));
+        }
+        self.scene = scene.into();
+        self.cursor = 0;
+        self.last_output = None;
+        Ok(())
+    }
+
     pub fn variables(&self) -> &BTreeMap<String, Value> { &self.variables }
+
+    /// Cancel a *modal world conversation*, discarding only its pending
+    /// UI choice. Previously executed assignments remain persistent.
+    /// Ordinary visual novels never call this outside the exploration bridge.
+    pub fn cancel_interaction(&mut self) {
+        self.pending = None;
+        self.last_output = None;
+    }
 
     pub fn choose(&mut self, index: usize) -> Result<(), String> {
         let choices = self.pending.as_ref().ok_or("no choice is pending")?;
@@ -1008,5 +1049,68 @@ mod dialogue_surface_tests {
         let snapshot = machine.snapshot();
         let restored = Machine::restore(&story, snapshot.clone()).unwrap();
         assert_eq!(restored.snapshot(), snapshot);
+    }
+}
+
+#[cfg(test)]
+mod exploration_story_command_tests {
+    use super::*;
+
+    #[test]
+    fn explicit_return_and_cinematic_transfer_are_typed_story_events() {
+        let story = Story::parse(
+            "@scene intro\nexplore return\nmode visual_novel\n"
+        ).unwrap();
+        let mut machine = Machine::new(&story, "intro").unwrap();
+        assert_eq!(machine.advance().unwrap(), Output::Visual(Visual::ExploreReturn));
+        assert_eq!(machine.advance().unwrap(), Output::Visual(Visual::EnterVisualNovel));
+        assert_eq!(machine.advance().unwrap(), Output::End);
+    }
+
+    #[test]
+    fn unknown_mode_commands_have_source_line_diagnostics() {
+        for invalid in ["mode walk", "explore now", "explore home at front"] {
+            let source = format!("@scene intro\n{invalid}\n\"hello\"");
+            let errors = Story::parse(&source).unwrap_err();
+            assert_eq!(errors.len(), 1);
+            assert_eq!(errors[0].line, 2);
+        }
+    }
+
+    #[test]
+    fn entering_npc_scene_preserves_story_variables_and_is_repeatable() {
+        let story = Story::parse(
+            "@scene intro\nset visits = 0\n\"start\"\n             @scene neighbor\nset visits += 1\nneighbor: \"Hello\"\nexplore return\n"
+        ).unwrap();
+        let mut machine = Machine::new(&story, "intro").unwrap();
+        assert!(matches!(machine.advance(), Ok(Output::Dialogue { .. })));
+        assert_eq!(machine.variables()["visits"], Value::Number(0));
+        for count in 1..=2 {
+            machine.enter_scene("neighbor").unwrap();
+            assert!(matches!(machine.advance(), Ok(Output::Dialogue { .. })));
+            assert_eq!(machine.variables()["visits"], Value::Number(count));
+            assert_eq!(machine.advance().unwrap(), Output::Visual(Visual::ExploreReturn));
+        }
+        let snapshot = machine.snapshot();
+        assert_eq!(Machine::restore(&story, snapshot.clone()).unwrap().snapshot(), snapshot);
+        assert!(machine.enter_scene("missing").is_err());
+        assert_eq!(machine.scene(), "neighbor");
+    }
+
+    #[test]
+    fn pending_choice_must_be_resolved_before_external_interaction() {
+        let story = Story::parse(
+            "@scene intro\n* \"Yes\" -> yes\n@scene yes\n\"OK\""
+        ).unwrap();
+        let mut machine = Machine::new(&story, "intro").unwrap();
+        assert!(matches!(machine.advance(), Ok(Output::Choices(_))));
+        assert!(machine.enter_scene("yes").is_err());
+        // Cancel discards the pending selection, without awarding a choice.
+        let mut cancelled = Machine::restore(&story, machine.snapshot()).unwrap();
+        cancelled.cancel_interaction();
+        cancelled.enter_scene("yes").unwrap();
+        assert!(matches!(cancelled.advance(), Ok(Output::Dialogue { .. })));
+        machine.choose(0).unwrap();
+        assert!(matches!(machine.advance(), Ok(Output::Dialogue { .. })));
     }
 }

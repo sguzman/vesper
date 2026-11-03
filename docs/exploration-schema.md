@@ -1,10 +1,10 @@
 # NA04 — Optional external explorable-location data
 
-**Implementation status:** Versioned parsing, validation and a small
-**walk-first Bevy preview** exist. This is deliberately not a full narrative
-adventure: NPC conversations, location transfers, interactive objects and
-exploration save/load still belong to NA06–NA07. It is not the original anime
-urban slice-of-life game.
+**Implementation status:** Versioned parsing, validation, walking, and the
+first **NPC/prop-to-.vn interaction bridge** exist. This is not yet a full
+narrative adventure: location transfers, conditional NPC states, and
+exploration-aware persistence/reload remain unfinished. This is not the
+original anime urban slice-of-life game.
 
 ## Separation from visual novels
 
@@ -121,10 +121,19 @@ locations never starts walking.
 camera following only when necessary, optional walk/idle frame animation,
 and pause/menu/focus input ownership. Background PNGs retain aspect through
 uniform cover scaling. The completed VN UI and story camera remain separate.
-NPCs/objects and exits are rendered but have **no interaction action yet**;
-NA06 will connect them to story events and return-to-position. F5/F9/F6
-saves are intentionally unavailable during exploration until NA07 persists
-its logical world position. No fake/incomplete VN-only save is written.
+NPCs and props respond to **E** inside their declared interaction radii,
+using nearest-distance selection and deterministic ID tie-breaks. A visible
+keyboard focus cue names the target. The original .vn interpreter provides
+variables, choices, history, and `surface` switches without moving the
+avatar. `explore return` resumes the exact prior X/facing/location;
+`mode visual_novel` explicitly drops the return. **Q** cancels modal
+conversation without selecting an option; already-run story assignments
+are not rolled back. World art stays visible under modal dialogue.
+Bubbles may anchor to an authored NPC ID.
+
+Authored exits have not been connected to movement yet. F5/F9/F6 saves
+remain unavailable in both exploration and modal conversation until NA07
+persists complete world state; no incomplete VN-only save is written.
 
 The `examples/exploration-schema` walk-first fixture uses reused test
 background art. It must not be reported as the original playable urban
@@ -140,8 +149,9 @@ slice-of-life example.
 - Pure locomotion and camera tests under `crates/game/src/walk.rs` enforce
   frame-time caps, level bounds, single-screen framing and resize independence.
 - The native `.github/scripts/exploration_walk_smoke.py` drives actual
-  Bevy keyboard movement, paused movement suppression, source-art rendering
-  and compact-window resizing under CI and archives graphical frames.
+  Bevy movement, NPC conversation, cancellation, authored return,
+  paused movement suppression, sprite rendering and compact-window resize,
+  archiving graphical frames.
 - Existing VN-only games and all original `.vn` commands remain unchanged and
   continue running under the regular CLI/Bevy regressions.
 

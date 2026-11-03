@@ -1330,6 +1330,16 @@ fn apply_visual_with_mode(
     instant: bool,
 ) -> Result<(), String> {
     match visual {
+        Visual::ExploreReturn => {
+            session.experience.resume_exploration()?;
+            session.choosing = false;
+            session.finished = false;
+            info!("Vesper exploration resumed at previous world position");
+        }
+        Visual::EnterVisualNovel => {
+            session.experience.enter_visual_novel();
+            info!("Vesper explicitly entered visual novel mode");
+        }
         Visual::Surface(directive) => {
             use vesper_game::experience::DialogueSurface;
             let override_surface = match directive {
@@ -1527,6 +1537,19 @@ fn apply_visual_with_mode(
     Ok(())
 }
 
+/// Modal world conversations have their own accurate keyboard legend:
+/// do not advertise save commands until NA07 writes logical world state.
+fn interaction_screen(session: &Session, mut screen: Screen) -> Screen {
+    if matches!(session.experience.mode, ExperienceMode::Conversation { .. }) {
+        screen.hint = if screen.choices {
+            "Arrows: choose   Enter/Number: confirm   Q: leave   P: pause".into()
+        } else {
+            "Enter/Space: continue   Q: leave   H: history   P: pause".into()
+        };
+    }
+    screen
+}
+
 /// Store the visible end state for keyboard selection and hot-reload refreshes.
 fn finish_story(session: &mut Session, message: String) -> Screen {
     session.finished = true;
@@ -1544,7 +1567,7 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
                 }
                 let speaker = speaker.unwrap_or_default();
                 session.history.record(session.machine.scene(), &speaker, &text);
-                return Screen::normal(speaker, text);
+                return interaction_screen(session, Screen::normal(speaker, text));
             }
             Ok(Output::RichDialogue { speaker, text, spans }) => {
                 if env::var_os("VESPER_TRACE_SCENES").is_some() {
@@ -1552,16 +1575,22 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
                 }
                 let speaker = speaker.unwrap_or_default();
                 session.history.record(session.machine.scene(), &speaker, &text);
-                return Screen::rich(speaker, text, spans);
+                return interaction_screen(session, Screen::rich(speaker, text, spans));
             }
             Ok(Output::Choices(options)) => {
                 session.choosing = true;
                 session.presentation.selected_choice = 0;
-                return Screen::choices(&options, 0);
+                return interaction_screen(session, Screen::choices(&options, 0));
             }
             Ok(Output::Visual(visual)) => {
+                let returning = matches!(visual, Visual::ExploreReturn);
                 if let Err(error) = apply_visual(session, commands, assets, visual) {
-                    return finish_story(session, format!("Story asset error:\n{error}"));
+                    return finish_story(session, format!("Story transition/asset error:\n{error}"));
+                }
+                if returning {
+                    // An explicit authored return suspends the narrative.
+                    // Never advance the next instruction or synthesize an End.
+                    return Screen::normal(String::new(), String::new());
                 }
             }
             Ok(Output::End) => {
@@ -2348,8 +2377,9 @@ fn advance_from_keyboard(
     if input.just_pressed(KeyCode::F6) {
         // Exploration saves need logical position migration (NA07); do not
         // offer a slot UI that would only persist the underlying story.
-        if matches!(session.experience.mode, ExperienceMode::Exploring(_)) {
-            warn!("Vesper exploration save slots require NA07; no partial save written");
+        if matches!(session.experience.mode,
+            ExperienceMode::Exploring(_) | ExperienceMode::Conversation { .. }) {
+            warn!("Vesper exploration/conversation saves require NA07; no partial save written");
             return;
         }
         let theme=effective_theme(&session);
@@ -2457,14 +2487,43 @@ fn advance_from_keyboard(
         }
         return;
     }
-    // The walk-first preview has no narrative interaction yet. Never let
-    // arrow keys, Enter, Space, or debug rewind progress a hidden VN scene.
+    // World input is independent of dialogue input. E opens the nearest
+    // validated NPC/prop scene; walking never advances hidden VN text.
     if matches!(session.experience.mode, ExperienceMode::Exploring(_)) {
+        if input.just_pressed(KeyCode::KeyE) {
+            match exploration::begin_interaction(&mut session, &mut commands, &assets) {
+                Ok(Some(screen)) => update_screen(screen, &effective_theme(&session),
+                    &mut texts, &mut reading, readout::speed(&session)),
+                Ok(None) => {},
+                Err(error) => warn!("Vesper exploration interaction: {error}"),
+            }
+        }
+        return;
+    }
+    // Explicit Q cancellation resumes the exact world position without
+    // triggering a choice or unintended narrative step.
+    if matches!(session.experience.mode, ExperienceMode::Conversation { .. })
+        && input.just_pressed(KeyCode::KeyQ)
+    {
+        session.machine.cancel_interaction();
+        match session.experience.resume_exploration() {
+            Ok(()) => {
+                session.choosing = false;
+                session.finished = false;
+                reading.autoplay_ready = false;
+                info!("Vesper exploration conversation cancelled");
+            },
+            Err(error) => warn!("Vesper conversation cancellation: {error}"),
+        }
         return;
     }
     // Backspace is a developer-friendly, bounded undo of the last visible
     // dialogue/choice step. It never writes a save or rewinds disk state.
     if input.just_pressed(KeyCode::Backspace) {
+        if matches!(session.experience.mode, ExperienceMode::Conversation { .. }) {
+            warn!("Vesper interaction rewind requires exploration save state (NA07)");
+            return;
+        }
         if let Some(step) = debug_back.0.pop_back() {
             match Machine::restore(&session.game.story, step.narrative) {
                 Ok(machine) => {
@@ -2537,7 +2596,8 @@ fn advance_from_keyboard(
         };
         if let Some(index) = selected {
             session.presentation.selected_choice = index;
-            update_screen(Screen::choices(&options, index), &effective_theme(&session), &mut texts,
+            update_screen(interaction_screen(&session, Screen::choices(&options, index)),
+                &effective_theme(&session), &mut texts,
                 &mut reading, readout::speed(&session));
             return;
         }
@@ -2607,8 +2667,9 @@ fn trigger_save_load(
     let quick_save = keyboard.just_pressed(KeyCode::F5);
     let quick_load = keyboard.just_pressed(KeyCode::F9);
     if request.is_none() && !quick_save && !quick_load { return; }
-    if matches!(session.experience.mode, ExperienceMode::Exploring(_)) {
-        warn!("Vesper exploration quick-save/load deferred until NA07");
+    if matches!(session.experience.mode,
+        ExperienceMode::Exploring(_) | ExperienceMode::Conversation { .. }) {
+        warn!("Vesper exploration/conversation quick-save/load deferred until NA07");
         return;
     }
     if request.is_none()

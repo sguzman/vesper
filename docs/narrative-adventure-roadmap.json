@@ -148,9 +148,11 @@
         "On conversation completion, return to the correct exploration location and prior avatar position by explicit author intent; support authored scene transfer to full VN mode and back, not implicit forced walking.",
         "NPC visibility/interactions can conditionally change from persistent story state; test cancellation, repeated interaction, two simultaneous candidates, and no double-trigger on press/release."
       ],
-      "status": "not started",
+      "status": "active",
       "verified_weight": 0,
-      "evidence": []
+      "evidence": [
+        "Typed explore return/mode visual_novel commands, variable-preserving machine enter_scene, deterministic nearest NPC/prop target, accessible E cue and Q cancel, in-world bubble anchored to speaker, and native CI scenario committed pending full verification. Multi-location transfer and conditional NPC state remain unfinished."
+      ]
     },
     {
       "id": "NA07",
@@ -277,9 +279,10 @@
       "NA02",
       "NA03",
       "NA04",
-      "NA05"
+      "NA05",
+      "NA06"
     ],
-    "pending": "Verify NA05's native walk-first player and all legacy VN/Atlas regressions on the latest commit; fix failures before counting any milestones. NA06 interaction and NA07 world-position saves are explicitly not implemented.",
+    "pending": "Verify CI for NPC/prop story interactions and Atlas regressions. Complete multi-location transitions, conditional NPC visibility and NA07 world-aware saves before awarding unverified milestones.",
     "previous_preserved_complete": true
   }
 }

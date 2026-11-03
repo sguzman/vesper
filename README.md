@@ -17,8 +17,9 @@ Per-scene/per-line `surface panel | bubble | default` commands are
 implemented with a dedicated regression fixture, pending final CI verification.
 A first **optional walk-first preview** is now implemented and awaiting
 Bevy graphical acceptance. Only packages with `[exploration.start]` enter
-it; traditional VNs need no exploration data. Movement is separate from
-the future NPC-to-story interaction and world save/load work.
+it; traditional VNs need no exploration data. Movement is independent of the now-implemented initial NPC-to-story
+interaction bridge, currently pending CI. Exploration-aware save/load and
+multi-location transitions remain later work.
 The [optional exploration-location schema](docs/exploration-schema.md)
 now validates external maps and scene interactions, without yet enabling
 movement. Its [authoring-only fixture](examples/exploration-schema/) is not

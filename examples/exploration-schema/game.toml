@@ -35,7 +35,8 @@ facing = "right"
 [exploration.locations.street.npcs.neighbor]
 x = 435.0
 interact_scene = "neighbor_chat"
-interaction_radius = 80.0
+# Comfortable, non-pixel-perfect keyboard interaction.
+interaction_radius = 180.0
 
 [exploration.locations.street.props.noticeboard]
 x = 690.0

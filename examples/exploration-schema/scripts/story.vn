@@ -1,9 +1,28 @@
-# External data-validation fixture, not a finished novel or playable map.
+# Optional compact walk-first narrative bridge fixture.
+# Interactive locations are game data, not hardcoded player behavior.
 @scene intro
-"This remains a traditional visual novel until exploration commands are implemented."
+set visits = 0
+"This stays a pure visual novel if [exploration.start] is omitted."
 
 @scene neighbor_chat
-"The neighbor says hello."
+set visits += 1
+surface bubble
+neighbor: "Hey! Good to see you around the neighborhood."
+* "Just saying hello" -> neighbor_hello
+* "We should talk elsewhere" -> neighbor_serious
+
+@scene neighbor_hello
+surface bubble
+neighbor: "See you around!"
+explore return
+
+@scene neighbor_serious
+mode visual_novel
+surface panel
+neighbor: "Let's talk somewhere quiet."
+"This is a full visual-novel scene. There is no forced walk back."
 
 @scene read_notice
-"The community noticeboard has today's announcements."
+surface panel
+"The noticeboard lists today's community gatherings."
+explore return

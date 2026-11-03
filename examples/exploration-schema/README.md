@@ -14,13 +14,18 @@ cargo run --locked -p vesper-cli -- check-game examples/exploration-schema
 cargo run --locked -p vesper-player -- examples/exploration-schema
 ```
 
-**Controls:** Left/Right arrows or A/D walk; P pauses, M opens the menu.
-This checkpoint intentionally does **not** make NPCs/exits interactive: the
-deterministic conversation bridge and explicit location transitions are
-NA06. F5/F9/F6 exploration saves are deliberately disabled until NA07
-can persist logical world positions and restore them safely.
+**Controls:** Left/Right arrows or A/D walk; **E** interacts with the
+nearest in-range NPC/object; **Q** cancels a conversation. P pauses, M
+opens the menu. The readable focus cue names the nearest target.
 
-Native CI exercises actual Bevy movement, paused input, resizing, art
-rendering and the incomplete-save guard. Legacy VNs remain unaffected.
+The .vn fixture exercises `surface bubble`, an authored choice followed by
+`explore return`, a `mode visual_novel` alternative, and an illustrated
+`surface panel` noticeboard interaction. Location exits, conditional NPC
+visibility and world-aware saves are not implemented yet (NA06–NA07).
+F5/F9/F6 are disabled during exploration and returnable conversations.
+
+Native CI exercises Bevy movement, an NPC interaction, Q cancellation,
+an authored return to the prior X, paused input, resizing, and the
+incomplete-save guard. Legacy VNs remain unaffected.
 See [schema authoring](../../docs/exploration-schema.md) and the
 [expansion roadmap](../../docs/narrative-adventure-roadmap.md).

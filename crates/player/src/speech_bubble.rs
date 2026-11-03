@@ -162,6 +162,28 @@ pub fn sync(
                     break;
                 }
             }
+            // A modal world conversation can use the same speech-bubble
+            // surface as a pure VN, anchored to its authored NPC rather
+            // than requiring a staged VN character or baked text artwork.
+            if position.is_none()
+                && let vesper_game::experience::ExperienceMode::Conversation {
+                    return_to, ..
+                } = &session.experience.mode
+                && let Some(area) = session.game.manifest.exploration.as_ref()
+                    .and_then(|world| world.locations.get(&return_to.location))
+                && let Some(npc) = area.npcs.get(name)
+            {
+                let view = vesper_game::walk::View::for_area(
+                    area.width, area.height, viewport.x, viewport.y,
+                    area.camera.zoom, return_to.x, area.camera.follow_x,
+                );
+                let ground_y = (0.25 - area.camera.horizon) * viewport.y;
+                let head = Vec2::new(
+                    viewport.x * 0.5 + view.x(npc.x),
+                    viewport.y * 0.5 - ground_y - 42.5 * view.world_to_screen,
+                ) / ui_scale.0.max(0.05);
+                position = Some(head);
+            }
         }
         let geometry = bubble_geometry(logical, skin.max_width_percent, position);
         // Mut<Node> projects through DerefMut: update sequentially rather

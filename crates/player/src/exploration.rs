@@ -6,6 +6,7 @@
 use super::*;
 use vesper_game::{
     experience::{ExperienceMode, Facing},
+    interaction::{self, TargetKind},
     walk::{self, View},
 };
 
@@ -25,6 +26,11 @@ pub struct WalkPreview {
     elapsed: f32,
     moving: bool,
 }
+
+#[derive(Component)]
+struct InteractionPrompt;
+#[derive(Component)]
+struct InteractionPromptText;
 
 fn sprite_art(path: Option<&String>, assets: &AssetServer,
     color: Color, size: Vec2) -> Sprite {
@@ -115,9 +121,68 @@ pub fn setup(
             TextColor(Color::WHITE),
         ));
     });
+    // A single keyboard-focusable interaction cue: no clickable tiny NPC
+    // hitboxes, no walking errands, and no game-specific string logic.
+    commands.spawn((
+        Name::new("Exploration nearby interaction cue"),
+        InteractionPrompt,
+        Node {
+            display: Display::None,
+            position_type: PositionType::Absolute,
+            bottom: px(30.0),
+            left: percent(24.0),
+            width: percent(52.0),
+            justify_content: JustifyContent::Center,
+            padding: px(12.0).all(),
+            border: px(2.0).all(),
+            border_radius: BorderRadius::all(px(12.0)),
+            ..default()
+        },
+        BackgroundColor(Color::srgba(0.02, 0.04, 0.09, 0.94)),
+        BorderColor::all(Color::WHITE),
+    )).with_children(|parent| {
+        parent.spawn((
+            InteractionPromptText,
+            Text::new("E: Interact"),
+            TextFont { font_size: FontSize::Px(18.0), ..default() },
+            TextColor(Color::WHITE),
+            TextLayout::new(Justify::Center, LineBreak::WordOrCharacter),
+        ));
+    });
     commands.insert_resource(runtime);
     info!("Vesper exploration preview entered: {} at x={:.1}",
         position.location, position.x);
+}
+
+/// Interact with the closest validated authored NPC/prop. Successful
+/// transitions keep world sprites in place; the same interpreter executes
+/// dialogue, rich text, choices and every existing story command.
+pub fn begin_interaction(
+    session: &mut Session,
+    commands: &mut Commands,
+    assets: &AssetServer,
+) -> Result<Option<Screen>, String> {
+    let ExperienceMode::Exploring(position) = &session.experience.mode else {
+        return Ok(None);
+    };
+    let Some(area) = session.game.manifest.exploration.as_ref()
+        .and_then(|world| world.locations.get(&position.location)) else {
+        return Err("current authored exploration location is unavailable".into());
+    };
+    let Some(target) = interaction::nearest(area, position) else {
+        return Ok(None);
+    };
+    let scene = target.scene.to_owned();
+    let label = target.id.to_owned();
+    // Entering the scene can fail for a pending choice or invalid hot-reload
+    // target. Do not switch the world mode until that succeeds.
+    session.machine.enter_scene(&scene)?;
+    session.experience.begin_interaction(scene.clone())?;
+    session.choosing = false;
+    session.finished = false;
+    let screen = next_screen(session, commands, assets);
+    info!("Vesper exploration interacting: {label} -> {scene}");
+    Ok(Some(screen))
 }
 
 /// No gameplay controls run when focus or a modal menu owns the keyboard.
@@ -180,9 +245,49 @@ pub fn sync(
     session: Res<Session>, runtime: Res<WalkPreview>,
     windows: Query<&Window, With<PrimaryWindow>>,
     images: Res<Assets<Image>>,
-    mut sprites: Query<(&AreaVisual, &mut Sprite, &mut Transform)>,
+    mut sprites: Query<(&AreaVisual, &mut Sprite, &mut Transform, &mut Visibility)>,
+    mut prompts: Query<&mut Node, (With<InteractionPrompt>, Without<StoryPanel>)>,
+    mut labels: Query<&mut Text, With<InteractionPromptText>>,
+    mut panels: Query<&mut Node, (With<StoryPanel>, Without<InteractionPrompt>)>,
 ) {
-    let ExperienceMode::Exploring(position) = &session.experience.mode else { return; };
+    // World artwork remains visible during modal conversations, so the
+    // speaker can still be seen under a bubble or illustrated VN panel.
+    let position = match &session.experience.mode {
+        ExperienceMode::Exploring(point) | ExperienceMode::Conversation {
+            return_to: point, ..
+        } => Some(point),
+        ExperienceMode::VisualNovel => None,
+    };
+    let exploring = matches!(session.experience.mode, ExperienceMode::Exploring(_));
+    for mut panel in &mut panels {
+        let display = if exploring { Display::None } else { Display::Flex };
+        if panel.display != display { panel.display = display; }
+    }
+    let target = position.and_then(|point| {
+        session.game.manifest.exploration.as_ref()
+            .and_then(|world| world.locations.get(&point.location))
+            .and_then(|area| interaction::nearest(area, point))
+    });
+    let focused = exploring && !session.paused && session.menu_overlay.is_none()
+        && !session.history.visible() && windows.single().is_ok_and(|window| window.focused);
+    for mut prompt in &mut prompts {
+        let display = if focused && target.is_some() { Display::Flex } else { Display::None };
+        if prompt.display != display { prompt.display = display; }
+    }
+    if focused {
+        if let Some(target) = target {
+            let verb = if target.kind == TargetKind::Npc { "Talk to" } else { "Inspect" };
+            let next = format!("E: {verb} {}", target.id);
+            for mut label in &mut labels {
+                if label.0 != next { label.0.clone_from(&next); }
+            }
+        }
+    }
+    for (_, _, _, mut visibility) in &mut sprites {
+        let value = if position.is_some() { Visibility::Visible } else { Visibility::Hidden };
+        if *visibility != value { *visibility = value; }
+    }
+    let Some(position) = position else { return; };
     let Some(world) = &session.game.manifest.exploration else { return; };
     let Some(area) = world.locations.get(&position.location) else { return; };
     let Ok(window) = windows.single() else { return; };
@@ -191,7 +296,7 @@ pub fn sync(
     let view = View::for_area(area.width, area.height, viewport.x, viewport.y,
         area.camera.zoom, position.x, area.camera.follow_x);
     let ground_y = (0.25 - area.camera.horizon) * viewport.y;
-    for (part, mut sprite, mut transform) in &mut sprites {
+    for (part, mut sprite, mut transform, _) in &mut sprites {
         match part {
             AreaVisual::Backdrop | AreaVisual::Layer { .. } => {
                 let parallax = if let AreaVisual::Layer { parallax, .. } = part {
