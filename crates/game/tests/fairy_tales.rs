@@ -5,7 +5,7 @@ use std::{
     path::PathBuf,
 };
 use vesper_game::Game;
-use vesper_story::{Machine, Output, Value, Visual};
+use vesper_story::{Machine, Output, Value, Visual, DialogueSurfaceDirective};
 
 fn game(name: &str) -> Game {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -22,6 +22,7 @@ struct Trace {
     music: BTreeSet<String>,
     effects: BTreeSet<String>,
     dialogues: Vec<String>,
+    surfaces: Vec<DialogueSurfaceDirective>,
     variables: std::collections::BTreeMap<String, Value>,
     ending: String,
 }
@@ -56,6 +57,7 @@ fn play(game: &Game, decisions: &[usize]) -> ResultState {
                         game.panel_skin(&id).expect("panel event uses a declared skin");
                     }
                 }
+                Visual::Surface(surface) => trace.surfaces.push(surface),
                 Visual::Hide(_) => {}
                 Visual::AmbientShow(id) | Visual::AmbientHide(id) => {
                     assert!(game.manifest.ambient_actors.contains_key(&id));
@@ -107,6 +109,34 @@ fn the_little_lantern_is_a_complete_minimal_novel() {
         assert_eq!(trace.backgrounds.len(), 1);
         assert!(trace.expressions.contains("pip.cheerful"));
         assert_eq!(trace.dialogues.len(), 8);
+    }
+}
+
+#[test]
+fn bubble_showcase_is_a_complete_pure_vn_with_surface_switches() {
+    let game = game("bubble-showcase");
+    assert_eq!(
+        game.manifest.dialogue.default_surface,
+        vesper_game::experience::DialogueSurface::Bubble
+    );
+    for choice in 0..2 {
+        let ResultState::End(trace) = play(&game, &[choice]) else {
+            panic!("bubble-showcase story should complete for either choice");
+        };
+        assert_eq!(trace.dialogues.len(), 8);
+        assert_eq!(
+            trace.surfaces,
+            vec![
+                DialogueSurfaceDirective::Panel,
+                DialogueSurfaceDirective::Bubble,
+                if choice == 0 {
+                    DialogueSurfaceDirective::Panel
+                } else {
+                    DialogueSurfaceDirective::Bubble
+                },
+                DialogueSurfaceDirective::Default,
+            ]
+        );
     }
 }
 
