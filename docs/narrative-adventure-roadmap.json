@@ -6,13 +6,13 @@
   "status": "active; incremental implementation and verification",
   "baseline_commit": "e912f55b3007905b954c7fad872de9d4ceb163da",
   "scope_weight": 100,
-  "verified_weight": 13,
+  "verified_weight": 23,
   "prior_scopes_unchanged": true,
   "tracks": [
     {
       "id": "engine",
       "weight": 60,
-      "verified_weight": 13,
+      "verified_weight": 23,
       "name": "Generic optional exploration and independent speech bubbles"
     },
     {
@@ -67,8 +67,8 @@
         "Anchor bubbles above the active staged speaker or in-world NPC; clamp to every supported viewport with no cropped text, covered faces or uncontrolled overlaps; offer an explicit readable fallback when an anchor is absent/offscreen.",
         "Unit and graphical tests cover long text, multilingual glyphs, 946x511 and 1280x720, scaling, reduced motion, and high contrast; no per-line asset decoding or blocking render-thread work."
       ],
-      "status": "active",
-      "verified_weight": 0,
+      "status": "verified",
+      "verified_weight": 10,
       "evidence": [
         "Experimental opt-in bubble manifest, native Bevy panel morph/tail, responsive geometry tests, pure-VN external fixture and visual CI smoke authored; pending compilation, virtual-display test and accessibility review. No verified points credited.",
         "Bounded native bubble viewport, scroll position, wheel/PageUp/PageDown/Home/End keyboard controls and long multilingual/high-contrast 946x511 native regression authored; awaiting full CI and visual confirmation, no weight credited.",
@@ -79,7 +79,8 @@
         "Native Bevy bubble regression passed in CI 41713967039, including true/false PgDn cue, duplicate scroll reset, CJK, contrast and compact layout; later unrelated Atlas layout test raced a reused Settings overlay, now guarded by live open/close event counts. Full CI pending.",
         "Visual audit found oversized long-text bubble hid the stage character's face. Limit native scrollable panel to upper 43% of scene, additionally stop above on-screen speaker head; unit bounds plus real-image meadow visibility regression added, full QA pending.",
         "Extended native long multilingual bubble QA: F5 while second identical dialogue is scrolled, F9 restore, verify readable top at same scene/cursor through restoration epoch; pending CI.",
-        "Real Bevy left-click dialogue advancement added using the established reveal/advance path and existing modal/choice input ownership; native pointer-click-to-panel regression authored, full CI pending."
+        "Real Bevy left-click dialogue advancement added using the established reveal/advance path and existing modal/choice input ownership; native pointer-click-to-panel regression authored, full CI pending.",
+        "Accepted after full narrative+Bevy green CI 41728531764 at 16e0117 (2026-11-03). Native speech-bubble runs exercised Unicode, CJK and long multilingual scroll at 946x511/1280x720, enhanced reader fonts/high contrast/reduced motion, true PageDown overflow cues, external nine-slice decoration, interactive left-click and keyboard advancement, F5/F9 restoration of repeated scrolled dialogue, anchored NPC/staged speaker and offscreen/top-edge face-safe fallbacks. Native screenshots independently inspected; companion full-green runs 41718040319, 41719054475, 41721321580 and 41724114544 verify artwork, performance instrumentation, face-safe bounds, scroll/overlay handling and old-VN compatibility. Native-owner end-to-end Wayland QA remains separately gated under NA08."
       ]
     },
     {
@@ -293,15 +294,14 @@
     }
   ],
   "checkpoint": {
-    "last_reported_verified_percent": 13,
+    "last_reported_verified_percent": 23,
     "active": [
-      "NA02",
       "NA03",
       "NA05",
       "NA06",
       "NA07"
     ],
-    "pending": "NA02 speech bubble long/multilingual/small-screen readability and accessibility still need full acceptance; NA03→NA06→NA07 remain dependency-gated although all NA07 native persistence/hot-reload cases passed CI 41696094392. NA05 performance/manual feel and NA08 full physical QA also pending.",
+    "pending": "NA02 accepted on full green CI 41728531764. NA03 authored surface switching passed targeted native smoke (CI 41732958846) but full suite remains pending; NA05 hardware/Wayland responsiveness still needs owner QA despite 15 FPS synthetic walking verification; NA06/NA07 remain downstream-gated, NA08 separate full accessibility/physical QA. Original urban fiction depends on owner creative choices.",
     "previous_preserved_complete": true
   }
 }

@@ -1,8 +1,9 @@
 # Vesper — Optional Narrative Adventure Roadmap
 
-**Status:** **13 / 100 verified points** (NA01 and NA04 accepted on
-full merged-main CI 41696094392; remaining milestones are dependency-gated
-until all acceptance requirements pass). The earlier Vesper MVP, visual experience and human-approved Atlas presentation remain independently complete; **do not reset their ledgers**.
+**Status:** **23 / 100 verified points** (NA01 + NA04 accepted on
+full merged-main CI 41696094392; NA02 accepted on full QA CI
+41728531764 with native visual artifacts and legacy regressions). Other
+milestones retain their individual acceptance gates. The earlier Vesper MVP, visual experience and human-approved Atlas presentation remain independently complete; **do not reset their ledgers**.
 
 **Goal:** Extend the reusable Rust/Bevy visual novel engine with optional compact 2D exploration and **an independent choice of dialogue surfaces**: traditional illustrated boxes with authored image and nameplate, anchored speech bubbles, or both within a single story. Then ship an original grounded anime-urban slice-of-life example. The game brief is [separate](urban-slice-of-life-brief.md), so the engine remains genre-neutral.
 
