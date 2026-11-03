@@ -358,8 +358,22 @@ def select_width_setting(win: str, log: Path) -> None:
 
     llvmpipe can drop rapid xdotool keypresses under a heavy screenshot load.
     """
-    wait_for_log(log, "Vesper appearance settings opened")
+    # A resize and a reused pause menu can drop the immediately following
+    # '4' shortcut under llvmpipe. Checking an *old* "opened" log marker
+    # silently sends Right to a closed overlay and fails 30 seconds later.
+    # Count opens versus closes to establish the CURRENT overlay state.
     deadline = time.monotonic() + 35
+    while time.monotonic() < deadline:
+        transcript = read_log(log)
+        opens = transcript.count("Vesper appearance settings opened")
+        closes = transcript.count("Vesper appearance settings closed")
+        if opens > closes:
+            break
+        press(win, "4", 0.22)
+    else:
+        raise AssertionError(
+            "Settings did not reopen after pause/resize: " + read_log(log)[-1600:]
+        )
     while time.monotonic() < deadline:
         section = read_log(log).rsplit("Vesper appearance settings opened", 1)[-1]
         positions = re.findall(r"Vesper appearance selection: (\d+)", section)
