@@ -28,6 +28,21 @@ ENDINGS = {
     3: "epilogue_covenant",
     4: "epilogue_unbound",
 }
+EXPECTED_ROUTES = {
+    1: ("letter_open", "east_route", "trust_courier",
+        "record_contract", "negotiate_route",
+        "families_heard", "face_orsol"),
+    2: ("courier_questions", "memory_route",
+        "suspect_courier", "record_names",
+        "consent_route", "chamber_heard", "fetch_delegates"),
+    3: ("protective_choice", "people_route",
+        "examine_scar", "record_witness",
+        "expose_route", "storm_heard", "write_clause"),
+    4: ("letter_open", "east_route", "trust_courier",
+        "record_contract", "negotiate_route",
+        "families_heard", "face_orsol"),
+}
+
 TRACE = re.compile(r"Vesper scene dialogue: ([a-z0-9_]+)")
 FAILURE = re.compile(r"thread .* panicked|Story asset error|Story error:|asset failed", re.I)
 PANEL_WIDTH = re.compile(r"Vesper panel resolved width: ([0-9]+(?:\.[0-9]+)?)")
@@ -249,21 +264,7 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                     assert len(set(traces)) == 41, (
                         option, "Unexpected number of scenes in ending route",
                         sorted(set(traces)))
-                    expected_routes = {
-                        1: ("letter_open", "east_route", "trust_courier",
-                            "record_contract", "negotiate_route",
-                            "families_heard", "face_orsol"),
-                        2: ("courier_questions", "memory_route",
-                            "suspect_courier", "record_names",
-                            "consent_route", "chamber_heard", "fetch_delegates"),
-                        3: ("protective_choice", "people_route",
-                            "examine_scar", "record_witness",
-                            "expose_route", "storm_heard", "write_clause"),
-                        4: ("letter_open", "east_route", "trust_courier",
-                            "record_contract", "negotiate_route",
-                            "families_heard", "face_orsol"),
-                    }
-                    for branch in expected_routes[option]:
+                    for branch in EXPECTED_ROUTES[option]:
                         assert branch in traces, (option, branch)
                     assert "Vesper decoded audio asset: music:archive" in transcript, (
                         option, "Opening music was not decoded")
@@ -307,6 +308,17 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                     marker = "Vesper choice UI mounted"
                     mounted = transcript.count(marker)
                     if mounted <= handled_choice_mounts:
+                        # A preceding Return may still be in the Bevy event
+                        # queue when the final dialogue appears. Give that
+                        # event an opportunity to mount its choice UI before
+                        # issuing any extra Return that might pick row one.
+                        settle_until = time.monotonic() + .65
+                        while time.monotonic() < settle_until:
+                            mounted = read_log(log).count(marker)
+                            if mounted > handled_choice_mounts:
+                                break
+                            time.sleep(.04)
+                    if mounted <= handled_choice_mounts:
                         press(win, "Return", 0.09)
                         deadline = time.monotonic() + 8
                         while time.monotonic() < deadline:
@@ -320,11 +332,30 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                             )
                     handled_choice_mounts = mounted
                     route_option = option if option <= scene["choices"] else 1
+                    # Verify the actual authored branch *at every decision*,
+                    # not only once the ending is reached many minutes later.
+                    # A skipped digit can otherwise select the default row.
+                    choice_index = handled_choice_mounts - 1
+                    if choice_index < len(EXPECTED_ROUTES[option]):
+                        expected_branch = EXPECTED_ROUTES[option][choice_index]
+                    else:
+                        assert choice_index == len(EXPECTED_ROUTES[option]), (
+                            option, "Unexpected extra Atlas choice", choice_index,
+                        )
+                        expected_branch = {
+                            1: "ending_open", 2: "ending_witness",
+                            3: "ending_covenant", 4: "ending_unbound",
+                        }[option]
                     deadline = time.monotonic() + 8
                     while time.monotonic() < deadline:
                         press(win, str(route_option), 0.12)
                         latest = TRACE.findall(read_log(log))
                         if latest and latest[-1] != current:
+                            assert latest[-1] == expected_branch, (
+                                f"Atlas route {option} wrong choice at {current}: "
+                                f"expected {expected_branch}, got {latest[-1]}; "
+                                "the runner must not silently accept default choice",
+                            )
                             break
                     else:
                         raise AssertionError(
@@ -332,8 +363,20 @@ def play_ending(option: int, spec: dict[str, dict[str, int]], root: Path) -> Non
                             + read_log(log)[-2500:]
                         )
                     continue
-                # Ordinary dialogue never receives an unnecessary choice key.
+                # Exactly one Return per observed story/UI transition. Fast
+                # unacknowledged key bursts can leave a Return queued when
+                # the next choice row mounts and silently choose its default.
+                previous_lines = len(traces)
+                previous_mounts = transcript.count("Vesper choice UI mounted")
                 press(win, "Return", 0.09)
+                settle_until = time.monotonic() + 1.2
+                while time.monotonic() < settle_until:
+                    observed = read_log(log)
+                    if (len(TRACE.findall(observed)) > previous_lines
+                            or observed.count("Vesper choice UI mounted") > previous_mounts
+                            or f"Vesper story reached ending scene: {ending}" in observed):
+                        break
+                    time.sleep(.04)
             else:
                 raise AssertionError(f"Atlas route {option} never reached {ending}; "
                                      f"last log:\n{read_log(log)[-5000:]}")
