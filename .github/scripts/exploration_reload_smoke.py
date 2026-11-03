@@ -116,7 +116,16 @@ def main() -> None:
                 old_stops = qa.log_text(log).count("Vesper exploration stopped:")
                 qa.walk(window, "Right", 2.85)
                 reached = qa.position_after_stop(log, old_stops)
-                assert 610 < reached < 900, reached
+                # Software-rendered frame rates vary. Reach the NPC's actual
+                # focus zone rather than assuming elapsed seconds = distance.
+                # At x > 780 the noticeboard is out of interaction range.
+                for _ in range(5):
+                    if 780 <= reached < 930:
+                        break
+                    old_stops = qa.log_text(log).count("Vesper exploration stopped:")
+                    qa.walk(window, "Right", .5)
+                    reached = qa.position_after_stop(log, old_stops)
+                assert 780 <= reached < 930, reached
                 qa.key(window, "e")
                 qa.wait_for_log(
                     log, "Vesper exploration interacting: neighbor -> neighbor_chat"
