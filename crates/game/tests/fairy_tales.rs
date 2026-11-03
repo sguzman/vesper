@@ -58,7 +58,8 @@ fn play(game: &Game, decisions: &[usize]) -> ResultState {
                     }
                 }
                 Visual::Surface(surface) => trace.surfaces.push(surface),
-                Visual::ExploreReturn | Visual::EnterVisualNovel => {
+                Visual::ExploreReturn | Visual::EnterVisualNovel
+                | Visual::ExploreEnter { .. } => {
                     panic!("pure VN fairytale unexpectedly switched exploration mode");
                 }
                 Visual::Hide(_) => {}

@@ -3,8 +3,9 @@
 **Implementation status:** Versioned parsing, validation, walking, NPC/prop
 dialogue, typed story-variable visibility conditions, and E-triggered authored
 exits are implemented. This is not the final narrative adventure:
-VN-to-location story commands, exploration persistence and safe reload remain
-unfinished. This is not the original anime urban slice-of-life game.
+Exploration persistence and safe reload remain unfinished. The explicit
+`explore location at spawn` command is implemented with load-time checks
+for both location and spawn IDs. This is not the original anime urban slice-of-life game.
 
 ## Separation from visual novels
 
@@ -120,8 +121,11 @@ existing story parser yet. A game with validated `[exploration.start]`
 opens directly into a bounded side-on world instead of advancing the hidden
 VN script. Author-controlled keyboard walking, viewport projection, optional
 PNG sprites and simple stand-ins run in the isolated player module.
-If `start` is missing, the player remains a traditional VN; merely declaring
-locations never starts walking.
+If `start` is missing, the player begins in traditional VN mode; merely
+declaring locations never starts walking. The author can explicitly enter
+one later using `explore street at home` in a .vn scene. That command
+suspends the story until another authored interaction. Missing locations
+or spawn IDs produce source-file and line diagnostics before playback.
 
 **Current preview scope:** Left/Right or A/D walking with a capped frame step,
 camera following only when necessary, optional walk/idle frame animation,
@@ -162,6 +166,9 @@ slice-of-life example.
   validates a complete externally authored package in CI.
 - Pure locomotion and camera tests under `crates/game/src/walk.rs` enforce
   frame-time caps, level bounds, single-screen framing and resize independence.
+- The external `examples/exploration-bridge` starts as a pure VN and
+  uses two explicit `.vn` transfers into authored street/café locations,
+  including a cinematic VN interlude; it has independent native CI.
 - The native `.github/scripts/exploration_walk_smoke.py` drives actual
   Bevy movement, NPC conversation, cancellation, authored return, conditional
   friend, street/café roundtrip, old-area entity removal, pause, sprite

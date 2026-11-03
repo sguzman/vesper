@@ -25,8 +25,8 @@ This is an **additive** extension. The existing version-1 script grammar and pan
 
 `crates/game/src/experience.rs` provides the pure typed model and transition guards. The walk-first controller, native bubbles, and first NPC/prop interaction
 bridge now use this model. E-only named exits and typed variable-gated
-NPC/prop availability are implemented. Script-command VN-to-location
-transitions, persistence and hot reload are still incomplete.
+NPC/prop availability and typed VN-to-location transitions are implemented.
+Exploration persistence and hot reload remain incomplete.
 
 ## Explicit transitions and invariants
 
@@ -44,11 +44,12 @@ transitions, persistence and hot reload are still incomplete.
 **New authoring is additive and versioned.** The optional `[dialogue]`
 surface authoring, `[exploration]` location data, and the opt-in
 `[exploration.start]` walk-first preview are now implemented; the
-`explore return` and `mode visual_novel` commands are implemented while
-`explore <location> at <spawn>` remains planned.
+`explore return`, `mode visual_novel` and
+`explore <location> at <spawn>` commands are implemented. The latter
+validates locations and named spawns before starting the player.
 Existing `format_version = 1` manifests remain valid. Use an optional isolated `[exploration]` subsection with its own `schema_version = 1` and referenced locations; validate that optional section only when present. Preserve the existing game-relative secure path policy.
 
-Example **planned manifest shape**, not yet runnable:
+Example optional authoring shape (supported; individual example assets must exist):
 
 ```toml
 [dialogue]
@@ -87,7 +88,7 @@ interaction_radius = 80.0
 
 Authoring policy: IDs use the existing constrained scene/asset-identifier family; world coordinates are finite, nonnegative logical pixels with validated viewport/location bounds; paths are game-local. Backgrounds use aspect-preserving display rules. NPC talk targets must exist in the parsed `.vn` story; aliases, scene IDs, spawn IDs, and location IDs are distinct namespaces. The initial controller is **side-on horizontal walking only**; maintain an isolated viewport/locomotion interface so future view types need not rewrite narrative logic.
 
-**Planned additive `.vn` commands** (syntax is intentionally explicit and will be ratified with tests when parser support is added):
+**Additive `.vn` commands** (explicit, typed, and validated by the story parser and external game loader):
 
 ```text
 @scene intro
@@ -120,7 +121,9 @@ friend: "Let's talk somewhere quiet."
 - `mode visual_novel` explicitly transfers into cinematic staging from any mode and clears the pending exploration return.
 - Parser and runtime must add typed commands instead of interpreting TOML or source strings as executable code, while preserving file/line diagnostics. Cross-reference validation must reject missing scenes or locations before starting play.
 
-**Still pending acceptance:** VN-authored `explore location at spawn` transitions, full bubble/choice geometry and multi-NPC occlusion on all display sizes, plus world-aware saves/reload. These remain existing NA02/NA04/NA06–08 scope.
+**Still pending acceptance:** comprehensive bubble/choice geometry and
+multi-NPC occlusion on all display sizes, plus world-aware saves/reload and
+safe authoring hot reload. These remain existing NA02/NA04/NA06–08 scope.
 
 ## Persistence and hot reload
 

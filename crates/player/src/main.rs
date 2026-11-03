@@ -1331,6 +1331,20 @@ fn apply_visual_with_mode(
     instant: bool,
 ) -> Result<(), String> {
     match visual {
+        Visual::ExploreEnter { location, spawn } => {
+            let world = session.game.manifest.exploration.as_ref()
+                .ok_or("explore command requires an authored exploration section")?;
+            let point = world.locations.get(&location)
+                .and_then(|area| area.spawns.get(&spawn))
+                .ok_or_else(|| format!("unknown exploration destination '{location}/{spawn}'"))?;
+            let position = vesper_game::experience::WorldPosition::new(
+                location, point.x, point.facing
+            )?;
+            session.experience.enter_exploration(position);
+            session.choosing = false;
+            session.finished = false;
+            info!("Vesper authored exploration entered at named spawn {spawn}");
+        }
         Visual::ExploreReturn => {
             session.experience.resume_exploration()?;
             session.choosing = false;
@@ -1584,12 +1598,13 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
                 return interaction_screen(session, Screen::choices(&options, 0));
             }
             Ok(Output::Visual(visual)) => {
-                let returning = matches!(visual, Visual::ExploreReturn);
+                let returning = matches!(visual,
+                    Visual::ExploreReturn | Visual::ExploreEnter { .. });
                 if let Err(error) = apply_visual(session, commands, assets, visual) {
                     return finish_story(session, format!("Story transition/asset error:\n{error}"));
                 }
                 if returning {
-                    // An explicit authored return suspends the narrative.
+                    // Explicit authored walking transfer suspends the narrative.
                     // Never advance the next instruction or synthesize an End.
                     return Screen::normal(String::new(), String::new());
                 }

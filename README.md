@@ -16,9 +16,11 @@ The [exploration regression fixture](examples/exploration-schema/) now tests a
 two-location street/café roundtrip via explicit E-only exits, a conditional NPC
 visible after a story variable changes, speech-bubble conversations, an
 illustrated panel and exact-position return. Pure VNs require no walking
-data and existing save behavior remains unchanged. Exploration saves,
-authored VN-to-location commands and the original anime urban slice-of-life
-example remain future milestones. The example's title, cast and setting
+data and existing save behavior remains unchanged. An additional mixed-mode
+fixture now tests the explicit `explore location at spawn` .vn command,
+including a VN-only opening followed by author-directed exploration.
+Exploration saves and the original anime urban slice-of-life example
+remain future milestones. The example's title, cast and setting
 remain owner decisions, not assumptions.
 
 ## Standalone external visual novels

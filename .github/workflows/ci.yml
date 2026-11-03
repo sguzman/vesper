@@ -28,6 +28,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/little-lantern
           cargo run --locked -p vesper-cli -- check-game examples/bubble-showcase
           cargo run --locked -p vesper-cli -- check-game examples/exploration-schema
+          cargo run --locked -p vesper-cli -- check-game examples/exploration-bridge
           cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
           cargo run --locked -p vesper-cli -- check-game examples/dawn-post-office
           cargo run --locked -p vesper-cli -- check-game examples/panel-showcase
@@ -97,6 +98,16 @@ jobs:
         with:
           name: vesper-exploration-walk
           path: /tmp/vesper-exploration-walk-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Verify VN-to-world and cinematic-to-world authored transitions
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/exploration_bridge_smoke.py
+      - name: Preserve mixed-mode native screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-exploration-bridge
+          path: /tmp/vesper-exploration-bridge-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
       # Fast, sensitive UI regression first: fail before the lengthy four-ending run.

@@ -101,31 +101,32 @@ pub fn setup(
     mut panels: Query<&mut Node, With<StoryPanel>>,
 ) {
     let mut runtime = WalkPreview::default();
-    let ExperienceMode::Exploring(position) = &session.experience.mode else {
-        commands.insert_resource(runtime);
-        return;
-    };
     let Some(world) = &session.game.manifest.exploration else {
         commands.insert_resource(runtime);
         return;
     };
-    let Some(area) = world.locations.get(&position.location) else {
-        commands.insert_resource(runtime);
-        return;
+    let start = match &session.experience.mode {
+        ExperienceMode::Exploring(point) | ExperienceMode::Conversation {
+            return_to: point, ..
+        } => Some(point),
+        ExperienceMode::VisualNovel => None,
     };
-
     runtime.idle = world.avatar.idle.as_ref()
         .map(|path| assets.load::<Image>(path.clone()));
     runtime.walk = world.avatar.walk.iter()
         .map(|path| assets.load::<Image>(path.clone())).collect();
-    for mut node in &mut panels { node.display = Display::None; }
-
-    spawn_area(&mut commands, world, area, &assets);
-    runtime.loaded_location = Some(position.location.clone());
+    if let Some(point) = start
+        && let Some(area) = world.locations.get(&point.location)
+    {
+        for mut node in &mut panels { node.display = Display::None; }
+        spawn_area(&mut commands, world, area, &assets);
+        runtime.loaded_location = Some(point.location.clone());
+    }
     commands.spawn((
         Name::new("Exploration preview controls (not a VN choice)"),
         WalkHud,
         Node {
+            display: if start.is_some() { Display::Flex } else { Display::None },
             position_type: PositionType::Absolute,
             top: px(14.0), right: px(16.0),
             padding: px(9.0).all(),
@@ -168,8 +169,10 @@ pub fn setup(
         ));
     });
     commands.insert_resource(runtime);
-    info!("Vesper exploration preview entered: {} at x={:.1}",
-        position.location, position.x);
+    if let Some(position) = start {
+        info!("Vesper exploration preview entered: {} at x={:.1}",
+            position.location, position.x);
+    }
 }
 
 /// Interact with the closest validated authored NPC/prop. Successful
@@ -324,8 +327,7 @@ pub fn sync(
 ) {
     // Pure VNs never enter this optional player subsystem or have their
     // panel display state rewritten by the exploration renderer.
-    if session.game.manifest.exploration.as_ref()
-        .is_none_or(|world| world.start.is_none()) {
+    if session.game.manifest.exploration.is_none() {
         return;
     }
     // World artwork remains visible during modal conversations, so the

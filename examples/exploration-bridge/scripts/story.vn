@@ -1,0 +1,36 @@
+# Optional compact walk-first narrative bridge fixture.
+# Interactive locations are game data, not hardcoded player behavior.
+@scene intro
+set visits = 0
+"The scene begins as a regular visual novel, with no walking controls."
+explore street at home
+
+@scene neighbor_chat
+set visits += 1
+set met_neighbor = true
+surface bubble
+neighbor: "Hey! Good to see you around the neighborhood."
+* "Just saying hello" -> neighbor_hello
+* "We should talk elsewhere" -> neighbor_serious
+
+@scene neighbor_hello
+surface bubble
+neighbor: "See you around!"
+explore return
+
+@scene neighbor_serious
+mode visual_novel
+surface panel
+neighbor: "Let's talk somewhere quiet."
+"This is a full visual-novel scene. There is no forced walk back."
+explore cafe at entry
+
+@scene read_notice
+surface panel
+"The noticeboard lists today's community gatherings."
+explore return
+
+@scene friend_chat
+surface bubble
+friend: "I heard you met our neighbor. Welcome to the block."
+explore return

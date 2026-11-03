@@ -44,6 +44,8 @@ pub enum Visual {
     ExploreReturn,
     /// Explicitly drop an exploration return and enter cinematic VN mode.
     EnterVisualNovel,
+    /// Enter an authored walkable location at a validated named spawn.
+    ExploreEnter { location: String, spawn: String },
 }
 
 /// An additive author command. Panel artwork ('panel skin_name') remains
@@ -167,8 +169,15 @@ fn command(line: &str) -> Result<Command, String> {
     if line == "mode visual_novel" {
         return Ok(Command::Visual(Visual::EnterVisualNovel));
     }
-    if line.starts_with("explore ") {
-        return Err("explore syntax: explore return (location transfers not implemented yet)".into());
+    if let Some(rest) = line.strip_prefix("explore ") {
+        if let Some((location, spawn)) = rest.split_once(" at ")
+            && identifier(location) && identifier(spawn)
+        {
+            return Ok(Command::Visual(Visual::ExploreEnter {
+                location: location.into(), spawn: spawn.into()
+            }));
+        }
+        return Err("explore syntax: explore <location> at <spawn> or explore return".into());
     }
     if line.starts_with("mode ") {
         return Err("mode syntax: mode visual_novel".into());
@@ -454,6 +463,23 @@ impl Story {
                 });
             Ok(Self { scenes, entry: entry.expect("non-empty story"), fingerprint })
         } else { Err(errors) }
+    }
+}
+
+impl Story {
+    /// Cross-reference every authored VN-to-exploration command at load time.
+    /// Preserve each source line in diagnostics; no executable game code.
+    pub fn exploration_transfers(&self) -> Vec<(usize, String, String)> {
+        self.scenes.values().flat_map(|scene| scene.instructions.iter())
+            .filter_map(|instruction| {
+                if let Command::Visual(Visual::ExploreEnter { location, spawn }) =
+                    &instruction.command
+                {
+                    Some((instruction.line, location.clone(), spawn.clone()))
+                } else {
+                    None
+                }
+            }).collect()
     }
 }
 
@@ -1057,6 +1083,20 @@ mod exploration_story_command_tests {
     use super::*;
 
     #[test]
+    fn authored_exploration_transfer_has_typed_location_spawn_and_line() {
+        let story = Story::parse(
+            "@scene intro\n\"Hello\"\nexplore street at home\n"
+        ).unwrap();
+        assert_eq!(story.exploration_transfers(),
+            vec![(3, "street".into(), "home".into())]);
+        let mut machine = Machine::new(&story, "intro").unwrap();
+        assert!(matches!(machine.advance(), Ok(Output::Dialogue { .. })));
+        assert_eq!(machine.advance().unwrap(), Output::Visual(
+            Visual::ExploreEnter { location: "street".into(), spawn: "home".into() }
+        ));
+    }
+
+    #[test]
     fn explicit_return_and_cinematic_transfer_are_typed_story_events() {
         let story = Story::parse(
             "@scene intro\nexplore return\nmode visual_novel\n"
@@ -1069,7 +1109,7 @@ mod exploration_story_command_tests {
 
     #[test]
     fn unknown_mode_commands_have_source_line_diagnostics() {
-        for invalid in ["mode walk", "explore now", "explore home at front"] {
+        for invalid in ["mode walk", "explore now", "explore home at", "explore 12 at front"] {
             let source = format!("@scene intro\n{invalid}\n\"hello\"");
             let errors = Story::parse(&source).unwrap_err();
             assert_eq!(errors.len(), 1);

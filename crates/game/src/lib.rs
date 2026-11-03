@@ -1034,6 +1034,18 @@ impl Game {
             world.validate(&root, &story)
                 .map_err(|error| format!("{}: {error}", manifest_path.display()))?;
         }
+        // Verify every typed VN-to-world command against this exact external
+        // manifest, with the original .vn source line in errors.
+        for (line, location, spawn) in story.exploration_transfers() {
+            let area = manifest.exploration.as_ref()
+                .and_then(|world| world.locations.get(&location))
+                .ok_or_else(|| format!("{}:{line}: explore destination '{}' is not an authored location",
+                    script_path.display(), location))?;
+            if !area.spawns.contains_key(&spawn) {
+                return Err(format!("{}:{line}: explore destination '{location}' has no spawn '{spawn}'",
+                    script_path.display()));
+            }
+        }
         if let Some(filename) = &manifest.dialogue.bubble.image {
             let file = checked_file(&root, filename)?;
             if !file.extension().and_then(|ext| ext.to_str())

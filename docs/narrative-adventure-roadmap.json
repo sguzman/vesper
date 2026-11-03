@@ -152,7 +152,8 @@
       "verified_weight": 0,
       "evidence": [
         "Typed explore return/mode visual_novel commands, variable-preserving machine enter_scene, deterministic nearest NPC/prop target, accessible E cue and Q cancel, in-world bubble anchored to speaker, and native CI scenario committed pending full verification. Multi-location transfer and conditional NPC state remain unfinished.",
-        "Author-defined E-only named exits with proximity checks, deterministic mixed NPC/prop/exit focus, variable-gated NPC/prop visibility, world-entity replacement, and native café roundtrip/conditional-NPC regression added; CI pending for this checkpoint."
+        "Author-defined E-only named exits with proximity checks, deterministic mixed NPC/prop/exit focus, variable-gated NPC/prop visibility, world-entity replacement, and native café roundtrip/conditional-NPC regression added; CI pending for this checkpoint.",
+        "Typed .vn `explore <location> at <spawn>` transfers with authored path/line validation, standalone VN-first mixed-mode fixture and real native VN→street→cinematic VN→café regression added; full CI acceptance pending."
       ]
     },
     {
@@ -283,7 +284,7 @@
       "NA05",
       "NA06"
     ],
-    "pending": "Verify CI for authored exit roundtrip, conditional actor, world-entity cleanup and legacy Atlas; still need VN-to-exploration authored scene transfer, persistent world saves, hot reload and complete NA06 acceptance.",
+    "pending": "Verify CI for explicit VN→world→cinematic VN→world transitions and existing full native regressions. NA07 exploration-aware save/load and asset hot reload remain incomplete; formal roadmap credit waits all acceptance.",
     "previous_preserved_complete": true
   }
 }
