@@ -270,7 +270,7 @@ def main() -> None:
                 assert point["location"] == "street"
                 assert abs(point["x"] - 150.0) < 1.0, point
                 walk(window, "Right", .4)
-                old_restores = log_text(log).count("Vesper save restored:")
+                old_restores = log_text(log).count("Vesper save restored: Exploring")
                 key(window, "F9")
                 wait_for_log(log, "Vesper save restored: Exploring", old_restores)
                 old_stops = log_text(log).count("Vesper exploration stopped:")
@@ -279,6 +279,26 @@ def main() -> None:
                 assert 152.0 < position < 218.0, (
                     f"F9 did not restore saved street position: {position}"
                 )
+
+                # Save a distinct from-start walking X for cold-process QA.
+                old_saves = log_text(log).count("Vesper save written")
+                key(window, "F5")
+                wait_for_log(log, "Vesper save written", old_saves)
+                persisted = json.loads(saved_path.read_text(encoding="utf-8"))
+                saved_x = persisted["experience"]["mode"]["exploring"]["x"]
+                assert 152.0 < saved_x < 218.0, saved_x
+
+                # The same v2 world snapshot is supported in manual F6 slots.
+                key(window, "F6")
+                wait_for_log(log, "Vesper save slot metadata scanned")
+                old_saves = log_text(log).count("Vesper save written")
+                key(window, "Return")
+                wait_for_log(log, "Vesper save written", old_saves)
+                manual_path = Path(folder) / "saves" / "exploration-schema.slot1.json"
+                manual = json.loads(manual_path.read_text(encoding="utf-8"))
+                assert manual["format_version"] == 2
+                assert abs(manual["experience"]["mode"]["exploring"]["x"] - saved_x) < 0.1
+                key(window, "F6")
                 print(f"Exploration movement x={x1:.1f}->{x2:.1f}->{x3:.1f}->{x4:.1f}->{x5:.1f}",
                       flush=True)
                 print("Native NPC/cancellation, gated friend, E-only café roundtrip, entity cleanup, explicit return and versioned world saves: passed",
@@ -290,6 +310,49 @@ def main() -> None:
                 except subprocess.TimeoutExpired:
                     proc.kill()
                     proc.wait(timeout=3)
+
+        # A fresh executable must restore the saved position and manual slot
+        # from disk, not from an in-memory Session or ECS entity handle.
+        restarted_log = OUTPUT / "walk-restarted.log"
+        with restarted_log.open("w", encoding="utf-8") as stream:
+            restarted = subprocess.Popen(
+                [str(PLAYER), str(GAME)],
+                env=env, stdout=stream, stderr=subprocess.STDOUT,
+            )
+            try:
+                window = window_id()
+                wait_for_log(restarted_log, "Vesper exploration preview entered:")
+                key(window, "F9")
+                wait_for_log(restarted_log, "Vesper save restored: Exploring")
+                old_stops = log_text(restarted_log).count("Vesper exploration stopped:")
+                walk(window, "Right", .15)
+                cold_x = position_after_stop(restarted_log, old_stops)
+                assert saved_x + 2.0 < cold_x < saved_x + 70.0, (
+                    f"Cold-start F9 lost world X: {saved_x} -> {cold_x}"
+                )
+                frame(window, "walk-cold-restored.png", 1280, 720)
+
+                key(window, "F6")
+                wait_for_log(restarted_log, "Vesper save slot metadata scanned")
+                key(window, "Right")
+                old_loads = log_text(restarted_log).count("Vesper save restored:")
+                key(window, "Return")
+                wait_for_log(restarted_log, "Vesper save restored:", old_loads)
+                old_stops = log_text(restarted_log).count("Vesper exploration stopped:")
+                walk(window, "Right", .15)
+                slot_x = position_after_stop(restarted_log, old_stops)
+                assert saved_x + 2.0 < slot_x < saved_x + 70.0, (
+                    f"Cold-start slot load lost world X: {saved_x} -> {slot_x}"
+                )
+                print("Cold-process quicksave and manual slot world restore: passed",
+                      flush=True)
+            finally:
+                restarted.terminate()
+                try:
+                    restarted.wait(timeout=6)
+                except subprocess.TimeoutExpired:
+                    restarted.kill()
+                    restarted.wait(timeout=3)
 
 
 if __name__ == "__main__":
