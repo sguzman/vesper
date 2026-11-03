@@ -474,6 +474,39 @@ pub fn sync(
     }
 }
 
+/// One bounded, opt-in measurement of the actual Bevy frame clock while
+/// exploration is active. No profiler allocation or sampling is registered
+/// during normal gameplay. CI reports observed FPS/p95 rather than inventing
+/// a fixed throughput guarantee for software llvmpipe.
+#[derive(Default)]
+struct FrameTiming {
+    milliseconds: Vec<f32>,
+}
+
+pub fn sample_frame_timing(
+    time: Res<Time>,
+    session: Res<Session>,
+    mut timing: Local<FrameTiming>,
+) {
+    const FRAMES: usize = 120;
+    if timing.milliseconds.len() >= FRAMES
+        || !matches!(session.experience.mode,
+            ExperienceMode::Exploring(_) | ExperienceMode::Conversation { .. })
+    {
+        return;
+    }
+    let delta = time.delta_secs();
+    if !delta.is_finite() || delta <= 0.0 { return; }
+    timing.milliseconds.push(delta * 1000.0);
+    if timing.milliseconds.len() != FRAMES { return; }
+    let mean = timing.milliseconds.iter().copied().sum::<f32>() / FRAMES as f32;
+    timing.milliseconds.sort_by(|a, b| a.total_cmp(b));
+    let p95 = timing.milliseconds[(FRAMES * 95).div_ceil(100) - 1];
+    let maximum = timing.milliseconds[FRAMES - 1];
+    info!("Vesper exploration frame timing: samples={FRAMES} mean_ms={mean:.2} p95_ms={p95:.2} max_ms={maximum:.2} mean_fps={:.1}",
+        1000.0 / mean);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

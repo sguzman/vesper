@@ -1302,6 +1302,11 @@ fn main() {
     if let Some(inbox) = inbox {
         app.insert_resource(inbox).add_systems(Update, reload::apply_reload);
     }
+    // Opt-in native QA performance sample. Ordinary player launches do not
+    // register an additional Update system or allocate per-frame metrics.
+    if env::var_os("VESPER_QA_FRAME_METRICS").is_some() {
+        app.add_systems(Update, exploration::sample_frame_timing);
+    }
     app.run();
     preferences_shutdown.finish();
     // This is after Bevy's UI/render loop has exited, so joining cannot

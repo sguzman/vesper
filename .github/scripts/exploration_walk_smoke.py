@@ -125,6 +125,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="vesper-walk-") as folder:
         env = dict(os.environ,
                    LIBGL_ALWAYS_SOFTWARE="1",
+                   VESPER_QA_FRAME_METRICS="1",
                    VESPER_PREFERENCES_DIR=folder,
                    VESPER_SAVE_DIR=str(Path(folder) / "saves"))
         log = OUTPUT / "walk.log"
@@ -307,6 +308,32 @@ def main() -> None:
                       flush=True)
                 print("Native NPC/cancellation, gated friend, E-only café roundtrip, entity cleanup, explicit return and versioned world saves: passed",
                       flush=True)
+                wait_for_log(log, "Vesper exploration frame timing:")
+                measurement = re.search(
+                    r"Vesper exploration frame timing: samples=(\d+) "
+                    r"mean_ms=([\d.]+) p95_ms=([\d.]+) max_ms=([\d.]+) "
+                    r"mean_fps=([\d.]+)",
+                    log_text(log),
+                )
+                assert measurement is not None, "Native frame timing was not recorded"
+                samples, mean, p95, maximum, fps = map(float, measurement.groups())
+                assert samples == 120 and 0.0 < mean <= maximum
+                assert 0.0 < p95 <= maximum and fps > 0.0
+                measurements = {
+                    "environment": "GitHub Actions Ubuntu llvmpipe (software rendering)",
+                    "game": "exploration-schema",
+                    "samples": int(samples),
+                    "mean_frame_ms": mean,
+                    "p95_frame_ms": p95,
+                    "max_frame_ms": maximum,
+                    "observed_mean_fps": fps,
+                }
+                (OUTPUT / "walk-performance.json").write_text(
+                    json.dumps(measurements, indent=2) + "\n", encoding="utf-8",
+                )
+                print(f"Native software-rendered exploration: "
+                      f"{fps:.1f} FPS mean, {p95:.2f} ms p95 "
+                      f"over {int(samples)} frames", flush=True)
             finally:
                 proc.terminate()
                 try:

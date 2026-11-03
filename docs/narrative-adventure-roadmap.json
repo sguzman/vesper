@@ -137,7 +137,8 @@
       "status": "active",
       "verified_weight": 0,
       "evidence": [
-        "Author-owned optional [exploration.start] validation, deterministic horizontal walk/frame-cap and camera projection, Bevy walk-first stage preview, paused/modal/focus input guards, optional sprite cycles, independent fixture, and native screenshot CI smoke authored. CI and manual QA still pending; no verified points credited."
+        "Author-owned optional [exploration.start] validation, deterministic horizontal walk/frame-cap and camera projection, Bevy walk-first stage preview, paused/modal/focus input guards, optional sprite cycles, independent fixture, and native screenshot CI smoke authored. CI and manual QA still pending; no verified points credited.",
+        "Added opt-in actual Bevy frame-time sampling for 120 exploration frames and CI JSON artifact recording mean FPS, p95 and max on software rendering; awaiting native CI verification and physical Linux feel review; no points credited."
       ]
     },
     {
