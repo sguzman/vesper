@@ -28,7 +28,7 @@ struct Trace {
 }
 enum ResultState {
     MoreChoices(usize),
-    End(Trace),
+    End(Box<Trace>),
 }
 
 fn play(game: &Game, decisions: &[usize]) -> ResultState {
@@ -84,7 +84,7 @@ fn play(game: &Game, decisions: &[usize]) -> ResultState {
                 trace.ending = machine.scene().to_owned();
                 trace.variables = machine.variables().clone();
                 assert_eq!(trace.dialogues.last().map(String::as_str), Some("The End."));
-                return ResultState::End(trace);
+                return ResultState::End(Box::new(trace));
             }
         }
     }
