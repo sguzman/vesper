@@ -246,6 +246,75 @@ def long_dialogue_scroll() -> None:
                     player.wait(timeout=3)
 
 
+def authored_bubble_frame(reference: Path) -> None:
+    """Prove the native player displays a game-local sliced PNG bubble frame.
+
+    The art is generated in this isolated QA fixture; the engine never draws
+    or decodes it on the frame thread. Existing VN fixtures stay untouched.
+    """
+    with tempfile.TemporaryDirectory(prefix="vesper-authored-bubble-") as folder:
+        game = Path(folder) / "game"
+        shutil.copytree(ROOT / "examples/bubble-showcase", game)
+        art = game / "assets/ui/bubble-frame.png"
+        art.parent.mkdir(parents=True, exist_ok=True)
+        call(
+            "convert", "-size", "192x96", "xc:#283f59",
+            "-stroke", "#e8ce88", "-strokewidth", "7",
+            "-fill", "none", "-draw", "roundrectangle 7,7 185,89 16,16",
+            str(art),
+        )
+        manifest = game / "game.toml"
+        authored = manifest.read_text(encoding="utf-8")
+        setting = "corner_radius = 18.0"
+        assert authored.count(setting) == 1
+        manifest.write_text(authored.replace(
+            setting,
+            setting + '\nimage = "assets/ui/bubble-frame.png"'
+                    + '\nslice_border = 16.0',
+        ), encoding="utf-8")
+        prefs = Path(folder) / "prefs"
+        prefs.mkdir()
+        (prefs / "player-preferences.json").write_text(
+            json.dumps({"format_version": 1, "reveal_speed": "instant"}),
+            encoding="utf-8",
+        )
+        env = dict(
+            os.environ, LIBGL_ALWAYS_SOFTWARE="1",
+            VESPER_PREFERENCES_DIR=str(prefs),
+            VESPER_SAVE_DIR=str(Path(folder) / "saves"),
+        )
+        log = OUTPUT / "authored-bubble-frame.log"
+        with log.open("w", encoding="utf-8") as stream:
+            player = subprocess.Popen(
+                [str(PLAYER), str(game)],
+                stdout=stream, stderr=subprocess.STDOUT, env=env,
+            )
+            try:
+                win = wait_window("Speech Bubble Rendering Fixture")
+                time.sleep(2.0)
+                frame = grab(win, "authored-frame-1280.png", (1280, 720))
+                difference = diff(reference, frame)
+                assert difference > 6000, (
+                    "Game-authored sliced bubble frame did not render",
+                    difference, log.read_text(encoding="utf-8", errors="replace")[-1000:],
+                )
+                call("xdotool", "windowsize", "--sync", win, "946", "511")
+                time.sleep(0.8)
+                compact = grab(win, "authored-frame-compact.png", (946, 511))
+                assert compact.is_file() and player.poll() is None
+                print(
+                    "Game-authored optional nine-slice PNG bubble frame at "
+                    "1280x720 and 946x511: passed", flush=True,
+                )
+            finally:
+                player.terminate()
+                try:
+                    player.wait(timeout=6)
+                except subprocess.TimeoutExpired:
+                    player.kill()
+                    player.wait(timeout=3)
+
+
 def main() -> None:
     bubble, _, choices = run_game(
         "examples/bubble-showcase", "Speech Bubble Rendering Fixture", "bubble"
@@ -273,6 +342,7 @@ def main() -> None:
         "High contrast/large text preferences were not applied to bubbles"
     )
     long_dialogue_scroll()
+    authored_bubble_frame(bubble)
     print(f"Native optional bubble vs legacy panel: {difference} different pixels", flush=True)
     print("Speech bubbles, saved panel restoration, contrast, font scale, choices, compact layout: passed",
           flush=True)
