@@ -321,7 +321,13 @@ pub fn sync(
     mut labels: Query<&mut Text, With<InteractionPromptText>>,
     mut huds: Query<&mut Node, (With<WalkHud>, Without<StoryPanel>, Without<InteractionPrompt>)>,
     mut panels: Query<&mut Node, (With<StoryPanel>, Without<InteractionPrompt>)>,
+    mut diagnostic_frames: Local<u8>,
 ) {
+    if *diagnostic_frames < 3 {
+        info!("Vesper exploration renderer diagnostic: mode={:?}, loaded={:?}, sprites={}",
+            session.experience.mode, runtime.loaded_location, sprites.iter_mut().count());
+        *diagnostic_frames += 1;
+    }
     // Pure VNs never enter this optional player subsystem or have their
     // panel display state rewritten by the exploration renderer.
     if session.game.manifest.exploration.as_ref()
