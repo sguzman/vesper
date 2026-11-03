@@ -98,7 +98,7 @@ panel ornate
 friend: "Let's talk somewhere quiet."
 ```
 
-- `surface panel` selects the existing dialogue box; `surface bubble` selects an anchored bubble; `surface default` restores the author default (and the legacy box if no new section exists). The switch can occur immediately before **any line** and persists until the next explicit switch or new scene default; this permits per-line use without a new embedded markup syntax.
+- `surface panel` selects the existing dialogue box; `surface bubble` selects an anchored bubble; `surface default` restores the author default (and the legacy box if no new section exists). The switch can occur immediately before **any line** and persists until the next explicit switch. Authors may explicitly set the surface at a scene's first command; there is no implicit per-scene reset. This permits per-line and per-scene authoring without embedded markup.
 - `explore <location> at <spawn>` explicitly yields into exploration.
 - `explore return` is valid only while a modal world conversation is pending; it returns to its snapped location/position instead of automatically walking there.
 - `mode visual_novel` explicitly transfers into cinematic staging from any mode and clears the pending exploration return.

@@ -13,8 +13,9 @@ underway. The first experimental authoring fixture is
 [Bubble Showcase](examples/bubble-showcase/), using a globally authored
 bubble surface in an otherwise traditional visual novel; see the
 [speech-bubble authoring guide](docs/native-speech-bubbles.md).
-Per-scene/per-line surface switching and movement are later milestones,
-not existing engine features. Traditional VNs need no exploration data.
+Per-scene/per-line `surface panel | bubble | default` commands are
+implemented with a dedicated regression fixture, pending final CI verification.
+Optional movement is a later milestone; traditional VNs need no exploration data.
 The urban example's final title, city and cast remain to be decided.
 
 ## Standalone external visual novels

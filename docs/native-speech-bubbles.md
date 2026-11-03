@@ -28,6 +28,13 @@ border_color = [0.86, 0.76, 0.57, 0.96]
 - `default_surface` supports only `panel` and `bubble`; the default is the
   existing illustrated VN panel. The global default is independent of any
   future optional exploration mode.
+- **Additive `.vn` commands:** `surface bubble`, `surface panel`,
+  `surface default`. Authors may put one at the beginning of a scene or
+  between dialogue lines. The command takes effect on the next line without
+  changing story variables, movement, saved choice or custom panel artwork.
+  `default` clears the active override and restores the manifest default.
+  These presentation commands are typed and validated with file/line
+  diagnostics, not interpreted as arbitrary scripts.
 - `max_width_percent` is finite and between 30 and 80. `padding` is 8–48,
   `corner_radius` is 2–45, and `slice_border` is 2–80 logical/source pixels.
   RGBA fields contain finite values from 0 to 1. Unknown manifest fields fail
@@ -66,7 +73,8 @@ distinct bubble/legacy pixel output at 1280×720, renders a 946×511 compact
 bubble, advances to a staged character and confirms the unchanged choice-panel
 fallback. Screenshots are retained as the `vesper-speech-bubbles` artifact.
 
-**Not yet included in NA02:** game/scene/line surface commands (NA03),
-explorable-area NPC anchors (NA04–06), fully authored art for the new slice-of-
-life title (UR02), and physical Wayland visual acceptance. Future milestones
-must not be marked verified because this preliminary global surface exists.
+**Still pending acceptance:** integrated saved override and graphical
+round-trip checks for per-line commands (NA03), exploration NPC anchors
+(NA04–06), fully authored art for the new slice-of-life title (UR02), and
+physical Wayland visual acceptance. This partial implementation is not
+automatic completion of NA02 or NA03.

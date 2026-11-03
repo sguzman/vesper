@@ -86,9 +86,11 @@
         "Switch surfaces during one conversation or between scenes without losing text, focus, choices, animation progress, or speaker names; custom dialogue panel image and separate nameplate remain intact.",
         "Choices remain engine-owned accessible controls; authored bubble appearance never requires a new custom scripting runtime; pure VN game can opt into bubble dialogue and old projects use unchanged defaults."
       ],
-      "status": "not started",
+      "status": "active",
       "verified_weight": 0,
-      "evidence": []
+      "evidence": [
+        "Typed `surface panel|bubble|default` narrative command, optional saved override, restart/hot-reload semantics and independent Bubble Showcase fixture authored; CI verification pending; no weighted points credited."
+      ]
     },
     {
       "id": "NA04",
@@ -268,9 +270,10 @@
     "last_reported_verified_percent": 0,
     "active": [
       "NA01",
-      "NA02"
+      "NA02",
+      "NA03"
     ],
-    "pending": "Run narrative/Bevy CI for optional speech bubbles; fix compile or runtime failures, verify legacy panel regressions and finish NA01 criteria before crediting any points.",
+    "pending": "Verify per-line surface switching, saved override, old-game compatibility and graphical menu/Atlas regressions through CI. Fix any failures before counting weighted milestones.",
     "previous_preserved_complete": true
   }
 }

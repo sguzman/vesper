@@ -31,6 +31,8 @@ pub enum Visual {
     Background(String),
     /// Change the externally authored dialogue surface. "default" resets it.
     Panel(String),
+    /// Optional dialogue presentation; not coupled to exploration.
+    Surface(DialogueSurfaceDirective),
     Show { character: String, expression: String, position: String },
     Hide(String),
     Music(String),
@@ -38,6 +40,15 @@ pub enum Visual {
     /// Non-speaking scene sprites declared by the external manifest.
     AmbientShow(String),
     AmbientHide(String),
+}
+
+/// An additive author command. Panel artwork ('panel skin_name') remains
+/// independent from the choice of dialogue surface.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DialogueSurfaceDirective {
+    Panel,
+    Bubble,
+    Default,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -146,6 +157,14 @@ fn dialogue_output(command: &Command) -> Option<Output> {
 }
 
 fn command(line: &str) -> Result<Command, String> {
+    if let Some(value) = line.strip_prefix("surface ") {
+        return Ok(Command::Visual(Visual::Surface(match value {
+            "panel" => DialogueSurfaceDirective::Panel,
+            "bubble" => DialogueSurfaceDirective::Bubble,
+            "default" => DialogueSurfaceDirective::Default,
+            _ => return Err("surface requires panel, bubble or default".into()),
+        })));
+    }
     if let Some(rest) = line.strip_prefix("* ") {
         let (label, target) = rest.rsplit_once(" -> ").ok_or("choice needs ' -> scene'")?;
         if !identifier(target) { return Err("invalid choice destination".into()); }
@@ -938,4 +957,56 @@ end
     }
 
 
+}
+
+#[cfg(test)]
+mod dialogue_surface_tests {
+    use super::*;
+
+    #[test]
+    fn surface_commands_are_typed_and_do_not_break_original_panel_skin() {
+        let story = Story::parse(
+            "@scene entry\nsurface bubble\npanel notebook\na: \"Hi\"\nsurface panel\n\"Narration\"\nsurface default\n"
+        ).unwrap();
+        let mut machine = Machine::new(&story, "entry").unwrap();
+        assert_eq!(machine.advance().unwrap(), Output::Visual(
+            Visual::Surface(DialogueSurfaceDirective::Bubble)
+        ));
+        assert_eq!(machine.advance().unwrap(), Output::Visual(
+            Visual::Panel("notebook".into())
+        ));
+        assert_eq!(machine.advance().unwrap(), Output::Dialogue {
+            speaker: Some("a".into()), text: "Hi".into()
+        });
+        assert_eq!(machine.advance().unwrap(), Output::Visual(
+            Visual::Surface(DialogueSurfaceDirective::Panel)
+        ));
+        assert!(matches!(machine.advance(), Ok(Output::Dialogue { .. })));
+        assert_eq!(machine.advance().unwrap(), Output::Visual(
+            Visual::Surface(DialogueSurfaceDirective::Default)
+        ));
+        assert_eq!(machine.advance().unwrap(), Output::End);
+    }
+
+    #[test]
+    fn invalid_surface_lines_preserve_file_diagnostics() {
+        for wrong in ["surface", "surface yaml", "surface Bubble", "surface panel extra"] {
+            let source = format!("@scene start\n{wrong}\n\"Hi\"");
+            let failure = Story::parse(&source).unwrap_err();
+            assert_eq!(failure.len(), 1);
+            assert_eq!(failure[0].line, 2);
+        }
+    }
+
+    #[test]
+    fn surface_does_not_change_legacy_snapshot_semantics() {
+        let story = Story::parse("@scene start\nsurface bubble\n\"hello\"").unwrap();
+        let mut machine = Machine::new(&story, "start").unwrap();
+        assert!(matches!(machine.advance().unwrap(),
+            Output::Visual(Visual::Surface(DialogueSurfaceDirective::Bubble))));
+        assert!(matches!(machine.advance().unwrap(), Output::Dialogue { .. }));
+        let snapshot = machine.snapshot();
+        let restored = Machine::restore(&story, snapshot.clone()).unwrap();
+        assert_eq!(restored.snapshot(), snapshot);
+    }
 }

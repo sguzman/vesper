@@ -127,11 +127,13 @@ pub fn apply_reload(
     let old = session.game.clone();
     let saved = session.presentation.clone();
     session.game = updated;
-    // Only follow the author default when this session still uses that
-    // default. A later explicit per-line surface choice must take precedence.
-    if session.experience.dialogue_surface == old.manifest.dialogue.default_surface {
-        session.experience.dialogue_surface = session.game.manifest.dialogue.default_surface;
-    }
+    // An explicit authored scene/line surface override wins, even if it
+    // happens to equal the old manifest default. Only fallback surfaces
+    // follow an externally edited game default during hot reload.
+    session.experience.dialogue_surface =
+        session.presentation.dialogue_surface.unwrap_or(
+            session.game.manifest.dialogue.default_surface
+        );
     session.machine = rebound;
     let theme = effective_theme(&session);
     ui_scale.0 = theme.ui_scale;

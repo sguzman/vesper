@@ -1,6 +1,6 @@
 //! Versioned, game-bound saves. The Bevy player handles UI and async I/O.
 //! Saves never serialize transient ECS entity identifiers.
-use crate::Game;
+use crate::{Game, experience::DialogueSurface};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, fs, io::{self, Write}, path::Path,
     sync::atomic::{AtomicU64, Ordering}};
@@ -20,6 +20,10 @@ pub struct PresentationState {
     /// Active per-scene panel override; None means game/theme default.
     #[serde(default)]
     pub panel_skin: Option<String>,
+    /// Optional author surface override. Missing in version-one saved games:
+    /// default to the current game's panel or bubble author preference.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dialogue_surface: Option<DialogueSurface>,
     #[serde(default)]
     pub music: Option<String>,
     #[serde(default)]
@@ -212,6 +216,25 @@ mod tests {
         let old = json.replace("    \"panel_skin\": null,\n", "");
         let decoded = SaveData::decode(old.as_bytes()).unwrap();
         assert_eq!(decoded.presentation.panel_skin, None);
+    }
+
+    #[test]
+    fn optional_surface_roundtrip_and_old_save_default_compatibility() {
+        let fixture = Fixture::new();
+        let game = Game::load(&fixture.0).unwrap();
+        let machine = Machine::new(&game.story, &game.manifest.entry).unwrap();
+        let mut state = PresentationState::default();
+        state.dialogue_surface = Some(DialogueSurface::Bubble);
+        let save = SaveData::new(&game, &machine, state);
+        let bytes = save.encode().unwrap();
+        let decoded = SaveData::decode(&bytes).unwrap();
+        assert_eq!(decoded.presentation.dialogue_surface, Some(DialogueSurface::Bubble));
+        decoded.restore(&game).unwrap();
+        let mut legacy = serde_json::from_slice::<serde_json::Value>(&bytes).unwrap();
+        legacy["presentation"].as_object_mut().unwrap().remove("dialogue_surface");
+        let older = SaveData::decode(&serde_json::to_vec(&legacy).unwrap()).unwrap();
+        assert_eq!(older.presentation.dialogue_surface, None);
+        older.restore(&game).unwrap();
     }
 
     #[test]

@@ -2,9 +2,10 @@
 
 This game is a **test fixture**, not the forthcoming urban slice-of-life story.
 
-It shares The Little Lantern's original authorized script and assets, with a
-new game ID and an optional `[dialogue]` surface default. It demonstrates
-speech bubbles in a **pure visual novel**, without movement or exploration.
+It reuses The Little Lantern's original art and branching plot but has a
+separate story script with explicit `surface panel`, `surface bubble` and
+`surface default` commands. It demonstrates per-line and scene-start style
+switching in a **pure visual novel**, without movement or exploration.
 Narrator lines use the viewport fallback; Pip's dialogue uses the staged
 character's head as its bubble anchor. The standard panel remains available
 for choice controls and the ending.

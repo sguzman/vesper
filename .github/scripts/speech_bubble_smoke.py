@@ -76,9 +76,15 @@ def run_game(directory: str, title: str, filename: str) -> tuple[Path, Path, Pat
                 if directory != "examples/bubble-showcase":
                     return initial, logfile, None
                 press(win, "Return")
+                panel = grab(win, filename + "-panel.png", (1280, 720))
+                assert diff(initial, panel) > 3000, (
+                    "Per-line 'surface panel' did not switch to a traditional box"
+                )
                 press(win, "Return")
                 speaker = grab(win, filename + "-speaker.png", (1280, 720))
-                assert diff(initial, speaker) > 3000, "Speaker bubble never advanced"
+                assert diff(panel, speaker) > 3000, (
+                    "Per-line 'surface bubble' did not return to anchored dialogue"
+                )
                 call("xdotool", "windowsize", "--sync", win, "946", "511")
                 time.sleep(0.8)
                 compact = grab(win, filename + "-compact.png", (946, 511))
@@ -88,6 +94,9 @@ def run_game(directory: str, title: str, filename: str) -> tuple[Path, Path, Pat
                 press(win, "Return")  # a choice scene uses the standard option panel
                 choices = grab(win, filename + "-choices.png", (1280, 720))
                 assert diff(speaker, choices) > 3000, "Bubble did not yield to choices"
+                log = logfile.read_text(encoding="utf-8", errors="replace")
+                assert "Vesper dialogue surface: Panel" in log
+                assert "Vesper dialogue surface: Bubble" in log
                 return initial, logfile, choices
             finally:
                 process.terminate()
@@ -112,7 +121,7 @@ def main() -> None:
     )
     assert choices is not None
     print(f"Native optional bubble vs legacy panel: {difference} different pixels", flush=True)
-    print("Speech bubbles, staged-speaker advance, choice fallback, compact layout: passed",
+    print("Speech bubbles, per-line panel switching, choices, compact layout: passed",
           flush=True)
 
 

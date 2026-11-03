@@ -19,7 +19,7 @@ mod ambient;
 mod speech_bubble;
 use std::{collections::{BTreeMap, VecDeque}, env, path::PathBuf, process, sync::{Arc, Mutex}};
 use vesper_game::{Game, experience::ExperienceState, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
-use vesper_story::{Machine, MachineSnapshot, Output, Visual, rich_text::InlineSpan};
+use vesper_story::{Machine, MachineSnapshot, Output, Visual, DialogueSurfaceDirective, rich_text::InlineSpan};
 
 #[derive(Resource)]
 struct Session {
@@ -1324,6 +1324,20 @@ fn apply_visual_with_mode(
     instant: bool,
 ) -> Result<(), String> {
     match visual {
+        Visual::Surface(directive) => {
+            use vesper_game::experience::DialogueSurface;
+            let override_surface = match directive {
+                DialogueSurfaceDirective::Default => None,
+                DialogueSurfaceDirective::Panel => Some(DialogueSurface::Panel),
+                DialogueSurfaceDirective::Bubble => Some(DialogueSurface::Bubble),
+            };
+            session.experience.dialogue_surface = override_surface.unwrap_or(
+                session.game.manifest.dialogue.default_surface
+            );
+            session.presentation.dialogue_surface = override_surface;
+            info!("Vesper dialogue surface: {:?}",
+                session.experience.dialogue_surface);
+        }
         Visual::AmbientShow(id) => {
             if !session.game.manifest.ambient_actors.contains_key(&id) {
                 return Err(format!("unknown ambient actor '{id}'"));
@@ -2240,6 +2254,8 @@ fn restart_story(
             }
             session.pending_audio.clear();
             session.presentation = PresentationState::default();
+            session.experience.dialogue_surface =
+                session.game.manifest.dialogue.default_surface;
             session.history.reset();
             session.machine = machine;
             session.choosing = false;
@@ -2751,6 +2767,10 @@ fn poll_completed_io(
                 session.presentation = PresentationState::default();
                 session.presentation.selected_choice = state.selected_choice;
                 session.presentation.panel_skin = state.panel_skin;
+                session.presentation.dialogue_surface = state.dialogue_surface;
+                session.experience.dialogue_surface = state.dialogue_surface.unwrap_or(
+                    session.game.manifest.dialogue.default_surface
+                );
                 session.presentation.ambient_visibility = state.ambient_visibility;
                 session.presentation.ambient_motion_elapsed = state.ambient_motion_elapsed;
                 session.ambient_restore_epoch = session.ambient_restore_epoch.wrapping_add(1);
