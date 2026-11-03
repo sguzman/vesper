@@ -106,9 +106,11 @@
         "Validation rejects missing locations, unreachable interaction placement, duplicate IDs, unsafe asset paths, bad destination references and out-of-range coordinates with actionable diagnostics.",
         "Static VN scenes remain valid with no exploration fields; animation and illustration assets are optional/defaulted, and a location can be fully traversable within one screen."
       ],
-      "status": "not started",
+      "status": "active",
       "verified_weight": 0,
-      "evidence": []
+      "evidence": [
+        "Optional versioned exploration TOML schema, bounded NPC/prop/exit/spawn/asset validation, Rust unit tests, external schema-only fixture and CLI CI check authored; all await green committed CI before earning points."
+      ]
     },
     {
       "id": "NA05",
@@ -271,9 +273,10 @@
     "active": [
       "NA01",
       "NA02",
-      "NA03"
+      "NA03",
+      "NA04"
     ],
-    "pending": "Verify per-line surface switching, saved override, old-game compatibility and graphical menu/Atlas regressions through CI. Fix any failures before counting weighted milestones.",
+    "pending": "Verify native bubble geometry, persistence/high contrast, legacy VN and new exploration schema in CI. Resolve any failures; full Atlas multi-ending regression must pass before awarding NA01; NA02–NA04 remain subject to their full criteria.",
     "previous_preserved_complete": true
   }
 }

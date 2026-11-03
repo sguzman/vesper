@@ -1,0 +1,9 @@
+# External data-validation fixture, not a finished novel or playable map.
+@scene intro
+"This remains a traditional visual novel until exploration commands are implemented."
+
+@scene neighbor_chat
+"The neighbor says hello."
+
+@scene read_notice
+"The community noticeboard has today's announcements."

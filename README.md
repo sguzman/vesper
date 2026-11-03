@@ -16,7 +16,11 @@ bubble surface in an otherwise traditional visual novel; see the
 Per-scene/per-line `surface panel | bubble | default` commands are
 implemented with a dedicated regression fixture, pending final CI verification.
 Optional movement is a later milestone; traditional VNs need no exploration data.
-The urban example's final title, city and cast remain to be decided.
+The [optional exploration-location schema](docs/exploration-schema.md)
+now validates external maps and scene interactions, without yet enabling
+movement. Its [authoring-only fixture](examples/exploration-schema/) is not
+the future playable urban example. The urban example's final title, city
+and cast remain to be decided.
 
 ## Standalone external visual novels
 

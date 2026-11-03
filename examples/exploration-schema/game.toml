@@ -1,0 +1,52 @@
+format_version = 1
+id = "exploration-schema"
+title = "Optional Walkable Location Schema"
+story = "scripts/story.vn"
+entry = "intro"
+
+# Only this authoring fixture defines walkable places. Existing VN-only
+# examples do not require this table or movement controls.
+[exploration]
+schema_version = 1
+
+[exploration.avatar]
+speed = 230.0
+walk_fps = 8.0
+
+[exploration.locations.street]
+background = "assets/backgrounds/sunrise.png"
+width = 1280.0
+height = 720.0
+
+[exploration.locations.street.spawns.home]
+x = 150.0
+facing = "right"
+
+[exploration.locations.street.npcs.neighbor]
+x = 435.0
+interact_scene = "neighbor_chat"
+interaction_radius = 80.0
+
+[exploration.locations.street.props.noticeboard]
+x = 690.0
+interact_scene = "read_notice"
+interaction_radius = 65.0
+
+[exploration.locations.street.exits.cafe_door]
+x = 1170.0
+to_location = "cafe"
+to_spawn = "entry"
+
+[exploration.locations.cafe]
+background = "assets/backgrounds/sunrise.png"
+width = 640.0
+height = 720.0
+
+[exploration.locations.cafe.spawns.entry]
+x = 65.0
+facing = "left"
+
+[exploration.locations.cafe.exits.street_door]
+x = 25.0
+to_location = "street"
+to_spawn = "home"

@@ -27,6 +27,7 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game game-alternate
           cargo run --locked -p vesper-cli -- check-game examples/little-lantern
           cargo run --locked -p vesper-cli -- check-game examples/bubble-showcase
+          cargo run --locked -p vesper-cli -- check-game examples/exploration-schema
           cargo run --locked -p vesper-cli -- check-game examples/clockwork-moon
           cargo run --locked -p vesper-cli -- check-game examples/dawn-post-office
           cargo run --locked -p vesper-cli -- check-game examples/panel-showcase

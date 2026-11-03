@@ -6,6 +6,7 @@ pub mod save;
 pub mod preferences;
 pub mod ambient_motion;
 pub mod experience;
+pub mod exploration;
 use std::{
     collections::BTreeMap,
     fs,
@@ -34,6 +35,10 @@ pub struct Manifest {
     /// Optional dialogue-surface default. Absent preserves the normal VN panel.
     #[serde(default)]
     pub dialogue: DialogueDefaults,
+    /// Completely optional, separately versioned author-owned locations.
+    /// Absence means the exact legacy visual novel experience.
+    #[serde(default)]
+    pub exploration: Option<exploration::Exploration>,
     /// Optional external dialogue surfaces. Never compiled into the engine.
     #[serde(default)]
     pub panel_skins: BTreeMap<String, PanelSkin>,
@@ -1023,6 +1028,10 @@ impl Game {
         };
         theme.validate()?;
         manifest.dialogue.bubble.validate()?;
+        if let Some(world) = &manifest.exploration {
+            world.validate(&root, &story)
+                .map_err(|error| format!("{}: {error}", manifest_path.display()))?;
+        }
         if let Some(filename) = &manifest.dialogue.bubble.image {
             let file = checked_file(&root, filename)?;
             if !file.extension().and_then(|ext| ext.to_str())
