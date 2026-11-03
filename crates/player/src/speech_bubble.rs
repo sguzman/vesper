@@ -274,11 +274,23 @@ pub fn sync(
         previous.1 = if contrast { None } else { skin.image.clone() };
         // A bubble is a dialogue surface, never an instruction banner.
         // Hidden native hints remain in the accessibility/reader model.
-        let has_more = computed.content_size().y > computed.size().y + 2.0;
+        // A short line can have a tiny layout/content discrepancy from
+        // padding and decorative nodes. It is not genuinely scrollable
+        // until the bubble actually reaches its viewport-height cap.
+        let cap_in_layout_pixels = geometry.max_height
+            / computed.inverse_scale_factor().max(0.001);
+        let has_more = computed.size().y >= cap_in_layout_pixels - 4.0
+            && computed.content_size().y > computed.size().y + 2.0;
         for (mut part, text, art, accent, divider, nameplate, hint_slot, tail, cue, color) in &mut details {
             if cue {
                 let display = if has_more { Display::Flex } else { Display::None };
-                if part.display != display { part.display = display; }
+                if part.display != display {
+                    part.display = display;
+                    info!("Vesper bubble scroll hint {} (panel {:.0}, content {:.0}, cap {:.0})",
+                        if has_more { "visible" } else { "hidden" },
+                        computed.size().y, computed.content_size().y,
+                        cap_in_layout_pixels);
+                }
             } else if art || accent || divider || hint_slot
                 || matches!(text, Some(StoryText::Hint))
             {

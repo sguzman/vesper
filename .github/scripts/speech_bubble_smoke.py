@@ -93,6 +93,10 @@ def run_game(directory: str, title: str, filename: str,
                 win = wait_window(title)
                 time.sleep(2.0)
                 initial = grab(win, filename + "-initial.png", (1280, 720))
+                if directory == "examples/bubble-showcase":
+                    assert "Vesper bubble scroll hint visible" not in logfile.read_text(
+                        encoding="utf-8", errors="replace"
+                    ), "An ordinary short dialogue should not show a paging hint"
                 if directory != "examples/bubble-showcase" or not full_route:
                     return initial, logfile, None
                 press(win, "Return")
@@ -205,6 +209,7 @@ def long_dialogue_scroll() -> None:
                 call("xdotool", "windowsize", "--sync", win, "946", "511")
                 time.sleep(1.7)
                 top = grab(win, "long-compact-top.png", (946, 511))
+                wait_for_phrase(log, "Vesper bubble scroll hint visible")
                 press(win, "Next")  # PageDown
                 wait_for_phrase(log, "Vesper bubble scroll:")
                 lower = grab(win, "long-compact-scrolled.png", (946, 511))
