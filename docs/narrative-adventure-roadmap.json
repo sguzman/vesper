@@ -78,7 +78,8 @@
         "Measured-height scroll cue now appears only when a real viewport cap is reached; native tests reject misleading PgDn hints on ordinary bubbles and require it on long multilingual bubbles. QA pending.",
         "Native Bevy bubble regression passed in CI 41713967039, including true/false PgDn cue, duplicate scroll reset, CJK, contrast and compact layout; later unrelated Atlas layout test raced a reused Settings overlay, now guarded by live open/close event counts. Full CI pending.",
         "Visual audit found oversized long-text bubble hid the stage character's face. Limit native scrollable panel to upper 43% of scene, additionally stop above on-screen speaker head; unit bounds plus real-image meadow visibility regression added, full QA pending.",
-        "Extended native long multilingual bubble QA: F5 while second identical dialogue is scrolled, F9 restore, verify readable top at same scene/cursor through restoration epoch; pending CI."
+        "Extended native long multilingual bubble QA: F5 while second identical dialogue is scrolled, F9 restore, verify readable top at same scene/cursor through restoration epoch; pending CI.",
+        "Real Bevy left-click dialogue advancement added using the established reveal/advance path and existing modal/choice input ownership; native pointer-click-to-panel regression authored, full CI pending."
       ]
     },
     {

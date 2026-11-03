@@ -102,7 +102,13 @@ def run_game(directory: str, title: str, filename: str,
                 # not a decorative cue regression.
                 if directory != "examples/bubble-showcase" or not full_route:
                     return initial, logfile, None
-                press(win, "Return")
+                # A left click in the story window is a native dialogue
+                # advance, independent of keyboard control and movement.
+                # Menus, history and choices retain higher input priority.
+                call("xdotool", "windowfocus", "--sync", win)
+                call("xdotool", "mousemove", "--window", win, "940", "610")
+                call("xdotool", "click", "--clearmodifiers", "1")
+                time.sleep(.65)
                 panel = grab(win, filename + "-panel.png", (1280, 720))
                 assert diff(initial, panel) > 3000, (
                     "Per-line 'surface panel' did not switch to a traditional box"

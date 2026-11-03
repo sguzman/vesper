@@ -2351,6 +2351,10 @@ struct OverlayInputs<'w, 's> {
     save_ui: ResMut<'w, save_slots::SaveUi>,
     save_click: ResMut<'w, save_slots::Click>,
     save_pending: ResMut<'w, save_slots::Pending>,
+    // Grouped with other overlay-aware input to keep the Bevy system
+    // below its parameter arity limit. Ordinary story clicking uses the
+    // exact same reveal/advance path as Enter and Space.
+    reader_mouse: Res<'w, ButtonInput<MouseButton>>,
 }
 
 fn advance_from_keyboard(
@@ -2646,6 +2650,7 @@ fn advance_from_keyboard(
         && !input.just_pressed(KeyCode::Escape)
         && (input.just_pressed(KeyCode::Enter)
             || input.just_pressed(KeyCode::Space)
+            || overlays.reader_mouse.just_pressed(MouseButton::Left)
             || reading.autoplay_ready)
     {
         reading.autoplay_ready = false;
