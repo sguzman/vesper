@@ -30,7 +30,7 @@ def await_difference(window: str, reference: Path, name: str, minimum: int) -> P
     deadline = time.monotonic() + 15
     difference = 0
     while time.monotonic() < deadline:
-        qa.frame(window, name, 1280, 720)
+        qa.scenery_frame(window, name, 1280, 720, OUT / "reload.log")
         difference = qa.changed(reference, target)
         if difference >= minimum:
             return target
@@ -153,7 +153,7 @@ def main() -> None:
                 # street where the player is standing must be rejected by the
                 # *live state* validator, not accepted as an implicit teleport.
                 old_stops = qa.log_text(log).count("Vesper exploration stopped:")
-                qa.walk(window, "Right", 4.5)
+                qa.walk(window, "Right", 1.55)
                 current = qa.position_after_stop(log, old_stops)
                 assert current > 950, current
                 at_edge = qa.frame(window, "reload-before-bounds.png", 1280, 720)
