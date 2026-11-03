@@ -114,7 +114,7 @@ def main() -> None:
                 # Approach the relocated NPC and verify a bubble style change
                 # while its modal narrative conversation is already active.
                 old_stops = qa.log_text(log).count("Vesper exploration stopped:")
-                qa.walk(window, "Right", 2.4)
+                qa.walk(window, "Right", 2.85)
                 reached = qa.position_after_stop(log, old_stops)
                 assert 610 < reached < 900, reached
                 qa.key(window, "e")
