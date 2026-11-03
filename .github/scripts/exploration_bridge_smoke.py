@@ -105,7 +105,25 @@ def main() -> None:
 
                 # Enter the neighbor's choice-driven scene and choose cinematic
                 # VN instead of the direct world-return option.
+                # Software-rendered Bevy caps per-frame movement delta.
+                # A fixed .65s key hold once stopped 1.5 logical pixels
+                # outside the authored 180px NPC radius. Measure the actual
+                # stopped world position and enter the range with slack.
+                old_stops = qa.log_text(log).count("Vesper exploration stopped:")
                 qa.walk(window, "Right", .65)
+                reached = qa.position_after_stop(log, old_stops)
+                for _ in range(8):
+                    if 280.0 <= reached <= 430.0:
+                        break
+                    assert reached < 430.0, (
+                        f"Walk passed the neighbor focus zone: {reached}"
+                    )
+                    old_stops = qa.log_text(log).count("Vesper exploration stopped:")
+                    qa.walk(window, "Right", .25)
+                    reached = qa.position_after_stop(log, old_stops)
+                assert 280.0 <= reached <= 430.0, (
+                    f"Could not approach the authored neighbor: {reached}"
+                )
                 qa.key(window, "e")
                 qa.wait_for_log(log, "Vesper exploration interacting: neighbor -> neighbor_chat")
                 # Keypresses are not a reliable proxy for reveal completion.
