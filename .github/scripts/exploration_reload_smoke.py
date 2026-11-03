@@ -40,6 +40,23 @@ def await_difference(window: str, reference: Path, name: str, minimum: int) -> P
     )
 
 
+def settled_frame(window: str, name: str) -> Path:
+    """Capture after the keyboard-up idle sprite has rendered.
+
+    The Bevy update and framebuffer are asynchronous to xdotool's keyup.
+    A valid rejected manifest must not be blamed for a one-frame idle/walk
+    swap captured just before the first no-input render.
+    """
+    prior = qa.frame(window, name, 1280, 720)
+    for _ in range(12):
+        time.sleep(.2)
+        current = qa.frame(window, name, 1280, 720)
+        if qa.changed(prior, current) < 10:
+            return current
+        prior = current
+    raise AssertionError("Exploration sprite never settled after movement")
+
+
 def unchanged(window: str, before: Path, name: str) -> None:
     time.sleep(.6)
     after = qa.frame(window, name, 1280, 720)
@@ -165,7 +182,7 @@ def main() -> None:
                 qa.walk(window, "Right", 1.55)
                 current = qa.position_after_stop(log, old_stops)
                 assert current > 950, current
-                at_edge = qa.frame(window, "reload-before-bounds.png", 1280, 720)
+                at_edge = settled_frame(window, "reload-before-bounds.png")
                 shortened = bubble_style.replace(
                     "width = 1280.0", "width = 900.0", 1,
                 ).replace("x = 1170.0", "x = 850.0", 1)
