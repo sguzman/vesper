@@ -31,7 +31,16 @@ fn bubble_geometry(
     viewport: Vec2, width_percent: f32, anchor: Option<Vec2>,
 ) -> BubbleGeometry {
     let viewport = viewport.max(Vec2::splat(1.0));
-    let gutter = 12.0_f32.min(viewport.x * 0.05);
+    // A clipped/offscreen staged character or a world NPC outside the
+    // current camera is not a valid bubble anchor. Prefer the same centered
+    // readable fallback used by narration, never a tail toward empty space.
+    // This check is in logical UI coordinates for both portrait and world NPCs.
+    let safe_x = 12.0_f32.min(viewport.x * 0.05);
+    let safe_y = 12.0_f32.min(viewport.y * 0.05);
+    let anchor = anchor.filter(|head| head.is_finite()
+        && head.x >= safe_x && head.x <= viewport.x - safe_x
+        && head.y >= safe_y && head.y <= viewport.y - safe_y);
+    let gutter = safe_x;
     let available = (viewport.x - gutter * 2.0).max(1.0);
     let width = (viewport.x * width_percent / 100.0).min(available);
     let left = anchor.map_or((viewport.x - width) * 0.5, |head| {
@@ -417,6 +426,34 @@ mod tests {
                     assert!(tail >= 0.0 && tail <= g.width);
                 }
             }
+        }
+    }
+
+    #[test]
+    fn offscreen_and_invalid_speakers_use_centered_tail_free_fallback() {
+        for viewport in [Vec2::new(946.0, 511.0), Vec2::new(1280.0, 720.0),
+                         Vec2::new(1920.0, 1080.0)] {
+            let fallback = bubble_geometry(viewport, 58.0, None);
+            for outside in [
+                Vec2::new(-1.0, 220.0),
+                Vec2::new(viewport.x + 1.0, 220.0),
+                Vec2::new(320.0, -20.0),
+                Vec2::new(320.0, viewport.y + 20.0),
+                Vec2::new(f32::NAN, 200.0),
+                Vec2::new(200.0, f32::INFINITY),
+            ] {
+                let g = bubble_geometry(viewport, 58.0, Some(outside));
+                assert!(g.tail_x.is_none(), "unexpected tail for {outside:?}");
+                assert_eq!(g.left, fallback.left);
+                assert_eq!(g.top, fallback.top);
+                assert_eq!(g.width, fallback.width);
+                assert_eq!(g.max_height, fallback.max_height);
+            }
+            // Fully onscreen speakers retain their anchored bubble and tail.
+            let visible = bubble_geometry(viewport, 58.0,
+                Some(Vec2::new(viewport.x - 24.0, viewport.y * 0.5)));
+            assert!(visible.tail_x.is_some());
+            assert!(visible.left >= 0.0 && visible.left + visible.width <= viewport.x);
         }
     }
 
