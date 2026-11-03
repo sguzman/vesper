@@ -162,6 +162,17 @@ pub fn input(
     if runtime.moving { runtime.elapsed += time.delta_secs().min(0.05); }
 }
 
+/// Placeholder rectangles have an explicit custom_size even though their
+/// built-in white backing texture is 1×1. Respect that authored display size
+/// before consulting the raw image dimensions, or a placeholder can grow to
+/// fullscreen and conceal the whole location.
+fn sprite_height(sprite: &Sprite, images: &Assets<Image>, fallback: f32) -> f32 {
+    sprite.custom_size.map(|size| size.y).or_else(||
+        images.get(&sprite.image).map(|image|
+            image.texture_descriptor.size.height.max(1) as f32)
+    ).unwrap_or(fallback).max(1.0)
+}
+
 /// UI camera remains fixed for traditional VN scenes. Instead, this
 /// lightweight world projection scrolls only exploration sprites, allowing
 /// the same menus/reader/accessibility scale to remain stable.
@@ -217,8 +228,7 @@ pub fn sync(
                 if let Some(handle) = handle {
                     if sprite.image != handle { sprite.image = handle; }
                 }
-                let natural_height = images.get(&sprite.image)
-                    .map_or(85.0, |image| image.texture_descriptor.size.height.max(1) as f32);
+                let natural_height = sprite_height(&sprite, &images, 85.0);
                 let fit = 85.0 / natural_height;
                 let scale = Vec3::splat(view.world_to_screen * world.avatar.scale * fit);
                 if transform.scale != scale { transform.scale = scale; }
@@ -227,9 +237,9 @@ pub fn sync(
                 let desired_x = view.x(*x);
                 if transform.translation.x != desired_x { transform.translation.x = desired_x; }
                 if transform.translation.y != ground_y { transform.translation.y = ground_y; }
-                let natural_height = images.get(&sprite.image).map_or(
+                let natural_height = sprite_height(
+                    &sprite, &images,
                     if matches!(part, AreaVisual::Npc(_)) { 85.0 } else { 46.0 },
-                    |image| image.texture_descriptor.size.height.max(1) as f32,
                 );
                 let height = if matches!(part, AreaVisual::Npc(_)) { 85.0 } else { 46.0 };
                 let scale = Vec3::splat(view.world_to_screen * height / natural_height);
@@ -250,6 +260,14 @@ mod tests {
         state.enter_exploration(vesper_game::experience::WorldPosition::new(
             "street", 150.0, Facing::Right).unwrap());
         assert!(matches!(state.mode, ExperienceMode::Exploring(_)));
+    }
+
+    #[test]
+    fn placeholder_art_has_explicit_height_not_its_one_pixel_texture() {
+        let avatar = Sprite::from_color(Color::WHITE, Vec2::new(35.0, 85.0));
+        let prop = Sprite::from_color(Color::WHITE, Vec2::new(34.0, 46.0));
+        assert_eq!(avatar.custom_size.unwrap().y, 85.0);
+        assert_eq!(prop.custom_size.unwrap().y, 46.0);
     }
 
     #[test]

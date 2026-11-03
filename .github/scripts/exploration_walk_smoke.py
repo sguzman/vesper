@@ -110,6 +110,17 @@ def main() -> None:
                 assert START.search(log_text(log)), "Didn't enter the authored street"
                 time.sleep(1.5)
                 initial = frame(window, "walk-initial.png", 1280, 720)
+                # Exclude the text/control HUD. A fullscreen placeholder
+                # previously hid the entire location while movement logs
+                # still looked correct; require actual scenery texture.
+                central_colors = int(call(
+                    "convert", str(initial),
+                    "-crop", "480x300+200+120", "+repage",
+                    "-format", "%k", "info:",
+                ).stdout.strip())
+                assert central_colors > 50, (
+                    f"World backdrop concealed or missing ({central_colors} colors)"
+                )
                 old = log_text(log).count("Vesper exploration stopped:")
                 walk(window, "Right", .85)
                 x1 = position_after_stop(log, old)
