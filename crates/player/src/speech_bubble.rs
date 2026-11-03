@@ -37,9 +37,14 @@ fn bubble_geometry(
     // This check is in logical UI coordinates for both portrait and world NPCs.
     let safe_x = 12.0_f32.min(viewport.x * 0.05);
     let safe_y = 12.0_f32.min(viewport.y * 0.05);
+    // The bubble needs at least 90 logical pixels of text area above
+    // the head plus its 14px tail gap. A speaker at the top edge can be
+    // onscreen yet have no such headroom: use the narration fallback
+    // rather than covering their face with a forced minimum-height panel.
+    let min_head_y = (8.0 + 90.0 + 14.0_f32).max(safe_y);
     let anchor = anchor.filter(|head| head.is_finite()
         && head.x >= safe_x && head.x <= viewport.x - safe_x
-        && head.y >= safe_y && head.y <= viewport.y - safe_y);
+        && head.y >= min_head_y && head.y <= viewport.y - safe_y);
     let gutter = safe_x;
     let available = (viewport.x - gutter * 2.0).max(1.0);
     let width = (viewport.x * width_percent / 100.0).min(available);
@@ -487,6 +492,10 @@ mod tests {
                 Vec2::new(viewport.x + 1.0, 220.0),
                 Vec2::new(320.0, -20.0),
                 Vec2::new(320.0, viewport.y + 20.0),
+                // A visible head near the top has no room for a 90px
+                // bubble + tail, so it must not be covered by the panel.
+                Vec2::new(viewport.x * 0.5, 60.0),
+                Vec2::new(viewport.x * 0.5, 110.0),
                 Vec2::new(f32::NAN, 200.0),
                 Vec2::new(200.0, f32::INFINITY),
             ] {
