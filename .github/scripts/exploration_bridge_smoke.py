@@ -66,8 +66,14 @@ def main() -> None:
                 qa.walk(window, "Right", .65)
                 qa.key(window, "e")
                 qa.wait_for_log(log, "Vesper exploration interacting: neighbor -> neighbor_chat")
-                qa.key(window, "Return")
-                qa.key(window, "Return")
+                # Keypresses are not a reliable proxy for reveal completion.
+                # Wait for the *actual* interpreter choice event before 2.
+                expected = "Vesper choices available: 2 in scene neighbor_chat"
+                for _ in range(5):
+                    if expected in qa.log_text(log):
+                        break
+                    qa.key(window, "Return")
+                qa.wait_for_log(log, expected)
                 qa.key(window, "2")
                 for _ in range(4):
                     if "Vesper explicitly entered visual novel mode" in qa.log_text(log):

@@ -1593,6 +1593,8 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
                 return interaction_screen(session, Screen::rich(speaker, text, spans));
             }
             Ok(Output::Choices(options)) => {
+                info!("Vesper choices available: {} in scene {}",
+                    options.len(), session.machine.scene());
                 session.choosing = true;
                 session.presentation.selected_choice = 0;
                 return interaction_screen(session, Screen::choices(&options, 0));
