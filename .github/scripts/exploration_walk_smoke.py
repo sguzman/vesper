@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import tempfile
 import time
@@ -185,6 +186,9 @@ def main() -> None:
                 assert "conversation" in saved["experience"]["mode"], (
                     "Modal save omitted the return-to-world position"
                 )
+                modal_position = saved["experience"]["mode"]["conversation"]["return_to"]["x"]
+                modal_backup = Path(folder) / "modal-world-save.json"
+                shutil.copy2(saved_path, modal_backup)
                 key(window, "F9")
                 wait_for_log(log, "Vesper save restored: Conversation")
                 key(window, "q")
@@ -353,6 +357,43 @@ def main() -> None:
                 except subprocess.TimeoutExpired:
                     restarted.kill()
                     restarted.wait(timeout=3)
+
+        # Preserve the earlier modal conversation save as a separate cold
+        # restore scenario. The player launches as walk-first, loads a
+        # mid-dialogue snapshot, displays its authored world bubble, then Q
+        # must return to the exact saved X without a phantom conversation.
+        shutil.copy2(modal_backup, saved_path)
+        modal_log = OUTPUT / "walk-restarted-conversation.log"
+        with modal_log.open("w", encoding="utf-8") as stream:
+            modal_proc = subprocess.Popen(
+                [str(PLAYER), str(GAME)],
+                env=env, stdout=stream, stderr=subprocess.STDOUT,
+            )
+            try:
+                window = window_id()
+                wait_for_log(modal_log, "Vesper exploration preview entered:")
+                key(window, "F9")
+                wait_for_log(modal_log, "Vesper save restored: Conversation")
+                scenery_frame(
+                    window, "walk-cold-conversation.png", 1280, 720, modal_log
+                )
+                key(window, "q")
+                wait_for_log(modal_log, "Vesper exploration conversation cancelled")
+                old_stops = log_text(modal_log).count("Vesper exploration stopped:")
+                walk(window, "Right", .15)
+                resumed_x = position_after_stop(modal_log, old_stops)
+                assert modal_position + 2.0 < resumed_x < modal_position + 70.0, (
+                    f"Cold modal restore lost return X: {modal_position} -> {resumed_x}"
+                )
+                print("Cold-process modal conversation and exact-X return: passed",
+                      flush=True)
+            finally:
+                modal_proc.terminate()
+                try:
+                    modal_proc.wait(timeout=6)
+                except subprocess.TimeoutExpired:
+                    modal_proc.kill()
+                    modal_proc.wait(timeout=3)
 
 
 if __name__ == "__main__":
