@@ -243,6 +243,25 @@ def main() -> None:
                 assert 520.0 < x4 < 710.0, (
                     f"Could not reach the conditional friend: {x4}"
                 )
+                # Being within the friend's radius is not enough when
+                # another authored target is closer. The noticeboard at 690
+                # legitimately wins nearest-focus at 655. Approach the
+                # friend itself before pressing E; do not weaken focus rules.
+                for _ in range(8):
+                    if 575.0 <= x4 <= 620.0:
+                        break
+                    direction = "Left" if x4 > 620.0 else "Right"
+                    duration = max(.12, min(.36, abs(600.0 - x4) / 230.0))
+                    old = log_text(log).count("Vesper exploration stopped:")
+                    walk(window, direction, duration)
+                    next_x = position_after_stop(log, old)
+                    assert (next_x < x4 if direction == "Left" else next_x > x4), (
+                        f"Friend approach did not move {direction}: {x4} -> {next_x}"
+                    )
+                    x4 = next_x
+                assert 575.0 <= x4 <= 620.0, (
+                    f"Could not obtain unambiguous friend focus: {x4}"
+                )
                 key(window, "e")
                 wait_for_log(log, "Vesper exploration interacting: friend -> friend_chat")
                 frame(window, "conditional-friend-dialogue.png", 946, 511)
