@@ -51,9 +51,18 @@ fn bubble_geometry(
     let top = anchor.map_or(viewport.y * 0.09, |head| {
         (head.y - 172.0).clamp(8.0, (viewport.y * 0.50).max(8.0))
     });
+    // Long passages are scrollable, not full-screen veils. Limit the panel
+    // to the upper 43% of the scene, leaving the central character's face
+    // and the exploration focus area visible. Anchored dialogue additionally
+    // stops above the speaker's head. Never exceed the physical viewport.
+    let viewport_cap = (viewport.y - top - 12.0).max(90.0);
+    let face_safe_bottom = viewport.y * 0.43;
+    let max_bottom = anchor.map_or(face_safe_bottom, |head| {
+        face_safe_bottom.min(head.y - 14.0)
+    });
+    let max_height = (max_bottom - top).clamp(90.0, viewport_cap);
     BubbleGeometry {
-        left, top, width,
-        max_height: (viewport.y - top - 12.0).max(90.0),
+        left, top, width, max_height,
         tail_x: anchor.map(|head| {
             (head.x - left).clamp(22.0, (width - 22.0).max(22.0))
         }),
@@ -446,6 +455,23 @@ mod tests {
                     assert!(tail >= 0.0 && tail <= g.width);
                 }
             }
+        }
+    }
+
+    #[test]
+    fn long_dialogue_does_not_cover_the_middle_of_the_scene() {
+        for viewport in [
+            Vec2::new(946.0, 511.0), Vec2::new(1280.0, 720.0),
+            Vec2::new(1920.0, 1080.0),
+        ] {
+            let narrator = bubble_geometry(viewport, 58.0, None);
+            assert!(narrator.top + narrator.max_height <= viewport.y * 0.43 + 0.1);
+            assert!(narrator.max_height >= 90.0);
+            let speaker = Vec2::new(viewport.x / 2.0, viewport.y * 0.65);
+            let anchored = bubble_geometry(viewport, 58.0, Some(speaker));
+            assert!(anchored.tail_x.is_some());
+            assert!(anchored.top + anchored.max_height < speaker.y - 12.0);
+            assert!(anchored.top + anchored.max_height <= viewport.y * 0.43 + 0.1);
         }
     }
 

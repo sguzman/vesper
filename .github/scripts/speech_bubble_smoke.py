@@ -209,6 +209,19 @@ def long_dialogue_scroll() -> None:
                 call("xdotool", "windowsize", "--sync", win, "946", "511")
                 time.sleep(1.7)
                 top = grab(win, "long-compact-top.png", (946, 511))
+                # Long text may be much taller than its native scroll area,
+                # but the bubble itself must never blanket Pip's face. An
+                # 8x8 patch of the meadow at x=730,y=325 is covered by the
+                # old fullscreen-height black bubble; it is visible when
+                # the scroll area respects the upper-scene safe region.
+                patch = call(
+                    "convert", str(top), "-crop", "8x8+726+325", "+repage",
+                    "-colorspace", "Gray", "-format", "%[fx:mean]", "info:",
+                )
+                assert float(patch.stdout.strip()) > 0.07, (
+                    "Long bubble obscures the central scene and speaker face",
+                    patch.stdout, patch.stderr,
+                )
                 wait_for_phrase(log, "Vesper bubble scroll hint visible")
                 press(win, "Next")  # PageDown
                 wait_for_phrase(log, "Vesper bubble scroll:")
