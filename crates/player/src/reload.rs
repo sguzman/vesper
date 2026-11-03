@@ -68,6 +68,7 @@ pub fn apply_reload(
     mut dividers: Query<&mut BackgroundColor, (With<StorySeparator>, Without<StoryAccent>, Without<StoryPanel>)>,
     mut texts: Query<(&mut Text, &mut TextFont, &mut TextColor, &StoryText)>,
     mut reading: ResMut<readout::ReadingState>,
+    mut walk_preview: ResMut<exploration::WalkPreview>,
 ) {
     let results = match inbox.0.lock() {
         Ok(recv) => recv.try_iter().collect::<Vec<_>>(),
@@ -84,6 +85,11 @@ pub fn apply_reload(
             return;
         }
     };
+
+    if let Err(error) = vesper_game::save::validate_experience(&updated, &session.experience) {
+        warn!("Vesper hot reload rejected: {error}");
+        return;
+    }
 
     let rebound = match session.machine.rebind(&updated.story) {
         Ok(machine) => machine,
@@ -127,6 +133,7 @@ pub fn apply_reload(
     let old = session.game.clone();
     let saved = session.presentation.clone();
     session.game = updated;
+    walk_preview.invalidate_for_reload(session.game.manifest.exploration.as_ref(), &assets);
     // An explicit authored scene/line surface override wins, even if it
     // happens to equal the old manifest default. Only fallback surfaces
     // follow an externally edited game default during hot reload.

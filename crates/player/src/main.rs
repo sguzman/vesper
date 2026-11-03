@@ -57,6 +57,7 @@ struct Session {
 struct DebugStep {
     narrative: MachineSnapshot,
     presentation: PresentationState,
+    experience: ExperienceState,
 }
 #[derive(Resource, Default)]
 struct DebugBack(VecDeque<DebugStep>);
@@ -70,6 +71,7 @@ impl DebugBack {
         self.0.push_back(DebugStep {
             narrative: session.machine.snapshot(),
             presentation: session.presentation.clone(),
+            experience: session.experience.clone(),
         });
     }
 }
@@ -83,8 +85,8 @@ struct IoWorkers(Arc<Mutex<Vec<std::thread::JoinHandle<()>>>>);
 
 enum IoResult {
     Saved(Result<(), String>),
-    Loaded(Result<(Machine, PresentationState), String>),
-    Rewound(Machine, PresentationState),
+    Loaded(Result<(Machine, PresentationState, ExperienceState), String>),
+    Rewound(Machine, PresentationState, ExperienceState),
     Slots(Result<Vec<save_slots::SlotInfo>, String>),
 }
 
@@ -1552,14 +1554,13 @@ fn apply_visual_with_mode(
     Ok(())
 }
 
-/// Modal world conversations have their own accurate keyboard legend:
-/// do not advertise save commands until NA07 writes logical world state.
+/// Modal world conversations have a compact world-aware save/load legend.
 fn interaction_screen(session: &Session, mut screen: Screen) -> Screen {
     if matches!(session.experience.mode, ExperienceMode::Conversation { .. }) {
         screen.hint = if screen.choices {
-            "Arrows: choose   Enter/Number: confirm   Q: leave   P: pause".into()
+            "Arrows: choose   Enter: confirm   Q: leave   F5 save   F9 load".into()
         } else {
-            "Enter/Space: continue   Q: leave   H: history   P: pause".into()
+            "Enter: continue   Q: leave   F5 save   F9 load".into()
         };
     }
     screen
@@ -2393,13 +2394,6 @@ fn advance_from_keyboard(
         return;
     }
     if input.just_pressed(KeyCode::F6) {
-        // Exploration saves need logical position migration (NA07); do not
-        // offer a slot UI that would only persist the underlying story.
-        if matches!(session.experience.mode,
-            ExperienceMode::Exploring(_) | ExperienceMode::Conversation { .. }) {
-            warn!("Vesper exploration/conversation saves require NA07; no partial save written");
-            return;
-        }
         let theme=effective_theme(&session);
         save_slots::open(&mut overlays.save_ui, &mut overlays.save_pending, &mut commands,
             &assets, &theme);
@@ -2539,14 +2533,14 @@ fn advance_from_keyboard(
     // dialogue/choice step. It never writes a save or rewinds disk state.
     if input.just_pressed(KeyCode::Backspace) {
         if matches!(session.experience.mode, ExperienceMode::Conversation { .. }) {
-            warn!("Vesper interaction rewind requires exploration save state (NA07)");
+            warn!("Vesper modal rewind remains disabled; use F5/F9 to restore");
             return;
         }
         if let Some(step) = debug_back.0.pop_back() {
             match Machine::restore(&session.game.story, step.narrative) {
                 Ok(machine) => {
                     if let Ok(mut queue) = completed.0.lock() {
-                        queue.push(IoResult::Rewound(machine, step.presentation));
+                        queue.push(IoResult::Rewound(machine, step.presentation, step.experience));
                         info!("Vesper debug rewind requested");
                     }
                 }
@@ -2685,11 +2679,6 @@ fn trigger_save_load(
     let quick_save = keyboard.just_pressed(KeyCode::F5);
     let quick_load = keyboard.just_pressed(KeyCode::F9);
     if request.is_none() && !quick_save && !quick_load { return; }
-    if matches!(session.experience.mode,
-        ExperienceMode::Exploring(_) | ExperienceMode::Conversation { .. }) {
-        warn!("Vesper exploration/conversation quick-save/load deferred until NA07");
-        return;
-    }
     if request.is_none()
         && (session.paused || session.menu_overlay.is_some()
             || session.history.visible() || slot_ui.visible()) {
@@ -2727,6 +2716,9 @@ fn trigger_save_load(
             };
             let save=SaveData::new(&session.game,&session.machine,
                 ambient::snapshot_presentation(&session, &motions));
+            let save=if session.game.manifest.exploration.is_some() {
+                save.with_experience(&session.experience)
+            } else { save };
             std::thread::spawn(move || {
                 let result=save.write_atomic(&path);
                 let succeeded=result.is_ok();
@@ -2749,8 +2741,9 @@ fn trigger_save_load(
             let game=session.game.clone();
             std::thread::spawn(move || {
                 let result=SaveData::read(&path).and_then(|save|{
+                    let experience=save.restore_experience(&game)?;
                     let machine=save.restore(&game)?;
-                    Ok((machine,save.presentation))
+                    Ok((machine,save.presentation,experience))
                 });
                 if let Ok(mut messages)=queue.lock() {
                     messages.push(IoResult::Loaded(result));
@@ -2765,6 +2758,9 @@ fn trigger_save_load(
             if quick_save {
                 let save=SaveData::new(&session.game,&session.machine,
                     ambient::snapshot_presentation(&session, &motions));
+                let save=if session.game.manifest.exploration.is_some() {
+                    save.with_experience(&session.experience)
+                } else { save };
                 std::thread::spawn(move || {
                     let result=save.write_atomic(&path);
                     if let Ok(mut messages)=queue.lock() {
@@ -2775,8 +2771,9 @@ fn trigger_save_load(
                 let game=session.game.clone();
                 std::thread::spawn(move || {
                     let result=SaveData::read(&path).and_then(|save|{
+                        let experience=save.restore_experience(&game)?;
                         let machine=save.restore(&game)?;
-                        Ok((machine,save.presentation))
+                        Ok((machine,save.presentation,experience))
                     });
                     if let Ok(mut messages)=queue.lock() {
                         messages.push(IoResult::Loaded(result));
@@ -2835,8 +2832,8 @@ fn poll_completed_io(
                     save_ui.status = format!("Load failed: {}", error.chars().take(120).collect::<String>());
                 }
             }
-            IoResult::Loaded(Ok((machine, state))) |
-            IoResult::Rewound(machine, state) => {
+            IoResult::Loaded(Ok((machine, state, experience))) |
+            IoResult::Rewound(machine, state, experience) => {
                 if !rewinding { debug_back.0.clear(); }
                 if save_ui.visible() {
                     save_slots::close(&mut save_ui, &mut commands);
@@ -2875,6 +2872,7 @@ fn poll_completed_io(
                 session.presentation.selected_choice = state.selected_choice;
                 session.presentation.panel_skin = state.panel_skin;
                 session.presentation.dialogue_surface = state.dialogue_surface;
+                session.experience = experience;
                 session.experience.dialogue_surface = state.dialogue_surface.unwrap_or(
                     session.game.manifest.dialogue.default_surface
                 );
@@ -2938,7 +2936,7 @@ fn poll_completed_io(
                 if rewinding {
                     info!("Vesper debug rewind restored");
                 } else {
-                    info!("Vesper save restored");
+                    info!("Vesper save restored: {:?}", session.experience.mode);
                 }
             }
         }

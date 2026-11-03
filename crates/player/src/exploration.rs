@@ -1,8 +1,8 @@
 //! Deliberately small optional side-on exploration preview.
 //!
 //! This is *not* a new story engine: motion and camera are projected from
-//! validated, author-owned locations. Interactions and save migration arrive
-//! in NA06/NA07. Legacy VN examples never instantiate any of these entities.
+//! validated, author-owned locations. World saves use logical coordinates,
+ //! not ECS entities. Legacy VNs instantiate no exploration entities.
 use super::*;
 use vesper_game::{
     experience::{ExperienceMode, Facing},
@@ -27,6 +27,20 @@ pub struct WalkPreview {
     elapsed: f32,
     moving: bool,
     loaded_location: Option<String>,
+}
+
+impl WalkPreview {
+    /// Accepted manifest edits force one area rebuild on the next frame.
+    pub fn invalidate_for_reload(&mut self, world: Option<&Exploration>,
+        assets: &AssetServer) {
+        self.idle = world.and_then(|w| w.avatar.idle.as_ref())
+            .map(|path| assets.load::<Image>(path.clone()));
+        self.walk = world.map_or_else(Vec::new, |w| w.avatar.walk.iter()
+            .map(|path| assets.load::<Image>(path.clone())).collect());
+        self.loaded_location = None;
+        self.elapsed = 0.0;
+        self.moving = false;
+    }
 }
 
 #[derive(Component)]

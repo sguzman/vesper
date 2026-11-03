@@ -43,7 +43,7 @@ pub fn scan(game_id: &str) -> Result<Vec<SlotInfo>, String> {
         };
         let size=meta.len();
         match SaveData::read(&path) {
-            Ok(save) if save.game_id==game_id && save.format_version==1 => {
+            Ok(save) if save.game_id==game_id && (save.format_version==1 || save.format_version==2) => {
                 let age=meta.modified().ok().and_then(|t|t.elapsed().ok())
                     .map(|d|{
                         if d.as_secs()<60 {"just now".to_owned()}

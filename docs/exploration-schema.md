@@ -150,8 +150,13 @@ building the new area; the VN UI and menu entities are preserved. NPCs/props
 can become visible or disappear on story-variable changes without world
 rebuilding or a second quest system.
 
-F5/F9/F6 saves remain unavailable in exploration and modal conversation
-until NA07 persists complete world state; no incomplete VN-only save is written.
+F5/F9 quick saves and F6 manual slots use version-two logical world
+snapshots for exploration-capable games: location, bounded X/facing, modal
+conversation return, narrative snapshot and presentation. Pure VN games
+continue writing format v1. Existing v1 saves load without migration.
+Invalid locations, coordinates and missing conversations fail validation before
+restoring. Accepted manifest hot reloads recreate exploration-owned sprites;
+edits that invalidate the active world position are rejected.
 
 The `examples/exploration-schema` walk-first fixture uses reused test
 background art. It must not be reported as the original playable urban

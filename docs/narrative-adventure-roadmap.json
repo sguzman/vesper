@@ -170,9 +170,11 @@
         "Versioned migration/fallback preserves existing save format and old saves, rejects invalid/unknown locations, and restores mid-dialogue vs mid-exploration correctly across process restart.",
         "Hot reload safely updates valid exploration/bubble assets and rejects incompatible edits while preserving the last good runtime state; loading and filesystem work do not block the render thread."
       ],
-      "status": "not started",
+      "status": "active",
       "verified_weight": 0,
-      "evidence": []
+      "evidence": [
+        "World-aware version-two save/load and v1 compatibility, location validation, hot-reload guard, player F5/F9/F6, and native QA tests authored. Compilation, process restart, and full acceptance pending; zero weighted points awarded."
+      ]
     },
     {
       "id": "NA08",

@@ -1,6 +1,6 @@
 //! Versioned, game-bound saves. The Bevy player handles UI and async I/O.
 //! Saves never serialize transient ECS entity identifiers.
-use crate::{Game, experience::DialogueSurface};
+use crate::{Game, experience::{DialogueSurface, ExperienceMode, ExperienceState, WorldPosition}};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, fs, io::{self, Write}, path::Path,
     sync::atomic::{AtomicU64, Ordering}};
@@ -45,6 +45,34 @@ pub struct SaveData {
     pub game_id: String,
     pub machine: MachineSnapshot,
     pub presentation: PresentationState,
+    /// Version-two logical world state; absent in legacy visual-novel saves.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub experience: Option<ExperienceState>,
+}
+
+/// Validate against the currently authored world before restoring a save or
+/// accepting a live reload. World state never contains ECS entity IDs.
+pub fn validate_experience(game: &Game, state: &ExperienceState) -> Result<(), String> {
+    let position = match &state.mode {
+        ExperienceMode::VisualNovel => return Ok(()),
+        ExperienceMode::Exploring(position) => position,
+        ExperienceMode::Conversation { scene, return_to } => {
+            Machine::new(&game.story, scene)
+                .map_err(|error| format!("saved interaction scene '{scene}' is invalid: {error}"))?;
+            return_to
+        }
+    };
+    WorldPosition::new(position.location.clone(), position.x, position.facing)?;
+    let world = game.manifest.exploration.as_ref()
+        .ok_or("saved exploration state requires authored locations")?;
+    let area = world.locations.get(&position.location)
+        .ok_or_else(|| format!("saved exploration location '{}' no longer exists",
+            position.location))?;
+    if position.x > area.width {
+        return Err(format!("saved exploration position in '{}' exceeds its width",
+            position.location));
+    }
+    Ok(())
 }
 
 impl SaveData {
@@ -54,16 +82,34 @@ impl SaveData {
             game_id: game.manifest.id.clone(),
             machine: machine.snapshot(),
             presentation,
+            experience: None,
         }
     }
 
-    pub fn restore(&self, game: &Game) -> Result<Machine, String> {
-        if self.format_version != 1 {
-            return Err(format!("unsupported game save version {}", self.format_version));
-        }
+    /// Pure VN games continue writing v1; optional exploration games opt in.
+    pub fn with_experience(mut self, state: &ExperienceState) -> Self {
+        self.format_version = 2;
+        self.experience = Some(state.clone());
+        self
+    }
+
+    pub fn restore_experience(&self, game: &Game) -> Result<ExperienceState, String> {
         if self.game_id != game.manifest.id {
             return Err("save belongs to a different game".into());
         }
+        let state = match (self.format_version, &self.experience) {
+            (1, None) => ExperienceState::default(),
+            (2, Some(state)) => state.clone(),
+            (1, Some(_)) => return Err("version-one save contains unexpected world state".into()),
+            (2, None) => return Err("version-two save is missing world state".into()),
+            (version, _) => return Err(format!("unsupported game save version {version}")),
+        };
+        validate_experience(game, &state)?;
+        Ok(state)
+    }
+
+    pub fn restore(&self, game: &Game) -> Result<Machine, String> {
+        self.restore_experience(game)?;
         if let Some(music) = &self.presentation.music {
             game.music(music)?;
         }
@@ -279,6 +325,75 @@ mod tests {
         missing_actor.presentation.ambient_motion_elapsed
             .insert("unknown".into(), 1.0);
         assert!(missing_actor.restore(&game).is_err());
+    }
+
+    #[test]
+    fn version_two_world_state_roundtrips_and_rejects_stale_positions() {
+        use crate::experience::{ExperienceMode, ExperienceState, WorldPosition};
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../examples/exploration-schema");
+        let game = Game::load(&root).unwrap();
+        let machine = Machine::new(&game.story, &game.manifest.entry).unwrap();
+        let mut state = ExperienceState::default();
+        let start = game.manifest.exploration.as_ref().unwrap()
+            .start_position().unwrap();
+        state.enter_exploration(start.clone());
+        let saved = SaveData::new(&game, &machine, PresentationState::default())
+            .with_experience(&state);
+        let encoded = saved.encode().unwrap();
+        let loaded = SaveData::decode(&encoded).unwrap();
+        assert_eq!(loaded.format_version, 2);
+        assert_eq!(loaded.restore_experience(&game).unwrap(), state);
+        loaded.restore(&game).unwrap();
+        assert!(!String::from_utf8_lossy(&encoded).contains("entity_id"));
+
+        state.begin_interaction("neighbor_chat").unwrap();
+        let modal = SaveData::new(&game, &machine, PresentationState::default())
+            .with_experience(&state);
+        assert_eq!(modal.restore_experience(&game).unwrap(), state);
+
+        let mut invalid = modal.clone();
+        invalid.experience.as_mut().unwrap().mode =
+            ExperienceMode::Exploring(WorldPosition {
+                location: "unknown".into(), ..start.clone()
+            });
+        assert!(invalid.restore(&game).unwrap_err().contains("no longer exists"));
+        invalid.experience.as_mut().unwrap().mode =
+            ExperienceMode::Exploring(WorldPosition {
+                x: 1_000_000.0, ..start.clone()
+            });
+        assert!(invalid.restore(&game).unwrap_err().contains("exceeds its width"));
+        invalid.experience.as_mut().unwrap().mode =
+            ExperienceMode::Exploring(WorldPosition {
+                x: f32::INFINITY, ..start.clone()
+            });
+        assert!(invalid.restore(&game).is_err());
+        invalid.experience.as_mut().unwrap().mode =
+            ExperienceMode::Conversation {
+                scene: "missing_scene".into(), return_to: start
+            };
+        assert!(invalid.restore(&game).unwrap_err().contains("interaction scene"));
+        let mut absent = modal.clone();
+        absent.experience = None;
+        assert!(absent.restore(&game).unwrap_err().contains("missing world state"));
+        let mut wrong_version = modal;
+        wrong_version.format_version = 1;
+        assert!(wrong_version.restore(&game).unwrap_err().contains("unexpected world state"));
+    }
+
+    #[test]
+    fn original_save_schema_remains_a_pure_vn_without_migration() {
+        let fixture = Fixture::new();
+        let game = Game::load(&fixture.0).unwrap();
+        let machine = Machine::new(&game.story, &game.manifest.entry).unwrap();
+        let original = SaveData::new(&game, &machine, PresentationState::default());
+        let encoded = original.encode().unwrap();
+        assert!(!String::from_utf8_lossy(&encoded).contains("\"experience\""));
+        let restored = SaveData::decode(&encoded).unwrap();
+        assert_eq!(restored.format_version, 1);
+        assert_eq!(restored.restore_experience(&game).unwrap().mode,
+            ExperienceMode::VisualNovel);
+        restored.restore(&game).unwrap();
     }
 
     #[test]

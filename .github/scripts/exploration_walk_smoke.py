@@ -6,6 +6,7 @@ hardcoding, simulated keyboard state, fake screenshots or parsed game code.
 """
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import re
@@ -177,9 +178,15 @@ def main() -> None:
                 # World position must not change under dialogue.
                 walk(window, "Right", .35)
                 key(window, "F5")
-                assert not (Path(folder) / "saves" / "exploration-schema.json").exists(), (
-                    "Modal NPC conversation wrote a world-incomplete save"
+                wait_for_log(log, "Vesper save written")
+                saved_path = Path(folder) / "saves" / "exploration-schema.json"
+                saved = json.loads(saved_path.read_text(encoding="utf-8"))
+                assert saved["format_version"] == 2
+                assert "conversation" in saved["experience"]["mode"], (
+                    "Modal save omitted the return-to-world position"
                 )
+                key(window, "F9")
+                wait_for_log(log, "Vesper save restored: Conversation")
                 key(window, "q")
                 wait_for_log(log, "Vesper exploration conversation cancelled")
                 restored = frame(window, "npc-cancelled.png", 946, 511)
@@ -253,15 +260,28 @@ def main() -> None:
                     window, "street-after-return-exit.png", 946, 511, log
                 )
 
-                # Until NA07 introduces a valid migration that stores world
-                # position, F5 deliberately refuses incomplete quick saves.
+                # F9 restores a walking position, not merely the VN machine.
+                old_saves = log_text(log).count("Vesper save written")
                 key(window, "F5")
-                assert not (Path(folder) / "saves" / "exploration-schema.json").exists(), (
-                    "Walk preview incorrectly wrote an incomplete VN-only save"
+                wait_for_log(log, "Vesper save written", old_saves)
+                saved = json.loads(saved_path.read_text(encoding="utf-8"))
+                assert saved["format_version"] == 2
+                point = saved["experience"]["mode"]["exploring"]
+                assert point["location"] == "street"
+                assert abs(point["x"] - 150.0) < 1.0, point
+                walk(window, "Right", .4)
+                old_restores = log_text(log).count("Vesper save restored:")
+                key(window, "F9")
+                wait_for_log(log, "Vesper save restored: Exploring", old_restores)
+                old_stops = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "Right", .15)
+                position = position_after_stop(log, old_stops)
+                assert 152.0 < position < 218.0, (
+                    f"F9 did not restore saved street position: {position}"
                 )
                 print(f"Exploration movement x={x1:.1f}->{x2:.1f}->{x3:.1f}->{x4:.1f}->{x5:.1f}",
                       flush=True)
-                print("Native NPC/cancellation, gated friend, E-only café roundtrip, entity cleanup, explicit return and save guard: passed",
+                print("Native NPC/cancellation, gated friend, E-only café roundtrip, entity cleanup, explicit return and versioned world saves: passed",
                       flush=True)
             finally:
                 proc.terminate()
