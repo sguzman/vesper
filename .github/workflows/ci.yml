@@ -38,6 +38,13 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
           cargo run --locked -p vesper-cli -- check-game examples/living-journal
           cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies
+      - name: Preserve standalone real Vesper authoring validator for external game QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-authoring-cli
+          path: target/debug/vesper
+          if-no-files-found: error
+          retention-days: 3
       - name: Verify deterministic Atlas authoring compilation
         run: |
           python3 examples/atlas-unwritten-skies/tools/compile_story.py
