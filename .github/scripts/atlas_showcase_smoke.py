@@ -92,18 +92,53 @@ def press(window: str, key: str, delay: float = 0.09) -> None:
 def screenshot(window: str, name: str,
                expected_size: tuple[int, int] = (1280, 720)) -> Path:
     path = OUTPUT / name
-    # Software Vulkan may present a completely black first frame immediately
-    # after a scene/save restoration. Wait for the actual composed frame, not
-    # just the X11 window's existence. Real persistent black output still fails.
-    for attempt in range(25):
-        run("import", "-window", window, str(path))
-        stats = run("identify", "-format", "%w %h %k", str(path)).stdout
-        width, height, colors = map(int, stats.split())
-        assert (width, height) == expected_size, (name, stats)
-        if colors > 80:
-            return path
-        time.sleep(0.3)
-    raise AssertionError(f"No rendered Atlas frame for {name}: {stats}")
+    temporary = path.with_name(f".{path.stem}.capturing.png")
+    # Software rendering can present a black first frame during transitions.
+    # ImageMagick can also leave a partial PNG if capture fails. Never let
+    # such an incomplete screenshot masquerade as a verified QA artifact.
+    # Validate the actual decoded image before atomically publishing it.
+    last_error = "capture did not start"
+    try:
+        for _ in range(25):
+            temporary.unlink(missing_ok=True)
+            captured = run("import", "-window", window, str(temporary), check=False)
+            if captured.returncode != 0:
+                last_error = f"import exited {captured.returncode}: {captured.stderr[-500:]}"
+            else:
+                # identify can succeed on the IHDR of a truncated PNG:
+                # a partial 532480-byte Atlas capture from CI 41741477060
+                # had valid dimensions yet failed an actual pixel decode.
+                # convert forces full IDAT decompression before accepting it.
+                decoded = run(
+                    "convert", str(temporary), "-format", "%w %h %k",
+                    "info:", check=False
+                )
+                if decoded.returncode != 0:
+                    last_error = (
+                        f"corrupt/incomplete PNG: {decoded.stderr[-500:]}"
+                    )
+                else:
+                    try:
+                        width, height, colors = map(int, decoded.stdout.split())
+                    except ValueError:
+                        last_error = f"unexpected decoded image output: {decoded.stdout!r}"
+                    else:
+                        if (width, height) != expected_size:
+                            last_error = (
+                                f"wrong screenshot size {(width, height)}, "
+                                f"expected {expected_size}"
+                            )
+                        elif colors <= 80:
+                            last_error = f"render not ready ({colors} colors)"
+                        else:
+                            temporary.replace(path)
+                            return path
+            time.sleep(0.3)
+    finally:
+        temporary.unlink(missing_ok=True)
+    raise AssertionError(
+        f"No valid rendered Atlas frame for {name}: {last_error}"
+    )
 
 
 def changed(first: Path, last: Path) -> int:
