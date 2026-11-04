@@ -64,6 +64,13 @@ jobs:
             echo 'invalid story unexpectedly passed'; exit 1
           fi
           grep -F '/tmp/vesper-invalid.vn:2:' /tmp/vesper-cli.log
+      - name: Preserve real game authoring parser for external packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-authoring-cli
+          path: target/debug/vesper
+          if-no-files-found: error
+          retention-days: 3
       - name: Upload resolved Cargo lockfile
         uses: actions/upload-artifact@v4
         with:
@@ -89,6 +96,13 @@ jobs:
           fc-match -f '%{family}\n' ':lang=ko' | grep -q 'Noto Sans CJK'
       - name: Build Bevy 0.20 player
         run: cargo build --locked -p vesper-player
+      - name: Preserve native player for external game acceptance checks
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-player-urban-qa
+          path: target/debug/vesper-player
+          if-no-files-found: error
+          retention-days: 3
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
       # Check new walk-first rendering before the longer UI regressions.

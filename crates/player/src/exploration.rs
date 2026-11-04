@@ -7,7 +7,7 @@ use super::*;
 use vesper_game::{
     experience::{ExperienceMode, Facing},
     interaction::{self, Focus, TargetKind},
-    exploration::{Exploration, Location},
+    exploration::{Exploration, ExplorationUi, Location},
     walk::{self, View},
 };
 
@@ -136,22 +136,31 @@ pub fn setup(
         spawn_area(&mut commands, world, area, &assets);
         runtime.loaded_location = Some(point.location.clone());
     }
+    let labels = &world.ui;
+    let help = format!(
+        "← → / A D: {}  ·  E: {}  ·  P: {}  ·  M: {}",
+        labels.walk, labels.interact, labels.pause, labels.menu
+    );
+    let accent = session.game.theme.panel.accent;
+    let ink = session.game.theme.dialogue.color;
     commands.spawn((
         Name::new("Exploration preview controls (not a VN choice)"),
         WalkHud,
         Node {
             display: if start.is_some() { Display::Flex } else { Display::None },
             position_type: PositionType::Absolute,
-            top: px(14.0), right: px(16.0),
-            padding: px(9.0).all(),
+            top: px(9.0), right: px(10.0),
+            max_width: percent(90.0),
+            padding: px(7.0).all(),
             ..default()
         },
         BackgroundColor(Color::srgba(0.03, 0.06, 0.1, 0.78)),
     )).with_children(|parent| {
         parent.spawn((
-            Text::new("← → or A/D: Walk  ·  E: Interact/Exit  ·  P: Pause  ·  M: Menu"),
-            TextFont { font_size: FontSize::Px(15.0), ..default() },
-            TextColor(Color::WHITE),
+            Text::new(help),
+            TextFont { font_size: FontSize::Px(13.0), ..default() },
+            TextColor(Color::srgba(ink[0], ink[1], ink[2], ink[3])),
+            TextLayout::new(Justify::Right, LineBreak::WordOrCharacter),
         ));
     });
     // A single keyboard-focusable interaction cue: no clickable tiny NPC
@@ -162,23 +171,23 @@ pub fn setup(
         Node {
             display: Display::None,
             position_type: PositionType::Absolute,
-            bottom: px(30.0),
-            left: percent(24.0),
-            width: percent(52.0),
+            bottom: px(20.0),
+            left: percent(29.0),
+            width: percent(42.0),
             justify_content: JustifyContent::Center,
-            padding: px(12.0).all(),
-            border: px(2.0).all(),
+            padding: px(8.0).all(),
+            border: px(1.5).all(),
             border_radius: BorderRadius::all(px(12.0)),
             ..default()
         },
         BackgroundColor(Color::srgba(0.02, 0.04, 0.09, 0.94)),
-        BorderColor::all(Color::WHITE),
+        BorderColor::all(Color::srgba(accent[0], accent[1], accent[2], accent[3])),
     )).with_children(|parent| {
         parent.spawn((
             InteractionPromptText,
             Text::new("E: Interact"),
-            TextFont { font_size: FontSize::Px(18.0), ..default() },
-            TextColor(Color::WHITE),
+            TextFont { font_size: FontSize::Px(16.0), ..default() },
+            TextColor(Color::srgba(ink[0], ink[1], ink[2], ink[3])),
             TextLayout::new(Justify::Center, LineBreak::WordOrCharacter),
         ));
     });
@@ -349,18 +358,24 @@ fn focus_prompt_available(
 /// Make every available key discoverable. An authored remote conversation
 /// must not be concealed when E also targets a nearby person or exit.
 fn interaction_prompt_text(nearby: Option<Focus<'_>>,
-    shortcut: Option<Focus<'_>>) -> Option<String> {
-    fn describe(key: &str, focus: Focus<'_>) -> String {
+    shortcut: Option<Focus<'_>>, ui: &ExplorationUi) -> Option<String> {
+    fn describe(key: &str, focus: &Focus<'_>, ui: &ExplorationUi) -> String {
         match focus {
             Focus::Scene(scene) => {
-                let verb = if scene.kind == TargetKind::Npc { "Talk to" } else { "Inspect" };
+                let verb = if scene.kind == TargetKind::Npc { &ui.talk_to } else { &ui.inspect };
                 format!("{key}: {verb} {}", scene.id)
             }
-            Focus::Exit(exit) => format!("{key}: Enter {}", exit.to_location),
+            Focus::Exit(exit) => format!("{key}: {} {}", ui.enter, exit.to_location),
         }
     }
-    match (nearby.map(|focus| describe("E", focus)),
-           shortcut.map(|focus| describe("T", focus))) {
+    let identical = matches!((&nearby, &shortcut),
+        (Some(Focus::Scene(a)), Some(Focus::Scene(b)))
+            if a.kind == b.kind && a.id == b.id);
+    if identical {
+        return nearby.as_ref().map(|focus| describe("E/T", focus, ui));
+    }
+    match (nearby.as_ref().map(|focus| describe("E", focus, ui)),
+           shortcut.as_ref().map(|focus| describe("T", focus, ui))) {
         (Some(nearby), Some(shortcut)) => Some(format!("{nearby}\n{shortcut}")),
         (Some(nearby), None) => Some(nearby),
         (None, Some(shortcut)) => Some(shortcut),
@@ -427,7 +442,8 @@ pub fn sync(
         windows.single().is_ok_and(|window| window.focused),
     );
     let hint = if focused {
-        interaction_prompt_text(target, shortcut)
+        interaction_prompt_text(target, shortcut,
+            &session.game.manifest.exploration.as_ref().unwrap().ui)
     } else {
         None
     };
@@ -524,7 +540,12 @@ pub fn sync(
                     if matches!(part, AreaVisual::Npc { .. }) { 85.0 } else { 46.0 },
                 );
                 let height = if matches!(part, AreaVisual::Npc { .. }) { 85.0 } else { 46.0 };
-                let scale = Vec3::splat(view.world_to_screen * height / natural_height);
+                let actor_scale = if let AreaVisual::Npc { id, .. } = part {
+                    current_area.and_then(|area| area.npcs.get(id)).map_or(1.0, |npc| npc.scale)
+                } else { 1.0 };
+                let scale = Vec3::splat(
+                    view.world_to_screen * height * actor_scale / natural_height
+                );
                 if transform.scale != scale { transform.scale = scale; }
             }
         }
@@ -593,13 +614,13 @@ mod tests {
             kind: TargetKind::Npc, id: "neighbor",
             scene: "neighbor_chat", x: 435.0, distance: 285.0,
         });
-        assert_eq!(interaction_prompt_text(Some(nearby.clone()), Some(direct.clone())),
+        assert_eq!(interaction_prompt_text(Some(nearby.clone()), Some(direct.clone()), &ExplorationUi::default()),
             Some("E: Enter cafe\nT: Talk to neighbor".into()));
-        assert_eq!(interaction_prompt_text(Some(nearby), None),
+        assert_eq!(interaction_prompt_text(Some(nearby), None, &ExplorationUi::default()),
             Some("E: Enter cafe".into()));
-        assert_eq!(interaction_prompt_text(None, Some(direct)),
+        assert_eq!(interaction_prompt_text(None, Some(direct), &ExplorationUi::default()),
             Some("T: Talk to neighbor".into()));
-        assert!(interaction_prompt_text(None, None).is_none());
+        assert!(interaction_prompt_text(None, None, &ExplorationUi::default()).is_none());
     }
 
     #[test]
@@ -613,8 +634,23 @@ mod tests {
             kind: TargetKind::Prop, id: "noticeboard",
             scene: "read_notice", x: 700.0, distance: 600.0,
         });
-        assert_eq!(interaction_prompt_text(Some(nearby), Some(direct)),
+        assert_eq!(interaction_prompt_text(Some(nearby), Some(direct), &ExplorationUi::default()),
             Some("E: Talk to friend\nT: Inspect noticeboard".into()));
+    }
+
+    #[test]
+    fn a_localized_prompt_does_not_repeat_the_same_talk_target() {
+        use vesper_game::interaction::Target;
+        let elena = Focus::Scene(Target {
+            kind: TargetKind::Npc, id: "elena",
+            scene: "elena_chat", x: 250.0, distance: 25.0,
+        });
+        let mut ui = ExplorationUi::default();
+        ui.talk_to = "Hablar con".into();
+        ui.enter = "Entrar a".into();
+        assert_eq!(interaction_prompt_text(Some(elena.clone()), Some(elena), &ui),
+            Some("E/T: Hablar con elena".into()));
+        assert_eq!(interaction_prompt_text(None, None, &ui), None);
     }
 
     #[test]

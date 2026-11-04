@@ -142,9 +142,9 @@ mod tests {
             spawns: BTreeMap::new(),
             npcs: BTreeMap::from([
                 ("amy".into(), Npc { x: 410.0, interact_scene: "amy_scene".into(),
-                    image: None, interaction_radius: 90.0, visible_if: None }),
+                    image: None, scale: 1.0, interaction_radius: 90.0, visible_if: None }),
                 ("zoe".into(), Npc { x: 440.0, interact_scene: "zoe_scene".into(),
-                    image: None, interaction_radius: 90.0, visible_if: None }),
+                    image: None, scale: 1.0, interaction_radius: 90.0, visible_if: None }),
             ]),
             props: BTreeMap::from([
                 ("billboard".into(), Prop { x: 410.0, interact_scene: Some("read".into()),

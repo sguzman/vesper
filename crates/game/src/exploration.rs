@@ -24,7 +24,38 @@ pub struct Exploration {
     /// at the future movement milestone; no texture path is synthesized.
     #[serde(default)]
     pub avatar: Avatar,
+    /// Reader-facing world prompts are supplied by the game, with English
+    /// fallback for existing fixtures and pure narrative projects.
+    #[serde(default)]
+    pub ui: ExplorationUi,
     pub locations: BTreeMap<String, Location>,
+}
+
+/// Optional per-game words in the walking HUD and focus prompts.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct ExplorationUi {
+    pub walk: String,
+    pub interact: String,
+    pub talk_to: String,
+    pub inspect: String,
+    pub enter: String,
+    pub pause: String,
+    pub menu: String,
+}
+
+impl Default for ExplorationUi {
+    fn default() -> Self {
+        Self {
+            walk: "Walk".into(),
+            interact: "Interact/Exit".into(),
+            talk_to: "Talk to".into(),
+            inspect: "Inspect".into(),
+            enter: "Enter".into(),
+            pause: "Pause".into(),
+            menu: "Menu".into(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -106,6 +137,9 @@ pub struct Npc {
     pub interact_scene: String,
     #[serde(default)]
     pub image: Option<String>,
+    /// Relative to the existing 85px tall actor reference. Default 1.0.
+    #[serde(default = "default_actor_scale")]
+    pub scale: f32,
     #[serde(default = "default_radius")]
     pub interaction_radius: f32,
     /// Optional story-state gate; missing variables are treated as false.
@@ -180,6 +214,7 @@ pub struct Layer {
 }
 
 fn default_radius() -> f32 { 72.0 }
+fn default_actor_scale() -> f32 { 1.0 }
 fn default_parallax() -> f32 { 1.0 }
 
 fn valid_coordinate(x: f32, width: f32) -> bool {
@@ -271,6 +306,21 @@ impl Exploration {
                     start.spawn, start.location));
             }
         }
+        for (field, value) in [
+            ("walk", &self.ui.walk),
+            ("interact", &self.ui.interact),
+            ("talk_to", &self.ui.talk_to),
+            ("inspect", &self.ui.inspect),
+            ("enter", &self.ui.enter),
+            ("pause", &self.ui.pause),
+            ("menu", &self.ui.menu),
+        ] {
+            if value.trim().is_empty() || value.chars().count() > 32
+                || value.chars().any(char::is_control)
+            {
+                return Err(format!("exploration.ui.{field} must be 1..=32 printable characters"));
+            }
+        }
         let avatar = &self.avatar;
         for (field, value, lo, hi) in [
             ("walk_fps", avatar.walk_fps, 1.0, 30.0),
@@ -340,8 +390,10 @@ impl Exploration {
                 identifier(name, &slot)?;
                 if !valid_coordinate(npc.x, location.width)
                     || !validate_radius(npc.interaction_radius)
+                    || !npc.scale.is_finite()
+                    || !(0.35..=3.5).contains(&npc.scale)
                 {
-                    return Err(format!("{slot}: invalid interaction position/radius"));
+                    return Err(format!("{slot}: invalid interaction position/radius/scale"));
                 }
                 scene(story, &npc.interact_scene, &format!("{slot}.interact_scene"))?;
                 if let Some(condition) = &npc.visible_if {
@@ -562,6 +614,22 @@ interact_scene = "chat"
         );
         assert!(world.validate(&fixture.0, &story).unwrap_err()
             .contains("quick_interact"));
+    }
+
+    #[test]
+    fn localized_labels_and_actor_scaling_are_validated() {
+        let (mut world, fixture, story) = load(GOOD);
+        world.ui.walk = "Mover".into();
+        world.ui.talk_to = "Hablar con".into();
+        let npc = world.locations.get_mut("street").unwrap().npcs.get_mut("friend").unwrap();
+        assert_eq!(npc.scale, 1.0);
+        npc.scale = 1.6;
+        world.validate(&fixture.0, &story).unwrap();
+        world.ui.talk_to.clear();
+        assert!(world.validate(&fixture.0, &story).unwrap_err().contains("ui.talk_to"));
+        world.ui.talk_to = "Hablar con".into();
+        world.locations.get_mut("street").unwrap().npcs.get_mut("friend").unwrap().scale = 4.0;
+        assert!(world.validate(&fixture.0, &story).unwrap_err().contains("scale"));
     }
 
     #[test]
