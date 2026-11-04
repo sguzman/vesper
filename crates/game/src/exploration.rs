@@ -24,6 +24,10 @@ pub struct Exploration {
     /// at the future movement milestone; no texture path is synthesized.
     #[serde(default)]
     pub avatar: Avatar,
+    /// Optional game-authored HUD and interaction labels; English defaults
+    /// retain exact original behavior for existing exploration examples.
+    #[serde(default)]
+    pub text: ExplorationText,
     pub locations: BTreeMap<String, Location>,
 }
 
@@ -46,6 +50,78 @@ pub struct Avatar {
 impl Default for Avatar {
     fn default() -> Self {
         Self { idle: None, walk: Vec::new(), walk_fps: 8.0, speed: 230.0, scale: 1.0 }
+    }
+}
+
+/// Author-provided, per-game world terminology. Labels affect only
+/// presentation: authored scene IDs, target focus and saves remain stable.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct ExplorationText {
+    pub walk: String,
+    pub interact_exit: String,
+    pub pause: String,
+    pub menu: String,
+    pub talk_to: String,
+    pub inspect: String,
+    pub enter: String,
+    /// Names are keyed by existing target/location IDs. Missing entries
+    /// use the unchanged authored identifier rather than guessing a title.
+    pub names: BTreeMap<String, String>,
+}
+impl Default for ExplorationText {
+    fn default() -> Self {
+        Self {
+            walk: "← → or A/D: Walk".into(),
+            interact_exit: "E: Interact/Exit".into(),
+            pause: "P: Pause".into(),
+            menu: "M: Menu".into(),
+            talk_to: "Talk to".into(),
+            inspect: "Inspect".into(),
+            enter: "Enter".into(),
+            names: BTreeMap::new(),
+        }
+    }
+}
+impl ExplorationText {
+    pub fn validate(&self) -> Result<(), String> {
+        fn label_is_valid(label: &str) -> bool {
+            !label.trim().is_empty()
+                && label.chars().count() <= 80
+                && !label.chars().any(|c| c.is_control())
+        }
+        for (name, label) in [
+            ("walk", &self.walk),
+            ("interact_exit", &self.interact_exit),
+            ("pause", &self.pause),
+            ("menu", &self.menu),
+            ("talk_to", &self.talk_to),
+            ("inspect", &self.inspect),
+            ("enter", &self.enter),
+        ] {
+            if !label_is_valid(label) {
+                return Err(format!("exploration.text.{name}: label must be printable, nonempty and at most 80 characters"));
+            }
+        }
+        if self.names.len() > 128 {
+            return Err("exploration.text.names exceeds 128 labels".into());
+        }
+        for (id, label) in &self.names {
+            identifier(id, "exploration.text.names")?;
+            if !label_is_valid(label) {
+                return Err(format!("exploration.text.names.{id}: label must be printable, nonempty and at most 80 characters"));
+            }
+        }
+        Ok(())
+    }
+
+    pub fn display_name<'a>(&'a self, id: &'a str) -> &'a str {
+        self.names.get(id).map(String::as_str).unwrap_or(id)
+    }
+
+    pub fn walk_hud(&self) -> String {
+        format!("{}  ·  {}  ·  {}  ·  {}",
+            self.walk, self.interact_exit, self.pause, self.menu)
     }
 }
 
@@ -257,6 +333,7 @@ impl Exploration {
             return Err(format!("exploration.schema_version: unsupported version {}; expected 1",
                 self.schema_version));
         }
+        self.text.validate()?;
         if self.locations.is_empty() || self.locations.len() > MAX_LOCATIONS {
             return Err(format!("exploration.locations must contain 1..={MAX_LOCATIONS} locations"));
         }
@@ -464,6 +541,25 @@ interact_scene = "chat"
         let value: Exploration = toml::from_str(source).unwrap();
         let story = Story::parse("@scene chat\nfriend: \"Hello\"").unwrap();
         (value, fixture, story)
+    }
+
+    #[test]
+    fn optional_world_text_validates_spanish_hud_and_keeps_legacy_defaults() {
+        let (world, root, story) = load(GOOD);
+        assert_eq!(world.text.walk, "← → or A/D: Walk");
+        assert_eq!(world.text.display_name("friend"), "friend");
+        world.validate(&root.0, &story).unwrap();
+        let custom = GOOD.replace(
+            "[avatar]",
+            "[text]\nwalk = '← → o A/D: Caminar'\ninteract_exit = 'E: Interactuar'\npause = 'P: Pausa'\nmenu = 'M: Menú'\ntalk_to = 'Hablar con'\ninspect = 'Examinar'\nenter = 'Entrar en'\n[text.names]\nfriend = 'la vecina'\n[avatar]",
+        );
+        let (world, root, story) = load(&custom);
+        world.validate(&root.0, &story).unwrap();
+        assert_eq!(world.text.display_name("friend"), "la vecina");
+        assert!(world.text.walk_hud().contains("Caminar"));
+        let invalid = custom.replace("talk_to = 'Hablar con'", "talk_to = ''");
+        let (world, root, story) = load(&invalid);
+        assert!(world.validate(&root.0, &story).unwrap_err().contains("exploration.text.talk_to"));
     }
 
     #[test]

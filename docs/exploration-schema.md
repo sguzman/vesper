@@ -82,6 +82,35 @@ the author is building the map. Locations can fit within one screen: the
 initial implementation is intentionally a **bounded side-on walk**, not
 a general 2D/3D physics engine.
 
+## Optional per-game exploration labels
+
+The reusable engine's world input and story IDs remain stable, but a game may
+provide its own HUD words and human-readable names without modifying Rust code.
+All fields are optional and fall back to the original English vocabulary for
+existing games. For example, an original Spanish-language urban game can add:
+
+```toml
+[exploration.text]
+walk = "← → o A/D: Caminar"
+interact_exit = "E: Interactuar / Salir"
+pause = "P: Pausa"
+menu = "M: Menú"
+talk_to = "Hablar con"
+inspect = "Examinar"
+enter = "Entrar en"
+
+[exploration.text.names]
+elena = "Elena"
+noticeboard = "el tablón"
+store = "la tienda"
+```
+
+The `names` dictionary maps existing NPC, prop, or location IDs to the words
+shown in interaction prompts. Missing entries fall back to the existing IDs.
+IDs, target selection, save serialization, and input bindings are unaffected.
+Labels must be printable, nonempty and at most 80 characters. Unrecognized
+fields are rejected at load time.
+
 ## Optional direct-access interaction
 
 A location can designate **one** existing NPC or interactive prop as a

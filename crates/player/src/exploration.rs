@@ -7,7 +7,7 @@ use super::*;
 use vesper_game::{
     experience::{ExperienceMode, Facing},
     interaction::{self, Focus, TargetKind},
-    exploration::{Exploration, Location},
+    exploration::{Exploration, ExplorationText, Location},
     walk::{self, View},
 };
 
@@ -149,7 +149,7 @@ pub fn setup(
         BackgroundColor(Color::srgba(0.03, 0.06, 0.1, 0.78)),
     )).with_children(|parent| {
         parent.spawn((
-            Text::new("← → or A/D: Walk  ·  E: Interact/Exit  ·  P: Pause  ·  M: Menu"),
+            Text::new(world.text.walk_hud()),
             TextFont { font_size: FontSize::Px(15.0), ..default() },
             TextColor(Color::WHITE),
         ));
@@ -349,18 +349,23 @@ fn focus_prompt_available(
 /// Make every available key discoverable. An authored remote conversation
 /// must not be concealed when E also targets a nearby person or exit.
 fn interaction_prompt_text(nearby: Option<Focus<'_>>,
-    shortcut: Option<Focus<'_>>) -> Option<String> {
-    fn describe(key: &str, focus: Focus<'_>) -> String {
+    shortcut: Option<Focus<'_>>, labels: &ExplorationText) -> Option<String> {
+    fn describe(key: &str, focus: Focus<'_>, labels: &ExplorationText) -> String {
         match focus {
             Focus::Scene(scene) => {
-                let verb = if scene.kind == TargetKind::Npc { "Talk to" } else { "Inspect" };
-                format!("{key}: {verb} {}", scene.id)
+                let verb = if scene.kind == TargetKind::Npc {
+                    &labels.talk_to
+                } else {
+                    &labels.inspect
+                };
+                format!("{key}: {verb} {}", labels.display_name(scene.id))
             }
-            Focus::Exit(exit) => format!("{key}: Enter {}", exit.to_location),
+            Focus::Exit(exit) => format!("{key}: {} {}",
+                labels.enter, labels.display_name(exit.to_location)),
         }
     }
-    match (nearby.map(|focus| describe("E", focus)),
-           shortcut.map(|focus| describe("T", focus))) {
+    match (nearby.map(|focus| describe("E", focus, labels)),
+           shortcut.map(|focus| describe("T", focus, labels))) {
         (Some(nearby), Some(shortcut)) => Some(format!("{nearby}\n{shortcut}")),
         (Some(nearby), None) => Some(nearby),
         (None, Some(shortcut)) => Some(shortcut),
@@ -427,7 +432,8 @@ pub fn sync(
         windows.single().is_ok_and(|window| window.focused),
     );
     let hint = if focused {
-        interaction_prompt_text(target, shortcut)
+        session.game.manifest.exploration.as_ref()
+            .and_then(|world| interaction_prompt_text(target, shortcut, &world.text))
     } else {
         None
     };
@@ -593,13 +599,13 @@ mod tests {
             kind: TargetKind::Npc, id: "neighbor",
             scene: "neighbor_chat", x: 435.0, distance: 285.0,
         });
-        assert_eq!(interaction_prompt_text(Some(nearby.clone()), Some(direct.clone())),
+        assert_eq!(interaction_prompt_text(Some(nearby.clone()), Some(direct.clone()), &ExplorationText::default()),
             Some("E: Enter cafe\nT: Talk to neighbor".into()));
-        assert_eq!(interaction_prompt_text(Some(nearby), None),
+        assert_eq!(interaction_prompt_text(Some(nearby), None, &ExplorationText::default()),
             Some("E: Enter cafe".into()));
-        assert_eq!(interaction_prompt_text(None, Some(direct)),
+        assert_eq!(interaction_prompt_text(None, Some(direct), &ExplorationText::default()),
             Some("T: Talk to neighbor".into()));
-        assert!(interaction_prompt_text(None, None).is_none());
+        assert!(interaction_prompt_text(None, None, &ExplorationText::default()).is_none());
     }
 
     #[test]
@@ -613,8 +619,33 @@ mod tests {
             kind: TargetKind::Prop, id: "noticeboard",
             scene: "read_notice", x: 700.0, distance: 600.0,
         });
-        assert_eq!(interaction_prompt_text(Some(nearby), Some(direct)),
+        assert_eq!(interaction_prompt_text(Some(nearby), Some(direct), &ExplorationText::default()),
             Some("E: Talk to friend\nT: Inspect noticeboard".into()));
+    }
+
+    #[test]
+    fn spanish_author_labels_do_not_mutate_action_target_ids() {
+        use vesper_game::interaction::Target;
+        let labels = ExplorationText {
+            talk_to: "Hablar con".into(),
+            inspect: "Examinar".into(),
+            enter: "Entrar en".into(),
+            names: std::collections::BTreeMap::from([
+                ("elena".into(), "Elena".into()),
+                ("noticeboard".into(), "el tablón".into()),
+            ]),
+            ..ExplorationText::default()
+        };
+        let elena = Focus::Scene(Target {
+            kind: TargetKind::Npc, id: "elena",
+            scene: "elena_chat", x: 250.0, distance: 20.0,
+        });
+        let board = Focus::Scene(Target {
+            kind: TargetKind::Prop, id: "noticeboard",
+            scene: "board_read", x: 930.0, distance: 20.0,
+        });
+        assert_eq!(interaction_prompt_text(Some(board), Some(elena), &labels),
+            Some("E: Examinar el tablón\nT: Hablar con Elena".into()));
     }
 
     #[test]
