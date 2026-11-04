@@ -168,6 +168,18 @@ def main() -> None:
                 call("xdotool", "windowsize", "--sync", window, "946", "511")
                 time.sleep(.7)
                 compact = frame(window, "walk-compact.png", 946, 511)
+                # NA08 automated responsive access: the same authored area
+                # must also render at a larger window without requiring a
+                # new camera/world state or a mouse-controlled viewport.
+                call("xdotool", "windowsize", "--sync", window, "1600", "900")
+                time.sleep(.7)
+                wide = frame(window, "walk-widescreen.png", 1600, 900)
+                assert wide.is_file() and proc.poll() is None, (
+                    "Widescreen resize interrupted the walk-first player"
+                )
+                call("xdotool", "windowsize", "--sync", window, "946", "511")
+                time.sleep(.7)
+                frame(window, "walk-compact-returned.png", 946, 511)
 
                 # A focused NPC opens a real .vn scene while freezing walking.
                 # Hold E across OS key-repeat and release. A single
@@ -351,6 +363,36 @@ def main() -> None:
                 assert abs(manual_point["x"] - manual_x) < 0.1, manual_point
                 assert manual_point["facing"] == "left", manual_point
                 key(window, "F6")
+
+                # NA08 keyboard-first modal accessibility: while the F6
+                # manager owns focus, holding Right cannot silently walk the
+                # avatar behind the overlay. Escape dismisses only the UI,
+                # and alternative A/D movement remains available afterwards.
+                old_open = log_text(log).count("Vesper save slots opened")
+                key(window, "F6")
+                wait_for_log(log, "Vesper save slots opened", old_open)
+                overlay = frame(window, "walk-slot-overlay.png", 946, 511)
+                walk(window, "Right", .75)
+                old_close = log_text(log).count("Vesper save slots closed")
+                key(window, "Escape")
+                wait_for_log(log, "Vesper save slots closed", old_close)
+                dismissed = frame(window, "walk-slot-dismissed.png", 946, 511)
+                assert changed(overlay, dismissed) > 500, (
+                    "Escape did not dismiss the save overlay visually"
+                )
+                old_stops = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "d", .15)
+                d_x = position_after_stop(log, old_stops)
+                assert manual_x + 2.0 < d_x < manual_x + 70.0, (
+                    f"F6 overlay leaked world movement: {manual_x} -> {d_x}"
+                )
+                old_stops = log_text(log).count("Vesper exploration stopped:")
+                walk(window, "a", .15)
+                a_x = position_after_stop(log, old_stops)
+                assert d_x - 70.0 < a_x < d_x - 2.0, (
+                    f"Keyboard A/D reverse movement failed: {d_x} -> {a_x}"
+                )
+                print("NA08 native modal keyboard ownership, A/D movement and compact/widescreen resize: passed", flush=True)
                 print(f"Exploration movement x={x1:.1f}->{x2:.1f}->{x3:.1f}->{x4:.1f}->{x5:.1f}",
                       flush=True)
                 print("Native NPC/cancellation, gated friend, E-only café roundtrip, entity cleanup, explicit return and versioned world saves: passed",
