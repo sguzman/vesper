@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="768" height="320" viewBox="0 0 768 320">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#171727" stop-opacity=".97"/>
+      <stop offset=".38" stop-color="#111323" stop-opacity=".98"/>
+      <stop offset="1" stop-color="#090c18" stop-opacity=".98"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#e2b96c"/><stop offset=".36" stop-color="#95602e"/><stop offset=".67" stop-color="#bd9250"/><stop offset="1" stop-color="#edc78c"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#b58a64" stop-opacity=".17"/><stop offset=".65" stop-color="#7f5060" stop-opacity=".03"/><stop offset="1" stop-color="#9d638d" stop-opacity=".15"/>
+    </linearGradient>
+    <radialGradient id="petal" cx=".32" cy=".2" r=".95">
+      <stop stop-color="#f8c5ac"/><stop offset=".7" stop-color="#b97384"/><stop offset="1" stop-color="#77445f"/>
+    </radialGradient>
+  </defs>
+  <rect x="3" y="3" width="762" height="314" rx="17" fill="url(#body)"/>
+  <rect x="7" y="7" width="754" height="306" rx="15" fill="url(#glow)"/>
+  <rect x="2.5" y="2.5" width="763" height="315" rx="18" fill="none" stroke="url(#edge)" stroke-width="2.8"/>
+  <rect x="8.5" y="8.5" width="751" height="303" rx="13" fill="none" stroke="#f3d8a2" stroke-opacity=".40" stroke-width="1"/>
+  <path d="M29 23H739" stroke="url(#edge)" stroke-width="1" opacity=".45"/>
+  <path d="M28 296H740" stroke="#d3a467" stroke-width="1" opacity=".31"/>
+  <path d="M27 35V275 M741 35V275" stroke="#c2965d" stroke-opacity=".15"/>
+  <!-- Illustrated floral filigree is strictly inside unscaled corners. -->
+  <g transform="translate(33,32)" opacity=".92">
+    <path d="M-4 13Q7 14 16 2M3 23Q20 12 25 4" fill="none" stroke="#c4a06e" stroke-width="1.45"/>
+    <g fill="url(#petal)" stroke="#dfae8c" stroke-width=".35">
+      <ellipse cx="12" cy="7" rx="4.4" ry="8" transform="rotate(-36 12 7)"/>
+      <ellipse cx="13" cy="17" rx="4.4" ry="8" transform="rotate(29 13 17)"/>
+      <ellipse cx="5" cy="15" rx="4.4" ry="8" transform="rotate(80 5 15)"/>
+    </g>
+    <circle cx="10" cy="12" r="2.3" fill="#f6d898"/>
+    <path d="M19 8Q25 4 28 1" stroke="#b69c70" fill="none"/>
+  </g>
+  <g transform="translate(735,32) scale(-1,1)" opacity=".92">
+    <path d="M-4 13Q7 14 16 2M3 23Q20 12 25 4" fill="none" stroke="#c4a06e" stroke-width="1.45"/>
+    <g fill="url(#petal)" stroke="#dfae8c" stroke-width=".35">
+      <ellipse cx="12" cy="7" rx="4.4" ry="8" transform="rotate(-36 12 7)"/>
+      <ellipse cx="13" cy="17" rx="4.4" ry="8" transform="rotate(29 13 17)"/>
+      <ellipse cx="5" cy="15" rx="4.4" ry="8" transform="rotate(80 5 15)"/>
+    </g>
+    <circle cx="10" cy="12" r="2.3" fill="#f6d898"/>
+  </g>
+  <g stroke="#d7ad75" fill="none" opacity=".45" stroke-width="1.1">
+    <path d="M23 283q10-7 13-19q3 19 18 19"/>
+    <path d="M744 283q-10-7-13-19q-3 19-18 19"/>
+  </g>
+  <g fill="#edbf78" opacity=".65">
+    <circle cx="32" cy="280" r="2.2"/>
+    <circle cx="736" cy="280" r="2.2"/>
+  </g>
+</svg>

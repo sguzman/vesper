@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 440" width="220" height="440">
+<defs>
+ <linearGradient id="skin" x2=".8" y2="1"><stop stop-color="#ffcfaa"/><stop offset=".53" stop-color="#e89c7d"/><stop offset="1" stop-color="#b96860"/></linearGradient>
+ <linearGradient id="jacket" x2=".95" y2="1"><stop stop-color="#57506d"/><stop offset=".45" stop-color="#282838"/><stop offset="1" stop-color="#171b2c"/></linearGradient>
+ <linearGradient id="hair" x2=".75" y2="1"><stop stop-color="#433047"/><stop offset=".48" stop-color="#1f1c31"/><stop offset="1" stop-color="#101623"/></linearGradient>
+ <linearGradient id="denim" x2=".9" y2="1"><stop stop-color="#63708b"/><stop offset=".48" stop-color="#46516c"/><stop offset="1" stop-color="#252f4e"/></linearGradient>
+ <linearGradient id="wine" x2=".7" y2="1"><stop stop-color="#8d4a65"/><stop offset=".48" stop-color="#6b3655"/><stop offset="1" stop-color="#432642"/></linearGradient>
+ <linearGradient id="apron" x2=".9" y2="1"><stop stop-color="#fff2d9"/><stop offset=".6" stop-color="#e4b7ab"/><stop offset="1" stop-color="#b78388"/></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<ellipse cx="108" cy="427" rx="69" ry="6" fill="#0c1024" opacity=".24"/>
+
+<!-- flared skirt hem and feet -->
+<path d="M75 333 L69 412 Q75 423 96 419 L105 331 Z" fill="url(#denim)" stroke="#1e1a30" stroke-width="5"/>
+<path d="M107 332 L120 418 Q137 427 153 416 L143 329 Z" fill="url(#denim)" stroke="#1e1a30" stroke-width="5"/>
+<path d="M67 411 Q82 405 103 413 L106 423 Q80 432 64 422 Z" fill="#d7c4b7" stroke="#281f36" stroke-width="5"/>
+<path d="M119 413 Q143 401 155 414 L156 423 Q134 433 115 423 Z" fill="#d9c4b0" stroke="#281f36" stroke-width="5"/>
+<!-- bun and layered hair with outline -->
+<path d="M71 111 Q47 89 50 54 Q54 17 103 21 Q136 18 160 50 Q185 98 163 155 L159 190 L61 176 Q44 150 71 111Z" fill="url(#hair)" stroke="#211728" stroke-width="6"/>
+<path d="M123 47 Q121 9 161 11 Q193 16 195 50 Q192 85 155 85 Q127 77 123 47Z" fill="url(#hair)" stroke="#211728" stroke-width="5"/>
+<path d="M149 23 Q185 19 179 51" fill="none" stroke="#86637b" stroke-width="6" opacity=".6"/>
+<!-- neck -->
+<path d="M96 147 L95 185 L133 185 L129 147Z" fill="url(#skin)" stroke="#47283b" stroke-width="4"/>
+<!-- face -->
+<path d="M70 80 Q65 56 85 47 Q117 34 142 57 Q158 85 147 124 Q139 149 115 155 Q88 151 76 128 Q67 106 70 80Z" fill="url(#skin)" stroke="#2b2030" stroke-width="5"/>
+<!-- hair fringe -->
+<path d="M66 77 Q63 39 100 40 Q131 26 154 61 Q144 68 131 69 Q116 64 104 58 Q89 73 67 80Z" fill="url(#hair)" stroke="#1b1b2b" stroke-width="3"/>
+<path d="M81 55 Q90 40 113 41 M112 43 Q132 42 143 53" stroke="#806177" stroke-width="4" opacity=".65" fill="none"/>
+<!-- gold hairpins -->
+<path d="M140 70 L161 61 M144 77 L165 69" stroke="#f6bb67" stroke-width="4"/>
+<!-- expressive eye detail -->
+<path d="M85 105 Q95 99 106 103 M122 102 Q133 97 141 103" stroke="#342133" fill="none" stroke-width="3.5"/>
+<ellipse cx="97" cy="107" rx="3.8" ry="5" fill="#3e2531"/><ellipse cx="133" cy="106" rx="3.8" ry="5" fill="#3e2531"/>
+<circle cx="98" cy="105" r="1.5" fill="#fff8e7"/><circle cx="134" cy="104" r="1.4" fill="#fff8e7"/>
+<path d="M114 114 L111 126 L117 127 M104 140 Q114 143 123 138" fill="none" stroke="#9b5255" stroke-width="2.7" stroke-linecap="round"/>
+<g fill="#bb6868" opacity=".5"><circle cx="88" cy="122" r="1.5"/><circle cx="94" cy="125" r="1.2"/><circle cx="130" cy="120" r="1.5"/><circle cx="136" cy="122" r="1.1"/></g>
+<!-- hoodie -->
+<path d="M74 174 Q91 158 111 168 Q141 155 154 174 Q170 225 149 338 L70 340 Q52 239 74 174Z" fill="#c7b1a9" stroke="#30283c" stroke-width="5"/>
+<path d="M82 174 Q110 198 145 177 L130 219 L102 235 L83 217Z" fill="#ede1d5" stroke="#8d6f78" stroke-width="2"/>
+<!-- jacket body -->
+<path d="M68 174 Q50 177 42 201 L35 291 Q45 308 63 308 L68 332 L94 342 L102 237 L85 193Z" fill="url(#jacket)" stroke="#231f35" stroke-width="5"/>
+<path d="M143 173 Q170 186 178 220 L182 298 Q167 309 155 310 L150 340 L116 339 L116 237 L133 191Z" fill="url(#jacket)" stroke="#231f35" stroke-width="5"/>
+<path d="M96 194 L101 336 M137 193 L120 336" stroke="#b58c7a" stroke-width="3"/>
+<path d="M74 219 Q57 238 60 296 M160 217 Q171 251 165 288" fill="none" stroke="#8a6b77" stroke-width="3" opacity=".55"/>
+<!-- hands -->
+<path d="M39 293 Q35 310 45 320 Q57 326 63 310 L64 298Z M164 297 Q158 314 167 320 Q181 319 181 300Z" fill="url(#skin)" stroke="#3e2a3a" stroke-width="4"/>
+<!-- headphones -->
+<path d="M79 163 Q105 146 143 163" fill="none" stroke="#151824" stroke-width="12"/>
+<ellipse cx="88" cy="161" rx="13" ry="16" fill="#28232e" stroke="#d5a65c" stroke-width="4"/>
+<ellipse cx="134" cy="162" rx="13" ry="16" fill="#28232e" stroke="#d5a65c" stroke-width="4"/>
+<!-- bag strap and patch -->
+<path d="M74 185 Q89 209 92 248" stroke="#cb9c6d" stroke-width="6" fill="none"/>
+<path d="M153 240 L166 244 L164 271 L149 267Z" fill="#73596f" stroke="#c39b78" stroke-width="2"/>
+
+</svg>
