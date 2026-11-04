@@ -525,6 +525,78 @@ impl CharacterStage {
     }
 }
 
+/// Optional author-provided reader instructions. Every field is opt-in;
+/// older games keep the unchanged English player defaults.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct ReaderHintLabels {
+    /// Standard visual-novel dialogue footer.
+    pub narration: Option<String>,
+    /// Standard choice footer.
+    pub choices: Option<String>,
+    /// Completed-story footer.
+    pub ending: Option<String>,
+    /// Footer during an explorable-world NPC/prop conversation.
+    pub conversation: Option<String>,
+    /// Footer for choices within an explorable-world conversation.
+    pub conversation_choices: Option<String>,
+}
+
+impl ReaderHintLabels {
+    pub fn validate(&self) -> Result<(), String> {
+        for (field, label) in [
+            ("narration", &self.narration),
+            ("choices", &self.choices),
+            ("ending", &self.ending),
+            ("conversation", &self.conversation),
+            ("conversation_choices", &self.conversation_choices),
+        ] {
+            if let Some(value) = label {
+                if value.trim().is_empty()
+                    || value.chars().count() > 120
+                    || value.chars().any(char::is_control)
+                {
+                    return Err(format!(
+                        "theme.reader_hints.{field} must contain 1..=120 printable characters"
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod reader_hints_tests {
+    use super::*;
+
+    #[test]
+    fn missing_reader_hints_keep_legacy_theme_defaults() {
+        let theme: Theme = toml::from_str("").unwrap();
+        assert!(theme.reader_hints.narration.is_none());
+        assert!(theme.reader_hints.choices.is_none());
+        assert!(theme.reader_hints.ending.is_none());
+        theme.validate().unwrap();
+    }
+
+    #[test]
+    fn localized_hints_are_opt_in_and_bounded() {
+        let theme: Theme = toml::from_str(
+            "[reader_hints]\nnarration = 'Enter: continuar'\nconversation = 'Q: salir'",
+        ).unwrap();
+        assert_eq!(theme.reader_hints.narration.as_deref(), Some("Enter: continuar"));
+        theme.validate().unwrap();
+
+        let mut invalid = theme;
+        invalid.reader_hints.choices = Some("bad\nline".into());
+        assert!(invalid.validate().is_err());
+        invalid.reader_hints.choices = Some("a".repeat(121));
+        assert!(invalid.validate().is_err());
+        invalid.reader_hints.choices = Some("a".repeat(120));
+        invalid.validate().unwrap();
+    }
+}
+
 /// An externally editable visual theme; values are CSS-like logical UI sizes.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -541,6 +613,8 @@ pub struct Theme {
     pub dialogue: TextStyle,
     pub choices: TextStyle,
     pub hint: TextStyle,
+    /// Author-defined control legends; absent fields preserve legacy English.
+    pub reader_hints: ReaderHintLabels,
     /// Validated palette of named inline word styles, not scene-specific code.
     pub inline_styles: BTreeMap<String, InlineTextStyle>,
 }
@@ -823,6 +897,7 @@ impl Default for Theme {
             dialogue: TextStyle { size: 28.0, color: [1.0, 1.0, 1.0, 1.0] },
             choices: TextStyle { size: 26.0, color: [0.88, 0.94, 1.0, 1.0] },
             hint: TextStyle { size: 16.0, color: [0.75, 0.78, 0.83, 1.0] },
+            reader_hints: ReaderHintLabels::default(),
             inline_styles: BTreeMap::new(),
         }
     }
@@ -840,6 +915,7 @@ impl Theme {
         if !self.fade_seconds.is_finite() || !(0.0..=3.0).contains(&self.fade_seconds) {
             return Err("theme.fade_seconds must be between 0 and 3".into());
         }
+        self.reader_hints.validate()?;
         let cine = &self.cinematic;
         if !cine.seconds.is_finite() || !(0.0..=3.0).contains(&cine.seconds)
             || !color_valid(cine.through_color) || cine.through_color[3] != 1.0
