@@ -108,8 +108,11 @@ between NPC/prop namespaces; a decorative prop without an
 still applies, and the prompt appears only when the target is available.
 The conversation preserves the current world position on completion or
 cancellation. **E** continues to select the nearest reachable NPC, prop or
-exit; locations without this option retain existing behavior. Pure VNs do
-not gain walking or direct-world shortcuts.
+exit. When both the nearby and direct targets are available, the bottom
+interaction cue displays **both E and T actions**, each on its own line;
+pressing one never silently substitutes the other. Locations without this
+option retain existing behavior. Pure VNs do not gain walking or direct-world
+shortcuts.
 
 ## Schema validation contract
 
