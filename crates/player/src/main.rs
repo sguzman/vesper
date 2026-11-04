@@ -863,6 +863,7 @@ struct Screen {
     hint: String,
     choices: bool,
     animated: bool,
+    interaction: bool,
     spans: Vec<InlineSpan>,
 }
 
@@ -874,6 +875,7 @@ impl Screen {
             hint: "Enter/Space: continue   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu   Esc: quit".into(),
             choices: false,
             animated: true,
+            interaction: false,
             spans: Vec::new(),
         }
     }
@@ -892,6 +894,7 @@ impl Screen {
             hint: "Arrows: move   Enter/Number: choose   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu".into(),
             choices: true,
             animated: false,
+            interaction: false,
             spans: Vec::new(),
         }
     }
@@ -903,6 +906,7 @@ impl Screen {
             hint: "Up/Down: move   Enter: select   1-3: choose   R: replay   M: menu   Esc: quit".into(),
             choices: false,
             animated: false,
+            interaction: false,
             spans: Vec::new(),
         }
     }
@@ -1044,14 +1048,81 @@ fn story_separator_node() -> Node {
 
 /// The full keyboard inventory remains available through the pause/menu
 /// screen; illustrated parchment receives a legible single-line legend.
-fn panel_hint<'a>(screen: &'a Screen, theme: &vesper_game::Theme) -> &'a str {
+/// The game may supply language-specific labels without changing the
+/// keyboard bindings or altering the English defaults for older stories.
+fn authored_reader_hint<'a>(
+    screen: &Screen, theme: &'a vesper_game::Theme,
+) -> Option<&'a str> {
+    let labels = &theme.reader_hints;
+    match (screen.interaction, screen.choices, screen.animated) {
+        (true, true, _) => labels.conversation_choices.as_deref(),
+        (true, false, _) => labels.conversation.as_deref(),
+        (false, true, _) => labels.choices.as_deref(),
+        (false, false, false) => labels.ending.as_deref(),
+        (false, false, true) => labels.narration.as_deref(),
+    }
+}
+
+fn has_authored_reader_hints(theme: &vesper_game::Theme) -> bool {
+    let labels = &theme.reader_hints;
+    labels.narration.is_some() || labels.choices.is_some()
+        || labels.ending.is_some() || labels.conversation.is_some()
+        || labels.conversation_choices.is_some()
+}
+
+fn panel_hint<'a>(screen: &'a Screen, theme: &'a vesper_game::Theme) -> &'a str {
+    if let Some(localized) = authored_reader_hint(screen, theme) {
+        return localized;
+    }
     if !theme.panel.hint_inside { return &screen.hint; }
     if screen.choices {
         "↑↓ Move   Enter Choose   H History   P Pause"
-    } else if screen.hint.contains("replay") {
+    } else if !screen.animated {
         "↑↓ Select   Enter Confirm   R Replay"
     } else {
         "Enter Continue   H History   P Pause   M Menu"
+    }
+}
+
+#[cfg(test)]
+mod reader_hint_localization_tests {
+    use super::*;
+
+    #[test]
+    fn authored_labels_follow_screen_and_interaction_state() {
+        let mut theme = vesper_game::Theme::default();
+        theme.reader_hints.narration = Some("Enter: continuar".into());
+        theme.reader_hints.choices = Some("Flechas: elegir".into());
+        theme.reader_hints.ending = Some("R: repetir".into());
+        theme.reader_hints.conversation = Some("Q: salir".into());
+        theme.reader_hints.conversation_choices = Some("Enter: elegir / Q: salir".into());
+
+        let normal = Screen::normal(String::new(), "Hola".into());
+        assert_eq!(panel_hint(&normal, &theme), "Enter: continuar");
+        let choices = Screen::choices(&[], 0);
+        assert_eq!(panel_hint(&choices, &theme), "Flechas: elegir");
+        let ending = Screen::ending("Fin".into());
+        assert_eq!(panel_hint(&ending, &theme), "R: repetir");
+
+        let mut world_line = Screen::normal(String::new(), "Hola".into());
+        world_line.interaction = true;
+        assert_eq!(panel_hint(&world_line, &theme), "Q: salir");
+        let mut world_choices = Screen::choices(&[], 0);
+        world_choices.interaction = true;
+        assert_eq!(panel_hint(&world_choices, &theme), "Enter: elegir / Q: salir");
+
+        theme.reader_hints.conversation = None;
+        theme.panel.hint_inside = true;
+        assert_eq!(panel_hint(&world_line, &theme),
+            "Enter Continue   H History   P Pause   M Menu");
+    }
+
+    #[test]
+    fn legacy_reader_hints_remain_unchanged() {
+        let theme = vesper_game::Theme::default();
+        assert_eq!(panel_hint(&Screen::normal("A".into(), "B".into()), &theme),
+            "Enter/Space: continue   H: history   F6: slots   F5/F9: quick save/load   P: pause   M: menu   Esc: quit");
+        assert!(!has_authored_reader_hints(&theme));
     }
 }
 
@@ -1590,6 +1661,7 @@ fn apply_visual_with_mode(
 /// Modal world conversations have a compact world-aware save/load legend.
 fn interaction_screen(session: &Session, mut screen: Screen) -> Screen {
     if matches!(session.experience.mode, ExperienceMode::Conversation { .. }) {
+        screen.interaction = true;
         screen.hint = if screen.choices {
             "Arrows: choose   Enter: confirm   Q: leave   F5 save   F9 load".into()
         } else {
@@ -1849,6 +1921,21 @@ fn setup(
                             ..default()
                         },
                     )).with_children(|slot| {
+                        // Game-authored text replaces the English keycap legend
+                        // in a protected fixed-height hint slot, with live updates.
+                        if has_authored_reader_hints(&theme) {
+                            slot.spawn((
+                                StoryText::Hint,
+                                Text::new(panel_hint(&initial, &theme)),
+                                TextFont { font: font.clone(),
+                                    font_size: FontSize::Px(hint_style.size), ..default() },
+                                text_color(hint_style.color),
+                                TextLayout::new(Justify::Left, LineBreak::WordOrCharacter),
+                                Node { position_type: PositionType::Absolute,
+                                    width: percent(100.0), flex_shrink: 0.0,
+                                    ..default() },
+                            ));
+                        } else {
                         // Keep the dynamic string for diagnostics, but draw
                         // distinct keycaps in the same protected writing slot.
                         let mut invisible = hint_style.color;
@@ -1882,6 +1969,7 @@ fn setup(
                             )).with_children(|legend_root| {
                                 spawn_keyboard_legend(legend_root, legend, &font, true);
                             });
+                        }
                         }
                     });
                 } else {
