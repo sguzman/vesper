@@ -19,7 +19,7 @@ mod ambient;
 mod speech_bubble;
 mod exploration;
 use std::{collections::{BTreeMap, VecDeque}, env, path::PathBuf, process, sync::{Arc, Mutex}};
-use vesper_game::{Game, experience::{ExperienceMode, ExperienceState}, preferences::{default_file, generic_font_available, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
+use vesper_game::{Game, experience::{DialogueSurface, ExperienceMode, ExperienceState}, preferences::{default_file, generic_font_available, readable_ink_on_surface, PlayerPreferences}, save::{CharacterPose, PresentationState, SaveData}};
 use vesper_story::{Machine, MachineSnapshot, Output, Visual, DialogueSurfaceDirective, rich_text::InlineSpan};
 
 #[derive(Resource)]
@@ -941,6 +941,25 @@ fn effective_theme(session: &Session) -> vesper_game::Theme {
             || session.font_families.binary_search_by(|name| name.as_str().cmp(family)).is_ok()
             || authored.font.family.as_deref() == Some(family)
     });
+    // Reader-selected dark ink is useful on pale illustrated paper, but must
+    // never become black-on-black on the standard dark panel or bubble.
+    // Preserve the stored preference and honor custom illustrated skins;
+    // only adjust the resolved runtime theme for known solid backgrounds.
+    if session.preferences.text_ink.is_some()
+        && !session.preferences.high_contrast.unwrap_or(false)
+    {
+        let surface = match session.experience.dialogue_surface {
+            DialogueSurface::Bubble => Some(session.game.manifest.dialogue.bubble.background),
+            DialogueSurface::Panel if panel_art::active_skin(session).is_none() =>
+                Some(theme.panel.background),
+            DialogueSurface::Panel => None,
+        };
+        if let Some(background) = surface {
+            for style in [&mut theme.dialogue, &mut theme.choices, &mut theme.hint] {
+                style.color = readable_ink_on_surface(style.color, background);
+            }
+        }
+    }
     // Only map an explicit reader override. Do not reinterpret authored
     // typography or alter old games with no reader-selected font.
     if let Some(alias) = session.preferences.font_family.as_deref()

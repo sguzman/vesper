@@ -15,6 +15,38 @@ use crate::{TextRevealSpeed, Theme};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TextInk { Black, DarkBrown, Navy, Sepia }
+/// Return legible foreground ink when the reader's explicit choice would
+/// disappear against a solid translucent dialogue panel or speech bubble.
+/// Account for both dark and light scenery behind the surface so an almost
+/// opaque panel stays readable without modifying the saved preference.
+pub fn readable_ink_on_surface(ink: [f32; 4], surface: [f32; 4]) -> [f32; 4] {
+    fn luminance(rgb: [f32; 3]) -> f32 {
+        let linear = rgb.map(|v| {
+            let v = v.clamp(0.0, 1.0);
+            if v <= 0.04045 { v / 12.92 } else { ((v + 0.055) / 1.055).powf(2.4) }
+        });
+        linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722
+    }
+    fn contrast(foreground: [f32; 4], surface: [f32; 4]) -> f32 {
+        let foreground = luminance([foreground[0], foreground[1], foreground[2]]);
+        let opacity = surface[3].clamp(0.0, 1.0);
+        let ratio = |underlay: f32| {
+            let rgb = [
+                surface[0] * opacity + underlay * (1.0 - opacity),
+                surface[1] * opacity + underlay * (1.0 - opacity),
+                surface[2] * opacity + underlay * (1.0 - opacity),
+            ];
+            let background = luminance(rgb);
+            (foreground.max(background) + 0.05) / (foreground.min(background) + 0.05)
+        };
+        ratio(0.0).min(ratio(1.0))
+    }
+    if contrast(ink, surface) >= 4.5 { return ink; }
+    let light = [1.0, 1.0, 1.0, 1.0];
+    let dark = [0.0, 0.0, 0.0, 1.0];
+    if contrast(light, surface) >= contrast(dark, surface) { light } else { dark }
+}
+
 impl TextInk {
     pub fn rgb(self) -> [f32; 3] {
         match self {
@@ -481,6 +513,20 @@ mod tests {
                 assert!(left.iter().zip(right).map(|(a, b)| (a - b).abs()).sum::<f32>() > 0.13);
             }
         }
+    }
+
+    #[test]
+    fn chosen_dark_ink_cannot_disappear_on_dark_panel_or_bubble() {
+        let black = [0.0, 0.0, 0.0, 1.0];
+        let dark_panel = [0.04, 0.05, 0.09, 0.96];
+        let dark_bubble = [0.035, 0.065, 0.12, 0.98];
+        assert_eq!(readable_ink_on_surface(black, dark_panel), [1.0; 4]);
+        assert_eq!(readable_ink_on_surface(black, dark_bubble), [1.0; 4]);
+        // On pale paper, a user's black-ink preference must stay black.
+        assert_eq!(readable_ink_on_surface(black, [0.95, 0.90, 0.82, 1.0]), black);
+        assert_eq!(readable_ink_on_surface([1.0; 4], dark_panel), [1.0; 4]);
+        // A barely translucent light panel must not get white-on-white.
+        assert_eq!(readable_ink_on_surface([1.0; 4], [0.96, 0.96, 0.96, 0.99]), black);
     }
 
     #[test]
