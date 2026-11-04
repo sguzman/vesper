@@ -1,0 +1,20 @@
+name: Temporary source-import tree inspection
+on:
+  push:
+    branches:
+      - feat/una-tarde-source-import
+permissions:
+  contents: read
+jobs:
+  base-tree:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Print tree hashes for exact import parent
+        shell: bash
+        run: |
+          echo "SOURCE_IMPORT_PARENT_COMMIT=$(git rev-parse HEAD^)"
+          echo "SOURCE_IMPORT_BASE_TREE=$(git show -s --format=%T HEAD^)"
+          echo "SOURCE_IMPORT_PROBE_TREE=$(git show -s --format=%T HEAD)"
