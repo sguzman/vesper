@@ -105,18 +105,23 @@ def screenshot(window: str, name: str,
             if captured.returncode != 0:
                 last_error = f"import exited {captured.returncode}: {captured.stderr[-500:]}"
             else:
-                identified = run(
-                    "identify", "-format", "%w %h %k", str(temporary), check=False
+                # identify can succeed on the IHDR of a truncated PNG:
+                # a partial 532480-byte Atlas capture from CI 41741477060
+                # had valid dimensions yet failed an actual pixel decode.
+                # convert forces full IDAT decompression before accepting it.
+                decoded = run(
+                    "convert", str(temporary), "-format", "%w %h %k",
+                    "info:", check=False
                 )
-                if identified.returncode != 0:
+                if decoded.returncode != 0:
                     last_error = (
-                        f"corrupt/incomplete PNG: {identified.stderr[-500:]}"
+                        f"corrupt/incomplete PNG: {decoded.stderr[-500:]}"
                     )
                 else:
                     try:
-                        width, height, colors = map(int, identified.stdout.split())
+                        width, height, colors = map(int, decoded.stdout.split())
                     except ValueError:
-                        last_error = f"unexpected identify output: {identified.stdout!r}"
+                        last_error = f"unexpected decoded image output: {decoded.stdout!r}"
                     else:
                         if (width, height) != expected_size:
                             last_error = (
