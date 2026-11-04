@@ -346,6 +346,28 @@ fn focus_prompt_available(
     exploring && !modal && !overlay && window_focused
 }
 
+/// Make every available key discoverable. An authored remote conversation
+/// must not be concealed when E also targets a nearby person or exit.
+fn interaction_prompt_text(nearby: Option<Focus<'_>>,
+    shortcut: Option<Focus<'_>>) -> Option<String> {
+    fn describe(key: &str, focus: Focus<'_>) -> String {
+        match focus {
+            Focus::Scene(scene) => {
+                let verb = if scene.kind == TargetKind::Npc { "Talk to" } else { "Inspect" };
+                format!("{key}: {verb} {}", scene.id)
+            }
+            Focus::Exit(exit) => format!("{key}: Enter {}", exit.to_location),
+        }
+    }
+    match (nearby.map(|focus| describe("E", focus)),
+           shortcut.map(|focus| describe("T", focus))) {
+        (Some(nearby), Some(shortcut)) => Some(format!("{nearby}\n{shortcut}")),
+        (Some(nearby), None) => Some(nearby),
+        (None, Some(shortcut)) => Some(shortcut),
+        (None, None) => None,
+    }
+}
+
 /// UI camera remains fixed for traditional VN scenes. Instead, this
 /// lightweight world projection scrolls only exploration sprites, allowing
 /// the same menus/reader/accessibility scale to remain stable.
@@ -404,28 +426,18 @@ pub fn sync(
             || font_browser.overlay.is_some() || slots.visible(),
         windows.single().is_ok_and(|window| window.focused),
     );
+    let hint = if focused {
+        interaction_prompt_text(target, shortcut)
+    } else {
+        None
+    };
     for mut prompt in &mut prompts {
-        let display = if focused && (target.is_some() || shortcut.is_some()) {
-            Display::Flex
-        } else {
-            Display::None
-        };
+        let display = if hint.is_some() { Display::Flex } else { Display::None };
         if prompt.display != display { prompt.display = display; }
     }
-    if focused {
-        let shortcut_only = target.is_none();
-        if let Some(target) = target.or(shortcut) {
-            let next = match target {
-                Focus::Scene(scene) => {
-                    let verb = if scene.kind == TargetKind::Npc { "Talk to" } else { "Inspect" };
-                    let key = if shortcut_only { "T" } else { "E" };
-                    format!("{key}: {verb} {}", scene.id)
-                }
-                Focus::Exit(exit) => format!("E: Enter {}", exit.to_location),
-            };
-            for mut label in &mut labels {
-                if label.0 != next { label.0.clone_from(&next); }
-            }
+    if let Some(next) = hint {
+        for mut label in &mut labels {
+            if label.0 != next { label.0.clone_from(&next); }
         }
     }
     let current_area = position.and_then(|point| session.game.manifest.exploration.as_ref()
@@ -568,6 +580,41 @@ mod tests {
         ] {
             assert!(!focus_prompt_available(exploring, modal, overlay, focus));
         }
+    }
+
+    #[test]
+    fn near_and_direct_interaction_hints_remain_visible_together() {
+        use vesper_game::interaction::{ExitTarget, Target};
+        let nearby = Focus::Exit(ExitTarget {
+            id: "cafe_door", to_location: "cafe",
+            to_spawn: "entry", distance: 10.0,
+        });
+        let direct = Focus::Scene(Target {
+            kind: TargetKind::Npc, id: "neighbor",
+            scene: "neighbor_chat", x: 435.0, distance: 285.0,
+        });
+        assert_eq!(interaction_prompt_text(Some(nearby.clone()), Some(direct.clone())),
+            Some("E: Enter cafe\nT: Talk to neighbor".into()));
+        assert_eq!(interaction_prompt_text(Some(nearby), None),
+            Some("E: Enter cafe".into()));
+        assert_eq!(interaction_prompt_text(None, Some(direct)),
+            Some("T: Talk to neighbor".into()));
+        assert!(interaction_prompt_text(None, None).is_none());
+    }
+
+    #[test]
+    fn direct_prop_and_nearby_npc_hints_do_not_clobber_each_other() {
+        use vesper_game::interaction::Target;
+        let nearby = Focus::Scene(Target {
+            kind: TargetKind::Npc, id: "friend",
+            scene: "friend_chat", x: 100.0, distance: 5.0,
+        });
+        let direct = Focus::Scene(Target {
+            kind: TargetKind::Prop, id: "noticeboard",
+            scene: "read_notice", x: 700.0, distance: 600.0,
+        });
+        assert_eq!(interaction_prompt_text(Some(nearby), Some(direct)),
+            Some("E: Talk to friend\nT: Inspect noticeboard".into()));
     }
 
     #[test]
