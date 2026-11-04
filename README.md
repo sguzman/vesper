@@ -6,11 +6,12 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 
 ## Optional narrative adventures (in development)
 
-[Next-phase roadmap](docs/narrative-adventure-roadmap.md) · [weighted 0/100 ledger](docs/narrative-adventure-roadmap.json) · [anime urban slice-of-life example brief](docs/urban-slice-of-life-brief.md).
+[Next-phase roadmap](docs/narrative-adventure-roadmap.md) · [54/100 verified roadmap ledger](docs/narrative-adventure-roadmap.json) · [NA08 Hyprland acceptance checklist](docs/na08-hyprland-acceptance.md) · [anime urban slice-of-life example brief](docs/urban-slice-of-life-brief.md).
 The completed visual novel experience remains unchanged. The optional
 speech-bubble and per-line panel switching systems are exercised under native
 CI. The independent [exploration schema](docs/exploration-schema.md) supports
-bounded side-on walking and authored **E-to-interact** NPC conversations.
+bounded side-on walking, proximity **E-to-interact** NPC/exit controls, and optional
+author-declared **T-to-interact** NPC/prop shortcuts without mandatory walking.
 
 The [exploration regression fixture](examples/exploration-schema/) now tests a
 two-location street/café roundtrip via explicit E-only exits, a conditional NPC
@@ -23,8 +24,9 @@ Version-two saves for exploration and modal conversations now preserve the
 world's logical location, avatar position/facing, narrative state and dialogue
 surface without saving ECS entities. F5/F9 and F6 slots remain backward
 compatible with version-one pure VN saves. Native walking and cold-restart
-regressions exercise this implementation; full roadmap acceptance, additional
-hot-reload QA, and the original urban example remain unfinished. The example's
+regressions, hot-reload CI and direct E/T interaction tests exercise the engine
+on native software-rendered Linux CI. The final NA08 physical Hyprland gate
+and the original owner-defined urban example remain unfinished. The example's
 title, cast and setting remain owner decisions, not assumptions.
 
 ## Standalone external visual novels
