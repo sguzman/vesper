@@ -216,9 +216,14 @@
         "Reduced motion, high contrast, adjustable text, focus cues, keyboard-first navigation, windowed/fullscreen responsiveness and accessible bubble fallback work without requiring movement for a pure VN.",
         "CI runs existing Atlas and traditional VN tests plus new pure-VN-bubbles, exploration-only and mixed-mode save/reload/hot-reload graphical scenarios, with artifact screenshots; final hardware/Hyprland QA is recorded."
       ],
-      "status": "not started",
+      "status": "in progress",
       "verified_weight": 0,
-      "evidence": []
+      "evidence": [
+        "NA08 partial automated native coverage merged on main: 41754053770 green (commit d9385bf3), validating keyboard ownership of F6 save overlay, A/D movement and 946x511 <-> 1600x900 responsive walking with screenshots. No physical Wayland results inferred.",
+        "NA08 native accessibility bubble regression green on 41756212101 (commit 3dd7fd30 merged main): high contrast, larger font and reduced motion in a real 946x511 NPC conversation, version-two modal save, screenshot artifacts. Existing pure-VN and mixed-mode graphical regressions remain in the full suite.",
+        "Opt-in authored NPC/prop direct interaction passed complete CI 41761627922 and merged into main as commit 08281b2b. Dual E/T prompts and native distinct-target interaction test are on QA commits e99965e8 and 5983fd58; their targeted native test passed in 41765634848, but full CI and integration remain pending. No NA08 weighted points awarded.",
+        "Final hardware/Hyprland owner visual/interaction QA and complete NA08 acceptance remain pending. Xvfb/llvmpipe does not certify real GPU, display scaling or physical input."
+      ]
     },
     {
       "id": "UR01",
@@ -298,11 +303,11 @@
     }
   ],
   "checkpoint": {
-    "last_reported_verified_percent": 29,
+    "last_reported_verified_percent": 54,
     "active": [
       "NA08"
     ],
-    "pending": "NA01–NA07 automated acceptance supported by full native CI 41744834661 and earlier full-green 41741779664. Reconciled NA07 smoke tests await independent full CI 41750059085 before merging; accepted ledger recorded on QA branch until its own CI. NA08 remains the separate full accessibility, natural navigation, and physical Hyprland/owner QA gate; UR01–UR04 remain not started and creative canon unresolved.",
+    "pending": "NA01–NA07 merged into main at 655e1956 with full green narrative+Bevy CI 41753473604 (54/100). NA08 keyboard, accessible-bubble and author-opt-in T direct-interaction tests also merged (green 41754053770, 41756212101 and 41761627922; main 08281b2b). E/T dual prompt enhancements remain unmerged QA while full CI runs. NA08 final physical Hyprland/owner QA is pending at 0/6 points; UR01–UR04 remain 0/40 until owner-approved creative canon and full example.",
     "previous_preserved_complete": true
   }
 }
