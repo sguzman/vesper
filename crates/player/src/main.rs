@@ -948,11 +948,19 @@ fn effective_theme(session: &Session) -> vesper_game::Theme {
     if session.preferences.text_ink.is_some()
         && !session.preferences.high_contrast.unwrap_or(false)
     {
-        let surface = match session.experience.dialogue_surface {
-            DialogueSurface::Bubble => Some(session.game.manifest.dialogue.bubble.background),
-            DialogueSurface::Panel if panel_art::active_skin(session).is_none() =>
-                Some(theme.panel.background),
-            DialogueSurface::Panel => None,
+        // The choice list and endings use the normal panel even after an
+        // authored bubble line. Use the *visible* UI surface here, not just
+        // the story's last requested dialogue mode.
+        let bubble_visible = session.experience.dialogue_surface == DialogueSurface::Bubble
+            && !session.choosing && !session.finished
+            && matches!(session.machine.last_output(),
+                Some(Output::Dialogue { .. } | Output::RichDialogue { .. }));
+        let surface = if bubble_visible {
+            Some(session.game.manifest.dialogue.bubble.background)
+        } else if panel_art::active_skin(session).is_none() {
+            Some(theme.panel.background)
+        } else {
+            None
         };
         if let Some(background) = surface {
             for style in [&mut theme.dialogue, &mut theme.choices, &mut theme.hint] {
