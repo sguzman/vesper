@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - feat/una-tarde-source-import
+  pull_request:
+    branches:
+      - main
 permissions:
   contents: read
 jobs:
@@ -15,6 +18,6 @@ jobs:
       - name: Print tree hashes for exact import parent
         shell: bash
         run: |
-          echo "SOURCE_IMPORT_PARENT_COMMIT=$(git rev-parse HEAD^)"
-          echo "SOURCE_IMPORT_BASE_TREE=$(git show -s --format=%T HEAD^)"
-          echo "SOURCE_IMPORT_PROBE_TREE=$(git show -s --format=%T HEAD)"
+          git fetch --depth=1 origin main
+          echo "SOURCE_IMPORT_MAIN_COMMIT=$(git rev-parse FETCH_HEAD)"
+          echo "SOURCE_IMPORT_BASE_TREE=$(git show -s --format=%T FETCH_HEAD)"
