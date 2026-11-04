@@ -1,0 +1,39 @@
+name: Temporary urban game software Vulkan runtime probe
+on:
+  push:
+    branches:
+      - qa/urban-software-vulkan-runtime
+jobs:
+  mesa-lavapipe:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install Mesa Lavapipe software Vulkan driver
+        run: |
+          sudo apt-get update -o Acquire::Retries=2
+          sudo apt-get install -y --no-install-recommends mesa-vulkan-drivers
+      - name: Capture standalone ICD and its runtime dependency manifest
+        run: |
+          set -eu
+          mkdir -p /tmp/vesper-lavapipe/lib
+          driver=$(find /usr/lib/x86_64-linux-gnu -type f -name 'libvulkan_lvp.so' -print -quit)
+          [ -n "$driver" ]
+          cp "$driver" /tmp/vesper-lavapipe/lib/
+          find /usr/share/vulkan/icd.d -type f -iname '*lvp*json' -exec cp '{}' /tmp/vesper-lavapipe/ \;
+          ldd "$driver" > /tmp/vesper-lavapipe/driver-dependencies.txt
+          cat /tmp/vesper-lavapipe/driver-dependencies.txt
+          # Keep the non-glibc support libs available if the sandbox lacks
+          # the Ubuntu-versioned LLVM runtime. Do not override system libc.
+          ldd "$driver" | awk '/=> \// {print $3}' | while read -r path; do
+            case "$(basename "$path")" in
+              libLLVM*|libdrm*|libelf*|libzstd*|libz3*|libedit*|libtinfo*)
+                cp -L "$path" /tmp/vesper-lavapipe/lib/ ;;
+            esac
+          done
+          find /tmp/vesper-lavapipe -maxdepth 2 -type f -printf '%p %s bytes\n'
+      - name: Preserve temporary Lavapipe QA runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-lavapipe-runtime
+          path: /tmp/vesper-lavapipe/**/*
+          retention-days: 1
+          if-no-files-found: error
