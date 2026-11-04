@@ -551,15 +551,14 @@ impl ReaderHintLabels {
             ("conversation", &self.conversation),
             ("conversation_choices", &self.conversation_choices),
         ] {
-            if let Some(value) = label {
-                if value.trim().is_empty()
+            if let Some(value) = label
+                && (value.trim().is_empty()
                     || value.chars().count() > 120
-                    || value.chars().any(char::is_control)
-                {
-                    return Err(format!(
-                        "theme.reader_hints.{field} must contain 1..=120 printable characters"
-                    ));
-                }
+                    || value.chars().any(char::is_control))
+            {
+                return Err(format!(
+                    "theme.reader_hints.{field} must contain 1..=120 printable characters"
+                ));
             }
         }
         Ok(())
