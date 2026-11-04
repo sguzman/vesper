@@ -6,13 +6,13 @@
   "status": "active; incremental implementation and verification",
   "baseline_commit": "e912f55b3007905b954c7fad872de9d4ceb163da",
   "scope_weight": 100,
-  "verified_weight": 29,
+  "verified_weight": 54,
   "prior_scopes_unchanged": true,
   "tracks": [
     {
       "id": "engine",
       "weight": 60,
-      "verified_weight": 29,
+      "verified_weight": 54,
       "name": "Generic optional exploration and independent speech bubbles"
     },
     {
@@ -140,12 +140,13 @@
         "Camera follows only when the authored location exceeds the view; stop at bounds; visual layers retain aspect, scale and safe cropping at compact and widescreen sizes.",
         "Pauses, modal dialogue, menus and window focus interruptions stop or appropriately freeze movement; repeated transitions do not leak entities or image assets; performance measured on Linux native and CI software rendering."
       ],
-      "status": "active",
-      "verified_weight": 0,
+      "status": "verified",
+      "verified_weight": 8,
       "evidence": [
         "Author-owned optional [exploration.start] validation, deterministic horizontal walk/frame-cap and camera projection, Bevy walk-first stage preview, paused/modal/focus input guards, optional sprite cycles, independent fixture, and native screenshot CI smoke authored. CI and manual QA still pending; no verified points credited.",
         "Added opt-in actual Bevy frame-time sampling for 120 exploration frames and CI JSON artifact recording mean FPS, p95 and max on software rendering; awaiting native CI verification and physical Linux feel review; no points credited.",
-        "Corrected authored walking and idle/walk cycle timing at software renderer rates near 15 FPS: single movement/animation frame cap 100ms instead of 50ms, deterministic 15 FPS speed and 2s stall-bound unit tests added; pending full CI, hardware responsiveness review still open."
+        "Corrected authored walking and idle/walk cycle timing at software renderer rates near 15 FPS: single movement/animation frame cap 100ms instead of 50ms, deterministic 15 FPS speed and 2s stall-bound unit tests added; pending full CI, hardware responsiveness review still open.",
+        "Accepted on complete native Bevy + narrative CI 41744834661 (a4045fb, 2026-11-04), alongside accepted-main CI 41741779664 (e7964b7). Walk-first independent fixture verifies arrow/A-D movement, bounded camera and aspect-preserving compact resize, idle/walk frame stepping, stable facing/stops, pause/modal input suppression, repeat location changes and entity replacement. Actual Ubuntu llvmpipe native Bevy 120-frame artifact: mean 39.88ms, p95 50.68ms, max 250ms, mean 25.1fps (measurement, not a claimed hardware throughput target). Deterministic 15fps movement/capped-stall unit tests passed. Subjective Hyprland feel remains gated under NA08."
       ]
     },
     {
@@ -164,13 +165,14 @@
         "On conversation completion, return to the correct exploration location and prior avatar position by explicit author intent; support authored scene transfer to full VN mode and back, not implicit forced walking.",
         "NPC visibility/interactions can conditionally change from persistent story state; test cancellation, repeated interaction, two simultaneous candidates, and no double-trigger on press/release."
       ],
-      "status": "active",
-      "verified_weight": 0,
+      "status": "verified",
+      "verified_weight": 10,
       "evidence": [
         "Typed explore return/mode visual_novel commands, variable-preserving machine enter_scene, deterministic nearest NPC/prop target, accessible E cue and Q cancel, in-world bubble anchored to speaker, and native CI scenario committed pending full verification. Multi-location transfer and conditional NPC state remain unfinished.",
         "Author-defined E-only named exits with proximity checks, deterministic mixed NPC/prop/exit focus, variable-gated NPC/prop visibility, world-entity replacement, and native café roundtrip/conditional-NPC regression added; CI pending for this checkpoint.",
         "Typed .vn `explore <location> at <spawn>` transfers with authored path/line validation, standalone VN-first mixed-mode fixture and real native VN→street→cinematic VN→café regression added; full CI acceptance pending.",
-        "Added native held-E/key-repeat regression: a single press must enter the authored NPC scene exactly once despite holding/releasing E; awaiting CI."
+        "Added native held-E/key-repeat regression: a single press must enter the authored NPC scene exactly once despite holding/releasing E; awaiting CI.",
+        "Accepted on complete narrative and Bevy CI 41744834661 (2026-11-04), with original NA06 held-E CI 41730576295 and merged NA03 CI 41741779664. Native exploration_walk smoke verifies real named NPC dialogue, visible bubble, E-held no repeat, Q cancellation/re-entry, nearest-focus disambiguation, variable-gated friend, explicit authored return at preserved X, E-only café/street exits, old scene-visual compatibility and entity cleanup. Independent exploration_bridge smoke verifies VN-first -> street -> cinematic VN -> café, authored spawn and cold-start restoration. Engine focus unit tests verify NPC/prop/exit tie rules and gated state. Hardware UX inspection remains NA08."
       ]
     },
     {
@@ -187,11 +189,12 @@
         "Versioned migration/fallback preserves existing save format and old saves, rejects invalid/unknown locations, and restores mid-dialogue vs mid-exploration correctly across process restart.",
         "Hot reload safely updates valid exploration/bubble assets and rejects incompatible edits while preserving the last good runtime state; loading and filesystem work do not block the render thread."
       ],
-      "status": "active",
-      "verified_weight": 0,
+      "status": "verified",
+      "verified_weight": 7,
       "evidence": [
         "World-aware version-two save/load and v1 compatibility, location validation, hot-reload guard, player F5/F9/F6, and native QA tests authored. Compilation, process restart, and full acceptance pending; zero weighted points awarded.",
-        "Native `--watch` regression added for changed NPC geometry, alternate background art, active modal bubble style, rejected invalid scene, rejected valid-but-incompatible world shrink, and preserved walking state; CI pending."
+        "Native `--watch` regression added for changed NPC geometry, alternate background art, active modal bubble style, rejected invalid scene, rejected valid-but-incompatible world shrink, and preserved walking state; CI pending.",
+        "Accepted on complete native Bevy + narrative CI 41744834661 (2026-11-04); save/load tests, exploration_walk, exploration_reload and exploration_bridge all passed. Artifact logs show cold-process quick-save restores right-facing world position and manual slot restores left-facing world position (no ECS IDs); mid-conversation restoration and Q return pass. v1 pure-VN saves unchanged and v2 world state validated; invalid locations/positions rejected. Native --watch regression verifies NPC geometry, background artwork, active bubble appearance, rejected invalid scenes and world-bounds shrink, then continued walking; save-slot/quick I/O and directory watcher use background threads. Final visual/Hyprland acceptance remains NA08."
       ]
     },
     {
@@ -295,14 +298,11 @@
     }
   ],
   "checkpoint": {
-    "last_reported_verified_percent": 23,
+    "last_reported_verified_percent": 29,
     "active": [
-      "NA03",
-      "NA05",
-      "NA06",
-      "NA07"
+      "NA08"
     ],
-    "pending": "NA02 accepted on full green CI 41728531764. NA03 authored surface switching passed targeted native smoke (CI 41732958846) but full suite remains pending; NA05 hardware/Wayland responsiveness still needs owner QA despite 15 FPS synthetic walking verification; NA06/NA07 remain downstream-gated, NA08 separate full accessibility/physical QA. Original urban fiction depends on owner creative choices.",
+    "pending": "NA01–NA07 automated acceptance supported by full native CI 41744834661 and earlier full-green 41741779664. Reconciled NA07 smoke tests await independent full CI 41750059085 before merging; accepted ledger recorded on QA branch until its own CI. NA08 remains the separate full accessibility, natural navigation, and physical Hyprland/owner QA gate; UR01–UR04 remain not started and creative canon unresolved.",
     "previous_preserved_complete": true
   }
 }

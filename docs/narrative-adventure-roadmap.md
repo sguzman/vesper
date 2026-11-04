@@ -1,10 +1,6 @@
 # Vesper — Optional Narrative Adventure Roadmap
 
-**Status:** **29 / 100 verified points** (NA01 + NA04 accepted on
-full merged-main CI 41696094392; NA02 accepted on full QA CI
-41728531764; NA03 accepted on full QA CI 41732958846 and fast-forwarded
-into main at 11728a0, with native cross-scene visual evidence and legacy
-regressions). Other milestones retain their individual acceptance gates. The earlier Vesper MVP, visual experience and human-approved Atlas presentation remain independently complete; **do not reset their ledgers**.
+**Status:** **54 / 100 verified points on the automated-acceptance QA branch** (previous 29 for NA01–NA04, plus NA05 8, NA06 10 and NA07 7; Δ +25). The full native Bevy and narrative run 41744834661 passed on 2026-11-04, including walking, interactions, cold-process save/restore and hot reload, with inherited accepted-main evidence from 41741779664. The new ledger itself and reconciled NA07 tests still require full QA-branch CI and safe integration. **NA08 separately retains physical Hyprland/owner visual and interaction QA**, not a prerequisite for continuing engine work. The earlier completed Vesper MVP, visual experience and Atlas presentation are unchanged.
 
 **Goal:** Extend the reusable Rust/Bevy visual novel engine with optional compact 2D exploration and **an independent choice of dialogue surfaces**: traditional illustrated boxes with authored image and nameplate, anchored speech bubbles, or both within a single story. Then ship an original grounded anime-urban slice-of-life example. The game brief is [separate](urban-slice-of-life-brief.md), so the engine remains genre-neutral.
 
@@ -65,7 +61,7 @@ The ledger [narrative-adventure-roadmap.json](narrative-adventure-roadmap.json) 
 
 **First coded vertical slice acceptance:** an unchanged Vesper binary launches a tiny author-provided game with one explorable street, a controlled walker and an NPC; dialogue opens in a bubble, switches to the existing custom panel with nameplate, makes a meaningful choice, and returns to the street. A second pure-VN fixture switches from panel to bubble without movement. Save/load and old-VN compatibility must pass before expansion to the full example.
 
-**Quality bar:** prioritize responsiveness, native presentation quality and legibility. A passing Rust compile is not a passing screenshot test. The verification gate includes CI source/run IDs, real screenshots, bounded performance checks and owner inspection on native Hyprland. Only complete acceptance earns milestone points.
+**Quality bar:** prioritize responsiveness, native presentation quality and legibility. A passing Rust compile is not a passing screenshot test. NA05–NA07 automated milestone acceptance requires green real Bevy gameplay/restore/reload tests, source/run IDs, screenshots and bounded performance samples; subjective native Hyprland feel and owner visual inspection are separately and explicitly gated under NA08 and UR04. Do not mistake CI software-rendered frame timings for physical hardware performance.
 
 ## Scope boundaries
 
