@@ -1,0 +1,319 @@
+# UNA TARDE EN EL BARRIO — provisional complete short-story flow.
+# Original external game, not part of the narrative-engine test fixtures.
+# Three outcomes reflect authored choices and optional conversations.
+
+@scene intro
+set met_elena = false
+set met_mateo = false
+set met_rosa = false
+set heard_elena = false
+set mateo_wants_help = false
+set heard_rosa = false
+set saw_ledger = false
+set respected_privacy = false
+set read_display = false
+set stroked_cat = false
+set remembered_door = false
+set welcome = "returning"
+background street
+music golden_hour
+"El sol cae despacio sobre las tejas del barrio. Las calles parecen más pequeñas desde que te fuiste."
+"En la tienda de la esquina, la cortina está recogida. Detrás del mostrador reconoces una cara."
+"No has vuelto para arreglar la vida de nadie. Eso te repites mientras caminas hacia el tablón de anuncios."
+"La tienda está abierta. Puedes entrar y hablar con Mateo, volver a la calle o dejar tu respuesta en el tablón."
+explore street at home
+
+@scene elena_chat
+music golden_hour
+surface bubble
+set met_elena = true
+elena: "Mira nada más. ¿Todavía sabes cómo se llega a esta calle?"
+"Elena se acomoda la mochila y mira un instante hacia el árbol de jacarandá."
+* "Me fui, pero nunca olvidé el camino." -> elena_welcome
+* "No sé si sigo perteneciendo aquí." -> elena_uncertain
+* "¿Qué pasó con la tienda de Mateo?" -> elena_news
+
+@scene elena_welcome
+set heard_elena = true
+elena: "Entonces seguro recuerdas que nadie puede salir a la calle sin encontrarse a alguien."
+elena: "Hoy todos hablan de la tienda. El tablón tiene un aviso nuevo."
+"Sus ojos se quedan un momento en los papeles clavados al muro."
+explore return
+
+@scene elena_uncertain
+set heard_elena = true
+elena: "Hay días que yo tampoco. No hace falta estar de acuerdo con una calle para quererla."
+elena: "La tienda podría cerrar. Quería que lo escucharas de alguien y no de un papel."
+"Te da espacio para responder; no lo haces. Tampoco parece necesitarlo."
+explore return
+
+@scene elena_news
+set heard_elena = true
+elena: "Le subieron la renta, y ahora hablan de vender el local. Ya sabes cómo empieza eso."
+elena: "Pero Mateo no quiere que lo conviertan en una causa sin preguntarle primero."
+"Elena se aparta un mechón de la frente. No parece enfadada: parece cansada."
+explore return
+
+@scene rosa_chat
+music golden_hour
+surface bubble
+set met_rosa = true
+rosa: "¿Tú también vienes por el aviso? Pensé que era el único chisme de la semana."
+"Rosa se alisa el delantal. Mira los carteles como si buscara la firma de alguien conocido."
+rosa: "Cada quien tiene una versión. La calle cambia aunque nadie se mueva."
+* "¿Qué dicen las personas que compran aquí?" -> rosa_people
+* "¿Y tú qué crees que debería hacerse?" -> rosa_opinion
+* "Apenas estoy poniéndome al día." -> rosa_later
+
+@scene rosa_people
+set heard_rosa = true
+rosa: "Una señora quiere un local más grande. Un niño dice que Mateo le fía cuando falta dinero."
+rosa: "Todo eso puede ser cierto a la vez. Lo difícil es escucharlo sin elegir un bando antes de tiempo."
+explore return
+
+@scene rosa_opinion
+set heard_rosa = true
+rosa: "No lo sé. Llevo años comprando aquí al caer la tarde. Esa no es una política pública."
+rosa: "Si vamos a reunir gente, al menos que Mateo esté ahí para decir lo suyo."
+explore return
+
+@scene rosa_later
+rosa: "Pues todavía tienes tiempo. El sol no se ha escondido."
+explore return
+
+@scene mateo_chat
+music shop_hush
+surface bubble
+sound shop_bell
+"Suena la campanita de la entrada. Alguien ha venido a comprar pan para la cena."
+set met_mateo = true
+mateo: "Apareciste justo cuando todo el mundo tiene opiniones sobre mi negocio. Qué suerte la mía."
+if saw_ledger == true
+"Te mira de reojo, hacia el cuaderno donde anotó la mercancía del último mes."
+mateo: "Si viniste por los números, no son toda la historia."
+end
+if respected_privacy == true
+mateo: "Gracias por no hurgar en mis cuentas. No todos lo entienden."
+end
+"Detrás de Mateo, la luz de la tarde queda atrapada en las botellas de vidrio."
+mateo: "Elena quiere convocar una reunión. La verdad, yo solo quiero una tarde sin cuentas pendientes."
+* "Podríamos escuchar lo que necesitas." -> mateo_help
+* "Cerrar también puede ser una decisión tuya." -> mateo_choice
+* "¿Te molesta que la gente quiera ayudarte?" -> mateo_anger
+
+@scene mateo_help
+set mateo_wants_help = true
+mateo: "Tal vez. Si alguien se ofrece a escuchar antes de colgar un cartel bonito, tal vez."
+"Acomoda un paquete de arroz en el estante y deja la mano apoyada allí."
+mateo: "Me gustaría llegar a una decisión sin sentir que le debo un final feliz a todos."
+explore return
+
+@scene mateo_choice
+set mateo_wants_help = false
+mateo: "Gracias. Hasta ahora todos hablan de la tienda. Nadie pregunta por mí."
+"El zumbido del refrigerador llena un silencio que no resulta incómodo."
+mateo: "No estoy diciendo que no a la reunión. Solo quiero que siga siendo mi decisión."
+explore return
+
+@scene mateo_anger
+set mateo_wants_help = false
+mateo: "No. Me molesta que den por hecho que quedarse es la única forma de querer este lugar."
+mateo: "Mi padre abrió esta tienda con un préstamo. Yo crecí aquí. Eso no significa que tenga que morir aquí."
+"Fuera, suena la campana de una bicicleta."
+explore return
+
+@scene shop_cat
+music shop_hush
+surface bubble
+"Un gato blanco con manchas de café duerme junto a los periódicos viejos. Parece conocer el negocio mejor que cualquiera."
+"Abre un ojo cuando te acercas y vuelve a cerrarlo con toda la paciencia del mundo."
+* "Acariciarle la cabeza con cuidado." -> shop_cat_pet
+* "Dejarlo dormir y seguir explorando." -> shop_cat_sleep
+
+@scene shop_cat_pet
+set stroked_cat = true
+"El gato te permite una caricia, luego acomoda la cabeza sobre tus dedos como si hubiera tomado una decisión importante."
+"Te quedas allí un instante. Hay tardes que no exigen una respuesta inmediata."
+explore return
+
+@scene shop_cat_sleep
+"No interrumpes su siesta. Bajo la luz de la lámpara, la tienda parece estar respirando muy despacio."
+explore return
+
+@scene shop_display
+music shop_hush
+surface bubble
+"Los anaqueles están llenos de cosas que una persona compra sin pensar: velas, jabón, latas de atún."
+"En la repisa más baja hay una pequeña caja con etiquetas viejas de precios, escritas a mano."
+* "Recordar las compras de otros días." -> shop_display_remember
+* "Volver a lo que ibas a hacer." -> shop_display_leave
+
+@scene shop_display_remember
+set read_display = true
+"Cuando eras más joven, Mateo te regaló un caramelo porque olvidaste traer cambio."
+"Recuerdas mejor la vergüenza de entonces que el sabor del caramelo."
+explore return
+
+@scene shop_display_leave
+"El refrigerador zumba. No todo objeto necesita convertirse en un recuerdo."
+explore return
+
+@scene shop_ledger
+music shop_hush
+surface panel
+"El cuaderno de cuentas descansa junto a la caja. Alguien ha dejado un lápiz entre las últimas páginas."
+"Podrías mirar las deudas, pero Mateo no te ha dado permiso de hacerlo."
+* "Dejarlo cerrado y preguntarle a Mateo directamente." -> shop_ledger_respect
+* "Echar un vistazo a las cuentas." -> shop_ledger_read
+* "Dejarlo tal como está." -> shop_ledger_leave
+
+@scene shop_ledger_respect
+set respected_privacy = true
+"No abres el cuaderno. Si quieres saber qué necesita Mateo, tendrás que preguntárselo a él."
+explore return
+
+@scene shop_ledger_read
+set saw_ledger = true
+sound paper_rustle
+"No entiendes cada cifra. Solo ves que las cuentas de algunos vecinos llevan meses abiertas."
+"El cuaderno tampoco dice a quién pertenecen las decisiones de Mateo."
+explore return
+
+@scene shop_ledger_leave
+"No hay nada urgente en esas páginas que deba resolver alguien que acaba de volver."
+explore return
+
+@scene threshold_memory
+music golden_hour
+surface panel
+"La puerta de madera conserva los raspones del año en que aprendiste a montar en bicicleta. Alguien ha pintado alrededor de ellos, nunca encima."
+"Detrás de una ventana escuchas platos y una radio. No reconoces la canción, pero sí el sonido de alguien preparando la cena."
+* "Recordar una tarde antes de irte." -> threshold_remember
+* "Seguir andando. No todo necesita convertirse en recuerdo." -> threshold_walk
+
+@scene threshold_remember
+set remembered_door = true
+"Te ves de niño, parado aquí con una bolsa de pan y el temor absurdo de tocar una puerta equivocada."
+"El barrio no te perteneció entonces. Aun así alguien abrió y te dejó entrar."
+explore return
+
+@scene threshold_walk
+"Dejas la mano lejos del picaporte. Esa casa tiene su propia tarde, y no necesitas entrar en ella."
+explore return
+
+@scene board_read
+music golden_hour
+surface panel
+"EL TABLÓN DE LA PLAZA. Un cuarto en renta, clases de guitarra, una bicicleta extraviada y tres anuncios con la misma letra."
+"Una hoja nueva propone una reunión vecinal antes de decidir el futuro del local. Abajo hay espacio para dejar una respuesta."
+if met_elena == true
+"Recuerdas a Elena, que habló de la calle como si también necesitara que alguien la escuchara."
+end
+if met_rosa == true
+"Rosa te recordó que las historias de los vecinos nunca caben enteras en un solo anuncio."
+end
+if met_mateo == true
+"Mateo preferiría que no lo pusieran a representar las nostalgias de todo el barrio."
+end
+if saw_ledger == true
+"Sabes que las cifras que viste en la tienda no explican por sí solas quién debe tomar la decisión."
+end
+if respected_privacy == true
+"Decidiste no leer las cuentas sin permiso. El aviso debería respetar esa misma frontera."
+end
+"El lápiz atado al tablón está gastado, pero todavía escribe."
+* "Invitar a escuchar a todas las personas, empezando por Mateo." -> ending_listen
+* "Ofrecer un plan concreto para ayudar a mantener la tienda." -> ending_open
+* "Guardar el lápiz y dejar que otros tomen la iniciativa." -> ending_quiet
+* "Necesito hablar con alguien antes de contestar." -> board_return
+
+@scene board_return
+"Dejas el lápiz sobre la cuerda. No tienes que decidirlo ahora, y el tablón seguirá aquí cuando vuelvas."
+"Escuchas un timbre desde la tienda y los pasos de alguien bajando las escaleras."
+explore return
+
+@scene ending_listen
+mode visual_novel
+background street_evening
+surface panel
+if remembered_door == true
+"Piensas en la vieja puerta donde alguien te hizo sitio sin pedirte una explicación. Quizá escuchar sea una forma parecida de abrir."
+end
+if stroked_cat == true
+"En el borde de la hoja de firmas, dibujas sin querer un gato dormido. Te hace sonreír."
+end
+if read_display == true
+"Recuerdas las pequeñas compras de tantos años. Por un instante, el papel parece más pesado."
+end
+if met_elena == true
+show elena calm at left
+end
+"Escribes: 'Antes de decidir qué conservar, preguntémonos qué necesita quien vive y trabaja aquí.'"
+if met_mateo == true
+"Mateo lo lee antes que nadie. No sonríe, pero al día siguiente hay una silla más frente a la tienda."
+else
+"Una nota aparece bajo la tuya: 'Ojalá se lo pregunten primero al dueño.' Firmada solo con una M."
+end
+if heard_rosa == true
+"Rosa deja una bolsa de vasos de papel. Dice que traerá café si alguien se ocupa de las sillas."
+end
+"A la mañana siguiente hay cinco respuestas. Ninguna está completamente de acuerdo con las otras."
+"La persiana se levanta lo suficiente para que entre la luz. Nadie promete que la tienda seguirá abierta."
+"Pero durante una tarde, al menos, las personas dejan de hablar por los demás."
+"FIN — Una invitación."
+
+@scene ending_open
+mode visual_novel
+background street_evening
+surface panel
+if remembered_door == true
+"Recuerdas el portal de madera y decides que una propuesta sirve más cuando deja entrar a quien tendrá que vivir con ella."
+end
+if respected_privacy == true
+"Antes de escribir el plan, tachas cualquier propuesta que exponga las cuentas privadas de Mateo."
+end
+"Escribes turnos de apoyo, una pequeña rifa y un fondo comunitario. Lees el plan dos veces antes de colgarlo."
+if mateo_wants_help == true
+"Mateo aparece con un bolígrafo azul. Pregunta dónde se apuntan los que quieran echar una mano."
+else
+"Mateo lo lee en silencio. Le dices que el papel es solo una propuesta: puede decir que no."
+end
+if saw_ledger == true
+"Te acuerdas de las cuentas que miraste sin permiso. No las has escrito en la propuesta, pero eso no borra que las viste."
+end
+if heard_rosa == true
+"Rosa añade que una reunión no será una reunión si la gente que compra allí no puede hablar. Dejas un espacio para sus nombres."
+end
+if heard_elena == true
+"Elena corrige la fecha de la reunión y añade: 'Sin compromisos hasta que hablemos todos'."
+end
+"La persiana sigue abierta esa tarde. Nadie sabe cuánto durará; nadie lo finge."
+"El barrio no se salva con una hoja de papel. A veces, sin embargo, una hoja sirve para empezar."
+"FIN — Una posibilidad."
+
+@scene ending_quiet
+mode visual_novel
+background street_evening
+surface panel
+if remembered_door == true
+"La puerta antigua sigue tras de ti. Has entendido que recordar un sitio no te da derecho a decidir su futuro."
+end
+if stroked_cat == true
+"Recuerdas al gato de la tienda. No tuvo que decidir el futuro de nadie para ofrecer un momento de calma."
+end
+if saw_ledger == true
+"Las cifras que viste en la tienda no salen de tu cabeza; no son tuyas para explicarlas."
+end
+"Dejas el lápiz en su sitio. No escribes una respuesta: todavía no sabes cuál sería la tuya."
+if met_elena == true
+"Elena no pregunta qué decidiste. Camina contigo un rato en silencio bajo las flores violetas."
+else
+"A tu espalda, alguien vuelve a colocar el aviso que se había soltado del tablón."
+end
+if met_mateo == true
+"Recuerdas lo que dijo Mateo: cerrar también puede ser una decisión propia. Lo que no escribiste no le quita esa posibilidad."
+end
+"La calle sigue siendo hermosa, aunque las cosas cambien sin pedir permiso."
+"Al llegar a la esquina, ves a Mateo apagar una luz. La de afuera queda encendida."
+"No has resuelto nada esta tarde. Mañana todavía puedes volver."
+"FIN — Una puerta abierta."
