@@ -114,6 +114,16 @@ jobs:
           path: /tmp/vesper-exploration-accessibility-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
+      - name: Verify authored one-key direct world interaction without backtracking
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' python3 .github/scripts/exploration_shortcut_smoke.py
+      - name: Preserve direct interaction screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-exploration-shortcut
+          path: /tmp/vesper-exploration-shortcut-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verify live exploration, artwork, and bubble hot reload
         run: xvfb-run -a -s '-screen 0 1280x720x24' python3 .github/scripts/exploration_reload_smoke.py
       - name: Preserve exploration hot reload screenshots

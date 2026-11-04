@@ -196,6 +196,7 @@ pub fn begin_interaction(
     session: &mut Session,
     commands: &mut Commands,
     assets: &AssetServer,
+    direct: bool,
 ) -> Result<Option<Screen>, String> {
     let ExperienceMode::Exploring(position) = &session.experience.mode else {
         return Ok(None);
@@ -204,9 +205,12 @@ pub fn begin_interaction(
         .and_then(|world| world.locations.get(&position.location)) else {
         return Err("current authored exploration location is unavailable".into());
     };
-    let Some(target) = interaction::focus(area, position, session.machine.variables()) else {
-        return Ok(None);
+    let target = if direct {
+        interaction::direct_focus(area, position, session.machine.variables())
+    } else {
+        interaction::focus(area, position, session.machine.variables())
     };
+    let Some(target) = target else { return Ok(None); };
     match target {
         Focus::Scene(target) => {
             let scene = target.scene.to_owned();
@@ -217,7 +221,11 @@ pub fn begin_interaction(
             session.choosing = false;
             session.finished = false;
             let screen = next_screen(session, commands, assets);
-            info!("Vesper exploration interacting: {label} -> {scene}");
+            if direct {
+                info!("Vesper exploration direct interaction: {label} -> {scene}");
+            } else {
+                info!("Vesper exploration interacting: {label} -> {scene}");
+            }
             Ok(Some(screen))
         }
         Focus::Exit(target) => {
@@ -381,6 +389,11 @@ pub fn sync(
             .and_then(|world| world.locations.get(&point.location))
             .and_then(|area| interaction::focus(area, point, session.machine.variables()))
     });
+    let shortcut = position.and_then(|point| {
+        session.game.manifest.exploration.as_ref()
+            .and_then(|world| world.locations.get(&point.location))
+            .and_then(|area| interaction::direct_focus(area, point, session.machine.variables()))
+    });
     // The interaction prompt must follow the same input-ownership policy
     // as the movement controller. No actionable "E" cue under modal
     // settings/font/save overlays that intentionally swallow E presses.
@@ -392,15 +405,21 @@ pub fn sync(
         windows.single().is_ok_and(|window| window.focused),
     );
     for mut prompt in &mut prompts {
-        let display = if focused && target.is_some() { Display::Flex } else { Display::None };
+        let display = if focused && (target.is_some() || shortcut.is_some()) {
+            Display::Flex
+        } else {
+            Display::None
+        };
         if prompt.display != display { prompt.display = display; }
     }
     if focused {
-        if let Some(target) = target {
+        let shortcut_only = target.is_none();
+        if let Some(target) = target.or(shortcut) {
             let next = match target {
                 Focus::Scene(scene) => {
                     let verb = if scene.kind == TargetKind::Npc { "Talk to" } else { "Inspect" };
-                    format!("E: {verb} {}", scene.id)
+                    let key = if shortcut_only { "T" } else { "E" };
+                    format!("{key}: {verb} {}", scene.id)
                 }
                 Focus::Exit(exit) => format!("E: Enter {}", exit.to_location),
             };

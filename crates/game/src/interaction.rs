@@ -83,6 +83,29 @@ impl Focus<'_> {
     }
 }
 
+/// An explicitly authored remote conversation or inspection. The author
+/// chooses exactly one validated NPC or interactive prop per location.
+/// Unlike ordinary E interaction, T does not require moving within range,
+/// and gated or hidden actors remain unavailable. World position is untouched.
+pub fn direct_focus<'a>(area: &'a Location, position: &WorldPosition,
+    variables: &BTreeMap<String, Value>) -> Option<Focus<'a>> {
+    let id = area.quick_interact.as_deref()?;
+    let (kind, x, scene, condition) = if let Some(npc) = area.npcs.get(id) {
+        (TargetKind::Npc, npc.x, npc.interact_scene.as_str(),
+            npc.visible_if.as_ref())
+    } else {
+        let prop = area.props.get(id)?;
+        (TargetKind::Prop, prop.x, prop.interact_scene.as_deref()?,
+            prop.visible_if.as_ref())
+    };
+    if condition.is_some_and(|gate| !gate.matches(variables)) {
+        return None;
+    }
+    Some(Focus::Scene(Target {
+        kind, id, scene, x, distance: (position.x - x).abs(),
+    }))
+}
+
 /// Nearest interaction, with scene interactions winning exact ties.
 /// Exits never cause automatic traversal: E explicitly selects this focus.
 pub fn focus<'a>(area: &'a Location, position: &WorldPosition,
@@ -115,6 +138,7 @@ mod tests {
             width: 1280.0,
             height: 720.0,
             camera: Default::default(),
+            quick_interact: None,
             spawns: BTreeMap::new(),
             npcs: BTreeMap::from([
                 ("amy".into(), Npc { x: 410.0, interact_scene: "amy_scene".into(),
@@ -185,6 +209,31 @@ mod tests {
         assert_eq!(focus(&area, &at(440.0), &vars).unwrap().id(), "zoe");
         vars.insert("met".into(), Value::Boolean(false));
         assert_eq!(focus(&area, &at(440.0), &vars).unwrap().id(), "amy");
+    }
+
+    #[test]
+    fn authored_direct_interaction_skips_walking_not_story_gates() {
+        let mut area = area();
+        let vars = BTreeMap::new();
+        assert!(direct_focus(&area, &at(100.0), &vars).is_none());
+        assert!(focus(&area, &at(100.0), &vars).is_none());
+        area.quick_interact = Some("zoe".into());
+        assert!(matches!(direct_focus(&area, &at(100.0), &vars),
+            Some(Focus::Scene(Target { id: "zoe", scene: "zoe_scene", .. }))));
+        assert!(focus(&area, &at(100.0), &vars).is_none());
+        area.npcs.get_mut("zoe").unwrap().visible_if =
+            Some(crate::exploration::VisibilityCondition {
+                variable: "met".into(),
+                equals: crate::exploration::ConditionValue::Boolean(true),
+            });
+        assert!(direct_focus(&area, &at(100.0), &vars).is_none());
+        let vars = BTreeMap::from([("met".into(), Value::Boolean(true))]);
+        assert!(direct_focus(&area, &at(100.0), &vars).is_some());
+        area.quick_interact = Some("billboard".into());
+        assert!(matches!(direct_focus(&area, &at(100.0), &vars),
+            Some(Focus::Scene(Target { kind: TargetKind::Prop, id: "billboard", .. }))));
+        area.quick_interact = Some("decoration".into());
+        assert!(direct_focus(&area, &at(100.0), &vars).is_none());
     }
 
     #[test]

@@ -82,6 +82,35 @@ the author is building the map. Locations can fit within one screen: the
 initial implementation is intentionally a **bounded side-on walk**, not
 a general 2D/3D physics engine.
 
+## Optional direct-access interaction
+
+A location can designate **one** existing NPC or interactive prop as a
+keyboard-accessible conversation or inspection that does not require walking to
+its world X. This is an **author opt-in**, not a global teleport or a
+replacement for normal E proximity interactions. For example:
+
+```toml
+[exploration.locations.street]
+background = "assets/backgrounds/street.png"
+width = 1280.0
+height = 720.0
+quick_interact = "neighbor"
+
+[exploration.locations.street.npcs.neighbor]
+x = 425.0
+interact_scene = "neighbor_chat"
+```
+
+Press **T** to start the named authored interaction from anywhere within
+that location. The single direct-access target must exist and be unambiguous
+between NPC/prop namespaces; a decorative prop without an
+`interact_scene` cannot be selected. A `visible_if` story-variable gate
+still applies, and the prompt appears only when the target is available.
+The conversation preserves the current world position on completion or
+cancellation. **E** continues to select the nearest reachable NPC, prop or
+exit; locations without this option retain existing behavior. Pure VNs do
+not gain walking or direct-world shortcuts.
+
 ## Schema validation contract
 
 `vesper-game::Game::load` parses and validates these values **before**

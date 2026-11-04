@@ -61,6 +61,10 @@ pub struct Location {
     /// camera. A single-screen location can opt out of following entirely.
     #[serde(default)]
     pub camera: CameraFrame,
+    /// Optional one-key access to an authored NPC or interactive prop
+    /// in this location, without mandatory walking or teleportation.
+    #[serde(default)]
+    pub quick_interact: Option<String>,
     pub spawns: BTreeMap<String, Spawn>,
     #[serde(default)]
     pub npcs: BTreeMap<String, Npc>,
@@ -310,6 +314,17 @@ impl Exploration {
             if location.npcs.len() + location.props.len() + location.exits.len() > MAX_INTERACTABLES {
                 return Err(format!("{label} exceeds {MAX_INTERACTABLES} NPCs/props/exits"));
             }
+            if let Some(id) = &location.quick_interact {
+                identifier(id, &format!("{label}.quick_interact"))?;
+                let npc = location.npcs.contains_key(id);
+                let prop = location.props.get(id)
+                    .is_some_and(|prop| prop.interact_scene.is_some());
+                if npc == prop {
+                    return Err(format!(
+                        "{label}.quick_interact must identify exactly one NPC or interactive prop"
+                    ));
+                }
+            }
             if location.layers.len() > MAX_LAYERS {
                 return Err(format!("{label}.layers exceeds {MAX_LAYERS} layers"));
             }
@@ -525,6 +540,28 @@ interact_scene = "chat"
         assert!(toml::from_str::<VisibilityCondition>(
             "variable='valid'\nequals=1.2"
         ).is_err());
+    }
+
+    #[test]
+    fn opt_in_quick_interaction_validates_an_unambiguous_scene_target() {
+        let (mut world, fixture, story) = load(GOOD);
+        assert!(world.locations["street"].quick_interact.is_none());
+        world.locations.get_mut("street").unwrap().quick_interact =
+            Some("friend".into());
+        world.validate(&fixture.0, &story).unwrap();
+        world.locations.get_mut("street").unwrap().quick_interact =
+            Some("missing".into());
+        assert!(world.validate(&fixture.0, &story).unwrap_err()
+            .contains("quick_interact"));
+        world.locations.get_mut("street").unwrap().quick_interact =
+            Some("friend".into());
+        world.locations.get_mut("street").unwrap().props.insert(
+            "friend".into(),
+            Prop { x: 130.0, interact_scene: Some("chat".into()),
+                image: None, interaction_radius: 70.0, visible_if: None },
+        );
+        assert!(world.validate(&fixture.0, &story).unwrap_err()
+            .contains("quick_interact"));
     }
 
     #[test]

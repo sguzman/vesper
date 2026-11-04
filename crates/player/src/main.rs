@@ -2510,11 +2510,13 @@ fn advance_from_keyboard(
         }
         return;
     }
-    // World input is independent of dialogue input. E opens the nearest
-    // validated NPC/prop scene; walking never advances hidden VN text.
+    // E opens nearby authored focus. An optional authored T shortcut opens
+    // one explicitly designated NPC/prop without compulsory walking.
+    // Neither action advances a hidden VN line while exploring.
     if matches!(session.experience.mode, ExperienceMode::Exploring(_)) {
-        if input.just_pressed(KeyCode::KeyE) {
-            match exploration::begin_interaction(&mut session, &mut commands, &assets) {
+        let direct = input.just_pressed(KeyCode::KeyT);
+        if input.just_pressed(KeyCode::KeyE) || direct {
+            match exploration::begin_interaction(&mut session, &mut commands, &assets, direct) {
                 Ok(Some(screen)) => update_screen(screen, &effective_theme(&session),
                     &mut texts, &mut reading, readout::speed(&session)),
                 Ok(None) => {},
