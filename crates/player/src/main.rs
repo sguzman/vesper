@@ -3148,6 +3148,28 @@ mod tests {
     }
 
     #[test]
+    fn game_authored_menu_labels_keep_keys_and_selection_order() {
+        let mut theme = vesper_game::Theme::default();
+        assert_eq!(super::menu_items(&theme, super::MenuKind::Ending),
+            vec!["Play again", "Main menu", "Quit"]);
+        assert_eq!(super::menu_title(&theme, super::MenuKind::Ending, "The End"), "The End");
+        theme.menu_labels.ending =
+            Some(["Jugar otra vez".into(), "Menú principal".into(), "Salir".into()]);
+        theme.menu_labels.ending_title = Some("Fin".into());
+        theme.menu_labels.main = Some([
+            "Nueva historia".into(), "Continuar".into(), "Salir".into(), "Ajustes".into()
+        ]);
+        assert_eq!(super::menu_items(&theme, super::MenuKind::Ending),
+            vec!["Jugar otra vez", "Menú principal", "Salir"]);
+        assert_eq!(super::menu_items(&theme, super::MenuKind::Main)[1], "Continuar");
+        assert_eq!(super::menu_title(&theme, super::MenuKind::Ending, "The End"), "Fin");
+        theme.validate().unwrap();
+        // Fixed row counts are unchanged: only their presentation text varies.
+        assert_eq!(super::ENDING_ITEMS.len(), 3);
+        assert_eq!(super::MAIN_ITEMS.len(), 4);
+    }
+
+    #[test]
     fn ending_actions_are_separate_widgets() {
         let screen = super::Screen::ending("The End".into());
         assert_eq!(screen.body, "The End");
