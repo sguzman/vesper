@@ -124,7 +124,7 @@ advance_until() {
 }
 
 wait_log 'Vesper scene dialogue: intro'
-advance_until 'Vesper exploration preview entered: street at x=' 30
+advance_until 'Vesper exploration area loaded: street;' 30
 frame '01-street-opening.png'
 
 # The game-authored T shortcut works before walking into Elena's radius.
@@ -146,7 +146,7 @@ walk_to street 654 34
 frame '03-street-after-walking.png'
 key e
 wait_log 'Vesper exploration exit: street/store_door -> store'
-wait_log 'Vesper exploration preview entered: store at x='
+wait_log 'Vesper exploration area loaded: store;'
 current_x=188
 frame '04-store-interior.png'
 
