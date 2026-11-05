@@ -591,6 +591,45 @@ const PAUSE_ITEMS: [&str; 4] = ["Resume story", "Main menu", "Quit", "Settings"]
 const MAIN_ITEMS: [&str; 4] = ["Start new story", "Continue current story", "Quit", "Settings"];
 const ENDING_ITEMS: [&str; 3] = ["Play again", "Main menu", "Quit"];
 
+/// Menu labels are game-authored display data; their positions and actions
+/// remain the same engine-owned keyboard/pointer targets.
+fn menu_items<'a>(theme: &'a vesper_game::Theme, kind: MenuKind) -> Vec<&'a str> {
+    let labels = &theme.menu_labels;
+    match kind {
+        MenuKind::Main => labels.main.as_ref()
+            .map(|items| items.iter().map(String::as_str).collect())
+            .unwrap_or_else(|| MAIN_ITEMS.to_vec()),
+        MenuKind::Pause => labels.pause.as_ref()
+            .map(|items| items.iter().map(String::as_str).collect())
+            .unwrap_or_else(|| PAUSE_ITEMS.to_vec()),
+        MenuKind::Ending => labels.ending.as_ref()
+            .map(|items| items.iter().map(String::as_str).collect())
+            .unwrap_or_else(|| ENDING_ITEMS.to_vec()),
+    }
+}
+
+fn menu_title<'a>(
+    theme: &'a vesper_game::Theme, kind: MenuKind, fallback: &'a str,
+) -> &'a str {
+    let labels = &theme.menu_labels;
+    match kind {
+        MenuKind::Main => labels.main_title.as_deref(),
+        MenuKind::Pause => labels.pause_title.as_deref(),
+        MenuKind::Ending => labels.ending_title.as_deref(),
+    }.unwrap_or(fallback)
+}
+
+fn menu_instructions<'a>(
+    theme: &'a vesper_game::Theme, kind: MenuKind, fallback: &'a str,
+) -> &'a str {
+    match kind {
+        MenuKind::Main => theme.menu_labels.main_hint.as_deref(),
+        MenuKind::Pause => theme.menu_labels.pause_hint.as_deref(),
+        MenuKind::Ending => None,
+    }.unwrap_or(fallback)
+}
+
+
 /// Retain row identity while focus changes: only selected row colors update.
 fn rgba(value: [f32; 4]) -> Color {
     Color::srgba(value[0], value[1], value[2], value[3])
@@ -1719,7 +1758,9 @@ fn next_screen(session: &mut Session, commands: &mut Commands, assets: &AssetSer
             }
             Ok(Output::End) => {
                 info!("Vesper story reached ending scene: {}", session.machine.scene());
-                return finish_story(session, "The End".into());
+                let title = menu_title(&session.game.theme, MenuKind::Ending, "The End")
+                    .to_owned();
+                return finish_story(session, title);
             }
             Err(error) => {
                 return finish_story(session, format!("Story error:\n{error}"));
@@ -1881,7 +1922,8 @@ fn setup(
                     ..default()
                 },
             )).with_children(|list| {
-                spawn_menu_rows(list, MenuKind::Ending, &ENDING_ITEMS, &font, None, &assets);
+                let items = menu_items(&theme, MenuKind::Ending);
+                spawn_menu_rows(list, MenuKind::Ending, &items, &font, None, &assets);
             });
             parent.spawn((
                 StorySeparator,
@@ -2321,10 +2363,13 @@ fn spawn_center_menu(
 fn prewarm_menus(mut session: ResMut<Session>, mut commands: Commands, assets: Res<AssetServer>) {
     let theme = effective_theme(&session);
     if session.game.manifest.menu_backgrounds.pause.is_some() {
+        let items = menu_items(&theme, MenuKind::Pause);
         let entity = spawn_center_menu(
-            &mut commands, &assets, &theme, "PAUSED", MenuKind::Pause,
-            &PAUSE_ITEMS,
-            "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
+            &mut commands, &assets, &theme,
+            menu_title(&theme, MenuKind::Pause, "PAUSED"), MenuKind::Pause,
+            &items,
+            menu_instructions(&theme, MenuKind::Pause,
+                "Up/Down: select    Enter: confirm    P: resume    Esc: quit"),
             session.game.manifest.menu_backgrounds.pause.as_deref(),
             menu_skin(&session, MenuKind::Pause),
         );
@@ -2333,9 +2378,12 @@ fn prewarm_menus(mut session: ResMut<Session>, mut commands: Commands, assets: R
     }
     if session.game.manifest.menu_backgrounds.main.is_some() {
         let title = format!("{} — Main menu", session.game.manifest.title);
+        let items = menu_items(&theme, MenuKind::Main);
         let entity = spawn_center_menu(
-            &mut commands, &assets, &theme, &title, MenuKind::Main, &MAIN_ITEMS,
-            "Up/Down: select    Enter: confirm    M: close    Esc: quit",
+            &mut commands, &assets, &theme,
+            menu_title(&theme, MenuKind::Main, &title), MenuKind::Main, &items,
+            menu_instructions(&theme, MenuKind::Main,
+                "Up/Down: select    Enter: confirm    M: close    Esc: quit"),
             session.game.manifest.menu_backgrounds.main.as_deref(),
             menu_skin(&session, MenuKind::Main),
         );
@@ -2365,10 +2413,14 @@ fn show_pause_menu(
         info!("Vesper Pause menu UI reused");
         cached
     } else {
+        let theme = effective_theme(session);
+        let items = menu_items(&theme, MenuKind::Pause);
         spawn_center_menu(
-            commands, assets, &effective_theme(session), "PAUSED", MenuKind::Pause,
-            &PAUSE_ITEMS,
-            "Up/Down: select    Enter: confirm    P: resume    Esc: quit",
+            commands, assets, &theme,
+            menu_title(&theme, MenuKind::Pause, "PAUSED"), MenuKind::Pause,
+            &items,
+            menu_instructions(&theme, MenuKind::Pause,
+                "Up/Down: select    Enter: confirm    P: resume    Esc: quit"),
             session.game.manifest.menu_backgrounds.pause.as_deref(),
             menu_skin(session, MenuKind::Pause),
         )
@@ -2397,9 +2449,13 @@ fn show_main_menu(
         cached
     } else {
         let title = format!("{} — Main menu", session.game.manifest.title);
+        let theme = effective_theme(session);
+        let items = menu_items(&theme, MenuKind::Main);
         spawn_center_menu(
-            commands, assets, &effective_theme(session), &title, MenuKind::Main, &MAIN_ITEMS,
-            "Up/Down: select    Enter: confirm    M: close    Esc: quit",
+            commands, assets, &theme,
+            menu_title(&theme, MenuKind::Main, &title), MenuKind::Main, &items,
+            menu_instructions(&theme, MenuKind::Main,
+                "Up/Down: select    Enter: confirm    M: close    Esc: quit"),
             session.game.manifest.menu_backgrounds.main.as_deref(),
             menu_skin(session, MenuKind::Main),
         )
@@ -3057,7 +3113,9 @@ fn poll_completed_io(
                         Screen::rich(speaker.unwrap_or_default(), text, spans),
                     Some(Output::Choices(choices)) =>
                         Screen::choices(&choices, session.presentation.selected_choice),
-                    Some(Output::End) => Screen::ending("The End".into()),
+                    Some(Output::End) => Screen::ending(
+                        menu_title(&session.game.theme, MenuKind::Ending, "The End").to_owned()
+                    ),
                     _ => Screen::ending("Story restored".into()),
                 };
                 update_screen(screen, &effective_theme(&session), &mut texts,
