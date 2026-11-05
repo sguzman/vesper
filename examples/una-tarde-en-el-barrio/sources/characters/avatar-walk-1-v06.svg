@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 440" width="220" height="440">
+<defs>
+ <linearGradient id="skin" x2=".8" y2="1"><stop stop-color="#ffcfaa"/><stop offset=".53" stop-color="#e89c7d"/><stop offset="1" stop-color="#b96860"/></linearGradient>
+ <linearGradient id="jacket" x2=".95" y2="1"><stop stop-color="#57506d"/><stop offset=".45" stop-color="#282838"/><stop offset="1" stop-color="#171b2c"/></linearGradient>
+ <linearGradient id="hair" x2=".75" y2="1"><stop stop-color="#433047"/><stop offset=".48" stop-color="#1f1c31"/><stop offset="1" stop-color="#101623"/></linearGradient>
+ <linearGradient id="denim" x2=".9" y2="1"><stop stop-color="#63708b"/><stop offset=".48" stop-color="#46516c"/><stop offset="1" stop-color="#252f4e"/></linearGradient>
+ <linearGradient id="wine" x2=".7" y2="1"><stop stop-color="#8d4a65"/><stop offset=".48" stop-color="#6b3655"/><stop offset="1" stop-color="#432642"/></linearGradient>
+ <linearGradient id="apron" x2=".9" y2="1"><stop stop-color="#fff2d9"/><stop offset=".6" stop-color="#e4b7ab"/><stop offset="1" stop-color="#b78388"/></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<ellipse cx="108" cy="427" rx="69" ry="6" fill="#0c1024" opacity=".24"/>
+
+    <path d="M87 324 L81 411 Q91 425 112 418 L111 327Z" fill="url(#denim)" stroke="#1c1b2f" stroke-width="6"/>
+    <path d="M115 326 L123 414 Q142 425 152 415 L138 322Z" fill="url(#denim)" stroke="#1c1b2f" stroke-width="6"/>
+    <path d="M75 409 Q91 406 115 413 L119 425 Q87 437 74 422Z" fill="#c9b1a7" stroke="#252139" stroke-width="5"/>
+    <path d="M124 410 Q143 405 154 415 L158 425 Q133 434 123 422Z" fill="#c9b1a7" stroke="#252139" stroke-width="5"/>
+    <!-- silhouette hair bun -->
+    <path d="M62 102 Q51 55 86 39 Q117 24 153 48 Q177 79 167 124 L165 180 L58 178Z" fill="url(#hair)" stroke="#181828" stroke-width="6"/>
+    <path d="M130 45 Q129 12 159 10 Q187 14 185 44 Q182 74 154 70Z" fill="url(#hair)" stroke="#1c1728" stroke-width="5"/>
+    <path d="M151 22 Q175 26 176 45" stroke="#896779" stroke-width="5" fill="none" opacity=".65"/>
+    <!-- hood and jacket -->
+    <path d="M67 178 Q99 161 150 177 L171 225 L158 338 L60 338 L48 229Z" fill="url(#jacket)" stroke="#231f36" stroke-width="6"/>
+    <path d="M75 177 Q110 214 141 179 L150 220 Q107 244 67 220Z" fill="#e2ccc3" stroke="#8d7177" stroke-width="4"/>
+    <path d="M64 192 Q46 190 35 238 L31 300 Q43 318 56 307 L77 249Z" fill="url(#jacket)" stroke="#241e31" stroke-width="6"/>
+    <path d="M152 193 Q176 202 185 239 L187 306 Q170 319 158 303 L142 248Z" fill="url(#jacket)" stroke="#241e31" stroke-width="6"/>
+    <path d="M36 295 Q30 314 43 327 Q54 330 58 314 L56 300Z M166 299 Q160 315 170 324 Q184 324 187 308Z" fill="url(#skin)" stroke="#382436" stroke-width="4"/>
+    <!-- layered rucksack -->
+    <path d="M84 206 Q109 196 133 207 L149 298 Q141 333 111 337 Q83 338 75 308Z" fill="#6c4c4a" stroke="#2e2135" stroke-width="6"/>
+    <path d="M83 213 Q90 188 103 187 M134 215 Q131 188 116 186" stroke="#ac876b" stroke-width="7" fill="none"/>
+    <path d="M83 241 Q112 250 140 241 L138 287 Q110 299 85 288Z" fill="#795550" stroke="#3a2937" stroke-width="4"/>
+    <path d="M89 252 L133 252 M87 311 Q109 319 143 311" stroke="#b28e6b" stroke-width="3" fill="none"/>
+    <path d="M109 253 L109 269 M98 298 Q112 304 125 297" stroke="#e2b77a" stroke-width="3" fill="none"/>
+    <!-- gold pins, loose hair highlights -->
+    <path d="M71 98 Q97 82 114 85 M120 83 Q144 80 155 102" stroke="#77546d" stroke-width="5" fill="none" opacity=".8"/>
+    <path d="M141 109 L160 103 M142 117 L162 112" stroke="#efbb6d" stroke-width="4"/>
+
+</svg>
