@@ -38,6 +38,11 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
           cargo run --locked -p vesper-cli -- check-game examples/living-journal
           cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies
+      - name: Validate Una Tarde original game and conditional routes
+        run: |
+          cargo run --locked -p vesper-cli -- check-game examples/una-tarde-en-el-barrio
+          examples/una-tarde-en-el-barrio/qa/check-reader-hints.sh
+          examples/una-tarde-en-el-barrio/qa/check-scenarios.sh
       - name: Verify deterministic Atlas authoring compilation
         run: |
           python3 examples/atlas-unwritten-skies/tools/compile_story.py
