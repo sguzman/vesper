@@ -669,14 +669,14 @@ mod menu_labels_tests {
     #[test]
     fn authored_spanish_labels_validate_and_bad_data_is_rejected() {
         let mut theme: Theme = toml::from_str(
-            "[menu_labels]\\nending = ['Otra vez', 'Menú principal', 'Salir']\\nending_title = 'Fin'"
+            "[menu_labels]\nending = ['Otra vez', 'Menú principal', 'Salir']\nending_title = 'Fin'"
         ).unwrap();
         assert_eq!(theme.menu_labels.ending.as_ref().unwrap()[0], "Otra vez");
         theme.validate().unwrap();
         theme.menu_labels.ending.as_mut().unwrap()[2] = String::new();
         assert!(theme.validate().is_err());
         theme.menu_labels.ending.as_mut().unwrap()[2] = "Salir".to_owned();
-        theme.menu_labels.ending_title = Some("bad\\nline".to_owned());
+        theme.menu_labels.ending_title = Some("bad\nline".to_owned());
         assert!(theme.validate().is_err());
         theme.menu_labels.ending_title = Some("Fin".to_owned());
         theme.validate().unwrap();
