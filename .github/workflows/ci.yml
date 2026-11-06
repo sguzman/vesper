@@ -41,6 +41,7 @@ jobs:
       - name: Validate Una Tarde original game and conditional routes
         run: |
           cargo run --locked -p vesper-cli -- check-game examples/una-tarde-en-el-barrio
+          bash examples/una-tarde-en-el-barrio/qa/check-world-composition.sh
           examples/una-tarde-en-el-barrio/qa/check-reader-hints.sh
           bash examples/una-tarde-en-el-barrio/qa/check-menu-labels.sh
           examples/una-tarde-en-el-barrio/qa/check-scenarios.sh
