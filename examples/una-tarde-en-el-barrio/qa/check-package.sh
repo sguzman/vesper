@@ -161,6 +161,7 @@ echo 'STATIC QA PASSED. This shell checker does not run the Rust Vesper parser o
 "$root/qa/check-reader-hints.sh"
 bash "$root/qa/check-world-composition.sh"
 bash "$root/qa/check-menu-labels.sh"
+bash "$root/qa/check-world-labels.sh"
 "$root/qa/check-audio.sh"
 
 "$root/qa/check-elena-art.sh"
