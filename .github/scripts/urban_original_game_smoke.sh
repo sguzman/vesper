@@ -244,7 +244,7 @@ finish_ledger_visit() {
   done
   fail "Ledger choice $choice never returned to the shop"
 }
-walk_to store 950 24
+walk_to store 555 24
 finish_ledger_visit 2  # Read private accounts.
 prior=$(count 'Vesper save written')
 key F5
