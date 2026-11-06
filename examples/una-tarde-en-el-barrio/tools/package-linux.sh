@@ -27,6 +27,10 @@ trap 'rm -rf -- "$work"' EXIT
 bundle="$work/$name"
 mkdir -p -- "$bundle/game"
 install -m 0755 -- "$player" "$bundle/vesper-player"
+# Remove the multi-gigabyte debug information from the distributable COPY.
+# Do not mutate target/debug or alter the tested executable's program logic.
+command -v strip >/dev/null || { printf 'binutils strip is required for packaging\n' >&2; exit 1; }
+strip --strip-debug "$bundle/vesper-player"
 cp -- "$game_root/game.toml" "$bundle/game/game.toml"
 cp -R -- "$game_root/assets" "$game_root/scripts" "$game_root/styles" "$bundle/game/"
 cp -- "$game_root/README.md" "$bundle/PROJECT-README.md"
