@@ -46,3 +46,15 @@ choices = "↑↓: elegir · Enter/1–4: confirmar · H: historial · P: pausa 
 ending = "↑↓: elegir · Enter: confirmar · R: repetir · M: menú"
 conversation = "Enter: continuar · Q: salir · F5: guardar · F9: cargar"
 conversation_choices = "↑↓: elegir · Enter: confirmar · Q: salir · F5/F9: guardar/cargar"
+
+# Fully authored Spanish menu labels (Vesper main with PR #35).
+# The key actions, ordering, and keyboard bindings remain engine-owned.
+[menu_labels]
+main = ["Nueva historia", "Continuar partida", "Salir", "Ajustes"]
+pause = ["Reanudar", "Menú principal", "Salir", "Ajustes"]
+ending = ["Volver a jugar", "Menú principal", "Salir"]
+main_title = "Menú principal"
+pause_title = "Pausa"
+ending_title = "Fin"
+main_hint = "↑↓: elegir · Enter: confirmar · M: cerrar · Esc: salir"
+pause_hint = "↑↓: elegir · Enter: confirmar · P: reanudar · Esc: salir"

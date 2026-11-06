@@ -1,4 +1,14 @@
-# Validation status — v0.7.7 (inherited native evidence from v0.7.1)
+# Validation status — v0.7.8 (v0.7.7 native game pass; v0.7.8 CI pending)
+
+## Latest native and authoring evidence (supersedes older checkpoints)
+
+- **v0.7.7 was played end-to-end through all three endings** in actual Bevy 0.20 under Xvfb/Mesa (CI [41941262151](https://github.com/sguzman/vesper/actions/runs/41941262151)). Runtime evidence artifact `vesper-urban-original-gameplay` (ID 13377030788) contains real PNG screenshots and logs.
+- Actual tests included two exploration locations and their reciprocal exits, Elena/Mateo conversation shortcuts, real F5/F9 choice and modal saves, noticeboard, and reaching `Output::End` for `ending_listen`, `ending_open` and `ending_quiet`.
+- **v0.7.8 authoring delta:** Spanish `[menu_labels]` for main, pause, and ending screens, with a required game-owned check. This depends on generic engine menu-label support merged as `562cfd43`; no game-specific Rust code.
+- **v0.7.8 native status:** awaiting fresh CI. Do not transfer the v0.7.7 pass to v0.7.8 until the new run actually passes.
+- Open visual issues observed in native screenshots: transient old street background immediately after shop entry, English menu labels before v0.7.8, and Mateo/cat baked into the shop background. No owner physical GPU, Wayland, sound or aesthetic approval.
+- Older sections below retain their original historical meaning at the time they were written. The newer v0.7.7 test supersedes any prior statement that only v0.7.1 had native game evidence.
+
 
 **Prior runtime (v0.7.1 only):** Vesper player built from `qa/urban-authored-world-presentation` (`097c00451d0ae549ec1f467933459b542a943d1b`), Linux Xvfb + Mesa llvmpipe Vulkan software rendering. This is **not a real Hyprland/RTX 3090 session**.
 

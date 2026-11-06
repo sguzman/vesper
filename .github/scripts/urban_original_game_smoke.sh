@@ -113,6 +113,30 @@ frame() {
   done
   fail "no rendered detailed frame available: $filename"
 }
+# A location-change log is emitted before Bevy's next render/present.
+# Require the new painted backdrop to actually appear instead of capturing
+# the previous area's framebuffer with newly updated HUD labels. Compare an
+# unoccluded artwork region, not the player's position or changing UI.
+wait_new_area_frame() {
+  local previous=$1 next=$2 diff tick
+  local old_crop="$work/prior-area.png" new_crop="$work/next-area.png"
+  convert "$out/$previous" -crop 550x305+150+75 +repage "$old_crop" \
+    || fail "cannot crop previous area"
+  for ((tick=0; tick<30; tick++)); do
+    frame "$next"
+    convert "$out/$next" -crop 550x305+150+75 +repage "$new_crop" \
+      || fail "cannot crop current area"
+    diff=$(compare -metric AE "$old_crop" "$new_crop" null: 2>&1 || :)
+    if [[ $diff =~ ^[0-9]+$ ]] && (( diff > 100000 )); then
+      echo "New area artwork presented for $next ($diff changed pixels)"
+      return 0
+    fi
+    alive
+    sleep .3
+  done
+  fail "new-area backdrop never reached the rendered framebuffer: $next (changed pixels: $diff)"
+}
+
 advance_until() {
   local phrase=$1 max=${2:-80} tick
   for ((tick=0;tick<max;tick++)); do
@@ -148,7 +172,7 @@ key e
 wait_log 'Vesper exploration exit: street/store_door -> store'
 wait_log 'Vesper exploration area loaded: store;'
 current_x=188
-frame '04-store-interior.png'
+wait_new_area_frame '03-street-after-walking.png' '04-store-interior.png'
 
 key t
 wait_log 'Vesper exploration direct interaction: mateo -> mateo_chat'
@@ -160,6 +184,8 @@ wait_log 'Vesper exploration conversation cancelled'
 walk_to store 88 24
 key e
 wait_log 'Vesper exploration exit: store/street_door -> street'
+wait_log 'Vesper exploration area loaded: street;'
+wait_new_area_frame '04-store-interior.png' '06-returned-to-street.png'
 current_x=685
 walk_to street 930 32
 key e
