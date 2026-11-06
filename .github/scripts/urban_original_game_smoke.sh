@@ -137,6 +137,28 @@ wait_new_area_frame() {
   fail "new-area backdrop never reached the rendered framebuffer: $next (changed pixels: $diff)"
 }
 
+# Assert a real dialog surface is visible but does not paint over the
+# background character's face. Pixel checks are deliberately restricted to
+# stable background areas (no player sprite or dynamic controls).
+check_mateo_bubble() {
+  local baseline="$out/04-store-interior.png"
+  local talking="$out/05-mateo-conversation.png"
+  local face_old="$work/mateo-face-before.png" face_new="$work/mateo-face-after.png"
+  local bubble_old="$work/mateo-dialogue-before.png" bubble_new="$work/mateo-dialogue-after.png"
+  local face_diff bubble_diff
+  convert "$baseline" -crop 230x175+650+85 +repage "$face_old"
+  convert "$talking" -crop 230x175+650+85 +repage "$face_new"
+  face_diff=$(compare -metric AE "$face_old" "$face_new" null: 2>&1 || :)
+  [[ $face_diff =~ ^[0-9]+$ ]] || fail "invalid face comparison pixels: $face_diff"
+  (( face_diff < 1500 )) || fail "dialogue obscures Mateo's face ($face_diff altered pixels)"
+  convert "$baseline" -crop 530x145+460+360 +repage "$bubble_old"
+  convert "$talking" -crop 530x145+460+360 +repage "$bubble_new"
+  bubble_diff=$(compare -metric AE "$bubble_old" "$bubble_new" null: 2>&1 || :)
+  [[ $bubble_diff =~ ^[0-9]+$ ]] || fail "invalid bubble comparison pixels: $bubble_diff"
+  (( bubble_diff > 12000 )) || fail "Mateo dialogue surface not visibly painted ($bubble_diff pixels)"
+  echo "Mateo rendered bubble visible ($bubble_diff pixels); face protected ($face_diff pixels)"
+}
+
 advance_until() {
   local phrase=$1 max=${2:-80} tick
   for ((tick=0;tick<max;tick++)); do
@@ -176,7 +198,9 @@ wait_new_area_frame '03-street-after-walking.png' '04-store-interior.png'
 
 key t
 wait_log 'Vesper exploration direct interaction: mateo -> mateo_chat'
+sleep .8
 frame '05-mateo-conversation.png'
+check_mateo_bubble
 key q
 wait_log 'Vesper exploration conversation cancelled'
 
