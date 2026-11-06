@@ -230,18 +230,36 @@ capture_responsive_scene() {
     width=${size%%x*}
     height=${size#*x}
     filename="${label}-${suffix}.png"
+    # X11 may resize the window *before* Bevy has processed WindowResized.
+    # The old framebuffer is then cropped to the new size, or surrounded
+    # by black. Merely checking PNG dimensions incorrectly accepted both.
+    local prior_resize coverage
+    prior_resize=$(count "Vesper viewport resized: $size;")
     timeout 10s xdotool windowsize --sync "$window" "$width" "$height" ||
       fail "could not resize game to $size"
+    wait_increment "Vesper viewport resized: $size;" "$prior_resize" 120
+    # The engine's resize log precedes the actual surface presentation.
+    sleep .7
     actual=''
     for ((attempt=0;attempt<20;attempt++)); do
-      sleep .25
       frame "$filename"
       actual=$(identify -format '%wx%h' "$out/$filename" 2>/dev/null || :)
-      [[ $actual == "$size" ]] && break
+      if [[ $actual == "$size" ]]; then
+        # The original game uses painted art to all edges. A solid black
+        # bottom-right region means the new-sized framebuffer is still
+        # displaying an old smaller surface, not a valid widescreen frame.
+        coverage=$(convert "$out/$filename" \
+          -crop "72x72+$((width-84))+$((height-84))" +repage \
+          -format '%k' info: 2>/dev/null || echo 0)
+        if [[ $coverage =~ ^[0-9]+$ ]] && (( coverage > 30 )); then
+          break
+        fi
+      fi
+      sleep .35
     done
-    [[ $actual == "$size" ]] ||
-      fail "game never presented $label at $size (captured $actual)"
-    echo "Native responsive frame $label: $suffix $actual"
+    [[ $actual == "$size" && $coverage =~ ^[0-9]+$ ]] && (( coverage > 30 )) ||
+      fail "game never presented full painted $label at $size (frame $actual, corner colors $coverage)"
+    echo "Native responsive frame $label: $suffix $actual; $coverage painted corner colors"
   done
 }
 
