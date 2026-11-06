@@ -159,14 +159,64 @@ check_mateo_bubble() {
   echo "Mateo rendered bubble visible ($bubble_diff pixels); face protected ($face_diff pixels)"
 }
 
+# The runtime can announce choice mode before the next framebuffer is
+# presented. Save the *last* visible narration frame before pressing Enter
+# so the next captured PNG can be checked against actual rendered changes.
 advance_until() {
   local phrase=$1 max=${2:-80} tick
   for ((tick=0;tick<max;tick++)); do
     contains "$phrase" && return 0
     alive
+    if [[ $phrase == 'Vesper choices available: 4 in scene board_read' ]]; then
+      frame '06-board-before-choice.png'
+    fi
     key Return
   done
   fail "did not advance story to event: $phrase"
+}
+wait_board_choice_paint() {
+  local before="$out/06-board-before-choice.png" current="$out/06-noticeboard-choices.png"
+  local first="$work/board-before-choice.png" second="$work/board-current.png"
+  local diff tick
+  [[ -s $before ]] || fail 'no actual narration-frame baseline captured before board choices'
+  convert "$before" -crop 1080x350+100+330 +repage "$first" ||
+    fail 'cannot crop pre-choice narration image'
+  for ((tick=0;tick<30;tick++)); do
+    sleep .3
+    frame '06-noticeboard-choices.png'
+    convert "$current" -crop 1080x350+100+330 +repage "$second" ||
+      fail 'cannot crop rendered board choices'
+    diff=$(compare -metric AE "$first" "$second" null: 2>&1 || :)
+    if [[ $diff =~ ^[0-9]+$ ]] && (( diff > 35000 )); then
+      echo "Board choice paint changed $diff pixels from the last narration frame"
+      return 0
+    fi
+    alive
+  done
+  fail "board choices were logged but not substantially rendered (changed pixels: $diff)"
+}
+
+# Log events precede actual presentation. Compare the board's on-screen
+# lower panel before and after postponing or revisiting an interaction.
+wait_board_surface_change() {
+  local before=$1 after=$2 changed tick
+  local previous_crop="$work/board-mode-previous.png"
+  local current_crop="$work/board-mode-current.png"
+  convert "$out/$before" -crop 1080x350+100+330 +repage "$previous_crop" ||
+    fail "cannot crop board baseline: $before"
+  for ((tick=0;tick<30;tick++)); do
+    sleep .3
+    frame "$after"
+    convert "$out/$after" -crop 1080x350+100+330 +repage "$current_crop" ||
+      fail "cannot crop board frame: $after"
+    changed=$(compare -metric AE "$previous_crop" "$current_crop" null: 2>&1 || :)
+    if [[ $changed =~ ^[0-9]+$ ]] && (( changed > 35000 )); then
+      echo "Board transition painted: $before -> $after ($changed pixels)"
+      return 0
+    fi
+    alive
+  done
+  fail "board transition logged but not painted: $before -> $after ($changed pixels)"
 }
 
 wait_log 'Vesper scene dialogue: intro'
@@ -280,7 +330,7 @@ walk_to street 930 32
 key e
 wait_log 'Vesper exploration interacting: noticeboard -> board_read'
 advance_until 'Vesper choices available: 4 in scene board_read' 25
-frame '06-noticeboard-choices.png'
+wait_board_choice_paint
 
 # One real save at the board; restore it between all three ending branches.
 prior=$(count 'Vesper save written')
@@ -288,6 +338,41 @@ key F5
 # F5 writes asynchronously; assert a new completion after entering board choices.
 wait_increment 'Vesper save written' "$prior" 40
 [[ -s $save ]] || fail 'board quick-save missing'
+
+# The fourth choice is not an ending: it must return to the *real* street,
+# permit another interaction with the board, and leave the original F5 save
+# restorable. This path was absent from the v0.7.8 three-ending native smoke.
+prior_return=$(count 'Vesper exploration resumed at previous world position')
+key 4
+for ((turn=0;turn<30;turn++)); do
+  (( $(count 'Vesper exploration resumed at previous world position') > prior_return )) && break
+  alive
+  key Return
+done
+(( $(count 'Vesper exploration resumed at previous world position') > prior_return )) ||
+  fail 'postponing the board choice did not return to the street'
+wait_board_surface_change '06-noticeboard-choices.png' '06-board-postponed-street.png'
+
+prior_interaction=$(count 'Vesper exploration interacting: noticeboard -> board_read')
+prior_choices=$(count 'Vesper choices available: 4 in scene board_read')
+key e
+wait_increment 'Vesper exploration interacting: noticeboard -> board_read' "$prior_interaction" 40
+for ((turn=0;turn<30;turn++)); do
+  (( $(count 'Vesper choices available: 4 in scene board_read') > prior_choices )) && break
+  alive
+  key Return
+done
+(( $(count 'Vesper choices available: 4 in scene board_read') > prior_choices )) ||
+  fail 'reopened noticeboard did not offer its four choices'
+wait_board_surface_change '06-board-postponed-street.png' '06-board-reopened-choices.png'
+
+# Restore the saved *first* visit, not the second visit, so ending checks
+# also validate the earlier board-state snapshot survived postponement.
+prior_restored=$(count 'Vesper save restored: Conversation { scene: "board_read"')
+key F9
+wait_increment 'Vesper save restored: Conversation { scene: "board_read"' "$prior_restored" 40
+echo 'REAL BEVY POSTPONE PASS: choice 4 -> rendered street -> board revisit -> four choices -> F9 original board save.'
+
 for item in '1:ending_listen' '2:ending_open' '3:ending_quiet'; do
   index=${item%%:*}
   ending=${item#*:}
