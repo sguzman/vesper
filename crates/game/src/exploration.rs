@@ -686,7 +686,7 @@ interact_scene = "chat"
         assert!(world.validate(&fixture.0, &story).unwrap_err()
             .contains("unknown authored target"));
         world.ui.target_names.remove("unknown_id");
-        world.ui.target_names.insert("friend".into(), "Elena\\n".into());
+        world.ui.target_names.insert("friend".into(), "Elena\n".into());
         assert!(world.validate(&fixture.0, &story).is_err());
     }
 
