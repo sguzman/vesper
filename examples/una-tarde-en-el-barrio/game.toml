@@ -46,6 +46,19 @@ enter = "Entrar a"
 pause = "Pausa"
 menu = "Menú"
 
+# Presentation only: internal keys, saved positions and scene IDs are unchanged.
+[exploration.ui.target_names]
+elena = "Elena"
+rosa = "Rosa"
+mateo = "Mateo"
+noticeboard = "el tablón de anuncios"
+old_door = "la puerta antigua"
+cat = "el gato"
+ledger = "el cuaderno"
+display = "el mostrador"
+store = "la tienda"
+street = "la calle"
+
 [exploration.avatar]
 speed = 235.0
 scale = 1.55
