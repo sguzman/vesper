@@ -31,6 +31,7 @@ cp -- "$game_root/game.toml" "$bundle/game/game.toml"
 cp -R -- "$game_root/assets" "$game_root/scripts" "$game_root/styles" "$bundle/game/"
 cp -- "$game_root/README.md" "$bundle/PROJECT-README.md"
 cp -- "$game_root/ASSET_PROVENANCE.md" "$bundle/ASSET-PROVENANCE.md"
+cp -- "$repo_root/LICENSE" "$bundle/LICENSE"
 
 cat > "$bundle/play.sh" <<'LAUNCHER'
 #!/usr/bin/env bash
@@ -52,13 +53,14 @@ Unpack the .tar.gz, then run ./play.sh from the extracted directory.
 The launcher resolves the packaged game path regardless of working directory.
 Controls: A/D or arrow keys to walk, E to interact, T for direct conversation,
 Enter/number keys for story choices, F5/F9 to quick-save/load, P to pause.
-See PROJECT-README.md for the authored game and ASSET-PROVENANCE.md for art.
+See PROJECT-README.md for the authored game, ASSET-PROVENANCE.md for art,
+and LICENSE for the Vesper project copyright and license.
 README
 
 (
   cd -- "$bundle"
   find game -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum
-  sha256sum vesper-player play.sh
+  sha256sum vesper-player play.sh LICENSE START-HERE.txt PROJECT-README.md ASSET-PROVENANCE.md
 ) > "$bundle/SHA256SUMS"
 
 archive="$output/$name.tar.gz"
