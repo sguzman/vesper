@@ -1,4 +1,4 @@
-# Production status — Una Tarde en el Barrio v0.7.7
+# Production status — Una Tarde en el Barrio v0.7.8
 
 **ACTIVE DEVELOPMENT. NOT READY FOR HUMAN WHOLE-GAME QA.**
 
