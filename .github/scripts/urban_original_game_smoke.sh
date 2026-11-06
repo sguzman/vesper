@@ -159,14 +159,41 @@ check_mateo_bubble() {
   echo "Mateo rendered bubble visible ($bubble_diff pixels); face protected ($face_diff pixels)"
 }
 
+# The runtime can announce choice mode before the next framebuffer is
+# presented. Save the *last* visible narration frame before pressing Enter
+# so the next captured PNG can be checked against actual rendered changes.
 advance_until() {
   local phrase=$1 max=${2:-80} tick
   for ((tick=0;tick<max;tick++)); do
     contains "$phrase" && return 0
     alive
+    if [[ $phrase == 'Vesper choices available: 4 in scene board_read' ]]; then
+      frame '06-board-before-choice.png'
+    fi
     key Return
   done
   fail "did not advance story to event: $phrase"
+}
+wait_board_choice_paint() {
+  local before="$out/06-board-before-choice.png" current="$out/06-noticeboard-choices.png"
+  local first="$work/board-before-choice.png" second="$work/board-current.png"
+  local diff tick
+  [[ -s $before ]] || fail 'no actual narration-frame baseline captured before board choices'
+  convert "$before" -crop 1080x350+100+330 +repage "$first" ||
+    fail 'cannot crop pre-choice narration image'
+  for ((tick=0;tick<30;tick++)); do
+    sleep .3
+    frame '06-noticeboard-choices.png'
+    convert "$current" -crop 1080x350+100+330 +repage "$second" ||
+      fail 'cannot crop rendered board choices'
+    diff=$(compare -metric AE "$first" "$second" null: 2>&1 || :)
+    if [[ $diff =~ ^[0-9]+$ ]] && (( diff > 35000 )); then
+      echo "Board choice paint changed $diff pixels from the last narration frame"
+      return 0
+    fi
+    alive
+  done
+  fail "board choices were logged but not substantially rendered (changed pixels: $diff)"
 }
 
 wait_log 'Vesper scene dialogue: intro'
@@ -215,7 +242,7 @@ walk_to street 930 32
 key e
 wait_log 'Vesper exploration interacting: noticeboard -> board_read'
 advance_until 'Vesper choices available: 4 in scene board_read' 25
-frame '06-noticeboard-choices.png'
+wait_board_choice_paint
 
 # One real save at the board; restore it between all three ending branches.
 prior=$(count 'Vesper save written')
