@@ -677,7 +677,7 @@ mod tests {
         ui.target_names.insert("noticeboard".into(), "el tablón".into());
         ui.target_names.insert("store".into(), "la tienda".into());
         assert_eq!(interaction_prompt_text(Some(npc), Some(prop), &ui),
-            Some("E: Hablar con Elena\\nT: Examinar el tablón".into()));
+            Some("E: Hablar con Elena\nT: Examinar el tablón".into()));
         assert_eq!(interaction_prompt_text(Some(exit), None, &ui),
             Some("E: Entrar a la tienda".into()));
         assert_eq!(ui.target_name("not_renamed"), "not_renamed");
