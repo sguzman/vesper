@@ -219,9 +219,36 @@ wait_board_surface_change() {
   fail "board transition logged but not painted: $before -> $after ($changed pixels)"
 }
 
+# Preserve *real* Bevy frame evidence at compact and widescreen sizes.
+# A valid screenshot confirms presentation and dimensions, not final owner
+# legibility/aesthetic acceptance. Restore 1280x720 before continuing inputs.
+capture_responsive_scene() {
+  local label=$1 spec size suffix width height filename actual attempt
+  for spec in '946x511:compact' '1600x900:widescreen' '1280x720:restored'; do
+    size=${spec%%:*}
+    suffix=${spec#*:}
+    width=${size%%x*}
+    height=${size#*x}
+    filename="${label}-${suffix}.png"
+    timeout 10s xdotool windowsize --sync "$window" "$width" "$height" ||
+      fail "could not resize game to $size"
+    actual=''
+    for ((attempt=0;attempt<20;attempt++)); do
+      sleep .25
+      frame "$filename"
+      actual=$(identify -format '%wx%h' "$out/$filename" 2>/dev/null || :)
+      [[ $actual == "$size" ]] && break
+    done
+    [[ $actual == "$size" ]] ||
+      fail "game never presented $label at $size (captured $actual)"
+    echo "Native responsive frame $label: $suffix $actual"
+  done
+}
+
 wait_log 'Vesper scene dialogue: intro'
 advance_until 'Vesper exploration area loaded: street;' 30
 frame '01-street-opening.png'
+capture_responsive_scene '01-street'
 
 # The game-authored T shortcut works before walking into Elena's radius.
 key t
@@ -251,6 +278,7 @@ wait_log 'Vesper exploration direct interaction: mateo -> mateo_chat'
 sleep .8
 frame '05-mateo-conversation.png'
 check_mateo_bubble
+capture_responsive_scene '05-mateo'
 key q
 wait_log 'Vesper exploration conversation cancelled'
 
@@ -331,6 +359,7 @@ key e
 wait_log 'Vesper exploration interacting: noticeboard -> board_read'
 advance_until 'Vesper choices available: 4 in scene board_read' 25
 wait_board_choice_paint
+capture_responsive_scene '06-board'
 
 # One real save at the board; restore it between all three ending branches.
 prior=$(count 'Vesper save written')
