@@ -1,0 +1,48 @@
+# Original production alpha. Dark-on-light ink is never a default.
+ui_scale = 1.0
+fade_seconds = 0.28
+reveal_speed = "normal"
+
+[font]
+family = "DejaVu Sans"
+
+[panel]
+skin = "barrio"
+background = [0.024, 0.030, 0.051, 0.96]
+accent = [1.0, 0.75, 0.40, 1.0]
+divider = [0.88, 0.73, 0.52, 0.71]
+width_percent = 88.0
+min_height = 212.0
+padding = 19.0
+gap = 8.0
+
+[speaker]
+size = 23.0
+color = [1.0, 0.82, 0.54, 1.0]
+
+[dialogue]
+size = 25.0
+color = [0.98, 0.96, 0.92, 1.0]
+
+[choices]
+size = 23.0
+color = [0.98, 0.94, 0.84, 1.0]
+
+[hint]
+size = 16.0
+color = [0.81, 0.82, 0.84, 1.0]
+
+[feedback]
+focus_seconds = 0.15
+confirm_seconds = 0.14
+cue_opacity = 0.42
+cue_color = [1.0, 0.77, 0.43, 1.0]
+
+# Optional story-reader footer localization. Requires Vesper PR #31 or
+# a descendant commit; legacy games without this table remain English.
+[reader_hints]
+narration = "Enter/Espacio: continuar · H: historial · F5/F9: guardar/cargar · P: pausa · M: menú"
+choices = "↑↓: elegir · Enter/1–4: confirmar · H: historial · P: pausa · M: menú"
+ending = "↑↓: elegir · Enter: confirmar · R: repetir · M: menú"
+conversation = "Enter: continuar · Q: salir · F5: guardar · F9: cargar"
+conversation_choices = "↑↓: elegir · Enter: confirmar · Q: salir · F5/F9: guardar/cargar"

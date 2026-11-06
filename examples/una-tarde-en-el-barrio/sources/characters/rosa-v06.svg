@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 440" width="220" height="440">
+<defs>
+ <linearGradient id="skin" x2=".8" y2="1"><stop stop-color="#ffcfaa"/><stop offset=".53" stop-color="#e89c7d"/><stop offset="1" stop-color="#b96860"/></linearGradient>
+ <linearGradient id="jacket" x2=".95" y2="1"><stop stop-color="#57506d"/><stop offset=".45" stop-color="#282838"/><stop offset="1" stop-color="#171b2c"/></linearGradient>
+ <linearGradient id="hair" x2=".75" y2="1"><stop stop-color="#433047"/><stop offset=".48" stop-color="#1f1c31"/><stop offset="1" stop-color="#101623"/></linearGradient>
+ <linearGradient id="denim" x2=".9" y2="1"><stop stop-color="#63708b"/><stop offset=".48" stop-color="#46516c"/><stop offset="1" stop-color="#252f4e"/></linearGradient>
+ <linearGradient id="wine" x2=".7" y2="1"><stop stop-color="#8d4a65"/><stop offset=".48" stop-color="#6b3655"/><stop offset="1" stop-color="#432642"/></linearGradient>
+ <linearGradient id="apron" x2=".9" y2="1"><stop stop-color="#fff2d9"/><stop offset=".6" stop-color="#e4b7ab"/><stop offset="1" stop-color="#b78388"/></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<ellipse cx="108" cy="427" rx="69" ry="6" fill="#0c1024" opacity=".24"/>
+
+<!-- shoes -->
+<path d="M66 385 L65 409 Q56 417 61 425 L101 426 Q108 420 99 413 L94 389Z M117 390 L115 410 Q110 420 114 425 L156 427 Q165 418 144 409 L142 387Z" fill="#443342" stroke="#1b1925" stroke-width="5"/>
+<!-- old floral dress -->
+<path d="M77 251 Q72 298 54 389 Q107 406 163 390 Q142 313 149 249Z" fill="url(#wine)" stroke="#48273b" stroke-width="5"/>
+<path d="M80 312 Q96 330 106 321 M130 321 Q142 332 149 322" fill="none" stroke="#be7b8e" stroke-width="3"/>
+<!-- blouse sleeves -->
+<path d="M72 200 Q48 204 44 234 L36 296 Q45 312 68 300 L83 246Z" fill="#ceaaa7" stroke="#723b4f" stroke-width="5"/>
+<path d="M145 206 Q171 209 176 242 L176 305 Q157 314 141 298 L131 241Z" fill="#ceaaa7" stroke="#723b4f" stroke-width="5"/>
+<!-- dress upper -->
+<path d="M77 199 Q106 183 143 199 Q153 236 153 292 L72 294 Q69 247 77 199Z" fill="url(#wine)" stroke="#4a2d40" stroke-width="5"/>
+<!-- apron straps -->
+<path d="M81 203 L98 277 M137 202 L125 278" stroke="#fff0d9" stroke-width="9"/>
+<!-- generous apron -->
+<path d="M97 245 L131 246 Q158 287 157 376 Q112 394 64 376 Q68 291 97 245Z" fill="url(#apron)" stroke="#8c5c6a" stroke-width="4"/>
+<path d="M77 303 Q113 312 149 303" stroke="#ab7180" stroke-width="3" fill="none"/>
+<!-- small floral motifs -->
+<g fill="#bb617d" stroke="#c96a8e" stroke-width="2"><path d="M92 300 l5 -7 l5 7 l-5 7z"/><path d="M125 330 l5 -7 l5 7 l-5 7z"/><path d="M91 353 l5 -7 l5 7 l-5 7z"/></g>
+<g fill="#ddac59"><circle cx="97" cy="300" r="3"/><circle cx="130" cy="330" r="3"/><circle cx="96" cy="353" r="3"/></g>
+<path d="M107 160 L106 205 L131 205 L130 160Z" fill="url(#skin)" stroke="#704657" stroke-width="4"/>
+<!-- bun/hair -->
+<ellipse cx="156" cy="101" rx="35" ry="35" fill="#a1a0ae" stroke="#49384c" stroke-width="6"/>
+<path d="M66 113 Q54 57 95 52 Q133 42 148 80 L147 122 Q132 159 90 146Z" fill="#9c9eaa" stroke="#4d4553" stroke-width="6"/>
+<path d="M70 88 Q94 57 127 65 M130 75 Q142 97 130 114" fill="none" stroke="#e2d2cb" stroke-width="5" opacity=".75"/>
+<!-- face -->
+<path d="M77 92 Q95 75 132 84 Q152 102 141 151 Q130 174 109 177 Q80 166 74 142 Q69 118 77 92Z" fill="url(#skin)" stroke="#69465b" stroke-width="5"/>
+<path d="M76 102 Q76 82 92 82 Q115 92 140 84" stroke="#a7a7b1" stroke-width="10" fill="none"/>
+<path d="M86 128 Q96 125 102 130 M121 130 Q129 126 138 130" fill="none" stroke="#573747" stroke-width="3"/>
+<ellipse cx="96" cy="133" rx="2.5" ry="4.2" fill="#4c2f3e"/><ellipse cx="130" cy="133" rx="2.5" ry="4.2" fill="#4c2f3e"/>
+<path d="M115 134 L111 147 L117 149 M96 155 Q112 171 129 154" stroke="#945b61" stroke-width="3" fill="none" stroke-linecap="round"/>
+<!-- crossed hands -->
+<path d="M58 288 Q75 291 101 306 L105 322 Q89 327 60 311Z" fill="url(#skin)" stroke="#7b4654" stroke-width="4"/>
+<path d="M164 288 Q148 299 110 309 Q103 325 123 329 Q149 326 168 306Z" fill="url(#skin)" stroke="#7b4654" stroke-width="4"/>
+
+</svg>

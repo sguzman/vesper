@@ -1,0 +1,167 @@
+format_version = 1
+id = "una-tarde-en-el-barrio"
+title = "Una Tarde en el Barrio — development v0.7.7"
+story = "scripts/story.vn"
+entry = "intro"
+theme = "styles/urban.toml"
+
+[dialogue]
+default_surface = "panel"
+
+[dialogue.bubble]
+max_width_percent = 57.0
+padding = 18.0
+corner_radius = 18.0
+background = [0.035, 0.052, 0.080, 0.97]
+border_color = [0.97, 0.76, 0.42, 1.0]
+
+[panel_skins.barrio]
+image = "assets/panels/barrio-panel.png"
+insets = [12.0, 12.0, 10.0, 12.0]
+slice_border = 26.0
+transparent_background = true
+
+[backgrounds]
+street = "assets/backgrounds/street.png"
+street_evening = "assets/backgrounds/street-evening.png"
+store_interior = "assets/backgrounds/store-illustration-study.png"
+
+[sounds]
+shop_bell = "assets/audio/shop-bell.wav"
+paper_rustle = "assets/audio/paper-rustle.wav"
+
+[music]
+golden_hour = "assets/audio/golden-hour-ambient.wav"
+shop_hush = "assets/audio/shop-hush-ambient.wav"
+
+[exploration]
+schema_version = 1
+
+[exploration.ui]
+walk = "Mover"
+interact = "Interactuar / entrar"
+talk_to = "Hablar con"
+inspect = "Examinar"
+enter = "Entrar a"
+pause = "Pausa"
+menu = "Menú"
+
+[exploration.avatar]
+speed = 235.0
+scale = 1.55
+idle = "assets/avatars/idle.png"
+walk = ["assets/avatars/walk-1.png", "assets/avatars/walk-2.png", "assets/avatars/walk-3.png", "assets/avatars/walk-4.png"]
+walk_fps = 8.0
+
+[exploration.locations.street]
+background = "assets/backgrounds/street.png"
+width = 1280.0
+height = 720.0
+quick_interact = "elena"
+
+[exploration.locations.street.camera]
+zoom = 1.0
+horizon = 0.52
+follow_x = false
+
+[exploration.locations.street.spawns.home]
+x = 145.0
+facing = "right"
+
+[exploration.locations.street.spawns.shopfront]
+x = 685.0
+facing = "left"
+
+[exploration.locations.street.exits.store_door]
+x = 654.0
+to_location = "store"
+to_spawn = "entry"
+interaction_radius = 90.0
+
+[exploration.locations.street.npcs.elena]
+x = 250.0
+image = "assets/npcs/elena.png"
+interact_scene = "elena_chat"
+scale = 1.55
+interaction_radius = 145.0
+
+[exploration.locations.street.props.noticeboard]
+x = 930.0
+image = "assets/props/scene-noticeboard.png"
+interact_scene = "board_read"
+interaction_radius = 115.0
+
+# The remembered doorway is painted at this X in the street image.
+[exploration.locations.street.props.old_door]
+x = 420.0
+image = "assets/props/invisible-hitspot.png"
+interact_scene = "threshold_memory"
+interaction_radius = 82.0
+
+[exploration.locations.street.npcs.rosa]
+x = 830.0
+image = "assets/npcs/rosa.png"
+interact_scene = "rosa_chat"
+scale = 1.55
+interaction_radius = 135.0
+
+
+# The shop is an illustrated work-in-progress with a painterly counter.
+# Mateo is already painted into this background: his separate NPC artwork
+# is deliberately transparent to avoid duplicate character appearances.
+# The independent interaction scene and exact authored X remain functional.
+# Native game screenshots and owner approval are still mandatory.
+[exploration.locations.store]
+background = "assets/backgrounds/store-illustration-study.png"
+width = 1280.0
+height = 720.0
+quick_interact = "mateo"
+
+[exploration.locations.store.camera]
+zoom = 1.0
+horizon = 0.55
+follow_x = false
+
+[exploration.locations.store.spawns.entry]
+x = 188.0
+facing = "right"
+
+[exploration.locations.store.spawns.counter]
+x = 840.0
+facing = "left"
+
+[exploration.locations.store.exits.street_door]
+x = 88.0
+to_location = "street"
+to_spawn = "shopfront"
+interaction_radius = 95.0
+
+[exploration.locations.store.npcs.mateo]
+x = 820.0
+image = "assets/props/invisible-hitspot.png"
+interact_scene = "mateo_chat"
+interaction_radius = 140.0
+
+# The cat already exists in the actual painted shop backdrop. Its
+# transparent interaction sprite avoids an unrelated cartoon overlay.
+[exploration.locations.store.props.cat]
+x = 302.0
+image = "assets/props/invisible-hitspot.png"
+interact_scene = "shop_cat"
+interaction_radius = 85.0
+
+[exploration.locations.store.props.ledger]
+x = 950.0
+image = "assets/props/invisible-hitspot.png"
+interact_scene = "shop_ledger"
+interaction_radius = 70.0
+
+[exploration.locations.store.props.display]
+x = 270.0
+image = "assets/props/invisible-hitspot.png"
+interact_scene = "shop_display"
+interaction_radius = 80.0
+
+# Illustrated dialogue portrait used only at an authored story beat.
+[characters.elena.expressions]
+calm = "assets/npcs/elena-portrait-provisional.png"

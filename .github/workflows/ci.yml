@@ -38,6 +38,11 @@ jobs:
           cargo run --locked -p vesper-cli -- check-game examples/moving-meadow
           cargo run --locked -p vesper-cli -- check-game examples/living-journal
           cargo run --locked -p vesper-cli -- check-game examples/atlas-unwritten-skies
+      - name: Validate Una Tarde original game and conditional routes
+        run: |
+          cargo run --locked -p vesper-cli -- check-game examples/una-tarde-en-el-barrio
+          examples/una-tarde-en-el-barrio/qa/check-reader-hints.sh
+          examples/una-tarde-en-el-barrio/qa/check-scenarios.sh
       - name: Verify deterministic Atlas authoring compilation
         run: |
           python3 examples/atlas-unwritten-skies/tools/compile_story.py
@@ -96,6 +101,16 @@ jobs:
           fc-match -f '%{family}\n' ':lang=ko' | grep -q 'Noto Sans CJK'
       - name: Build Bevy 0.20 player
         run: cargo build --locked -p vesper-player
+      - name: Play original Una Tarde game natively through all three endings
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' bash .github/scripts/urban_original_game_smoke.sh
+      - name: Preserve Una Tarde native gameplay screenshots and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-urban-original-gameplay
+          path: /tmp/vesper-urban-native-qa/**/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Preserve native player for external game acceptance checks
         uses: actions/upload-artifact@v4
         with:
