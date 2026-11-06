@@ -83,7 +83,7 @@ explore return
 
 @scene mateo_chat
 music shop_hush
-surface bubble
+surface panel
 sound shop_bell
 "Suena la campanita de la entrada. Alguien ha venido a comprar pan para la cena."
 set met_mateo = true
