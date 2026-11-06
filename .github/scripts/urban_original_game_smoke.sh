@@ -204,6 +204,61 @@ check_mateo_bubble
 key q
 wait_log 'Vesper exploration conversation cancelled'
 
+# Ledger privacy regression: real in-world interactions must preserve the
+# earlier privacy breach even if the player later leaves the ledger closed.
+# Confirm the logical flags in actual atomic F5 save JSON, not a mock VM.
+saved_boolean() {
+  local name=$1 expected=$2
+  awk -v k="$name" -v v="$expected" '
+    $0 ~ "\"" k "\"[[:space:]]*:" {
+      seen=1
+      if ($0 ~ /"Boolean"[[:space:]]*:/) {
+        if ($0 ~ (":" "[[:space:]]*" v "[[:space:]]*[,}]?")) ok=1
+        seen=0
+      }
+      next
+    }
+    seen && /"Boolean"[[:space:]]*:/ {
+      if ($0 ~ (":" "[[:space:]]*" v "[[:space:]]*[,}]?")) ok=1
+      seen=0
+    }
+    END { exit !ok }
+  ' "$save" || fail "F5 snapshot missing $name = $expected"
+}
+finish_ledger_visit() {
+  local choice=$1 prior_choice prior_return
+  prior_choice=$(count 'Vesper choices available: 3 in scene shop_ledger')
+  key e
+  wait_log 'Vesper exploration interacting: ledger -> shop_ledger'
+  for ((turn=0;turn<18;turn++)); do
+    (( $(count 'Vesper choices available: 3 in scene shop_ledger') > prior_choice )) && break
+    key Return
+  done
+  (( $(count 'Vesper choices available: 3 in scene shop_ledger') > prior_choice )) ||
+    fail 'Ledger never offered three genuine authored choices'
+  prior_return=$(count 'Vesper exploration resumed at previous world position')
+  key "$choice"
+  for ((turn=0;turn<22;turn++)); do
+    (( $(count 'Vesper exploration resumed at previous world position') > prior_return )) && return 0
+    key Return
+  done
+  fail "Ledger choice $choice never returned to the shop"
+}
+walk_to store 950 24
+finish_ledger_visit 2  # Read private accounts.
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean saw_ledger true
+saved_boolean respected_privacy false
+finish_ledger_visit 1  # Later close it; cannot undo the breach.
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean saw_ledger true
+saved_boolean respected_privacy false
+echo 'REAL BEVY PRIVACY PASS: ledger read then closed; F5 retains breach.'
+
 # Travel back through the authored reciprocal exit.
 walk_to store 88 24
 key e
@@ -242,4 +297,4 @@ done
 if grep -Ei 'Story transition/asset error|Story error:|thread .* panicked|asset failed' "$log"; then
   fail 'runtime reported story, asset, or renderer error'
 fi
-printf 'REAL BEVY GAME PASS: intro; 2 worlds; 2 direct NPCs; quick save/restore; world exit/return; noticeboard; 3 endings.\n'
+printf 'REAL BEVY GAME PASS: intro; 2 worlds; 2 direct NPCs; persistent ledger privacy F5; save/restore; world exit/return; noticeboard; 3 endings.\n'
