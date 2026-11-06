@@ -120,6 +120,31 @@ jobs:
           path: target/debug/vesper-player
           if-no-files-found: error
           retention-days: 3
+      - name: Package and boot original game Linux development preview
+        run: |
+          bash examples/una-tarde-en-el-barrio/tools/package-linux.sh "$RUNNER_TEMP/urban-package"
+          archive="$RUNNER_TEMP/urban-package/Una-Tarde-en-el-Barrio-Linux-x86_64.tar.gz"
+          mkdir -p "$RUNNER_TEMP/urban-extracted"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/urban-extracted"
+          bundle="$RUNNER_TEMP/urban-extracted/Una-Tarde-en-el-Barrio-Linux-x86_64"
+          (cd "$bundle" && sha256sum -c SHA256SUMS)
+          # Boot the extracted bundle from a separate directory, not the checkout.
+          set +e
+          VESPER_TRACE_SCENES=1 timeout 25s xvfb-run -a -s '-screen 0 1280x720x24' "$bundle/play.sh" > "$RUNNER_TEMP/urban-archive-smoke.log" 2>&1
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            cat "$RUNNER_TEMP/urban-archive-smoke.log"
+            exit 1
+          fi
+          grep -F 'Vesper scene dialogue: intro' "$RUNNER_TEMP/urban-archive-smoke.log"
+      - name: Preserve playable original game Linux development preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: una-tarde-linux-development-preview
+          path: ${{ runner.temp }}/urban-package/Una-Tarde-en-el-Barrio-Linux-x86_64.tar.gz
+          if-no-files-found: error
+          retention-days: 14
       - name: Test fade interpolation
         run: cargo test --locked -p vesper-player --bin vesper-player
       # Check new walk-first rendering before the longer UI regressions.
