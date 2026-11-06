@@ -168,12 +168,17 @@ surface panel
 * "Dejarlo tal como está." -> shop_ledger_leave
 
 @scene shop_ledger_respect
+if saw_ledger == true
+"Esta vez lo dejas cerrado. Haber visto esas cuentas antes no te daba permiso para hacerlo."
+else
 set respected_privacy = true
 "No abres el cuaderno. Si quieres saber qué necesita Mateo, tendrás que preguntárselo a él."
+end
 explore return
 
 @scene shop_ledger_read
 set saw_ledger = true
+set respected_privacy = false
 sound paper_rustle
 "No entiendes cada cifra. Solo ves que las cuentas de algunos vecinos llevan meses abiertas."
 "El cuaderno tampoco dice a quién pertenecen las decisiones de Mateo."
