@@ -596,6 +596,96 @@ mod reader_hints_tests {
     }
 }
 
+/// Optional game-authored display strings for the existing three player menus.
+/// Actions, key bindings and numeric selection remain engine-owned. Older games
+/// receive their existing English strings when every field is absent.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct MenuLabels {
+    pub main: Option<[String; 4]>,
+    pub pause: Option<[String; 4]>,
+    pub ending: Option<[String; 3]>,
+    pub main_title: Option<String>,
+    pub pause_title: Option<String>,
+    pub ending_title: Option<String>,
+    pub main_hint: Option<String>,
+    pub pause_hint: Option<String>,
+}
+
+impl MenuLabels {
+    pub fn validate(&self) -> Result<(), String> {
+        for (group, labels) in [
+            ("main", self.main.as_ref().map(|list| list.as_slice())),
+            ("pause", self.pause.as_ref().map(|list| list.as_slice())),
+            ("ending", self.ending.as_ref().map(|list| list.as_slice())),
+        ] {
+            if let Some(labels) = labels {
+                for (index, value) in labels.iter().enumerate() {
+                    if !valid_menu_text(value, 64) {
+                        return Err(format!(
+                            "theme.menu_labels.{group}[{}] must contain 1..=64 printable characters",
+                            index,
+                        ));
+                    }
+                }
+            }
+        }
+        for (name, value, limit) in [
+            ("main_title", &self.main_title, 120usize),
+            ("pause_title", &self.pause_title, 120),
+            ("ending_title", &self.ending_title, 120),
+            ("main_hint", &self.main_hint, 160),
+            ("pause_hint", &self.pause_hint, 160),
+        ] {
+            if let Some(value) = value
+                && !valid_menu_text(value, limit)
+            {
+                return Err(format!(
+                    "theme.menu_labels.{name} must contain 1..={limit} printable characters"
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
+fn valid_menu_text(value: &str, limit: usize) -> bool {
+    !value.trim().is_empty()
+        && value.chars().count() <= limit
+        && !value.chars().any(char::is_control)
+}
+
+#[cfg(test)]
+mod menu_labels_tests {
+    use super::*;
+    #[test]
+    fn optional_menu_labels_preserve_existing_defaults() {
+        let theme: Theme = toml::from_str("").unwrap();
+        assert!(theme.menu_labels.main.is_none());
+        assert!(theme.menu_labels.ending.is_none());
+        assert!(theme.menu_labels.ending_title.is_none());
+        theme.validate().unwrap();
+    }
+    #[test]
+    fn authored_spanish_labels_validate_and_bad_data_is_rejected() {
+        let mut theme: Theme = toml::from_str(
+            "[menu_labels]\nending = ['Otra vez', 'Menú principal', 'Salir']\nending_title = 'Fin'"
+        ).unwrap();
+        assert_eq!(theme.menu_labels.ending.as_ref().unwrap()[0], "Otra vez");
+        theme.validate().unwrap();
+        theme.menu_labels.ending.as_mut().unwrap()[2] = String::new();
+        assert!(theme.validate().is_err());
+        theme.menu_labels.ending.as_mut().unwrap()[2] = "Salir".to_owned();
+        theme.menu_labels.ending_title = Some("bad\nline".to_owned());
+        assert!(theme.validate().is_err());
+        theme.menu_labels.ending_title = Some("Fin".to_owned());
+        theme.validate().unwrap();
+        assert!(toml::from_str::<MenuLabels>(
+            "ending = ['one', 'two']"
+        ).is_err());
+    }
+}
+
 /// An externally editable visual theme; values are CSS-like logical UI sizes.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -614,6 +704,8 @@ pub struct Theme {
     pub hint: TextStyle,
     /// Author-defined control legends; absent fields preserve legacy English.
     pub reader_hints: ReaderHintLabels,
+    /// Optional translated labels for the existing menus.
+    pub menu_labels: MenuLabels,
     /// Validated palette of named inline word styles, not scene-specific code.
     pub inline_styles: BTreeMap<String, InlineTextStyle>,
 }
@@ -897,6 +989,7 @@ impl Default for Theme {
             choices: TextStyle { size: 26.0, color: [0.88, 0.94, 1.0, 1.0] },
             hint: TextStyle { size: 16.0, color: [0.75, 0.78, 0.83, 1.0] },
             reader_hints: ReaderHintLabels::default(),
+            menu_labels: MenuLabels::default(),
             inline_styles: BTreeMap::new(),
         }
     }
@@ -915,6 +1008,7 @@ impl Theme {
             return Err("theme.fade_seconds must be between 0 and 3".into());
         }
         self.reader_hints.validate()?;
+        self.menu_labels.validate()?;
         let cine = &self.cinematic;
         if !cine.seconds.is_finite() || !(0.0..=3.0).contains(&cine.seconds)
             || !color_valid(cine.through_color) || cine.through_color[3] != 1.0
