@@ -1,6 +1,6 @@
 # Una Tarde en el Barrio
 
-**v0.7.7 development game · original external content for Vesper (Rust / Bevy 0.20)**
+**v0.7.8 development game · original external content for Vesper (Rust / Bevy 0.20)**
 
 A short, Spanish-language urban slice-of-life story set around a neighborhood shop in Guadalajara. Explore an illustrated street and Mateo's store, speak with Elena, Rosa and Mateo, inspect small details, then decide what the neighborhood noticeboard should say. Three story endings reflect decisions and optional conversations. Walking is deliberately optional in some conversations via Vesper's author-defined `T` shortcut.
 
@@ -8,7 +8,7 @@ This is a **playable development package, not an accepted final game**. It is ex
 
 ## Requirements and launch
 
-Use a Vesper player built from merged `main` commit [`1752d51d`](https://github.com/sguzman/vesper/commit/1752d51d346f86378fdb7b6eeca9dbcf4f79603b) or a compatible descendant. The package uses Spanish exploration labels and the now-merged `[reader_hints]` theme keys. Older binaries from before PR #31 reject these fields. The game is an external directory and **does not contain the player executable**. Use the same commands with an absolute path if you are running an extracted development ZIP outside the Vesper repository.
+Use a Vesper player built from merged `main` commit [`562cfd43`](https://github.com/sguzman/vesper/commit/562cfd43a1aa72d879eeabbfa88828a7683e337a) or a compatible descendant. The game opts into Spanish `[reader_hints]` and `[menu_labels]`; older player builds do not recognize all these theme keys. The game is an external directory and **does not contain the player executable**. Use the same commands with an absolute path if you are running an extracted development ZIP outside the Vesper repository.
 
 From a compatible Vesper workspace, after building using the machine's normal Rust build coordinator:
 
@@ -31,7 +31,7 @@ Use **A/D** or **Left/Right** to walk; **E** interacts with a nearby person, obj
 - **Audio:** two original synthesized ambient beds and two original one-shots. The paper-rustle onset has a reproducible 12 ms fade; physical playback and final mix approval remain open
 - Art sources are preserved in `sources/`; generated-asset provenance and reproducible transforms are recorded in `ASSET_PROVENANCE.md` and `tools/`
 
-`qa/street-static-art-composite.png` is an **asset composite at intended sprite heights**, not a frame captured from Bevy. Do not mistake it for visual/gameplay QA.
+Earlier development packages supplied a **static art composite** for inspection, not a Bevy frame. The real Bevy screenshots from the v0.7.7 native CI run are retained separately as GitHub Actions evidence.
 
 ## Verification and limitations
 
@@ -41,9 +41,9 @@ Run the complete, dependency-aware source checks with:
 ./qa/check-package.sh
 ```
 
-The suite checks story connectivity, asset references/decoding, world links, author-provided Spanish hints, audio formats/levels, Elena/Rosa source derivations and all five protagonist sprite exports, and all eleven conditional routes. The original compiled Vesper Rust CLI also passed `check-game` on v0.7.7 (see `qa/real-parser-v077.log`). Its static scenario simulator is **not** the runtime interpreter; neither it nor the authoring CLI constitutes a graphical playthrough.
+The source QA checks story connectivity, asset references/decoding, world links, Spanish reader and menu labels, audio formats/levels, original character source derivations, five protagonist animation frames and eleven conditional routes. The real Rust `vesper check-game` also ran successfully against v0.7.7 in CI; it must be rerun for v0.7.8. Static scenario tests do **not** replace a real gameplay run.
 
-**Actual Bevy/Xvfb software-rendered game playthrough evidence applies only to v0.7.1.** This version has not been played end-to-end in the Bevy player, nor on the owner's physical Hyprland/RTX setup. The localization PR's engine regression CI is independent of this game's acceptance. Final interactive, aesthetic, physical-audio, accessibility and release tests remain undone. Until the owner approves its appearance and gameplay, do **not** request final human QA.
+**The v0.7.7 game passed a new real Bevy/Xvfb full-three-ending CI playthrough** (run [41941262151](https://github.com/sguzman/vesper/actions/runs/41941262151), native artifact `vesper-urban-original-gameplay`). It covered actual movement, two locations, both direct conversations, F5/F9 and all three endings. The v0.7.8 Spanish-menu revision is **not yet runtime verified** until its own CI completes. The previous store-background frame transient, shop compositing, owner Hyprland/RTX testing, physical audio, visual polish and owner acceptance remain open. **Do not request final human QA yet.**
 
 The separately tracked Vesper narrative-adventure roadmap remains **54/100 formally verified** (engine 54/60; example 0/40), unchanged by provisional game art and source-only work.
 
