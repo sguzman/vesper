@@ -42,6 +42,15 @@ pub struct ExplorationUi {
     pub enter: String,
     pub pause: String,
     pub menu: String,
+    /// Optional author-facing names for NPC/prop IDs and destination location IDs.
+    /// Missing entries preserve the original internal ID labels.
+    pub target_names: BTreeMap<String, String>,
+}
+
+impl ExplorationUi {
+    pub fn target_name<'a>(&'a self, id: &'a str) -> &'a str {
+        self.target_names.get(id).map_or(id, String::as_str)
+    }
 }
 
 impl Default for ExplorationUi {
@@ -54,6 +63,7 @@ impl Default for ExplorationUi {
             enter: "Enter".into(),
             pause: "Pause".into(),
             menu: "Menu".into(),
+            target_names: BTreeMap::new(),
         }
     }
 }
@@ -319,6 +329,31 @@ impl Exploration {
                 || value.chars().any(char::is_control)
             {
                 return Err(format!("exploration.ui.{field} must be 1..=32 printable characters"));
+            }
+        }
+        if self.ui.target_names.len() > 128 {
+            return Err("exploration.ui.target_names supports at most 128 labels".into());
+        }
+        for (id, display) in &self.ui.target_names {
+            identifier(id, "exploration.ui.target_names")?;
+            if display.trim().is_empty()
+                || display.chars().count() > 64
+                || display.chars().any(char::is_control)
+            {
+                return Err(format!(
+                    "exploration.ui.target_names.{id} must be 1..=64 printable characters"
+                ));
+            }
+            if !self.locations.contains_key(id)
+                && !self.locations.values().any(|area| {
+                    area.npcs.contains_key(id)
+                        || area.props.contains_key(id)
+                        || area.exits.contains_key(id)
+                })
+            {
+                return Err(format!(
+                    "exploration.ui.target_names.{id}: unknown authored target"
+                ));
             }
         }
         let avatar = &self.avatar;
@@ -630,6 +665,29 @@ interact_scene = "chat"
         world.ui.talk_to = "Hablar con".into();
         world.locations.get_mut("street").unwrap().npcs.get_mut("friend").unwrap().scale = 4.0;
         assert!(world.validate(&fixture.0, &story).unwrap_err().contains("scale"));
+    }
+
+    #[test]
+    fn authored_focus_names_are_optional_validated_and_do_not_rename_ids() {
+        let (mut world, fixture, story) = load(GOOD);
+        assert_eq!(world.ui.target_name("friend"), "friend");
+        world.ui.target_names.insert("friend".into(), "Elena".into());
+        world.ui.target_names.insert("cafe".into(), "la tienda".into());
+        world.validate(&fixture.0, &story).unwrap();
+        assert_eq!(world.ui.target_name("friend"), "Elena");
+        assert_eq!(world.ui.target_name("cafe"), "la tienda");
+        assert_eq!(world.locations["street"].npcs["friend"].interact_scene, "chat");
+
+        world.ui.target_names.insert("friend".into(), "  ".into());
+        assert!(world.validate(&fixture.0, &story).unwrap_err()
+            .contains("ui.target_names.friend"));
+        world.ui.target_names.insert("friend".into(), "Elena".into());
+        world.ui.target_names.insert("unknown_id".into(), "????".into());
+        assert!(world.validate(&fixture.0, &story).unwrap_err()
+            .contains("unknown authored target"));
+        world.ui.target_names.remove("unknown_id");
+        world.ui.target_names.insert("friend".into(), "Elena\\n".into());
+        assert!(world.validate(&fixture.0, &story).is_err());
     }
 
     #[test]
