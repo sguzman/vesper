@@ -83,6 +83,36 @@ fn bubble_geometry(
     }
 }
 
+/// Return an NPC only if one authored interaction owns this scene.
+fn unique_modal_npc<'a>(
+    npcs: &'a std::collections::BTreeMap<String, vesper_game::exploration::Npc>,
+    scene: &str,
+) -> Option<&'a vesper_game::exploration::Npc> {
+    let mut candidates = npcs.values().filter(|npc| npc.interact_scene == scene);
+    let only = candidates.next()?;
+    candidates.next().is_none().then_some(only)
+}
+
+/// Project an authored world NPC to logical UI coordinates. This same
+/// projected head works for both speaker lines and contextual narration.
+fn world_npc_head(
+    npc: &vesper_game::exploration::Npc,
+    area: &vesper_game::exploration::Location,
+    world_x: f32,
+    viewport: Vec2,
+    scale: f32,
+) -> Vec2 {
+    let view = vesper_game::walk::View::for_area(
+        area.width, area.height, viewport.x, viewport.y,
+        area.camera.zoom, world_x, area.camera.follow_x,
+    );
+    let ground_y = (0.25 - area.camera.horizon) * viewport.y;
+    Vec2::new(
+        viewport.x * 0.5 + view.x(npc.x),
+        viewport.y * 0.5 - ground_y - 42.5 * view.world_to_screen,
+    ) / scale.max(0.05)
+}
+
 fn active_bubble(session: &Session) -> bool {
     !session.choosing && !session.finished
         && session.experience.dialogue_surface == DialogueSurface::Bubble
@@ -232,17 +262,30 @@ pub fn sync(
                 && npc.visible_if.as_ref().is_none_or(|condition|
                     condition.matches(session.machine.variables()))
             {
-                let view = vesper_game::walk::View::for_area(
-                    area.width, area.height, viewport.x, viewport.y,
-                    area.camera.zoom, return_to.x, area.camera.follow_x,
-                );
-                let ground_y = (0.25 - area.camera.horizon) * viewport.y;
-                let head = Vec2::new(
-                    viewport.x * 0.5 + view.x(npc.x),
-                    viewport.y * 0.5 - ground_y - 42.5 * view.world_to_screen,
-                ) / ui_scale.0.max(0.05);
-                position = Some(head);
+                position = Some(world_npc_head(
+                    npc, area, return_to.x, viewport, ui_scale.0,
+                ));
             }
+        }
+        // Unnamed narration inside a modal NPC conversation must not lose
+        // its visual speaker context. The original game's Mateo interaction
+        // begins with a bell/narration line: a top-of-screen fallback sat
+        // directly over his painted face despite a validated NPC target.
+        // Derive the anchor from the *existing authored interaction scene*;
+        // do not invent a speaker or change story machine/save state.
+        if speaker.is_none() && position.is_none()
+            && let vesper_game::experience::ExperienceMode::Conversation {
+                scene, return_to
+            } = &session.experience.mode
+            && let Some(area) = session.game.manifest.exploration.as_ref()
+                .and_then(|world| world.locations.get(&return_to.location))
+            && let Some(npc) = unique_modal_npc(&area.npcs, scene)
+            && npc.visible_if.as_ref().is_none_or(|condition|
+                condition.matches(session.machine.variables()))
+        {
+            position = Some(world_npc_head(
+                npc, area, return_to.x, viewport, ui_scale.0,
+            ));
         }
         let geometry = bubble_geometry(logical, skin.max_width_percent, position);
         // Each distinct *authored position*, including identical consecutive
@@ -537,6 +580,24 @@ mod tests {
             assert!(visible.tail_x.is_some());
             assert!(visible.left >= 0.0 && visible.left + visible.width <= viewport.x);
         }
+    }
+
+    #[test]
+    fn modal_narration_uses_only_unambiguous_authored_npc() {
+        use vesper_game::exploration::Npc;
+        let mut npcs = std::collections::BTreeMap::new();
+        let mateo: Npc = toml::from_str(
+            "x = 820.0\ninteract_scene = 'mateo_chat'"
+        ).unwrap();
+        npcs.insert("mateo".to_owned(), mateo);
+        assert_eq!(unique_modal_npc(&npcs, "mateo_chat").map(|npc| npc.x),
+            Some(820.0));
+        assert!(unique_modal_npc(&npcs, "shop_cat").is_none());
+        // Two NPCs sharing a scene are ambiguous; do not fabricate a tail.
+        npcs.insert("second".to_owned(), toml::from_str::<Npc>(
+            "x = 200.0\ninteract_scene = 'mateo_chat'"
+        ).unwrap());
+        assert!(unique_modal_npc(&npcs, "mateo_chat").is_none());
     }
 
     #[test]
