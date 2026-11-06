@@ -100,3 +100,9 @@ sound asset itself is unchanged.
 - Add `qa/check-menu-labels.sh` and include it in both the package QA and the repository narrative CI gate. Existing engine menu actions and keyboard mappings are unchanged.
 - Update native verification records: v0.7.7's full three-ending Bevy playthrough passed in run `41941262151`, whereas this new v0.7.8 theme revision has not yet passed its own native run.
 - Remaining release blockers: shop artwork layering, temporal transition presentation, physical Hyprland/audio and owner aesthetic review. No formal roadmap points awarded.
+
+## Unreleased — persistent privacy after repeat ledger interaction
+
+- Reading Mateo's private ledger records an irreversible privacy breach, even if a later visit leaves the book closed. An earlier respectful choice is correctly revoked by a later intrusion.
+- Cover both interaction orders with two additional source-level scenarios: 13/13 scenario routes, 31/31 scenes, 22/22 choice links, 25/25 conditional true/false pairs, and a third negative mutation probe.
+- Preserve all existing game endings, authored artwork, and engine behavior. Native Bevy and owner QA remain separate release gates.
