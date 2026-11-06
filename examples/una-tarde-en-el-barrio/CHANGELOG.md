@@ -93,3 +93,10 @@ sound asset itself is unchanged.
 - All characters have materially improved street art, but owner acceptance,
   Bevy rendered animation and native hardware checks remain outstanding.
   Formal roadmap acceptance remains unchanged at 54/100.
+
+## v0.7.8 — 2026-11-06 (Spanish engine-menu integration)
+
+- Apply the generic Vesper `[menu_labels]` authoring feature merged in `562cfd43` to all three original-game menus: main, pause, and ending titles, action labels and controls.
+- Add `qa/check-menu-labels.sh` and include it in both the package QA and the repository narrative CI gate. Existing engine menu actions and keyboard mappings are unchanged.
+- Update native verification records: v0.7.7's full three-ending Bevy playthrough passed in run `41941262151`, whereas this new v0.7.8 theme revision has not yet passed its own native run.
+- Remaining release blockers: shop artwork layering, temporal transition presentation, physical Hyprland/audio and owner aesthetic review. No formal roadmap points awarded.
