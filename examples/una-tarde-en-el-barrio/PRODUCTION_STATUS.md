@@ -68,3 +68,11 @@ milestone acceptance points have been awarded.
 ## Current v0.7.7 blockers
 
 Street art now has compatible illustrated assets for Elena, Rosa and the protagonist. The native visual and physical animation results are not yet proven by in-engine tests; Mateo/cat shop compositing and UI polish are unresolved. The authoring parser and source tests are green but final whole-game owner QA is not authorized. Vesper localization PR #31 merged after full CI at `1752d51d`. The external game package is still outside the GitHub repository and must be integrated before a release. Overall 54/100 formally verified with no points newly awarded.
+
+## Current v0.7.8 validation boundary (2026-11-06)
+
+- **v0.7.7 real-game Bevy playthrough passed** in CI run `41941262151`: live movement, street/shop round trip, direct NPC interactions, save/restore and all three authored endings. This supersedes earlier statements that native v0.7.7 execution had not occurred.
+- Engine support for optional menu-label localization merged in PR #35 (`562cfd43`); the game v0.7.8 theme now supplies Spanish main/pause/ending text and an explicit regression check.
+- The v0.7.8 theme and full player UI must pass fresh CI. **Do not label it QA-ready solely on v0.7.7 evidence.**
+- Shop background still contains painted Mateo/cat, the real store transition showed a transient previous-scene frame, and the final character/layout/animation aesthetic has not been owner-accepted.
+- No Hyprland/physical GPU and listening tests; formal milestone ledger stays 54/100 (Δ 0).
