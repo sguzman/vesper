@@ -196,9 +196,77 @@ wait_board_choice_paint() {
   fail "board choices were logged but not substantially rendered (changed pixels: $diff)"
 }
 
+# Log events precede actual presentation. Compare the board's on-screen
+# lower panel before and after postponing or revisiting an interaction.
+wait_board_surface_change() {
+  local before=$1 after=$2 changed tick
+  local previous_crop="$work/board-mode-previous.png"
+  local current_crop="$work/board-mode-current.png"
+  convert "$out/$before" -crop 1080x350+100+330 +repage "$previous_crop" ||
+    fail "cannot crop board baseline: $before"
+  for ((tick=0;tick<30;tick++)); do
+    sleep .3
+    frame "$after"
+    convert "$out/$after" -crop 1080x350+100+330 +repage "$current_crop" ||
+      fail "cannot crop board frame: $after"
+    changed=$(compare -metric AE "$previous_crop" "$current_crop" null: 2>&1 || :)
+    if [[ $changed =~ ^[0-9]+$ ]] && (( changed > 35000 )); then
+      echo "Board transition painted: $before -> $after ($changed pixels)"
+      return 0
+    fi
+    alive
+  done
+  fail "board transition logged but not painted: $before -> $after ($changed pixels)"
+}
+
+# Preserve *real* Bevy frame evidence at compact and widescreen sizes.
+# A valid screenshot confirms presentation and dimensions, not final owner
+# legibility/aesthetic acceptance. Restore 1280x720 before continuing inputs.
+capture_responsive_scene() {
+  local label=$1 spec size suffix width height filename actual attempt
+  for spec in '946x511:compact' '1600x900:widescreen' '1280x720:restored'; do
+    size=${spec%%:*}
+    suffix=${spec#*:}
+    width=${size%%x*}
+    height=${size#*x}
+    filename="${label}-${suffix}.png"
+    # X11 may resize the window *before* Bevy has processed WindowResized.
+    # The old framebuffer is then cropped to the new size, or surrounded
+    # by black. Merely checking PNG dimensions incorrectly accepted both.
+    local prior_resize coverage
+    prior_resize=$(count "Vesper viewport resized: $size;")
+    timeout 10s xdotool windowsize --sync "$window" "$width" "$height" ||
+      fail "could not resize game to $size"
+    wait_increment "Vesper viewport resized: $size;" "$prior_resize" 120
+    # The engine's resize log precedes the actual surface presentation.
+    sleep .7
+    actual=''
+    for ((attempt=0;attempt<20;attempt++)); do
+      frame "$filename"
+      actual=$(identify -format '%wx%h' "$out/$filename" 2>/dev/null || :)
+      if [[ $actual == "$size" ]]; then
+        # The original game uses painted art to all edges. A solid black
+        # bottom-right region means the new-sized framebuffer is still
+        # displaying an old smaller surface, not a valid widescreen frame.
+        coverage=$(convert "$out/$filename" \
+          -crop "72x72+$((width-84))+$((height-84))" +repage \
+          -format '%k' info: 2>/dev/null || echo 0)
+        if [[ $coverage =~ ^[0-9]+$ ]] && (( coverage > 30 )); then
+          break
+        fi
+      fi
+      sleep .35
+    done
+    [[ $actual == "$size" && $coverage =~ ^[0-9]+$ ]] && (( coverage > 30 )) ||
+      fail "game never presented full painted $label at $size (frame $actual, corner colors $coverage)"
+    echo "Native responsive frame $label: $suffix $actual; $coverage painted corner colors"
+  done
+}
+
 wait_log 'Vesper scene dialogue: intro'
 advance_until 'Vesper exploration area loaded: street;' 30
 frame '01-street-opening.png'
+capture_responsive_scene '01-street'
 
 # The game-authored T shortcut works before walking into Elena's radius.
 key t
@@ -228,8 +296,74 @@ wait_log 'Vesper exploration direct interaction: mateo -> mateo_chat'
 sleep .8
 frame '05-mateo-conversation.png'
 check_mateo_bubble
+capture_responsive_scene '05-mateo'
 key q
 wait_log 'Vesper exploration conversation cancelled'
+
+# Ledger privacy regression: real in-world interactions must preserve the
+# earlier privacy breach even if the player later leaves the ledger closed.
+# Confirm the logical flags in actual atomic F5 save JSON, not a mock VM.
+saved_boolean() {
+  local name=$1 expected=$2
+  awk -v k="$name" -v v="$expected" '
+    $0 ~ "\"" k "\"[[:space:]]*:" {
+      seen=1
+      if ($0 ~ /"Boolean"[[:space:]]*:/) {
+        if ($0 ~ (":" "[[:space:]]*" v "[[:space:]]*[,}]?")) ok=1
+        seen=0
+      }
+      next
+    }
+    seen && /"Boolean"[[:space:]]*:/ {
+      if ($0 ~ (":" "[[:space:]]*" v "[[:space:]]*[,}]?")) ok=1
+      seen=0
+    }
+    END { exit !ok }
+  ' "$save" || fail "F5 snapshot missing $name = $expected"
+}
+finish_ledger_visit() {
+  local choice=$1 prior_choice prior_return
+  prior_choice=$(count 'Vesper choices available: 3 in scene shop_ledger')
+  key e
+  wait_log 'Vesper exploration interacting: ledger -> shop_ledger'
+  for ((turn=0;turn<18;turn++)); do
+    (( $(count 'Vesper choices available: 3 in scene shop_ledger') > prior_choice )) && break
+    key Return
+  done
+  (( $(count 'Vesper choices available: 3 in scene shop_ledger') > prior_choice )) ||
+    fail 'Ledger never offered three genuine authored choices'
+  prior_return=$(count 'Vesper exploration resumed at previous world position')
+  key "$choice"
+  for ((turn=0;turn<22;turn++)); do
+    (( $(count 'Vesper exploration resumed at previous world position') > prior_return )) && return 0
+    key Return
+  done
+  fail "Ledger choice $choice never returned to the shop"
+}
+walk_to store 555 24
+finish_ledger_visit 2  # Read private accounts.
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean saw_ledger true
+saved_boolean respected_privacy false
+finish_ledger_visit 1  # Later close it; cannot undo the breach.
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean saw_ledger true
+saved_boolean respected_privacy false
+# F9 actually reloads that saved exploration state. Re-save after restoring
+# to detect any discrepancy between the machine snapshot and live VM flags.
+prior=$(count 'Vesper save restored:')
+key F9
+wait_increment 'Vesper save restored:' "$prior" 40
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean saw_ledger true
+saved_boolean respected_privacy false
+echo 'REAL BEVY PRIVACY PASS: read -> close -> F5/F9 restore -> F5; breach persists.'
 
 # Travel back through the authored reciprocal exit.
 walk_to store 88 24
@@ -243,6 +377,7 @@ key e
 wait_log 'Vesper exploration interacting: noticeboard -> board_read'
 advance_until 'Vesper choices available: 4 in scene board_read' 25
 wait_board_choice_paint
+capture_responsive_scene '06-board'
 
 # One real save at the board; restore it between all three ending branches.
 prior=$(count 'Vesper save written')
@@ -250,6 +385,41 @@ key F5
 # F5 writes asynchronously; assert a new completion after entering board choices.
 wait_increment 'Vesper save written' "$prior" 40
 [[ -s $save ]] || fail 'board quick-save missing'
+
+# The fourth choice is not an ending: it must return to the *real* street,
+# permit another interaction with the board, and leave the original F5 save
+# restorable. This path was absent from the v0.7.8 three-ending native smoke.
+prior_return=$(count 'Vesper exploration resumed at previous world position')
+key 4
+for ((turn=0;turn<30;turn++)); do
+  (( $(count 'Vesper exploration resumed at previous world position') > prior_return )) && break
+  alive
+  key Return
+done
+(( $(count 'Vesper exploration resumed at previous world position') > prior_return )) ||
+  fail 'postponing the board choice did not return to the street'
+wait_board_surface_change '06-noticeboard-choices.png' '06-board-postponed-street.png'
+
+prior_interaction=$(count 'Vesper exploration interacting: noticeboard -> board_read')
+prior_choices=$(count 'Vesper choices available: 4 in scene board_read')
+key e
+wait_increment 'Vesper exploration interacting: noticeboard -> board_read' "$prior_interaction" 40
+for ((turn=0;turn<30;turn++)); do
+  (( $(count 'Vesper choices available: 4 in scene board_read') > prior_choices )) && break
+  alive
+  key Return
+done
+(( $(count 'Vesper choices available: 4 in scene board_read') > prior_choices )) ||
+  fail 'reopened noticeboard did not offer its four choices'
+wait_board_surface_change '06-board-postponed-street.png' '06-board-reopened-choices.png'
+
+# Restore the saved *first* visit, not the second visit, so ending checks
+# also validate the earlier board-state snapshot survived postponement.
+prior_restored=$(count 'Vesper save restored: Conversation { scene: "board_read"')
+key F9
+wait_increment 'Vesper save restored: Conversation { scene: "board_read"' "$prior_restored" 40
+echo 'REAL BEVY POSTPONE PASS: choice 4 -> rendered street -> board revisit -> four choices -> F9 original board save.'
+
 for item in '1:ending_listen' '2:ending_open' '3:ending_quiet'; do
   index=${item%%:*}
   ending=${item#*:}
@@ -269,4 +439,4 @@ done
 if grep -Ei 'Story transition/asset error|Story error:|thread .* panicked|asset failed' "$log"; then
   fail 'runtime reported story, asset, or renderer error'
 fi
-printf 'REAL BEVY GAME PASS: intro; 2 worlds; 2 direct NPCs; quick save/restore; world exit/return; noticeboard; 3 endings.\n'
+printf 'REAL BEVY GAME PASS: intro; 2 worlds; 2 direct NPCs; persistent ledger privacy F5; save/restore; world exit/return; noticeboard; 3 endings.\n'

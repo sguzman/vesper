@@ -162,8 +162,10 @@ image = "assets/props/invisible-hitspot.png"
 interact_scene = "shop_cat"
 interaction_radius = 85.0
 
+# The notebook is visibly beside the mug, between the register and Mateo.
+# Its interaction coordinate must match the painted object rather than Mateo.
 [exploration.locations.store.props.ledger]
-x = 950.0
+x = 555.0
 image = "assets/props/invisible-hitspot.png"
 interact_scene = "shop_ledger"
 interaction_radius = 70.0
