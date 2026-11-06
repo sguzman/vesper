@@ -257,7 +257,17 @@ key F5
 wait_increment 'Vesper save written' "$prior" 40
 saved_boolean saw_ledger true
 saved_boolean respected_privacy false
-echo 'REAL BEVY PRIVACY PASS: ledger read then closed; F5 retains breach.'
+# F9 actually reloads that saved exploration state. Re-save after restoring
+# to detect any discrepancy between the machine snapshot and live VM flags.
+prior=$(count 'Vesper save restored:')
+key F9
+wait_increment 'Vesper save restored:' "$prior" 40
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean saw_ledger true
+saved_boolean respected_privacy false
+echo 'REAL BEVY PRIVACY PASS: read -> close -> F5/F9 restore -> F5; breach persists.'
 
 # Travel back through the authored reciprocal exit.
 walk_to store 88 24
