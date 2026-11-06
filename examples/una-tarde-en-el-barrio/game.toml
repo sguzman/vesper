@@ -1,6 +1,6 @@
 format_version = 1
 id = "una-tarde-en-el-barrio"
-title = "Una Tarde en el Barrio — development v0.7.7"
+title = "Una Tarde en el Barrio — development v0.7.8"
 story = "scripts/story.vn"
 entry = "intro"
 theme = "styles/urban.toml"
@@ -45,6 +45,18 @@ inspect = "Examinar"
 enter = "Entrar a"
 pause = "Pausa"
 menu = "Menú"
+
+[exploration.ui.target_names]
+elena = "Elena"
+rosa = "Rosa"
+mateo = "Mateo"
+noticeboard = "el tablón de anuncios"
+old_door = "la puerta antigua"
+cat = "el gato"
+ledger = "el cuaderno"
+display = "el mostrador"
+store = "la tienda"
+street = "la calle"
 
 [exploration.avatar]
 speed = 235.0

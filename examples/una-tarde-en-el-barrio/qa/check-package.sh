@@ -159,6 +159,8 @@ done < <(sed -n 's/^interact_scene[[:space:]]*=[[:space:]]*"\([^"]*\)"$/\1/p' ga
 echo "Manifest asset references OK: $count distinct decoded/checked resources; all interactions have scenes."
 echo 'STATIC QA PASSED. This shell checker does not run the Rust Vesper parser or Bevy; see QA_STATUS.md for independent checks.'
 "$root/qa/check-reader-hints.sh"
+bash "$root/qa/check-menu-labels.sh"
+bash "$root/qa/check-world-labels.sh"
 "$root/qa/check-audio.sh"
 
 "$root/qa/check-elena-art.sh"
