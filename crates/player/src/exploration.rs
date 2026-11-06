@@ -363,9 +363,10 @@ fn interaction_prompt_text(nearby: Option<Focus<'_>>,
         match focus {
             Focus::Scene(scene) => {
                 let verb = if scene.kind == TargetKind::Npc { &ui.talk_to } else { &ui.inspect };
-                format!("{key}: {verb} {}", scene.id)
+                format!("{key}: {verb} {}", ui.target_name(scene.id))
             }
-            Focus::Exit(exit) => format!("{key}: {} {}", ui.enter, exit.to_location),
+            Focus::Exit(exit) => format!("{key}: {} {}", ui.enter,
+                ui.target_name(exit.to_location)),
         }
     }
     let identical = matches!((&nearby, &shortcut),
@@ -651,6 +652,35 @@ mod tests {
         assert_eq!(interaction_prompt_text(Some(elena.clone()), Some(elena), &ui),
             Some("E/T: Hablar con elena".into()));
         assert_eq!(interaction_prompt_text(None, None, &ui), None);
+    }
+
+    #[test]
+    fn authored_target_names_polish_npc_prop_and_location_prompts() {
+        use vesper_game::interaction::{ExitTarget, Target};
+        let npc = Focus::Scene(Target {
+            kind: TargetKind::Npc, id: "elena",
+            scene: "elena_chat", x: 250.0, distance: 15.0,
+        });
+        let prop = Focus::Scene(Target {
+            kind: TargetKind::Prop, id: "noticeboard",
+            scene: "board_read", x: 930.0, distance: 30.0,
+        });
+        let exit = Focus::Exit(ExitTarget {
+            id: "store_door", to_location: "store",
+            to_spawn: "entry", distance: 5.0,
+        });
+        let mut ui = ExplorationUi::default();
+        ui.talk_to = "Hablar con".into();
+        ui.inspect = "Examinar".into();
+        ui.enter = "Entrar a".into();
+        ui.target_names.insert("elena".into(), "Elena".into());
+        ui.target_names.insert("noticeboard".into(), "el tablón".into());
+        ui.target_names.insert("store".into(), "la tienda".into());
+        assert_eq!(interaction_prompt_text(Some(npc), Some(prop), &ui),
+            Some("E: Hablar con Elena\\nT: Examinar el tablón".into()));
+        assert_eq!(interaction_prompt_text(Some(exit), None, &ui),
+            Some("E: Entrar a la tienda".into()));
+        assert_eq!(ui.target_name("not_renamed"), "not_renamed");
     }
 
     #[test]
