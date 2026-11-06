@@ -1,6 +1,6 @@
 # Una Tarde en el Barrio
 
-**v0.7.7 development game · original external content for Vesper (Rust / Bevy 0.20)**
+**v0.7.8 development game · original external content for Vesper (Rust / Bevy 0.20)**
 
 A short, Spanish-language urban slice-of-life story set around a neighborhood shop in Guadalajara. Explore an illustrated street and Mateo's store, speak with Elena, Rosa and Mateo, inspect small details, then decide what the neighborhood noticeboard should say. Three story endings reflect decisions and optional conversations. Walking is deliberately optional in some conversations via Vesper's author-defined `T` shortcut.
 
