@@ -10,29 +10,32 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install original-game asset validation tools
-        run: |
-          sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
-          sudo timeout 600s apt-get install -y --no-install-recommends imagemagick ffmpeg
-      - name: Validate original game source-to-asset integrity, audio, and routes
+      - name: Install pinned ImageMagick 7 and FFmpeg for source provenance
         shell: bash
         run: |
-          # Ubuntu 24.04 ships ImageMagick 6 as 'convert' and 'identify'.
-          # The game source-export scripts use ImageMagick 7's 'magick'
-          # frontend. Offer its equivalent dispatcher only on IM6 runners,
-          # preserving the original tool scripts and source files unchanged.
-          if ! command -v magick >/dev/null 2>&1; then
-            magick() {
-              if [[ ${1:-} == identify ]]; then
-                shift
-                command identify "$@"
-              else
-                command convert "$@"
-              fi
-            }
-            export -f magick
-          fi
-          bash examples/una-tarde-en-el-barrio/qa/check-package.sh
+          sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 600s apt-get install -y --no-install-recommends ffmpeg
+          # The authored sprites were exported using ImageMagick 7. Its
+          # alpha-channel and pixel operations must not be silently replaced
+          # by Ubuntu 24.04's older ImageMagick 6 behavior.
+          appimage="$RUNNER_TEMP/ImageMagick-7.1.2-35-gcc-x86_64.AppImage"
+          curl --fail --location --silent --show-error --retry 3 \
+            "https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-35/ImageMagick-7.1.2-35-gcc-x86_64.AppImage" \
+            --output "$appimage"
+          echo "f111044ed06b68cfb478df724c5a32d35145afa21073242f888d234a2f8cc002  $appimage" | sha256sum -c -
+          chmod 0755 "$appimage"
+          # Extract once rather than relying on FUSE inside an Actions runner.
+          ( cd "$RUNNER_TEMP" && "$appimage" --appimage-extract >/dev/null )
+          test -x "$RUNNER_TEMP/squashfs-root/AppRun"
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '%s\n' '#!/usr/bin/env bash' 'exec "$RUNNER_TEMP/squashfs-root/AppRun" "$@"' > "$RUNNER_TEMP/bin/magick"
+          printf '%s\n' '#!/usr/bin/env bash' 'exec "$RUNNER_TEMP/squashfs-root/AppRun" identify "$@"' > "$RUNNER_TEMP/bin/identify"
+          chmod 0755 "$RUNNER_TEMP/bin/magick" "$RUNNER_TEMP/bin/identify"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bin/magick" -version
+      - name: Validate original game source-to-asset integrity, audio, and routes
+        shell: bash
+        run: bash examples/una-tarde-en-el-barrio/qa/check-package.sh
   narrative:
     runs-on: ubuntu-24.04
     steps:
