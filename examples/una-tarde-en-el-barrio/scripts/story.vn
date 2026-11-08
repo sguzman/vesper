@@ -26,9 +26,14 @@ explore street at home
 @scene elena_chat
 music golden_hour
 surface bubble
+if met_elena == true
+elena: "Ya volviste. Parece que los caminos de siempre todavía tienen algo que decir."
+"Elena se hace a un lado para dejar pasar una bicicleta. Esta vez no necesita preguntarte quién eres."
+else
 set met_elena = true
 elena: "Mira nada más. ¿Todavía sabes cómo se llega a esta calle?"
 "Elena se acomoda la mochila y mira un instante hacia el árbol de jacarandá."
+end
 * "Me fui, pero nunca olvidé el camino." -> elena_welcome
 * "No sé si sigo perteneciendo aquí." -> elena_uncertain
 * "¿Qué pasó con la tienda de Mateo?" -> elena_news
@@ -57,10 +62,15 @@ explore return
 @scene rosa_chat
 music golden_hour
 surface bubble
+if met_rosa == true
+rosa: "Hoy parece que nadie se pone de acuerdo ni con la hora de la reunión."
+"Rosa dobla una bolsa de papel entre las manos. Te reconoce y sigue hablando sin empezar de cero."
+else
 set met_rosa = true
 rosa: "¿Tú también vienes por el aviso? Pensé que era el único chisme de la semana."
 "Rosa se alisa el delantal. Mira los carteles como si buscara la firma de alguien conocido."
 rosa: "Cada quien tiene una versión. La calle cambia aunque nadie se mueva."
+end
 * "¿Qué dicen las personas que compran aquí?" -> rosa_people
 * "¿Y tú qué crees que debería hacerse?" -> rosa_opinion
 * "Apenas estoy poniéndome al día." -> rosa_later
@@ -84,10 +94,15 @@ explore return
 @scene mateo_chat
 music shop_hush
 surface bubble
+if met_mateo == true
+mateo: "Sigues aquí. Al menos tú puedes escucharme más de una vez antes de decidir por mí."
+"Mateo aparta una caja para atender a quien acaba de entrar. Luego vuelve a mirarte."
+else
 sound shop_bell
 "Suena la campanita de la entrada. Alguien ha venido a comprar pan para la cena."
 set met_mateo = true
 mateo: "Apareciste justo cuando todo el mundo tiene opiniones sobre mi negocio. Qué suerte la mía."
+end
 if saw_ledger == true
 "Te mira de reojo, hacia el cuaderno donde anotó la mercancía del último mes."
 mateo: "Si viniste por los números, no son toda la historia."
@@ -125,8 +140,12 @@ explore return
 @scene shop_cat
 music shop_hush
 surface bubble
+if stroked_cat == true
+"El gato esta vez abre ambos ojos al escuchar tus pasos. No se levanta, pero te deja acercarte sin fingir que sigues siendo un extraño."
+else
 "Un gato blanco con manchas de café duerme junto a los periódicos viejos. Parece conocer el negocio mejor que cualquiera."
 "Abre un ojo cuando te acercas y vuelve a cerrarlo con toda la paciencia del mundo."
+end
 * "Acariciarle la cabeza con cuidado." -> shop_cat_pet
 * "Dejarlo dormir y seguir explorando." -> shop_cat_sleep
 
@@ -143,8 +162,12 @@ explore return
 @scene shop_display
 music shop_hush
 surface bubble
+if read_display == true
+"Las etiquetas siguen en su sitio. La caja te recuerda el caramelo que Mateo te regaló; esta vez reconoces también su letra en los precios."
+else
 "Los anaqueles están llenos de cosas que una persona compra sin pensar: velas, jabón, latas de atún."
 "En la repisa más baja hay una pequeña caja con etiquetas viejas de precios, escritas a mano."
+end
 * "Recordar las compras de otros días." -> shop_display_remember
 * "Volver a lo que ibas a hacer." -> shop_display_leave
 
@@ -191,8 +214,12 @@ explore return
 @scene threshold_memory
 music golden_hour
 surface panel
+if remembered_door == true
+"Los raspones siguen allí, aunque ya has recordado quién te abrió una tarde. No hace falta llamar otra vez para saber que sucedió."
+else
 "La puerta de madera conserva los raspones del año en que aprendiste a montar en bicicleta. Alguien ha pintado alrededor de ellos, nunca encima."
 "Detrás de una ventana escuchas platos y una radio. No reconoces la canción, pero sí el sonido de alguien preparando la cena."
+end
 * "Recordar una tarde antes de irte." -> threshold_remember
 * "Seguir andando. No todo necesita convertirse en recuerdo." -> threshold_walk
 

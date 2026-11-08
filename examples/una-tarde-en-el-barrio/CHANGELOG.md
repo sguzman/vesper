@@ -1,5 +1,12 @@
 # Una Tarde en el Barrio — Development history
 
+## Unreleased — revisits acknowledge the player (2026-11-08)
+
+- Elena, Rosa and Mateo now recognize return visits rather than repeating their first meeting; the initial dialogue and all existing choices remain intact.
+- Revisiting the shop cat, merchandise and old doorway acknowledges the remembered action without altering its later consequences or the three endings.
+- Extended the existing repeat-conversation scenario to traverse the first and return branches of all six interactions. The story still has 31 scenes, 22 authored choice edges and three endings; native and full CI verification is required before merging.
+- No art, engine, sound or story-state schema changes. Physical visual/audio acceptance and the independent Mateo/cat shop artwork remain unresolved; formal roadmap stays 54/100.
+
 ## v0.7.4 — 2026-11-04 (Elena art consistency)
 
 - Added detailed original full-body Elena character artwork, keeping the
