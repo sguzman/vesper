@@ -1,11 +1,19 @@
-# Validation status — v0.7.8 (v0.7.7 native game pass; v0.7.8 CI pending)
+# Validation status — v0.7.8 (current native game and distribution verified; owner acceptance pending)
 
-## Latest native and authoring evidence (supersedes older checkpoints)
+## Current accepted development evidence (2026-11-08)
+
+- **PR #45 — complete narrative + Bevy CI [42262341196](https://github.com/sguzman/vesper/actions/runs/42262341196): green.** The original v0.7.8 game actually played through both locations, privacy-preserving ledger read/close and F5/F9 restoration, rendered four-choice noticeboard, postpone/revisit and all three endings. Xvfb screenshot evidence confirmed settled **946×511, 1280×720 and 1600×900** Bevy frames; the earlier stale background/resize snapshot was an automated-capture timing bug.
+- **PR #46 — complete CI [42265390551](https://github.com/sguzman/vesper/actions/runs/42265390551): green.** The optimized x86_64 Linux development archive was extracted, checked using SHA-256 and booted in a fresh virtual display, reaching real original-game narration. The optimized `.tar.gz` is approximately 67 MiB, includes executable/game/assets/license/launcher and is not a final release.
+- **PR #47 — complete CI [42267394865](https://github.com/sguzman/vesper/actions/runs/42267394865): green.** Native game player walked to and completed the old doorway, cat, merchandise display and Rosa authored conversations, then verified `remembered_door`, `stroked_cat`, `read_display` and `heard_rosa` in F5 save state; retained ledger/privacy and three-ending checks.
+- **Merged main:** #45 `672dbb15`, #46 `430b31f5`, #47 `c508246e`. Post-merge main CI [42490557066](https://github.com/sguzman/vesper/actions/runs/42490557066) was still running when this entry was authored. Do not substitute PR success for a pending post-merge result.
+- **Not accepted:** independently layered/repainted Mateo and cat, physical Hyprland/RTX 3090 rendering/fullscreen/keyboard feel, physical audio balance, coherent final anime art polish and owner subjective approval. The project's weighted narrative-adventure progress is **54/100** (engine 54/60, original-game 0/40); passing the development preview tests alone does not satisfy the game's entire acceptance track.
+
+## Historical native and authoring evidence (older checkpoints retained below)
 
 - **v0.7.7 was played end-to-end through all three endings** in actual Bevy 0.20 under Xvfb/Mesa (CI [41941262151](https://github.com/sguzman/vesper/actions/runs/41941262151)). Runtime evidence artifact `vesper-urban-original-gameplay` (ID 13377030788) contains real PNG screenshots and logs.
 - Actual tests included two exploration locations and their reciprocal exits, Elena/Mateo conversation shortcuts, real F5/F9 choice and modal saves, noticeboard, and reaching `Output::End` for `ending_listen`, `ending_open` and `ending_quiet`.
 - **v0.7.8 authoring delta:** Spanish `[menu_labels]` for main, pause, and ending screens, with a required game-owned check. This depends on generic engine menu-label support merged as `562cfd43`; no game-specific Rust code.
-- **v0.7.8 native status:** awaiting fresh CI. Do not transfer the v0.7.7 pass to v0.7.8 until the new run actually passes.
+- **At that earlier checkpoint:** v0.7.8 CI was still pending. The newer accepted runs above supersede this historical limitation.
 - Open visual issues observed in native screenshots: transient old street background immediately after shop entry, English menu labels before v0.7.8, and Mateo/cat baked into the shop background. No owner physical GPU, Wayland, sound or aesthetic approval.
 - Older sections below retain their original historical meaning at the time they were written. The newer v0.7.7 test supersedes any prior statement that only v0.7.1 had native game evidence.
 

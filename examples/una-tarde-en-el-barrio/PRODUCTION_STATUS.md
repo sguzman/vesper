@@ -2,6 +2,16 @@
 
 **ACTIVE DEVELOPMENT. NOT READY FOR HUMAN WHOLE-GAME QA.**
 
+## Current integrated checkpoint (2026-11-08)
+
+- Merged PRs **#45** (`672dbb15`), **#46** (`430b31f5`) and **#47** (`c508246e`). Their complete narrative + Bevy CI runs **42262341196**, **42265390551** and **42267394865** all finished green on their exact tested heads; post-merge `main` CI run **42490557066** is still pending as of this entry.
+- Current real-game native Xvfb gameplay covers the two authored locations, Elena and Mateo shortcuts, Rosa, old doorway, painted cat, shop display, painted-notebook ledger, real F5/F9 privacy state, four-way noticeboard postponement/revisit and **all three** actual endings.
+- The compact **946×511** and widescreen **1600×900** screenshot checks now wait for an actual Bevy resize/present before accepting frame evidence; existing evidence was independently inspected. This does not substitute for the owner's physical monitor/fullscreen review.
+- The original game is already in the GitHub repository and its compiled Linux **development preview** is automatically built, checksum-verified and boot-tested from an independently extracted archive. It includes `play.sh` and the complete external content, not only the engine binary.
+- **Remaining production blockers:** artist-quality independent shopkeeper and cat compositing with a coherent repainted store backdrop; physical Hyprland/RTX 3090 keyboard, scaling and fullscreen QA; headphone/speaker audio listening and mixing; owner evaluation of character art, animation, readability and overall story. The current development game is **not owner-accepted**. Formal roadmap **54/100 (Δ0)**.
+
+The version-by-version paragraphs below are retained as **historical checkpoints**, not current acceptance claims.
+
 ## Historical v0.7.3 development state and inherited native evidence
 
 - 31 scene identifiers, 22 choice edges, 2 explorable locations, 2 reciprocal exits, 10 individually reachable interaction targets, 3 ending scenes.
@@ -65,11 +75,11 @@ animation**. Native Bevy/physical display checks, shop compositing, a full art
 pass and owner's acceptance are still release blockers. No new weighted
 milestone acceptance points have been awarded.
 
-## Current v0.7.7 blockers
+## Historical v0.7.7 blockers
 
 Street art now has compatible illustrated assets for Elena, Rosa and the protagonist. The native visual and physical animation results are not yet proven by in-engine tests; Mateo/cat shop compositing and UI polish are unresolved. The authoring parser and source tests are green but final whole-game owner QA is not authorized. Vesper localization PR #31 merged after full CI at `1752d51d`. The external game package is still outside the GitHub repository and must be integrated before a release. Overall 54/100 formally verified with no points newly awarded.
 
-## Current v0.7.8 validation boundary (2026-11-06)
+## Historical v0.7.8 validation boundary (2026-11-06)
 
 - **v0.7.7 real-game Bevy playthrough passed** in CI run `41941262151`: live movement, street/shop round trip, direct NPC interactions, save/restore and all three authored endings. This supersedes earlier statements that native v0.7.7 execution had not occurred.
 - Engine support for optional menu-label localization merged in PR #35 (`562cfd43`); the game v0.7.8 theme now supplies Spanish main/pause/ending text and an explicit regression check.

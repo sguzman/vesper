@@ -22,8 +22,9 @@ examples/una-tarde-en-el-barrio/qa/check-package.sh
 ```
 
 The first two are **source and parser checks**, not a native graphical
-playthrough. The third starts the real game and still needs native QA.
-Do not interpret Git import or passing static checks as owner art approval.
+playthrough. The third starts the actual game. It has now passed native Linux software-renderer Xvfb tests and all three ending routes, as verified in merged PRs #45–#47. This does **not** replace physical Wayland/RTX/audio/owner acceptance.
+
+The CI-generated `una-tarde-linux-development-preview` artifact contains a compressed development game archive: `Una-Tarde-en-el-Barrio-Linux-x86_64.tar.gz`. Extract it and use `./play.sh` (plus `sha256sum -c SHA256SUMS`) from the extracted directory—no Cargo or repository checkout required for this preview. A debug-stripped copy of the native executable is packaged; the original development build is untouched. The archive is not a final game release.
 
 ## Git/source policy
 
@@ -31,5 +32,6 @@ Text stories, themes, project notes, character-art source, generated image
 and sound files are intentional committed assets. Do not check in personal
 save files, readout/preferences data, local parser logs, generated screenshot
 captures, development ZIPs or machine-specific build outputs. The external
-QA evidence remains separately archived; v0.7.1 is the last game version with
-actual Bevy playthrough evidence. Final acceptance remains pending.
+QA evidence remains separately archived in GitHub Actions. The newer v0.7.8
+native CI playthroughs are documented in `QA_STATUS.md`; final physical
+presentation/audio and owner acceptance remain pending.

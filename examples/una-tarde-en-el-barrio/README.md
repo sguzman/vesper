@@ -8,7 +8,7 @@ This is a **playable development package, not an accepted final game**. It is ex
 
 ## Requirements and launch
 
-Use a Vesper player built from merged `main` commit [`562cfd43`](https://github.com/sguzman/vesper/commit/562cfd43a1aa72d879eeabbfa88828a7683e337a) or a compatible descendant. The game opts into Spanish `[reader_hints]` and `[menu_labels]`; older player builds do not recognize all these theme keys. The game is an external directory and **does not contain the player executable**. Use the same commands with an absolute path if you are running an extracted development ZIP outside the Vesper repository.
+Use a Vesper player built from merged `main` commit [`562cfd43`](https://github.com/sguzman/vesper/commit/562cfd43a1aa72d879eeabbfa88828a7683e337a) or a compatible descendant. The game opts into Spanish `[reader_hints]` and `[menu_labels]`; older player builds do not recognize all these theme keys. The source-checkout game remains external data, but the **Linux x86_64 development-preview archive now includes the actual native player**. The `play.sh` launcher resolves the packaged game path even when launched from another working directory.
 
 From a compatible Vesper workspace, after building using the machine's normal Rust build coordinator:
 
@@ -17,7 +17,7 @@ From a compatible Vesper workspace, after building using the machine's normal Ru
 ./target/debug/vesper check-game examples/una-tarde-en-el-barrio
 ```
 
-The second command validates external game authoring; it does not run a playable window. A compiler-free compatible Vesper player can instead be used with this directory.
+The second command validates external game authoring; it does not run a playable window. Alternatively, CI now publishes `una-tarde-linux-development-preview`, containing `Una-Tarde-en-el-Barrio-Linux-x86_64.tar.gz` (the executable, complete game, assets, sound, story, MIT license and SHA256 manifest). Extract the tarball and launch `./play.sh` from the extracted directory; neither Cargo nor a source checkout is required. Verify `SHA256SUMS` before running. This is a **development preview**, not a finished or owner-accepted build.
 
 ## Controls
 
@@ -41,9 +41,9 @@ Run the complete, dependency-aware source checks with:
 ./qa/check-package.sh
 ```
 
-The source QA checks story connectivity, asset references/decoding, world links, Spanish reader and menu labels, audio formats/levels, original character source derivations, five protagonist animation frames and thirteen conditional routes. The real Rust `vesper check-game` also ran successfully against v0.7.7 in CI; it must be rerun for v0.7.8. Static scenario tests do **not** replace a real gameplay run.
+The source QA checks story connectivity, asset references/decoding, world links, Spanish reader and menu labels, audio formats/levels, original character source derivations, five protagonist animation frames and thirteen conditional routes. The current v0.7.8 original game passed the Rust `vesper check-game`, narrative authoring checks and actual native Bevy gameplay in CI. Static scenario tests do **not** replace a real gameplay run.
 
-**The v0.7.7 game passed a new real Bevy/Xvfb full-three-ending CI playthrough** (run [41941262151](https://github.com/sguzman/vesper/actions/runs/41941262151), native artifact `vesper-urban-original-gameplay`). It covered actual movement, two locations, both direct conversations, F5/F9 and all three endings. The v0.7.8 Spanish-menu revision is **not yet runtime verified** until its own CI completes. The previous store-background frame transient, shop compositing, owner Hyprland/RTX testing, physical audio, visual polish and owner acceptance remain open. **Do not request final human QA yet.**
+**Current merged code:** CI [42262341196](https://github.com/sguzman/vesper/actions/runs/42262341196) passed the complete narrative + Bevy suite for the ledger/privacy, noticeboard-postpone and responsive frame integration (merged PR #45). CI [42265390551](https://github.com/sguzman/vesper/actions/runs/42265390551) passed the native three endings, stripped Linux archive boot and full Bevy suite (merged PR #46). CI [42267394865](https://github.com/sguzman/vesper/actions/runs/42267394865) passed the full suite and native optional Rosa/old-door/cat/display interactions with real F5 state checks (merged PR #47). The earlier transient store-background screenshot was a premature capture and was fixed in QA by waiting for the actual painted frame; this does not certify all hardware transitions. The new post-merge `main` run [42490557066](https://github.com/sguzman/vesper/actions/runs/42490557066) is underway at this checkpoint, so do not call that run green yet. Independent Mateo/cat shop art, physical Hyprland/RTX testing, real audio listening, final visual polish and owner approval remain open. **Do not request final whole-game QA yet.**
 
 The separately tracked Vesper narrative-adventure roadmap remains **54/100 formally verified** (engine 54/60; example 0/40), unchanged by provisional game art and source-only work.
 
