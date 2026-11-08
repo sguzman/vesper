@@ -6,6 +6,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  urban-authored-assets:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install original-game asset validation tools
+        run: |
+          sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 600s apt-get install -y --no-install-recommends imagemagick ffmpeg
+      - name: Validate original game source-to-asset integrity, audio, and routes
+        shell: bash
+        run: |
+          # Ubuntu 24.04 ships ImageMagick 6 as 'convert' and 'identify'.
+          # The game source-export scripts use ImageMagick 7's 'magick'
+          # frontend. Offer its equivalent dispatcher only on IM6 runners,
+          # preserving the original tool scripts and source files unchanged.
+          if ! command -v magick >/dev/null 2>&1; then
+            magick() {
+              if [[ ${1:-} == identify ]]; then
+                shift
+                command identify "$@"
+              else
+                command convert "$@"
+              fi
+            }
+            export -f magick
+          fi
+          bash examples/una-tarde-en-el-barrio/qa/check-package.sh
   narrative:
     runs-on: ubuntu-24.04
     steps:
