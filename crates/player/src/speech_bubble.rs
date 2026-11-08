@@ -46,18 +46,42 @@ fn bubble_geometry(
         && head.x >= safe_x && head.x <= viewport.x - safe_x
         && head.y >= safe_y && head.y <= viewport.y - safe_y);
     let low_head = visible_head.filter(|head| head.y < min_head_y);
-    let anchor = visible_head.filter(|head| head.y >= min_head_y);
+    // Above-head anchoring needs enough room for ordinary speaker/nameplate
+    // layout, not merely the 90px minimum scroll viewport. A high staged
+    // portrait can have a visible head but only 118px above it, which would
+    // incorrectly force PgDn even for a single short sentence.
+    let comfortable_head_y = min_head_y.max(8.0 + 150.0 + 14.0);
+    let side_head = visible_head.filter(|head|
+        head.y >= min_head_y && head.y < comfortable_head_y);
+    let anchor = visible_head.filter(|head| head.y >= comfortable_head_y);
     let gutter = safe_x;
     let available = (viewport.x - gutter * 2.0).max(1.0);
-    let width = (viewport.x * width_percent / 100.0).min(available);
-    let left = visible_head.map_or((viewport.x - width) * 0.5, |head| {
-        (head.x - width * 0.5).clamp(gutter, (viewport.x - width - gutter).max(gutter))
-    });
+    let authored_width = (viewport.x * width_percent / 100.0).min(available);
+    // For a high portrait with inadequate headroom, use the wider available
+    // side instead of scrolling a one-line bubble or covering the face.
+    // Side placement deliberately has no downward-pointing tail.
+    let (width, left) = if let Some(head) = side_head {
+        let face_gap = 76.0_f32.min(viewport.x * 0.15);
+        let left_room = (head.x - face_gap - gutter).max(1.0);
+        let right_room = (viewport.x - head.x - face_gap - gutter).max(1.0);
+        let right = right_room >= left_room;
+        let width = authored_width.min(if right { right_room } else { left_room });
+        let left = if right { head.x + face_gap } else { head.x - face_gap - width };
+        (width, left.clamp(gutter, (viewport.x - width - gutter).max(gutter)))
+    } else {
+        let left = visible_head.map_or((viewport.x - authored_width) * 0.5, |head| {
+            (head.x - authored_width * 0.5)
+                .clamp(gutter, (viewport.x - authored_width - gutter).max(gutter))
+        });
+        (authored_width, left)
+    };
     // With inadequate headroom, a tail-free bubble goes *below* the
     // visible speaker. Centering the fallback near the top would otherwise
     // cover the very face this geometry is supposed to protect.
     let top = if let Some(head) = low_head {
         head.y + 18.0
+    } else if side_head.is_some() {
+        viewport.y * 0.09
     } else {
         anchor.map_or(viewport.y * 0.09, |head| {
             (head.y - 172.0).clamp(8.0, (viewport.y * 0.50).max(8.0))
@@ -541,6 +565,25 @@ mod tests {
             assert!(anchored.tail_x.is_some());
             assert!(anchored.top + anchored.max_height < speaker.y - 12.0);
             assert!(anchored.max_height >= 90.0);
+        }
+    }
+
+    #[test]
+    fn high_staged_speakers_use_face_safe_side_bubbles_with_real_text_height() {
+        for viewport in [Vec2::new(946.0, 511.0), Vec2::new(1280.0, 720.0)] {
+            for x_fraction in [0.24, 0.76] {
+                let head = Vec2::new(viewport.x * x_fraction, 140.0);
+                let bubble = bubble_geometry(viewport, 57.0, Some(head));
+                assert!(bubble.tail_x.is_none());
+                assert!(bubble.width >= 300.0);
+                assert!(bubble.max_height >= 140.0);
+                assert!(bubble.top + bubble.max_height <= viewport.y * 0.43 + 0.1);
+                if x_fraction < 0.5 {
+                    assert!(bubble.left >= head.x + 70.0);
+                } else {
+                    assert!(bubble.left + bubble.width <= head.x - 70.0);
+                }
+            }
         }
     }
 
