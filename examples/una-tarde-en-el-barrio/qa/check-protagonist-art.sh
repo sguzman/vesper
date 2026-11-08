@@ -20,7 +20,7 @@ for frame in idle walk-1 walk-2 walk-3 walk-4; do
   expected="$checkdir/assets/avatars/$frame.png"
   [[ -s "$actual" ]] || { echo "Missing avatar $frame" >&2; exit 1; }
   props=$(magick identify -format '%m %wx%h %[opaque]' "$actual")
-  [[ $props == 'PNG 600x754 False' ]] || { echo "Bad avatar size/alpha for $frame: $props" >&2; exit 1; }
+  [[ ${props,,} == 'png 600x754 false' ]] || { echo "Bad avatar size/alpha for $frame: $props" >&2; exit 1; }
   a=$(magick "$actual" -alpha extract -format '%[fx:mean]' info:)
   awk -v a="$a" 'BEGIN {exit !(a > 0.10 && a < 0.55)}' || {
     echo "Avatar $frame alpha silhouette invalid: $a" >&2; exit 1;

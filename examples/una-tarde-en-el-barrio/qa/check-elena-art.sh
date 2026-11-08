@@ -7,7 +7,8 @@ for path in assets/npcs/elena.png assets/npcs/elena-portrait-provisional.png; do
   file="$root/$path"
   [[ -s $file ]] || { echo "Missing $path" >&2; exit 1; }
   [[ $(identify -format '%m' "$file") == PNG ]] || { echo "Not PNG: $path" >&2; exit 1; }
-  [[ $(identify -format '%[opaque]' "$file") == False ]] || { echo "Missing real alpha: $path" >&2; exit 1; }
+  opaque=$(identify -format '%[opaque]' "$file")
+  [[ ${opaque,,} == false ]] || { echo "Missing real alpha: $path" >&2; exit 1; }
 done
 height=$(identify -format '%h' "$root/assets/npcs/elena.png")
 [[ $height -ge 1000 ]] || { echo "Unexpectedly low sprite source resolution: $height" >&2; exit 1; }
