@@ -7,7 +7,7 @@ src="$root/sources/characters/rosa-fullbody-anime-v076.png"
 out="$root/assets/npcs/rosa.png"
 [[ -s "$src" && -s "$out" ]] || { echo 'Rosa source or sprite missing' >&2; exit 1; }
 [[ $(magick identify -format '%m' "$out") == PNG ]] || { echo 'Rosa sprite is not a PNG' >&2; exit 1; }
-[[ $(magick identify -format '%[opaque]' "$out") == False ]] || { echo 'Rosa sprite lacks transparency' >&2; exit 1; }
+[[ $(magick identify -format '%[opaque]' "$out" | tr '[:upper:]' '[:lower:]') == false ]] || { echo 'Rosa sprite lacks transparency' >&2; exit 1; }
 height=$(magick identify -format '%h' "$out")
 [[ $height -ge 1200 ]] || { echo 'Rosa art source resolution too small' >&2; exit 1; }
 coverage=$(magick "$out" -alpha extract -format '%[fx:mean]' info:)
