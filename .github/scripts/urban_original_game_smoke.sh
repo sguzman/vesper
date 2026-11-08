@@ -441,6 +441,8 @@ key F5
 # F5 writes asynchronously; assert a new completion after entering board choices.
 wait_increment 'Vesper save written' "$prior" 40
 [[ -s $save ]] || fail 'board quick-save missing'
+saved_boolean board_postponed false
+cp -- "$save" "$work/board-before-postponement.json"
 
 # The fourth choice is not an ending: it must return to the *real* street,
 # permit another interaction with the board, and leave the original F5 save
@@ -455,6 +457,16 @@ done
 (( $(count 'Vesper exploration resumed at previous world position') > prior_return )) ||
   fail 'postponing the board choice did not return to the street'
 wait_board_surface_change '06-noticeboard-choices.png' '06-board-postponed-street.png'
+
+# The newly authored postponement flag must be present in a REAL F5 save.
+# Preserve the original board-choice save so we can later verify that F9
+# actually restores its older flag state, not the most recent postponement.
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean board_postponed true
+cmp -s "$save" "$work/board-before-postponement.json" &&
+  fail 'postponed decision did not change the real F5 save'
 
 prior_interaction=$(count 'Vesper exploration interacting: noticeboard -> board_read')
 prior_choices=$(count 'Vesper choices available: 4 in scene board_read')
@@ -471,10 +483,17 @@ wait_board_surface_change '06-board-postponed-street.png' '06-board-reopened-cho
 
 # Restore the saved *first* visit, not the second visit, so ending checks
 # also validate the earlier board-state snapshot survived postponement.
+# This copies back a byte-for-byte snapshot taken before the flag was set;
+# it does not patch flags inside the JSON or mock the VM.
+cp -- "$work/board-before-postponement.json" "$save"
 prior_restored=$(count 'Vesper save restored: Conversation { scene: "board_read"')
 key F9
 wait_increment 'Vesper save restored: Conversation { scene: "board_read"' "$prior_restored" 40
-echo 'REAL BEVY POSTPONE PASS: choice 4 -> rendered street -> board revisit -> four choices -> F9 original board save.'
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean board_postponed false
+echo 'REAL BEVY POSTPONE PASS: choice 4 -> rendered street -> saved true flag -> board revisit -> F9 original board false flag -> three endings.'
 
 for item in '1:ending_listen' '2:ending_open' '3:ending_quiet'; do
   index=${item%%:*}
