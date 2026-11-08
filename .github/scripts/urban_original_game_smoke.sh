@@ -263,6 +263,38 @@ capture_responsive_scene() {
   done
 }
 
+# Complete authored optional object/NPC choices in the real native player.
+# Count fresh interaction, choice, branch and return events; stale trace text
+# from earlier visits is never sufficient evidence of a new interaction.
+exercise_optional_interaction() {
+  local target=$1 scene=$2 choices=$3 choice=$4 result=$5
+  local previous_interaction previous_choices previous_result previous_return turn
+  previous_interaction=$(count "Vesper exploration interacting: $target -> $scene")
+  previous_choices=$(count "Vesper choices available: $choices in scene $scene")
+  previous_result=$(count "Vesper scene dialogue: $result")
+  previous_return=$(count 'Vesper exploration resumed at previous world position')
+  key e
+  wait_increment "Vesper exploration interacting: $target -> $scene" "$previous_interaction" 40
+  for ((turn=0;turn<36;turn++)); do
+    (( $(count "Vesper choices available: $choices in scene $scene") > previous_choices )) && break
+    alive
+    key Return
+  done
+  (( $(count "Vesper choices available: $choices in scene $scene") > previous_choices )) ||
+    fail "$target did not present $choices original authored choices"
+  key "$choice"
+  for ((turn=0;turn<36;turn++)); do
+    (( $(count 'Vesper exploration resumed at previous world position') > previous_return )) && break
+    alive
+    key Return
+  done
+  (( $(count 'Vesper exploration resumed at previous world position') > previous_return )) ||
+    fail "$target did not resume the authored exploration location"
+  (( $(count "Vesper scene dialogue: $result") > previous_result )) ||
+    fail "$target did not reach expected authored result scene $result"
+  echo "REAL BEVY OPTIONAL PASS: $target -> $scene -> choice $choice -> $result -> exploration"
+}
+
 wait_log 'Vesper scene dialogue: intro'
 advance_until 'Vesper exploration area loaded: street;' 30
 frame '01-street-opening.png'
@@ -282,6 +314,12 @@ wait_log 'Vesper save restored: Conversation'
 key q
 wait_log 'Vesper exploration conversation cancelled'
 
+# The old doorway is independently interactable: its remembered scene must
+# return to precisely this street and persist in later saves/endings.
+walk_to street 420 22
+exercise_optional_interaction old_door threshold_memory 2 1 threshold_remember
+frame '03-old-door-returned-street.png'
+
 # Walk to the actual shop exit and enter it, instead of simulating a teleport.
 walk_to street 654 34
 frame '03-street-after-walking.png'
@@ -299,6 +337,13 @@ check_mateo_bubble
 capture_responsive_scene '05-mateo'
 key q
 wait_log 'Vesper exploration conversation cancelled'
+
+# The painted cat and merchandise have independently authored interaction
+# targets: reach their distinct hitspots without using the T shortcut.
+walk_to store 302 12
+exercise_optional_interaction cat shop_cat 2 1 shop_cat_pet
+walk_to store 270 12
+exercise_optional_interaction display shop_display 2 1 shop_display_remember
 
 # Ledger privacy regression: real in-world interactions must preserve the
 # earlier privacy breach even if the player later leaves the ledger closed.
@@ -372,6 +417,17 @@ wait_log 'Vesper exploration exit: store/street_door -> street'
 wait_log 'Vesper exploration area loaded: street;'
 wait_new_area_frame '04-store-interior.png' '06-returned-to-street.png'
 current_x=685
+# Rosa is a separate street NPC with a three-way conversation, whose
+# chosen branch must contribute to the actual ending.
+walk_to street 830 20
+exercise_optional_interaction rosa rosa_chat 3 1 rosa_people
+prior=$(count 'Vesper save written')
+key F5
+wait_increment 'Vesper save written' "$prior" 40
+saved_boolean remembered_door true
+saved_boolean stroked_cat true
+saved_boolean read_display true
+saved_boolean heard_rosa true
 walk_to street 930 32
 key e
 wait_log 'Vesper exploration interacting: noticeboard -> board_read'
@@ -439,4 +495,4 @@ done
 if grep -Ei 'Story transition/asset error|Story error:|thread .* panicked|asset failed' "$log"; then
   fail 'runtime reported story, asset, or renderer error'
 fi
-printf 'REAL BEVY GAME PASS: intro; 2 worlds; 2 direct NPCs; persistent ledger privacy F5; save/restore; world exit/return; noticeboard; 3 endings.\n'
+printf 'REAL BEVY GAME PASS: intro; 2 worlds; Elena, Mateo and Rosa; old door, cat, display and ledger; persistent F5 optional flags and ledger privacy; world exit/return; noticeboard; postpone/revisit; 3 endings.\\n'
