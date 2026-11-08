@@ -309,7 +309,7 @@ mode visual_novel
 background street_evening
 surface panel
 if board_postponed == true
-"El primer día que viste el aviso no sabías qué proponer. Regresar después no te vuelve experto, pero te obliga a ser más cuidadoso con el plan."
+"La primera vez que viste el aviso no sabías qué proponer. Regresar después no te vuelve experto, pero te obliga a ser más cuidadoso con el plan."
 end
 if remembered_door == true
 "Recuerdas el portal de madera y decides que una propuesta sirve más cuando deja entrar a quien tendrá que vivir con ella."
