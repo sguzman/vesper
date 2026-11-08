@@ -515,7 +515,10 @@ for item in '1:ending_listen' '2:ending_open' '3:ending_quiet'; do
     done
     (( $(count 'Vesper dialogue surface: Bubble') > prior_bubble )) ||
       fail 'Elena VN-only listening ending never switched from panel to bubble'
-    sleep .7  # Log event precedes the actual Bevy frame present.
+    # Wait for the short sentence to be completely revealed, not just for
+    # the surface transition log. The artifact must show readable complete
+    # authored dialogue and prove the bubble remains face-safe.
+    sleep 2.5
     frame '07-ending-listen-elena-vn-bubble.png'
     previous_panel=$(count 'Vesper dialogue surface: Panel')
     for ((turn=0;turn<14;turn++)); do

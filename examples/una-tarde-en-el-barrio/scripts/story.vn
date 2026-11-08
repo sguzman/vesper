@@ -293,7 +293,7 @@ end
 if heard_elena == true
 "Elena se detiene junto al tablón. Ve el lápiz suspendido en tu mano y se queda un instante a tu lado."
 surface bubble
-elena: "No escribas por Mateo. Escribe para que también lo escuchen."
+elena: "No escribas por Mateo. Escúchalo primero."
 surface panel
 end
 "Escribes: 'Antes de decidir qué conservar, preguntémonos qué necesita quien vive y trabaja aquí.'"
