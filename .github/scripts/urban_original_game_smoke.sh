@@ -504,6 +504,7 @@ for item in '1:ending_listen' '2:ending_open' '3:ending_quiet'; do
   index=${item%%:*}
   ending=${item#*:}
   prior_bubble=$(count 'Vesper dialogue surface: Bubble')
+  prior_hint=$(count 'Vesper bubble scroll hint visible')
   key "$index"
   if [[ $index == 1 ]]; then
     # This is a real VN-only staged character bubble in ending_listen,
@@ -520,6 +521,8 @@ for item in '1:ending_listen' '2:ending_open' '3:ending_quiet'; do
     # authored dialogue and prove the bubble remains face-safe.
     sleep 2.5
     frame '07-ending-listen-elena-vn-bubble.png'
+    (( $(count 'Vesper bubble scroll hint visible') == prior_hint )) ||
+      fail 'Short Elena ending bubble clipped its text and displayed PgDn overflow'
     previous_panel=$(count 'Vesper dialogue surface: Panel')
     for ((turn=0;turn<14;turn++)); do
       (( $(count 'Vesper dialogue surface: Panel') > previous_panel )) && break
