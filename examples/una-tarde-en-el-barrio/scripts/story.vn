@@ -239,7 +239,7 @@ music golden_hour
 surface panel
 if board_postponed == true
 "Vuelves al tablón. El lápiz sigue atado a la misma cuerda, pero ahora sabes que no tenías que contestar en tu primera visita."
-"El aviso sigue ahí. La decisión todavía no es tuya por completo, aunque hayas tenido tiempo para escuchar."
+"El aviso sigue ahí. Has vuelto, pero eso no significa que tengas que decidir por Mateo."
 else
 "EL TABLÓN DE LA PLAZA. Un cuarto en renta, clases de guitarra, una bicicleta extraviada y tres anuncios con la misma letra."
 "Una hoja nueva propone una reunión vecinal antes de decidir el futuro del local. Abajo hay espacio para dejar una respuesta."
@@ -341,7 +341,7 @@ mode visual_novel
 background street_evening
 surface panel
 if board_postponed == true
-"Regresaste a leer el aviso y sigues sin querer poner tu nombre bajo una decisión que no te corresponde. Volver también era una forma de escuchar."
+"Regresaste a leer el aviso y sigues sin querer poner tu nombre bajo una decisión que no te corresponde. Haber vuelto no te obliga a escribir."
 end
 if remembered_door == true
 "La puerta antigua sigue tras de ti. Has entendido que recordar un sitio no te da derecho a decidir su futuro."
