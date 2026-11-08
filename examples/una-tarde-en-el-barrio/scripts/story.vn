@@ -290,6 +290,12 @@ end
 if met_elena == true
 show elena calm at left
 end
+if heard_elena == true
+"Elena se detiene junto al tablón. Ve el lápiz suspendido en tu mano y se queda un instante a tu lado."
+surface bubble
+elena: "No escribas por Mateo. Escribe para que también lo escuchen."
+surface panel
+end
 "Escribes: 'Antes de decidir qué conservar, preguntémonos qué necesita quien vive y trabaja aquí.'"
 if met_mateo == true
 "Mateo lo lee antes que nadie. No sonríe, pero al día siguiente hay una silla más frente a la tienda."
