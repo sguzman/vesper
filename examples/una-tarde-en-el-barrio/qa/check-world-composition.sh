@@ -82,7 +82,11 @@ elif [[ $store_background != "$interim_background" &&
     exit 1
   }
   bash "$source_check"
-  echo 'Shop layer gate OK: clean background and two source-verified independent sprites.'
+  # A future repaint must retain actual original shop landmarks as well as
+  # delivering coherent independent sprites; a new generic shop is not enough.
+  bash "$root/qa/check-store-background-continuity.sh" \
+    "$root/$interim_background" "$root/$store_background"
+  echo 'Shop layer gate OK: clean background, original landmarks and two source-verified independent sprites.'
 else
   echo 'ERROR: partial shop art migration: change painted background, VN alias, Mateo and cat sprites atomically' >&2
   exit 1
