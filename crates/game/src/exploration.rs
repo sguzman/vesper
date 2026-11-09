@@ -150,6 +150,10 @@ pub struct Npc {
     /// Relative to the existing 85px tall actor reference. Default 1.0.
     #[serde(default = "default_actor_scale")]
     pub scale: f32,
+    /// Render-only raise above the area's ground line in logical world pixels.
+    /// Positive is up; does not move the NPC's horizontal interaction point.
+    #[serde(default)]
+    pub elevation: f32,
     #[serde(default = "default_radius")]
     pub interaction_radius: f32,
     /// Optional story-state gate; missing variables are treated as false.
@@ -165,6 +169,13 @@ pub struct Prop {
     pub interact_scene: Option<String>,
     #[serde(default)]
     pub image: Option<String>,
+    /// Relative to the existing 46px tall prop reference. Default 1.0.
+    #[serde(default = "default_actor_scale")]
+    pub scale: f32,
+    /// Render-only raise above the area's ground line in logical world pixels.
+    /// Positive is up; x and the interaction radius remain unchanged.
+    #[serde(default)]
+    pub elevation: f32,
     #[serde(default = "default_radius")]
     pub interaction_radius: f32,
     #[serde(default)]
@@ -442,8 +453,12 @@ impl Exploration {
                     || !validate_radius(npc.interaction_radius)
                     || !npc.scale.is_finite()
                     || !(0.35..=3.5).contains(&npc.scale)
+                    || !npc.elevation.is_finite()
+                    || npc.elevation.abs() > location.height
                 {
-                    return Err(format!("{slot}: invalid interaction position/radius/scale"));
+                    return Err(format!(
+                        "{slot}: invalid interaction position/radius/scale/elevation"
+                    ));
                 }
                 scene(story, &npc.interact_scene, &format!("{slot}.interact_scene"))?;
                 if let Some(condition) = &npc.visible_if {
@@ -458,8 +473,14 @@ impl Exploration {
                 identifier(name, &slot)?;
                 if !valid_coordinate(prop.x, location.width)
                     || !validate_radius(prop.interaction_radius)
+                    || !prop.scale.is_finite()
+                    || !(0.35..=3.5).contains(&prop.scale)
+                    || !prop.elevation.is_finite()
+                    || prop.elevation.abs() > location.height
                 {
-                    return Err(format!("{slot}: invalid interaction position/radius"));
+                    return Err(format!(
+                        "{slot}: invalid interaction position/radius/scale/elevation"
+                    ));
                 }
                 if let Some(scene_id) = &prop.interact_scene {
                     scene(story, scene_id, &format!("{slot}.interact_scene"))?;
@@ -660,7 +681,8 @@ interact_scene = "chat"
         world.locations.get_mut("street").unwrap().props.insert(
             "friend".into(),
             Prop { x: 130.0, interact_scene: Some("chat".into()),
-                image: None, interaction_radius: 70.0, visible_if: None },
+                image: None, scale: 1.0, elevation: 0.0,
+                interaction_radius: 70.0, visible_if: None },
         );
         assert!(world.validate(&fixture.0, &story).unwrap_err()
             .contains("quick_interact"));
@@ -725,6 +747,46 @@ interact_scene = "chat"
             .contains("layers.counter_front"));
         let invalid = source.replace("plane = \"foreground\"", "plane = 1");
         assert!(toml::from_str::<Exploration>(&invalid).is_err());
+    }
+
+    #[test]
+    fn authored_actor_elevation_and_prop_scale_preserve_legacy_defaults() {
+        let (mut world, fixture, story) = load(GOOD);
+        assert_eq!(world.locations["street"].npcs["friend"].elevation, 0.0);
+        assert_eq!(world.locations["cafe"].props["counter"].elevation, 0.0);
+        assert_eq!(world.locations["cafe"].props["counter"].scale, 1.0);
+        {
+            let npc = world.locations.get_mut("street").unwrap()
+                .npcs.get_mut("friend").unwrap();
+            npc.elevation = 80.0;
+        }
+        {
+            let prop = world.locations.get_mut("cafe").unwrap()
+                .props.get_mut("counter").unwrap();
+            prop.elevation = 170.0;
+            prop.scale = 2.0;
+        }
+        world.validate(&fixture.0, &story).unwrap();
+        assert_eq!(world.locations["cafe"].props["counter"].x, 145.0);
+        // A visual raise never changes the independent one-dimensional
+        // interaction point or the authored scene transition.
+        assert_eq!(world.locations["cafe"].props["counter"].interact_scene.as_deref(),
+            Some("chat"));
+        let mut invalid = world.clone();
+        invalid.locations.get_mut("cafe").unwrap()
+            .props.get_mut("counter").unwrap().elevation = 721.0;
+        assert!(invalid.validate(&fixture.0, &story).unwrap_err()
+            .contains("props.counter"));
+        let mut invalid = world.clone();
+        invalid.locations.get_mut("street").unwrap()
+            .npcs.get_mut("friend").unwrap().elevation = f32::NAN;
+        assert!(invalid.validate(&fixture.0, &story).unwrap_err()
+            .contains("npcs.friend"));
+        let mut invalid = world.clone();
+        invalid.locations.get_mut("cafe").unwrap()
+            .props.get_mut("counter").unwrap().scale = 0.0;
+        assert!(invalid.validate(&fixture.0, &story).unwrap_err()
+            .contains("props.counter"));
     }
 
     #[test]
