@@ -143,6 +143,16 @@ jobs:
           path: /tmp/vesper-urban-native-qa/**/*
           if-no-files-found: ignore
           retention-days: 14
+      - name: Prove authored foreground and overlay Z bands in native Bevy pixels
+        run: xvfb-run -a -s '-screen 0 1920x1080x24' bash .github/scripts/exploration_layer_planes_smoke.sh
+      - name: Preserve foreground-layer actual gameplay screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-exploration-layer-planes
+          path: /tmp/vesper-layer-plane-qa/*
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Preserve native player for external game acceptance checks
         uses: actions/upload-artifact@v4
         with:
