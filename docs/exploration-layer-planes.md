@@ -1,18 +1,18 @@
 # Optional exploration layer planes
 
 Vesper's external version-one exploration schema now accepts an optional
-\`plane\` on each authored \`[exploration.locations.<place>.layers.<name>]\`
+`plane` on each authored `[exploration.locations.<place>.layers.<name>]`
 table. **Omitting it behaves exactly as before**; old pure visual novels and
 old exploration packages need no migration.
 
-| \`plane\` | Draw order | Intended use |
+| `plane` | Draw order | Intended use |
 | --- | --- | --- |
-| \`"background"\` (default) | With authored scenery, behind NPCs, props and the player | Distant scenery, parallax backgrounds |
-| \`"foreground"\` | **Above NPCs and props, below the player avatar** | Transparent counter fronts, railings, vegetation overlapping actors |
-| \`"overlay"\` | Above NPCs, props **and** the player avatar | Translucent rain, windows, overhead visual effects |
+| `"background"` (default) | With authored scenery, behind NPCs, props and the player | Distant scenery, parallax backgrounds |
+| `"foreground"` | **Above NPCs and props, below the player avatar** | Transparent counter fronts, railings, vegetation overlapping actors |
+| `"overlay"` | Above NPCs, props **and** the player avatar | Translucent rain, windows, overhead visual effects |
 
-Each plane retains the existing bounded \`depth = -12.0..12.0\` sorting
-preference within that plane. \`parallax = 0.0..2.0\` and the authored
+Each plane retains the existing bounded `depth = -12.0..12.0` sorting
+preference within that plane. `parallax = 0.0..2.0` and the authored
 full-scene transparent PNG path behave as before. Engine-owned UI remains
 outside exploration world layers, so overlays must not become a faux dialog
 box. Foreground/overlay do not grant new interaction, collision, or movement
@@ -21,13 +21,13 @@ behavior.
 Illustrative, **not installed in any example**, for a shop whose actual art
 pipeline eventually supplies a transparent foreground countertop strip:
 
-\`\`\`toml
+```toml
 [exploration.locations.store.layers.counter_front]
 image = "assets/backgrounds/shop-counter-front.png"
 plane = "foreground"
 depth = 0.0
 parallax = 1.0
-\`\`\`
+```
 
 The transparent image should use the same full-scene canvas and viewpoint
 as the world background. Its nontransparent pixels should appear only where
@@ -39,10 +39,10 @@ flattened shop image and invisible Mateo/cat hitspots are unchanged**.
 
 ## Implementation safety
 
-- \`background\` preserves legacy \`z = -5.5 + 0.08 * depth\`.
-- \`foreground\` uses a distinct actor-safe band around \`z = 3\` (NPCs
-  at \`z = 2\`, props at \`z = 1.5\`, avatar at \`z = 4\`).
-- \`overlay\` uses a separate band around \`z = 5\`, above the avatar.
+- `background` preserves legacy `z = -5.5 + 0.08 * depth`.
+- `foreground` uses a distinct actor-safe band around `z = 3` (NPCs
+  at `z = 2`, props at `z = 1.5`, avatar at `z = 4`).
+- `overlay` uses a separate band around `z = 5`, above the avatar.
 - All three bands stay disjoint for the existing validated depth range.
   The numeric scale is an internal implementation detail, not a game
   authoring requirement.
