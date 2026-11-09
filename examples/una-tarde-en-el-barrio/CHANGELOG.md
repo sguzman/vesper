@@ -1,5 +1,11 @@
 # Una Tarde en el Barrio — Development history
 
+## Unreleased — staged VN-only Elena bubble in the listening ending (2026-11-08)
+
+- If Elena's conversation was completed, the listening ending now stages her existing authored portrait and lets her speak once through a native anchored bubble inside the visual-novel-only ending, then returns to the illustrated panel for the protagonist's written choice.
+- The conditional prevents a character from speaking as a familiar confidante if the player never completed an exchange. The original three endings, encounter states and noticeboard choices remain unchanged.
+- Strengthens genuine use of an existing engine capability in an emotionally grounded original-game moment; do not infer artistic or physical owner approval. No new assets, engine branches, save format changes, game-specific Rust or runtime scripts. Formal roadmap 54/100, Δ0.
+
 ## Unreleased — revisits acknowledge the player (2026-11-08)
 
 - Elena, Rosa and Mateo now recognize return visits rather than repeating their first meeting; the initial dialogue and all existing choices remain intact.
