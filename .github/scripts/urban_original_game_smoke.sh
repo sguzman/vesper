@@ -84,14 +84,17 @@ walk() {
 current_x=145
 walk_to() {
   local loc=$1 target=$2 tolerance=$3 iter dist secs direction
-  for ((iter=0;iter<17;iter++)); do
+  for ((iter=0;iter<28;iter++)); do
     if awk -v x="$current_x" -v t="$target" -v tol="$tolerance" \
       'BEGIN {d=x-t; if (d<0)d=-d; exit !(d<=tol)}'; then
       echo "Reached $loc x=$current_x (target $target)"
       return 0
     fi
     dist=$(awk -v x="$current_x" -v t="$target" 'BEGIN {d=x-t; if(d<0)d=-d; print d}')
-    secs=$(awk -v d="$dist" 'BEGIN {s=d/235.0; if(s<0.15)s=0.15; if(s>1.05)s=1.05; printf "%.2f",s}')
+    # Near a target, the old 150ms minimum could move 35-55px under
+    # llvmpipe, forever overshooting a 12px interaction tolerance.
+    # Prefer shorter, conservative taps; retain the 1.05s far-walk cap.
+    secs=$(awk -v d="$dist" 'BEGIN {s=d/235.0*0.60; if(s<0.05)s=0.05; if(s>1.05)s=1.05; printf "%.2f",s}')
     direction=$(awk -v x="$current_x" -v t="$target" 'BEGIN {print (x<t)?"Right":"Left"}')
     walk "$loc" "$direction" "$secs"
   done
