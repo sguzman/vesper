@@ -213,6 +213,18 @@ pub struct Exit {
     pub interaction_radius: f32,
 }
 
+/// Z-order group for original game-owned PNG layers. The default preserves
+/// all existing scenery layering; foreground sits above NPCs and props but
+/// below the player, and overlay sits above the complete world cast.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LayerPlane {
+    #[default]
+    Background,
+    Foreground,
+    Overlay,
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Layer {
@@ -221,6 +233,9 @@ pub struct Layer {
     pub parallax: f32,
     #[serde(default)]
     pub depth: f32,
+    /// Optional actor-occluding layer: legacy manifests default to background.
+    #[serde(default)]
+    pub plane: LayerPlane,
 }
 
 fn default_radius() -> f32 { 72.0 }
@@ -688,6 +703,28 @@ interact_scene = "chat"
         world.ui.target_names.remove("unknown_id");
         world.ui.target_names.insert("friend".into(), "Elena\n".into());
         assert!(world.validate(&fixture.0, &story).is_err());
+    }
+
+
+    #[test]
+    fn authored_occlusion_plane_is_optional_typed_and_keeps_existing_layers() {
+        let source = format!("{GOOD}\\n[locations.street.layers.old_sky]\\nimage = \\"scene.png\\"\\n[locations.street.layers.counter_front]\\nimage = \\"scene.png\\"\\nplane = \\"foreground\\"\\ndepth = 2.0\\n[locations.street.layers.rain_glass]\\nimage = \\"scene.png\\"\\nplane = \\"overlay\\"\\n");
+        let (world, fixture, story) = load(&source);
+        world.validate(&fixture.0, &story).unwrap();
+        let layers = &world.locations["street"].layers;
+        assert_eq!(layers["old_sky"].plane, LayerPlane::Background);
+        assert_eq!(layers["counter_front"].plane, LayerPlane::Foreground);
+        assert_eq!(layers["rain_glass"].plane, LayerPlane::Overlay);
+        assert_eq!(layers["counter_front"].depth, 2.0);
+
+        let invalid = source.replace("plane = \\"foreground\\"", "plane = \\"under_npc\\"");
+        assert!(toml::from_str::<Exploration>(&invalid).is_err());
+        let invalid = source.replace("depth = 2.0", "depth = 50.0");
+        let (world, fixture, story) = load(&invalid);
+        assert!(world.validate(&fixture.0, &story).unwrap_err()
+            .contains("layers.counter_front"));
+        let invalid = source.replace("plane = \\"foreground\\"", "plane = 1");
+        assert!(toml::from_str::<Exploration>(&invalid).is_err());
     }
 
     #[test]
