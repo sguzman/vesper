@@ -631,7 +631,7 @@ mod tests {
         let mut npcs = std::collections::BTreeMap::new();
         let mateo = Npc {
             x: 820.0, interact_scene: "mateo_chat".into(), image: None,
-            scale: 1.0, interaction_radius: 140.0, visible_if: None,
+            scale: 1.0, elevation: 0.0, interaction_radius: 140.0, visible_if: None,
         };
         npcs.insert("mateo".to_owned(), mateo);
         assert_eq!(unique_modal_npc(&npcs, "mateo_chat").map(|npc| npc.x),
@@ -640,7 +640,7 @@ mod tests {
         // Two NPCs sharing a scene are ambiguous; do not fabricate a tail.
         npcs.insert("second".to_owned(), Npc {
             x: 200.0, interact_scene: "mateo_chat".into(), image: None,
-            scale: 1.0, interaction_radius: 140.0, visible_if: None,
+            scale: 1.0, elevation: 0.0, interaction_radius: 140.0, visible_if: None,
         });
         assert!(unique_modal_npc(&npcs, "mateo_chat").is_none());
     }
