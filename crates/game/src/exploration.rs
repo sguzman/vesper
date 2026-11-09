@@ -708,7 +708,7 @@ interact_scene = "chat"
 
     #[test]
     fn authored_occlusion_plane_is_optional_typed_and_keeps_existing_layers() {
-        let source = format!("{GOOD}\\n[locations.street.layers.old_sky]\\nimage = \\"scene.png\\"\\n[locations.street.layers.counter_front]\\nimage = \\"scene.png\\"\\nplane = \\"foreground\\"\\ndepth = 2.0\\n[locations.street.layers.rain_glass]\\nimage = \\"scene.png\\"\\nplane = \\"overlay\\"\\n");
+        let source = format!("{GOOD}\n[locations.street.layers.old_sky]\nimage = \"scene.png\"\n[locations.street.layers.counter_front]\nimage = \"scene.png\"\nplane = \"foreground\"\ndepth = 2.0\n[locations.street.layers.rain_glass]\nimage = \"scene.png\"\nplane = \"overlay\"\n");
         let (world, fixture, story) = load(&source);
         world.validate(&fixture.0, &story).unwrap();
         let layers = &world.locations["street"].layers;
@@ -717,13 +717,13 @@ interact_scene = "chat"
         assert_eq!(layers["rain_glass"].plane, LayerPlane::Overlay);
         assert_eq!(layers["counter_front"].depth, 2.0);
 
-        let invalid = source.replace("plane = \\"foreground\\"", "plane = \\"under_npc\\"");
+        let invalid = source.replace("plane = \"foreground\"", "plane = \"under_npc\"");
         assert!(toml::from_str::<Exploration>(&invalid).is_err());
         let invalid = source.replace("depth = 2.0", "depth = 50.0");
         let (world, fixture, story) = load(&invalid);
         assert!(world.validate(&fixture.0, &story).unwrap_err()
             .contains("layers.counter_front"));
-        let invalid = source.replace("plane = \\"foreground\\"", "plane = 1");
+        let invalid = source.replace("plane = \"foreground\"", "plane = 1");
         assert!(toml::from_str::<Exploration>(&invalid).is_err());
     }
 
