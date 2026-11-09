@@ -133,7 +133,11 @@ fn world_npc_head(
     let ground_y = (0.25 - area.camera.horizon) * viewport.y;
     Vec2::new(
         viewport.x * 0.5 + view.x(npc.x),
-        viewport.y * 0.5 - ground_y - 42.5 * view.world_to_screen,
+        // The renderer places the sprite at ground + authored elevation,
+        // then scales its 85px nominal height by the NPC's own scale.
+        // Anchor the bubble above the *visible* head, not the old ground.
+        viewport.y * 0.5 - ground_y
+            - (npc.elevation + 42.5 * npc.scale) * view.world_to_screen,
     ) / scale.max(0.05)
 }
 
@@ -631,7 +635,7 @@ mod tests {
         let mut npcs = std::collections::BTreeMap::new();
         let mateo = Npc {
             x: 820.0, interact_scene: "mateo_chat".into(), image: None,
-            scale: 1.0, interaction_radius: 140.0, visible_if: None,
+            scale: 1.0, elevation: 0.0, interaction_radius: 140.0, visible_if: None,
         };
         npcs.insert("mateo".to_owned(), mateo);
         assert_eq!(unique_modal_npc(&npcs, "mateo_chat").map(|npc| npc.x),
@@ -640,9 +644,50 @@ mod tests {
         // Two NPCs sharing a scene are ambiguous; do not fabricate a tail.
         npcs.insert("second".to_owned(), Npc {
             x: 200.0, interact_scene: "mateo_chat".into(), image: None,
-            scale: 1.0, interaction_radius: 140.0, visible_if: None,
+            scale: 1.0, elevation: 0.0, interaction_radius: 140.0, visible_if: None,
         });
         assert!(unique_modal_npc(&npcs, "mateo_chat").is_none());
+    }
+
+    #[test]
+    fn modal_npc_bubble_head_tracks_authored_elevation_and_scale() {
+        use vesper_game::exploration::{Location, Npc};
+        let area = Location {
+            background: "test.png".into(), width: 1280.0, height: 720.0,
+            camera: Default::default(), quick_interact: None,
+            spawns: Default::default(), npcs: Default::default(),
+            props: Default::default(), exits: Default::default(),
+            layers: Default::default(),
+        };
+        let mut npc = Npc {
+            x: 640.0, interact_scene: "chat".into(), image: None,
+            scale: 1.0, elevation: 0.0,
+            interaction_radius: 95.0, visible_if: None,
+        };
+        let viewport = Vec2::new(1280.0, 720.0);
+        let legacy = world_npc_head(&npc, &area, 640.0, viewport, 1.0);
+        assert!((legacy.x - 640.0).abs() < 0.1);
+        assert!((legacy.y - 497.5).abs() < 0.1);
+        npc.scale = 2.0;
+        npc.elevation = 180.0;
+        let elevated = world_npc_head(&npc, &area, 640.0, viewport, 1.0);
+        assert!((elevated.x - legacy.x).abs() < 0.1);
+        assert!((legacy.y - elevated.y - 222.5).abs() < 0.1);
+        let half_ui = world_npc_head(&npc, &area, 640.0, viewport, 2.0);
+        assert!((half_ui.y * 2.0 - elevated.y).abs() < 0.1);
+
+        // A compact window scales the elevation and apparent head size
+        // together, without moving the authored world interaction point.
+        let compact = Vec2::new(946.0, 511.0);
+        let raised_compact = world_npc_head(&npc, &area, 640.0, compact, 1.0);
+        npc.scale = 1.0;
+        npc.elevation = 0.0;
+        let default_compact = world_npc_head(&npc, &area, 640.0, compact, 1.0);
+        let compact_scale = 511.0 / 720.0;
+        assert!((raised_compact.x - 473.0).abs() < 0.1);
+        assert!((default_compact.x - raised_compact.x).abs() < 0.1);
+        assert!((default_compact.y - raised_compact.y
+            - 222.5 * compact_scale).abs() < 0.1);
     }
 
     #[test]

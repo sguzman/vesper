@@ -69,6 +69,12 @@ fn layer_z(plane: LayerPlane, depth: f32) -> f32 {
     }
 }
 
+/// Offset an authored actor/prop from the area's normal ground baseline.
+/// Logical world pixels scale with the same aspect-preserving camera ratio.
+fn elevated_y(ground_y: f32, elevation: f32, world_to_screen: f32) -> f32 {
+    ground_y + elevation * world_to_screen
+}
+
 /// Spawn exactly one authored area; entity ownership is isolated to this
 /// subsystem, so transitions can despawn the previous area atomically.
 fn spawn_area(commands: &mut Commands, world: &Exploration,
@@ -547,15 +553,24 @@ pub fn sync(
             AreaVisual::Npc { x, .. } | AreaVisual::Prop { x, .. } => {
                 let desired_x = view.x(*x);
                 if transform.translation.x != desired_x { transform.translation.x = desired_x; }
-                if transform.translation.y != ground_y { transform.translation.y = ground_y; }
+                // Elevation is a visual offset only: interaction, walking,
+                // autosaves and focus continue to use the original world x.
+                let (actor_scale, elevation) = match part {
+                    AreaVisual::Npc { id, .. } => current_area
+                        .and_then(|area| area.npcs.get(id))
+                        .map_or((1.0, 0.0), |npc| (npc.scale, npc.elevation)),
+                    AreaVisual::Prop { id, .. } => current_area
+                        .and_then(|area| area.props.get(id))
+                        .map_or((1.0, 0.0), |prop| (prop.scale, prop.elevation)),
+                    _ => (1.0, 0.0),
+                };
+                let desired_y = elevated_y(ground_y, elevation, view.world_to_screen);
+                if transform.translation.y != desired_y { transform.translation.y = desired_y; }
                 let natural_height = sprite_height(
                     &sprite, &images,
                     if matches!(part, AreaVisual::Npc { .. }) { 85.0 } else { 46.0 },
                 );
                 let height = if matches!(part, AreaVisual::Npc { .. }) { 85.0 } else { 46.0 };
-                let actor_scale = if let AreaVisual::Npc { id, .. } = part {
-                    current_area.and_then(|area| area.npcs.get(id)).map_or(1.0, |npc| npc.scale)
-                } else { 1.0 };
                 let scale = Vec3::splat(
                     view.world_to_screen * height * actor_scale / natural_height
                 );
@@ -726,6 +741,18 @@ mod tests {
             < layer_z(LayerPlane::Foreground, 12.0));
         assert!(layer_z(LayerPlane::Overlay, -12.0)
             < layer_z(LayerPlane::Overlay, 12.0));
+    }
+
+    #[test]
+    fn elevated_actor_placement_scales_with_camera_without_horizontal_input() {
+        let ground_y = -230.4;
+        let y_normal = elevated_y(ground_y, 0.0, 1.0);
+        let y_counter = elevated_y(ground_y, 180.0, 1.0);
+        assert!((y_normal - ground_y).abs() < 0.01);
+        assert!((y_counter - (ground_y + 180.0)).abs() < 0.01);
+        let compact_y = elevated_y(ground_y, 180.0, 0.74);
+        assert!((compact_y - ground_y - 133.2).abs() < 0.02);
+        assert!(y_counter > y_normal);
     }
 
     #[test]
