@@ -44,7 +44,9 @@ wait_log() {
   done
   fail "timed out waiting for log: $phrase"
 }
-wait_increment() {
+# Poll for a fresh event without failing, so walk() can retry an
+# input pulse that Bevy did not sample.
+poll_increment() {
   local phrase=$1 prior=$2 limit=${3:-80} tick current
   for ((tick=0;tick<limit;tick++)); do
     current=$(count "$phrase")
@@ -52,8 +54,13 @@ wait_increment() {
     alive
     sleep .25
   done
-  # Caller decides whether an unsampled short key pulse warrants a retry.
   return 1
+}
+# All non-walking events retain strict fail-fast diagnostics.
+wait_increment() {
+  local phrase=$1 prior=$2 limit=${3:-80}
+  poll_increment "$phrase" "$prior" "$limit" ||
+    fail "no new event in log: $phrase (prior=$prior)"
 }
 window=''
 for ((try=0;try<180;try++)); do
@@ -89,7 +96,7 @@ walk() {
     xdotool keydown --clearmodifiers "$direction"
     sleep "$pulse"
     xdotool keyup --clearmodifiers "$direction"
-    if wait_increment "Vesper exploration stopped: $loc at x=" "$prior" 16; then
+    if poll_increment "Vesper exploration stopped: $loc at x=" "$prior" 16; then
       break
     fi
     if (( attempt == 3 )); then
