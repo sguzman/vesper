@@ -675,6 +675,19 @@ mod tests {
         assert!((legacy.y - elevated.y - 222.5).abs() < 0.1);
         let half_ui = world_npc_head(&npc, &area, 640.0, viewport, 2.0);
         assert!((half_ui.y * 2.0 - elevated.y).abs() < 0.1);
+
+        // A compact window scales the elevation and apparent head size
+        // together, without moving the authored world interaction point.
+        let compact = Vec2::new(946.0, 511.0);
+        let raised_compact = world_npc_head(&npc, &area, 640.0, compact, 1.0);
+        npc.scale = 1.0;
+        npc.elevation = 0.0;
+        let default_compact = world_npc_head(&npc, &area, 640.0, compact, 1.0);
+        let compact_scale = 511.0 / 720.0;
+        assert!((raised_compact.x - 473.0).abs() < 0.1);
+        assert!((default_compact.x - raised_compact.x).abs() < 0.1);
+        assert!((default_compact.y - raised_compact.y
+            - 222.5 * compact_scale).abs() < 0.1);
     }
 
     #[test]
