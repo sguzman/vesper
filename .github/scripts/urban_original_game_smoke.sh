@@ -52,7 +52,8 @@ wait_increment() {
     alive
     sleep .25
   done
-  fail "no new event in log: $phrase (prior=$prior)"
+  # Caller decides whether an unsampled short key pulse warrants a retry.
+  return 1
 }
 window=''
 for ((try=0;try<180;try++)); do
@@ -70,13 +71,33 @@ key() {
   sleep .19
 }
 walk() {
-  local loc=$1 direction=$2 seconds=$3 prior
+  local loc=$1 direction=$2 seconds=$3 prior attempt pulse
   prior=$(count "Vesper exploration stopped: $loc at x=")
-  timeout 5s xdotool windowfocus --sync "$window" || fail 'could not focus world'
-  xdotool keydown --clearmodifiers "$direction"
-  sleep "$seconds"
-  xdotool keyup --clearmodifiers "$direction"
-  wait_increment "Vesper exploration stopped: $loc at x=" "$prior" 40
+  # Near a narrow hitspot the authored steering deliberately uses 50ms taps.
+  # Under a 15-FPS (or temporarily stalled) software renderer a keydown AND
+  # keyup can occur between input polls. Such a tap causes no movement and
+  # therefore emits no stop event. Retry *only* when the stop-event count has
+  # not increased, rather than treating an unsampled pulse as broken gameplay.
+  for ((attempt=1;attempt<=3;attempt++)); do
+    pulse=$seconds
+    if (( attempt == 2 )); then
+      pulse=$(awk -v s="$seconds" 'BEGIN {if(s<0.09)s=0.09; printf "%.2f",s}')
+    elif (( attempt == 3 )); then
+      pulse=$(awk -v s="$seconds" 'BEGIN {if(s<0.12)s=0.12; printf "%.2f",s}')
+    fi
+    timeout 5s xdotool windowfocus --sync "$window" || fail 'could not focus world'
+    xdotool keydown --clearmodifiers "$direction"
+    sleep "$pulse"
+    xdotool keyup --clearmodifiers "$direction"
+    if wait_increment "Vesper exploration stopped: $loc at x=" "$prior" 16; then
+      break
+    fi
+    if (( attempt == 3 )); then
+      fail "no new event in log: Vesper exploration stopped: $loc at x= (prior=$prior; after three input pulses)"
+    fi
+    printf 'Native input sample missed: %s %s for %ss; retry %d/3.\n' \
+      "$loc" "$direction" "$pulse" "$((attempt+1))" >&2
+  done
   current_x=$(grep -F "Vesper exploration stopped: $loc at x=" "$log" \
     | tail -n 1 | sed -E 's/.*at x=([0-9]+(\.[0-9]+)?).*/\1/')
   [[ $current_x =~ ^[0-9]+([.][0-9]+)?$ ]] || fail "no numeric position for $loc"
