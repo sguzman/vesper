@@ -133,7 +133,11 @@ fn world_npc_head(
     let ground_y = (0.25 - area.camera.horizon) * viewport.y;
     Vec2::new(
         viewport.x * 0.5 + view.x(npc.x),
-        viewport.y * 0.5 - ground_y - 42.5 * view.world_to_screen,
+        // The renderer places the sprite at ground + authored elevation,
+        // then scales its 85px nominal height by the NPC's own scale.
+        // Anchor the bubble above the *visible* head, not the old ground.
+        viewport.y * 0.5 - ground_y
+            - (npc.elevation + 42.5 * npc.scale) * view.world_to_screen,
     ) / scale.max(0.05)
 }
 
@@ -643,6 +647,34 @@ mod tests {
             scale: 1.0, elevation: 0.0, interaction_radius: 140.0, visible_if: None,
         });
         assert!(unique_modal_npc(&npcs, "mateo_chat").is_none());
+    }
+
+    #[test]
+    fn modal_npc_bubble_head_tracks_authored_elevation_and_scale() {
+        use vesper_game::exploration::{Location, Npc};
+        let area = Location {
+            background: "test.png".into(), width: 1280.0, height: 720.0,
+            camera: Default::default(), quick_interact: None,
+            spawns: Default::default(), npcs: Default::default(),
+            props: Default::default(), exits: Default::default(),
+            layers: Default::default(),
+        };
+        let mut npc = Npc {
+            x: 640.0, interact_scene: "chat".into(), image: None,
+            scale: 1.0, elevation: 0.0,
+            interaction_radius: 95.0, visible_if: None,
+        };
+        let viewport = Vec2::new(1280.0, 720.0);
+        let legacy = world_npc_head(&npc, &area, 640.0, viewport, 1.0);
+        assert!((legacy.x - 640.0).abs() < 0.1);
+        assert!((legacy.y - 497.5).abs() < 0.1);
+        npc.scale = 2.0;
+        npc.elevation = 180.0;
+        let elevated = world_npc_head(&npc, &area, 640.0, viewport, 1.0);
+        assert!((elevated.x - legacy.x).abs() < 0.1);
+        assert!((legacy.y - elevated.y - 222.5).abs() < 0.1);
+        let half_ui = world_npc_head(&npc, &area, 640.0, viewport, 2.0);
+        assert!((half_ui.y * 2.0 - elevated.y).abs() < 0.1);
     }
 
     #[test]
