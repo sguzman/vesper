@@ -7,7 +7,7 @@ use super::*;
 use vesper_game::{
     experience::{ExperienceMode, Facing},
     interaction::{self, Focus, TargetKind},
-    exploration::{Exploration, ExplorationUi, Location},
+    exploration::{Exploration, ExplorationUi, LayerPlane, Location},
     walk::{self, View},
 };
 
@@ -57,6 +57,18 @@ fn sprite_art(path: Option<&String>, assets: &AssetServer,
     })
 }
 
+/// Three non-overlapping Z bands ensure authored translucent scenery can
+/// properly occlude NPCs and shop props, without occluding the walking player
+/// unless the artist expressly chooses a full overlay. Existing layers retain
+/// the exact original -5.5 + 0.08 * depth ordering when plane is omitted.
+fn layer_z(plane: LayerPlane, depth: f32) -> f32 {
+    match plane {
+        LayerPlane::Background => -5.5 + depth * 0.08,
+        LayerPlane::Foreground => 3.0 + depth * 0.03,
+        LayerPlane::Overlay => 5.0 + depth * 0.03,
+    }
+}
+
 /// Spawn exactly one authored area; entity ownership is isolated to this
 /// subsystem, so transitions can despawn the previous area atomically.
 fn spawn_area(commands: &mut Commands, world: &Exploration,
@@ -73,7 +85,7 @@ fn spawn_area(commands: &mut Commands, world: &Exploration,
             Name::new(format!("Exploration layer: {id}")),
             AreaVisual::Layer { parallax: layer.parallax },
             sprite_art(Some(&layer.image), assets, Color::WHITE, Vec2::new(1280.0, 720.0)),
-            Transform::from_xyz(0.0, 0.0, -5.5 + layer.depth * 0.08),
+            Transform::from_xyz(0.0, 0.0, layer_z(layer.plane, layer.depth)),
             Visibility::Visible,
         ));
     }
@@ -698,6 +710,22 @@ mod tests {
         let prop = Sprite::from_color(Color::WHITE, Vec2::new(34.0, 46.0));
         assert_eq!(avatar.custom_size.unwrap().y, 85.0);
         assert_eq!(prop.custom_size.unwrap().y, 46.0);
+    }
+
+    #[test]
+    fn authored_layer_planes_occlude_only_the_intended_world_cast() {
+        // Backdrop z=-6, props z=1.5, NPCs z=2, player z=4.
+        assert_eq!(layer_z(LayerPlane::Background, 0.0), -5.5);
+        for depth in [-12.0, 0.0, 12.0] {
+            assert!(layer_z(LayerPlane::Background, depth) < 1.5);
+            assert!(layer_z(LayerPlane::Foreground, depth) > 2.0);
+            assert!(layer_z(LayerPlane::Foreground, depth) < 4.0);
+            assert!(layer_z(LayerPlane::Overlay, depth) > 4.0);
+        }
+        assert!(layer_z(LayerPlane::Foreground, -12.0)
+            < layer_z(LayerPlane::Foreground, 12.0));
+        assert!(layer_z(LayerPlane::Overlay, -12.0)
+            < layer_z(LayerPlane::Overlay, 12.0));
     }
 
     #[test]
