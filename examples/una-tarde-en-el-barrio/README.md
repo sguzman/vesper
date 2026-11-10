@@ -13,11 +13,10 @@ Use a Vesper player built from merged `main` commit [`562cfd43`](https://github.
 From a compatible Vesper workspace, after building using the machine's normal Rust build coordinator:
 
 ```sh
-./target/debug/vesper-player examples/una-tarde-en-el-barrio
-./target/debug/vesper check-game examples/una-tarde-en-el-barrio
+./target/release/vesper-player examples/una-tarde-en-el-barrio
 ```
 
-The second command validates external game authoring; it does not run a playable window. Alternatively, CI now publishes `una-tarde-linux-development-preview`, containing `Una-Tarde-en-el-Barrio-Linux-x86_64.tar.gz` (the executable, complete game, assets, sound, story, MIT license and SHA256 manifest). Extract the tarball and launch `./play.sh` from the extracted directory; neither Cargo nor a source checkout is required. Verify `SHA256SUMS` before running. This is a **development preview**, not a finished or owner-accepted build.
+Use the established `mbx` workflow to produce the release executable first. This is the appropriate build for owner desktop performance, visual and responsiveness QA. The separate `vesper check-game` authoring validator is already exercised in CI; it does not open a game window. Alternatively, CI now publishes `una-tarde-linux-development-preview`, containing `Una-Tarde-en-el-Barrio-Linux-x86_64.tar.gz` (the executable, complete game, assets, sound, story, MIT license and SHA256 manifest). Extract the tarball and launch `./play.sh` from the extracted directory; neither Cargo nor a source checkout is required. Verify `SHA256SUMS` before running. **The CI development preview is built with the debug profile and then has debugging symbols stripped; stripping is not release optimization.** Use the release executable from the workspace for owner desktop QA. This archive is not a finished or owner-accepted build.
 
 ## Controls
 
