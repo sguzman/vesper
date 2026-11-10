@@ -52,6 +52,40 @@ def main() -> None:
         "bubble-reader-black-ink", "black",
     )
 
+    # An illustrated panel uses actual painted pixels instead of the solid
+    # theme.background. Historically black reader ink was allowed through
+    # unmodified; the owner's native game became black-on-dark unreadable.
+    # Compare the SAME original game with and without the persisted override.
+    # A repaired build must render the author's light colors in both cases.
+    illustrated_game = "examples/una-tarde-en-el-barrio"
+    illustrated_title = "Una Tarde en el Barrio — development v0.7.8"
+    illustrated_authored = capture(
+        illustrated_game, illustrated_title, "urban-illustrated-authored", None,
+    )
+    illustrated_black = capture(
+        illustrated_game, illustrated_title, "urban-illustrated-black", "black",
+    )
+    # Exclude the moving upper world scene: inspect the actual bottom text
+    # panel, where the background illustration and intended ink are stable.
+    def panel_crop(frame: Path) -> Path:
+        cropped = OUT / (frame.stem + "-dialogue-crop.png")
+        qa.call("convert", str(frame), "-crop", "1160x190+60+505",
+                "+repage", str(cropped))
+        return cropped
+
+    panel_mismatch = qa.diff(
+        panel_crop(illustrated_authored), panel_crop(illustrated_black)
+    )
+    assert panel_mismatch < 1200, (
+        "Illustrated game overrides its authored light ink with unreadable "
+        f"reader black (dialogue-panel pixel mismatch: {panel_mismatch})"
+    )
+    print(
+        "Original illustrated game keeps authored legible text despite a "
+        f"persisted black reader preference: {panel_mismatch} changed pixels",
+        flush=True,
+    )
+
     for first, second in [
         (panel_normal, panel_black), (bubble_normal, bubble_black)
     ]:
@@ -60,7 +94,7 @@ def main() -> None:
         difference = qa.diff(first, second)
         print(f"{first.name} vs {second.name}: {difference} changed pixels")
     print(
-        "Native original classic panel and pure-VN bubble rendered with "
+        "Native classic panel, pure-VN bubble and original illustrated urban "
         "reader black ink, screenshots preserved for visual inspection: passed",
         flush=True,
     )
