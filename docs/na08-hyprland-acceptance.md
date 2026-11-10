@@ -21,14 +21,15 @@ They cannot substitute for the following gate.
 
 ## Reproduce on a real Wayland desktop
 
-Use an existing Vesper build made with the development machine's normal build
-coordinator, or the verified Linux package. Run the **same player executable**
+Use an optimized release build made with the development machine's normal `mbx`
+build coordinator. The CI development-preview archive uses a stripped debug-profile
+binary, so it is not a replacement for the native release build in performance QA. Run the **same player executable**
 with external game directories. For a workspace build from the repository root:
 
 ```sh
-target/debug/vesper-player examples/exploration-schema
-target/debug/vesper-player examples/bubble-showcase
-target/debug/vesper-player examples/atlas-unwritten-skies
+target/release/vesper-player examples/exploration-schema
+target/release/vesper-player examples/bubble-showcase
+target/release/vesper-player examples/atlas-unwritten-skies
 ```
 
 The first fixture starts in the authored walk-first street. The second is a
