@@ -58,7 +58,9 @@ def main() -> None:
     # Compare the SAME original game with and without the persisted override.
     # A repaired build must render the author's light colors in both cases.
     illustrated_game = "examples/una-tarde-en-el-barrio"
-    illustrated_title = "Una Tarde en el Barrio — development v0.7.8"
+    # Use the ASCII title prefix, matching the native full-playthrough smoke.
+    # X11 window-title search is not reliable with the Unicode em dash.
+    illustrated_title = "Una Tarde en el Barrio"
     illustrated_authored = capture(
         illustrated_game, illustrated_title, "urban-illustrated-authored", None,
     )
