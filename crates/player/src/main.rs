@@ -977,6 +977,16 @@ fn installed_generic_family<'a>(alias: &str, available: &'a [String]) -> Option<
     })
 }
 
+/// An illustrated panel replaces the opaque surface with authored art, so
+/// a reader's dark-ink preference cannot be contrast-checked against the
+/// ordinary panel RGB. Preserve the author's legible palette on that image;
+/// keep font, scale, layout, and saved reader preferences unchanged.
+fn keep_illustrated_panel_ink(theme: &mut vesper_game::Theme, authored: &vesper_game::Theme) {
+    theme.dialogue.color = authored.dialogue.color;
+    theme.choices.color = authored.choices.color;
+    theme.hint.color = authored.hint.color;
+}
+
 fn effective_theme(session: &Session) -> vesper_game::Theme {
     let authored = &session.game.theme;
     let mut theme = session.preferences.resolve_theme(authored, |family| {
@@ -984,10 +994,9 @@ fn effective_theme(session: &Session) -> vesper_game::Theme {
             || session.font_families.binary_search_by(|name| name.as_str().cmp(family)).is_ok()
             || authored.font.family.as_deref() == Some(family)
     });
-    // Reader-selected dark ink is useful on pale illustrated paper, but must
-    // never become black-on-black on the standard dark panel or bubble.
-    // Preserve the stored preference and honor custom illustrated skins;
-    // only adjust the resolved runtime theme for known solid backgrounds.
+    // Reader-selected dark ink is useful on pale, solid surfaces, but must
+    // never make text disappear on a dark panel, bubble, or illustrated skin.
+    // Adjust only the resolved runtime theme, never the stored preference.
     if session.preferences.text_ink.is_some()
         && !session.preferences.high_contrast.unwrap_or(false)
     {
@@ -1009,6 +1018,12 @@ fn effective_theme(session: &Session) -> vesper_game::Theme {
             for style in [&mut theme.dialogue, &mut theme.choices, &mut theme.hint] {
                 style.color = readable_ink_on_surface(style.color, background);
             }
+        } else {
+            // The background color is transparent behind a custom skin: using
+            // the reader's dark preference here caused unreadable black text
+            // on the dark Abarrotes San Marcos panel. The actual art's text
+            // palette is known only to the author, not the solid-surface helper.
+            keep_illustrated_panel_ink(&mut theme, authored);
         }
     }
     // Only map an explicit reader override. Do not reinterpret authored
@@ -1025,6 +1040,31 @@ fn effective_theme(session: &Session) -> vesper_game::Theme {
 #[cfg(test)]
 mod generic_font_tests {
     use super::*;
+    #[test]
+    fn illustrated_skin_uses_authored_ink_when_reader_selected_black() {
+        let mut authored = vesper_game::Theme::default();
+        authored.dialogue.color = [0.98, 0.96, 0.92, 1.0];
+        authored.choices.color = [0.98, 0.94, 0.84, 1.0];
+        authored.hint.color = [0.81, 0.82, 0.84, 1.0];
+        let preferences = PlayerPreferences {
+            text_ink: Some(vesper_game::preferences::TextInk::Black),
+            text_scale: Some(1.25),
+            ..Default::default()
+        };
+        let mut rendered = preferences.resolve_theme(&authored, |_| true);
+        let enlarged_size = rendered.dialogue.size;
+        assert_eq!(rendered.dialogue.color, [0.0, 0.0, 0.0, 1.0]);
+
+        keep_illustrated_panel_ink(&mut rendered, &authored);
+
+        assert_eq!(rendered.dialogue.color, authored.dialogue.color);
+        assert_eq!(rendered.choices.color, authored.choices.color);
+        assert_eq!(rendered.hint.color, authored.hint.color);
+        assert_eq!(rendered.dialogue.size, enlarged_size);
+        assert_eq!(preferences.text_ink,
+            Some(vesper_game::preferences::TextInk::Black));
+    }
+
     #[test]
     fn generic_picker_aliases_use_distinct_installed_system_families() {
         let catalog = vec![
