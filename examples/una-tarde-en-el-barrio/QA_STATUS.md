@@ -1,5 +1,18 @@
 # Validation status — v0.7.8 (current native game and distribution verified; owner acceptance pending)
 
+## Current QA handoff — 2026-11-10
+
+**EXPLORATORY OWNER DESKTOP QA MAY RESUME WITH AN OPTIMIZED RELEASE BUILD. FINAL GAME ACCEPTANCE IS PENDING.**
+
+- The owner identified an actual unreadable black-on-dark illustrated `barrio` panel on native Hyprland, which blocked further desktop QA. Generic contrast checks did not cover the painted panel.
+- [PR #63](https://github.com/sguzman/vesper/pull/63) was merged to `main` as [`c33c8f1d`](https://github.com/sguzman/vesper/commit/c33c8f1d169ec857f682bf12df55f56c4e4830dd) after **all three CI jobs passed** on exact PR head `c461cd7a`: [run 42899547499](https://github.com/sguzman/vesper/actions/runs/42899547499). The narrative and authored-asset jobs passed; the Bevy job completed successfully, including native original-game three-ending gameplay, Atlas four endings, Dawn three endings, save/restore, and native illustrated-panel reader-ink screenshots.
+- The actual-game screenshot artifact `vesper-reader-ink-contrast` (ID `13802771822`) contains the authored-ink and persisted-`text_ink=black` renders. The lower illustrated dialogue-panel crops had **identical SHA-256** `fa93a90fae307d45d7717d9bce5cf090f3bbdcb4e562e91d4e6a28e1d6bfd226`, independently inspected as legible light text. This proves the automated Xvfb screenshot regression, **not** a fresh physical Hyprland pass.
+- The renderer now preserves author-selected dialogue, choice, and hint ink on image-backed panels without changing stored reader preferences. Original game story/art, existing saves, interaction hotspots and three endings are unchanged.
+- Run the repository example with `./target/release/vesper-player examples/una-tarde-en-el-barrio` after building the **release** player through the established `mbx` coordinator. The CI development-preview tarball uses a *stripped debug-profile* player, which is not an optimized release binary. Avoid directing owner desktop performance QA to `target/debug`.
+- **Still unverified:** corrected build on the owner's physical Wayland/RTX 3090 environment, fullscreen and window resizing, keyboard experience, real sound output/balance, subjective readability/aesthetics, and owner approval. Keep the feature freeze: independent Mateo/cat shop repainting is **deferred** during exploratory QA and does not block this handoff; do not resume the old art-restoration workplate loop without a new explicit decision.
+- The separate narrative-adventure acceptance ledger remains **54/100** (engine 54/60; original example 0/40); CI acceptance of a defect fix does not award physical QA or owner game approval. The merged-main push workflow, if newly triggered, is separate from the verified PR-head CI and must not be reported green without evidence.
+
+
 ## Current accepted development evidence (2026-11-08)
 
 - **PR #45 — complete narrative + Bevy CI [42262341196](https://github.com/sguzman/vesper/actions/runs/42262341196): green.** The original v0.7.8 game actually played through both locations, privacy-preserving ledger read/close and F5/F9 restoration, rendered four-choice noticeboard, postpone/revisit and all three endings. Xvfb screenshot evidence confirmed settled **946×511, 1280×720 and 1600×900** Bevy frames; the earlier stale background/resize snapshot was an automated-capture timing bug.
