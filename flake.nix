@@ -94,10 +94,13 @@
             cp -r ${./game} "$out/share/vesper/game"
             cp -r ${./examples} "$out/share/vesper/examples"
             makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
               --add-flags "$out/share/vesper/game"
             makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper-barrio" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
               --add-flags "$out/share/vesper/examples/una-tarde-en-el-barrio"
             makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper-lantern" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
               --add-flags "$out/share/vesper/examples/little-lantern"
           '';
         in
