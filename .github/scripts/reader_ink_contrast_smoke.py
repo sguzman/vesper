@@ -60,7 +60,7 @@ def main() -> None:
     illustrated_game = "examples/una-tarde-en-el-barrio"
     # Use the ASCII title prefix, matching the native full-playthrough smoke.
     # X11 window-title search is not reliable with the Unicode em dash.
-    illustrated_title = "Una Tarde en el Barrio"
+    illustrated_title = "An Afternoon in the Neighborhood"
     illustrated_authored = capture(
         illustrated_game, illustrated_title, "urban-illustrated-authored", None,
     )
