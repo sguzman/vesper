@@ -1,7 +1,11 @@
 name: Nix
 
 on:
+  # Pull requests own feature-branch validation; only merged main gets push CI.
+  # This prevents two cold crate2nix Bevy builds for every branch commit.
   push:
+    branches:
+      - main
     paths:
       - 'flake.nix'
       - 'flake.lock'
