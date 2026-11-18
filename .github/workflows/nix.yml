@@ -72,3 +72,56 @@ jobs:
 
       - name: Verify per-crate CLI against the original game
         run: ./result-per-crate/bin/vesper check-game examples/una-tarde-en-el-barrio
+
+  linux-bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+
+      - name: Verify committed input locks
+        run: |
+          nix flake lock
+          git diff --exit-code -- flake.lock
+
+      - name: Evaluate and build the original-game distribution
+        run: |
+          nix eval --raw .#packages.x86_64-linux.bundle.drvPath
+          nix build .#bundle -L
+
+      - name: Verify external game files remain in the bundle
+        run: |
+          test -x result/bin/vesper-barrio
+          test -x result/bin/vesper-lantern
+          test -f result/share/vesper/examples/una-tarde-en-el-barrio/game.toml
+          test -f result/share/vesper/examples/una-tarde-en-el-barrio/scripts/story.vn
+
+      - name: Install native virtual-display runtime
+        run: |
+          sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 600s apt-get install -y --no-install-recommends xvfb xdotool libgl1-mesa-dri mesa-vulkan-drivers
+
+      - name: Boot packaged original game with native Bevy
+        shell: bash
+        run: |
+          set +e
+          env LIBGL_ALWAYS_SOFTWARE=1 VESPER_TRACE_SCENES=1 \
+            timeout 30s xvfb-run -a -s '-screen 0 1280x720x24' \
+            ./result/bin/vesper-barrio > /tmp/vesper-nix-game.log 2>&1
+          code=$?
+          set -e
+          if [[ "$code" -ne 0 && "$code" -ne 124 ]]; then
+            cat /tmp/vesper-nix-game.log
+            exit "$code"
+          fi
+          grep -F 'Vesper scene dialogue: intro' /tmp/vesper-nix-game.log
+
+      - name: Preserve original-game Nix boot log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-nix-game-boot
+          path: /tmp/vesper-nix-game.log
+          if-no-files-found: ignore
+          retention-days: 14
