@@ -1,5 +1,5 @@
 {
-  description = "Vesper — Rust/Bevy development, packaging, and opt-in per-crate Nix builds";
+  description = "Vesper — crate2nix per-crate Rust/Bevy builds and game packaging";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -60,7 +60,17 @@
             };
 
           cli = crateGraph.workspaceMembers."vesper-cli".build;
-          player = crateGraph.workspaceMembers."vesper-player".build;
+          playerCrate = crateGraph.workspaceMembers."vesper-player".build;
+
+          # A standalone player must be able to load Winit's X11/Wayland
+          # libraries without being launched through a game-bundle wrapper.
+          player = pkgs.runCommand "vesper-player" {
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+          } ''
+            mkdir -p "$out/bin"
+            makeWrapper "${playerCrate}/bin/vesper-player" "$out/bin/vesper-player" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}"
+          '';
 
           bundle = pkgs.runCommand "vesper-with-games" {
             nativeBuildInputs = [ pkgs.makeWrapper ];
@@ -68,18 +78,18 @@
             mkdir -p "$out/bin" "$out/share/vesper"
             cp -r ${./game} "$out/share/vesper/game"
             cp -r ${./examples} "$out/share/vesper/examples"
-            makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper" \
+            makeWrapper "${playerCrate}/bin/vesper-player" "$out/bin/vesper" \
               --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
               --add-flags "$out/share/vesper/game"
-            makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper-barrio" \
+            makeWrapper "${playerCrate}/bin/vesper-player" "$out/bin/vesper-barrio" \
               --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
               --add-flags "$out/share/vesper/examples/una-tarde-en-el-barrio"
-            makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper-lantern" \
+            makeWrapper "${playerCrate}/bin/vesper-player" "$out/bin/vesper-lantern" \
               --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
               --add-flags "$out/share/vesper/examples/little-lantern"
             # CI/headless only. Never force Lavapipe for normal GPU launchers:
             # desktop users must retain their actual Vulkan adapter.
-            makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper-barrio-software" \
+            makeWrapper "${playerCrate}/bin/vesper-player" "$out/bin/vesper-barrio-software" \
               --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath (nativeLibraries ++ [ pkgs.mesa ])}" \
               --set VK_DRIVER_FILES "${pkgs.mesa}/share/vulkan/icd.d/lvp_icd.x86_64.json" \
               --add-flags "$out/share/vesper/examples/una-tarde-en-el-barrio"
