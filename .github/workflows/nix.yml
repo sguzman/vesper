@@ -1,0 +1,64 @@
+name: Nix
+
+on:
+  push:
+    paths:
+      - 'flake.nix'
+      - 'flake.lock'
+      - '.github/workflows/nix.yml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'crates/**'
+      - 'docs/nix.md'
+  pull_request:
+    paths:
+      - 'flake.nix'
+      - 'flake.lock'
+      - '.github/workflows/nix.yml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'crates/**'
+      - 'docs/nix.md'
+  workflow_dispatch:
+
+jobs:
+  linux-nix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+
+      # Until the generated lockfile is committed, retain it as evidence.
+      # Once committed, nix flake lock becomes a no-op on unchanged inputs.
+      - name: Resolve pinned flake inputs
+        run: nix flake lock
+
+      - name: Preserve input lockfile for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-nix-flake-lock
+          path: flake.lock
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Parse and evaluate the flake
+        run: |
+          nix-instantiate --parse flake.nix > /dev/null
+          nix flake check --no-build --show-trace
+
+      - name: Build Cargo-backed CLI in the Nix store
+        run: nix build .#vesper-cli -L
+
+      - name: Verify Nix CLI against the real external game
+        run: ./result/bin/vesper check-game examples/una-tarde-en-el-barrio
+
+      - name: Evaluate separate per-crate Nix derivations
+        run: nix eval --raw .#packages.x86_64-linux.per-crate-cli.drvPath
+
+      - name: Build the per-crate CLI graph
+        run: nix build .#per-crate-cli -L --out-link result-per-crate
+
+      - name: Verify per-crate CLI against the original game
+        run: ./result-per-crate/bin/vesper check-game examples/una-tarde-en-el-barrio
