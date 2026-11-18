@@ -28,7 +28,7 @@ nom build .#per-crate-cli    # individual dependency-crate derivations
 nom build .#per-crate-player # experimental Bevy per-crate graph
 ```
 
-`packages.default` points to `bundle`. The bundle installs `bin/vesper` (default game), `bin/vesper-barrio` (original example) and `bin/vesper-lantern` (short example); assets remain in `share/vesper`, not embedded into Rust. After building, run `./result/bin/vesper-barrio`. To play an arbitrary external directory, use `./result/bin/vesper-player path/to/game` when building `vesper-player`.
+`packages.default` points to `bundle`. The bundle installs `bin/vesper` (default game), `bin/vesper-barrio` (original example) and `bin/vesper-lantern` (short example); assets remain in `share/vesper`, not embedded into Rust. After building, run `./result/bin/vesper-barrio`, or directly `nix run .#barrio` (also available as the default `nix run`) and `nix run .#lantern`. To play an arbitrary external directory, use `./result/bin/vesper-player path/to/game` when building `vesper-player`.
 
 ## What is really cached
 
