@@ -1,6 +1,6 @@
 format_version = 1
 id = "una-tarde-en-el-barrio"
-title = "Una Tarde en el Barrio — development v0.7.8"
+title = "An Afternoon in the Neighborhood — development v0.7.8"
 story = "scripts/story.vn"
 entry = "intro"
 theme = "styles/urban.toml"
@@ -38,25 +38,25 @@ shop_hush = "assets/audio/shop-hush-ambient.wav"
 schema_version = 1
 
 [exploration.ui]
-walk = "Mover"
-interact = "Interactuar / entrar"
-talk_to = "Hablar con"
-inspect = "Examinar"
-enter = "Entrar a"
-pause = "Pausa"
-menu = "Menú"
+walk = "Walk"
+interact = "Interact / enter"
+talk_to = "Talk to"
+inspect = "Inspect"
+enter = "Enter"
+pause = "Pause"
+menu = "Menu"
 
 [exploration.ui.target_names]
 elena = "Elena"
 rosa = "Rosa"
 mateo = "Mateo"
-noticeboard = "el tablón de anuncios"
-old_door = "la puerta antigua"
-cat = "el gato"
-ledger = "el cuaderno"
-display = "el mostrador"
-store = "la tienda"
-street = "la calle"
+noticeboard = "the noticeboard"
+old_door = "the old door"
+cat = "the cat"
+ledger = "the account book"
+display = "the display"
+store = "the shop"
+street = "the street"
 
 [exploration.avatar]
 speed = 235.0
