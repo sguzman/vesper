@@ -12,6 +12,13 @@ This project is stewarded toward a **verified, shippable Rust/Bevy visual novel 
 - Do not perform heavy parsing, loading or unbounded story execution on the Bevy update/render thread.
 - Prefer free, Linux-first tools. No unnecessary paid services, npm, Mac-only tooling or third-party plugins. Protect credentials and private content.
 
+## Owner-controlled example language and creative direction
+
+- **Write new player-facing example story prose, UI labels, menus, hints and release documentation in English by default.** A different language requires the owner's explicit instruction or approval; never infer it from the owner's location, a story's geography, characters' names or cultural references.
+- The owner controls the original example's creative direction, including language, title, setting, protagonist and story. Provisional implementation or green automated tests do not constitute approval or canonical acceptance.
+- Do not quietly expand an unauthorized creative choice and then encode it as an expected fixture in QA. Test game behavior and verify the owner's approved language, not the assistant's assumptions.
+- Preserve game IDs, external paths and save compatibility during corrections unless separately authorized to migrate them.
+
 ## Scope and work protocol
 
 The weighted, evidence-backed acceptance ledger is [docs/roadmap.json](docs/roadmap.json); design decisions are in [docs/architecture.md](docs/architecture.md).
