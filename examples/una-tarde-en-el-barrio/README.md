@@ -1,14 +1,14 @@
-# Una Tarde en el Barrio
+# An Afternoon in the Neighborhood
 
 **v0.7.8 development game · original external content for Vesper (Rust / Bevy 0.20)**
 
-A short, Spanish-language urban slice-of-life story set around a neighborhood shop in Guadalajara. Explore an illustrated street and Mateo's store, speak with Elena, Rosa and Mateo, inspect small details, then decide what the neighborhood noticeboard should say. Three story endings reflect decisions and optional conversations. Walking is deliberately optional in some conversations via Vesper's author-defined `T` shortcut.
+A short, English-language urban slice-of-life story set around a neighborhood shop in Guadalajara. Explore an illustrated street and Mateo's store, speak with Elena, Rosa and Mateo, inspect small details, then decide what the neighborhood noticeboard should say. Three story endings reflect decisions and optional conversations. Walking is deliberately optional in some conversations via Vesper's author-defined `T` shortcut.
 
 This is a **playable development package, not an accepted final game**. It is external data, not part of the Vesper binary or engine test fixtures. The story premise and art remain provisional until the owner approves them.
 
 ## Requirements and launch
 
-Use a Vesper player built from merged `main` commit [`562cfd43`](https://github.com/sguzman/vesper/commit/562cfd43a1aa72d879eeabbfa88828a7683e337a) or a compatible descendant. The game opts into Spanish `[reader_hints]` and `[menu_labels]`; older player builds do not recognize all these theme keys. The source-checkout game remains external data, but the **Linux x86_64 development-preview archive now includes the actual native player**. The `play.sh` launcher resolves the packaged game path even when launched from another working directory.
+Use a Vesper player built from merged `main` commit [`562cfd43`](https://github.com/sguzman/vesper/commit/562cfd43a1aa72d879eeabbfa88828a7683e337a) or a compatible descendant. The game uses English `[reader_hints]` and `[menu_labels]`; older player builds do not recognize all these theme keys. The source-checkout game remains external data, but the **Linux x86_64 development-preview archive now includes the actual native player**. The `play.sh` launcher resolves the packaged game path even when launched from another working directory.
 
 From a compatible Vesper workspace, after building using the machine's normal Rust build coordinator:
 
@@ -20,7 +20,7 @@ Use the established `mbx` workflow to produce the release executable first. This
 
 ## Controls
 
-Use **A/D** or **Left/Right** to walk; **E** interacts with a nearby person, object or exit. **T** directly opens the designated NPC's conversation without walking to them. **Q** leaves an exploration conversation, **F5/F9** quick-saves/loads, **F6** opens manual slots, **H** opens history, **P** pauses and **M** opens the menu. The fourth noticeboard choice deliberately postpones the decision, allowing you to return later. The Spanish footer instructions in `styles/urban.toml` belong to the game; key bindings belong to Vesper.
+Use **A/D** or **Left/Right** to walk; **E** interacts with a nearby person, object or exit. **T** directly opens the designated NPC's conversation without walking to them. **Q** leaves an exploration conversation, **F5/F9** quick-saves/loads, **F6** opens manual slots, **H** opens history, **P** pauses and **M** opens the menu. The fourth noticeboard choice deliberately postpones the decision, allowing you to return later. The English footer instructions in `styles/urban.toml` belong to the game; key bindings belong to Vesper.
 
 ## Content and art
 
@@ -40,7 +40,7 @@ Run the complete, dependency-aware source checks with:
 ./qa/check-package.sh
 ```
 
-The source QA checks story connectivity, asset references/decoding, world links, Spanish reader and menu labels, audio formats/levels, original character source derivations, five protagonist animation frames and thirteen conditional routes. The current v0.7.8 original game passed the Rust `vesper check-game`, narrative authoring checks and actual native Bevy gameplay in CI. Static scenario tests do **not** replace a real gameplay run.
+The source QA checks story connectivity, asset references/decoding, world links, English reader and menu labels, audio formats/levels, original character source derivations, five protagonist animation frames and thirteen conditional routes. The current v0.7.8 original game passed the Rust `vesper check-game`, narrative authoring checks and actual native Bevy gameplay in CI. Static scenario tests do **not** replace a real gameplay run.
 
 **Current merged code:** CI [42262341196](https://github.com/sguzman/vesper/actions/runs/42262341196) passed the complete narrative + Bevy suite for the ledger/privacy, noticeboard-postpone and responsive frame integration (merged PR #45). CI [42265390551](https://github.com/sguzman/vesper/actions/runs/42265390551) passed the native three endings, stripped Linux archive boot and full Bevy suite (merged PR #46). CI [42267394865](https://github.com/sguzman/vesper/actions/runs/42267394865) passed the full suite and native optional Rosa/old-door/cat/display interactions with real F5 state checks (merged PR #47). The earlier transient store-background screenshot was a premature capture and was fixed in QA by waiting for the actual painted frame; this does not certify all hardware transitions. The new post-merge `main` run [42490557066](https://github.com/sguzman/vesper/actions/runs/42490557066) is underway at this checkpoint, so do not call that run green yet. Independent Mateo/cat shop art, physical Hyprland/RTX testing, real audio listening, final visual polish and owner approval remain open. **Do not request final whole-game QA yet.**
 
