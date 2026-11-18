@@ -21,6 +21,10 @@ on:
       - 'docs/nix.md'
   workflow_dispatch:
 
+concurrency:
+  group: nix-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   linux-nix:
     runs-on: ubuntu-24.04
