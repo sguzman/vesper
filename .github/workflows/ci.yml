@@ -132,8 +132,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: System libraries
         run: |
+          # GitHub runners may use regional mirrors (e.g. us-east-2.ec2.)
+          # that stall on large font packages. Use the canonical archive.
           if [ -f /etc/apt/apt-mirrors.txt ]; then
-            sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' /etc/apt/apt-mirrors.txt
+            sudo sed -E -i \
+              's#http://([a-z0-9.-]+\.)?archive\.ubuntu\.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
+              /etc/apt/apt-mirrors.txt
           fi
           sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
           sudo timeout 600s apt-get install -y --no-install-recommends libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev libxkbcommon-x11-0 libfontconfig1-dev fontconfig fonts-noto-cjk xvfb xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
