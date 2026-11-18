@@ -91,11 +91,19 @@
             # verified these two variables on EndeavourOS with RTX 3090:
             # host Vulkan ICD + host userspace libraries. Do not force this
             # on normal launchers or other GPU vendors.
+            # The host's /etc/alsa selects PipeWire, but the Nix ALSA
+            # library cannot load host /usr/lib/alsa-lib modules. Provide
+            # compatible Nix PipeWire PCM/control plugins for these opt-in
+            # non-NixOS launchers, without overriding an explicit user path.
+            test -f "${pkgs.pipewire}/lib/alsa-lib/libasound_module_pcm_pipewire.so"
+            test -f "${pkgs.pipewire}/lib/alsa-lib/libasound_module_ctl_pipewire.so"
             makeWrapper "$out/bin/vesper-barrio" "$out/bin/vesper-barrio-host-nvidia" \
               --set VK_DRIVER_FILES /usr/share/vulkan/icd.d/nvidia_icd.json \
+              --set-default ALSA_PLUGIN_DIR "${pkgs.pipewire}/lib/alsa-lib" \
               --prefix LD_LIBRARY_PATH : /usr/lib
             makeWrapper "$out/bin/vesper-lantern" "$out/bin/vesper-lantern-host-nvidia" \
               --set VK_DRIVER_FILES /usr/share/vulkan/icd.d/nvidia_icd.json \
+              --set-default ALSA_PLUGIN_DIR "${pkgs.pipewire}/lib/alsa-lib" \
               --prefix LD_LIBRARY_PATH : /usr/lib
             # CI/headless only. Never force Lavapipe for normal GPU launchers:
             # desktop users must retain their actual Vulkan adapter.

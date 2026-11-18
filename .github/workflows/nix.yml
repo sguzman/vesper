@@ -98,6 +98,10 @@ jobs:
           grep -F 'VK_DRIVER_FILES' result/bin/vesper-barrio-host-nvidia
           grep -F '/usr/share/vulkan/icd.d/nvidia_icd.json' result/bin/vesper-barrio-host-nvidia
           grep -F 'LD_LIBRARY_PATH' result/bin/vesper-barrio-host-nvidia
+          grep -F 'ALSA_PLUGIN_DIR' result/bin/vesper-barrio-host-nvidia
+          grep -F '/lib/alsa-lib' result/bin/vesper-barrio-host-nvidia
+          grep -F 'ALSA_PLUGIN_DIR' result/bin/vesper-lantern-host-nvidia
+          grep -F '/lib/alsa-lib' result/bin/vesper-lantern-host-nvidia
           nix eval --raw .#apps.x86_64-linux.barrio-host-nvidia.program | grep -F '/bin/vesper-barrio-host-nvidia'
           nix eval --raw .#apps.x86_64-linux.lantern-host-nvidia.program | grep -F '/bin/vesper-lantern-host-nvidia'
           nix eval --raw .#apps.x86_64-linux.barrio-software.program | grep -F '/bin/vesper-barrio-software'
