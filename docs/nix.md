@@ -22,10 +22,25 @@ nom build .#vesper-player   # same native Bevy player, using crate2nix
 nom build .#bundle          # player plus external games, images, audio, fonts
 nix run .#barrio            # English original urban example, normal host GPU
 nix run .#lantern           # short English example, normal host GPU
+nix run .#barrio-host-nvidia    # explicitly use Arch host NVIDIA Vulkan stack
+nix run .#lantern-host-nvidia   # short English example with host NVIDIA
 nix run .#barrio-software   # opt-in Mesa Lavapipe for headless/virtual displays
 ```
 
 `packages.default` is the full bundle. The bundle installs `bin/vesper` (default game), `bin/vesper-barrio` (original example), and `bin/vesper-lantern`. External story scripts and assets are copied to `share/vesper` rather than compiled into Rust. For another author-supplied game directory, build `vesper-player` and run `./result/bin/vesper-player path/to/game` in a suitable graphical environment. The standalone player output is wrapped with the required X11/Wayland runtime library search path independently of the bundled game launchers. The packaged launchers set the runtime graphics library search path, including X11/XWayland and Wayland dependencies. The `barrio-software` launcher explicitly chooses the Nix-packaged Mesa Lavapipe Vulkan ICD; it exists only for CPU/headless display tests. The ordinary `barrio` and `vesper-barrio` launchers do **not** set a Vulkan driver override, so an NVIDIA/AMD/Intel host retains its actual GPU and drivers.
+
+## Host NVIDIA Vulkan on non-NixOS Linux
+
+On EndeavourOS with the NVIDIA RTX 3090, the normal Nix bundle compiled but its Vulkan loader reported `Unable to find a GPU!`. The owner's successful runtime test explicitly selected the host Vulkan ICD and made `/usr/lib` available. Two **opt-in** convenience launchers now apply those same settings without rebuilding the player:
+
+```fish
+nix run .#barrio-host-nvidia
+nix run .#lantern-host-nvidia
+```
+
+They set `VK_DRIVER_FILES=/usr/share/vulkan/icd.d/nvidia_icd.json` and add `/usr/lib` to `LD_LIBRARY_PATH` before invoking the existing Nix-wrapped player. The NVIDIA ICD and driver libraries must **already exist on the host**; nothing is installed or changed outside the Nix store. The game assets, executable and crate2nix cache are unchanged by choosing a launcher. Use these only for hosts with the Arch-style NVIDIA Vulkan location; they are not an automatic NVIDIA version detector and do not involve nixGL. The standard `barrio`, `lantern` and standalone player remain vendor-neutral, and `barrio-software` remains an explicit CI/headless test.
+
+This host-specific runtime route was verified manually with the equivalent environment variables. The new convenience wrappers still require a direct owner hardware test before being called hardware-verified. Native audio output and the ALSA-to-PipeWire plugin warnings are independently tracked; successfully decoding a sound asset does not prove it played through speakers.
 
 ## Per-crate caching
 
