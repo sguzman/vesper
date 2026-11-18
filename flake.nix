@@ -49,31 +49,34 @@
             buildInputs = nativeLibraries;
           };
 
-          # Reused by both workspace binaries. This is a Cargo artifact cache,
-          # NOT a separate Nix derivation for every dependency crate.
-          cargoArtifacts = craneLib.buildDepsOnly (
-            commonArgs
-            // {
-              pname = "vesper-workspace-deps";
-              cargoExtraArgs = "--workspace";
-            }
-          );
+          # Separate Cargo artifact pools so a CLI-only Nix build never
+          # spends time compiling Bevy. These are per-package, not per-crate,
+          # derivations; crateGraph below provides true per-crate caching.
+          mkDeps =
+            package:
+            craneLib.buildDepsOnly (
+              commonArgs
+              // {
+                pname = "${package}-deps";
+                cargoExtraArgs = "-p ${package}";
+              }
+            );
 
           mkBinary =
-            package: binary:
+            package: binary: deps:
             craneLib.buildPackage (
               commonArgs
               // {
                 pname = package;
                 version = "0.1.0";
-                inherit cargoArtifacts;
+                cargoArtifacts = deps;
                 cargoExtraArgs = "-p ${package} --bin ${binary}";
                 doCheck = false; # Existing full Cargo/Bevy CI owns runtime tests.
               }
             );
 
-          player = mkBinary "vesper-player" "vesper-player";
-          cli = mkBinary "vesper-cli" "vesper";
+          player = mkBinary "vesper-player" "vesper-player" (mkDeps "vesper-player");
+          cli = mkBinary "vesper-cli" "vesper" (mkDeps "vesper-cli");
 
           # Per-crate cache graph, separate from Crane. crate2nix uses IFD to
           # regenerate Cargo.nix from the *locked* Cargo workspace as needed.
