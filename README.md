@@ -6,7 +6,7 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 
 ## Nix development and Linux packaging
 
-Vesper also has a Nix flake for a Rust/Bevy development shell, packaged player and authoring CLI, external-game bundles, and opt-in **per-crate Nix derivation caching** via crate2nix. Crane provides the separate conventional dependency-artifact build path. The existing Cargo/`mbx` workflow remains supported. See [Nix setup, cache tradeoffs, and verification](docs/nix.md); Nix acceptance is tracked separately from the narrative-adventure milestones.
+Vesper's Nix flake uses **crate2nix exclusively** for the Rust CLI, native Bevy player, and external-game bundle: each dependency is a separate Nix derivation. No alternate Nix Rust build pipeline is included. The existing local Cargo/`mbx` development workflow remains supported. See [Nix development, per-crate caching, and verification](docs/nix.md); Nix acceptance is tracked separately from the narrative-adventure milestones.
 
 ## Optional narrative adventures (in development)
 
