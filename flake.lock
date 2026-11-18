@@ -26,21 +26,6 @@
         "type": "github"
       }
     },
-    "crane": {
-      "locked": {
-        "lastModified": 1794962885,
-        "narHash": "sha256-zrweT2tXbcWiJMACOhOr2eYFJKVa6g59ouRaZ3BS5Do=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "95e62def851e9d650f0eab63cb4f59a3306e20bd",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
-        "type": "github"
-      }
-    },
     "crate2nix": {
       "inputs": {
         "cachix": "cachix",
@@ -272,7 +257,6 @@
     },
     "root": {
       "inputs": {
-        "crane": "crane",
         "crate2nix": "crate2nix",
         "nixpkgs": "nixpkgs_2"
       }
