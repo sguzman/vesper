@@ -52,6 +52,10 @@
                   nativeBuildInputs = [ pkgs.pkg-config ];
                   buildInputs = [ pkgs.fontconfig pkgs.freetype ];
                 };
+                wayland-sys = attrs: {
+                  nativeBuildInputs = [ pkgs.pkg-config ];
+                  buildInputs = [ pkgs.wayland ];
+                };
               };
             };
 
