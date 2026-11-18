@@ -38,10 +38,22 @@
           # crate2nix: each Cargo dependency is its own Nix derivation.
           # The same generated workspace graph builds both binaries,
           # with no separate aggregate dependency pool.
-          crateGraph = crate2nix.tools.${system}.appliedCargoNix {
-            name = "vesper";
-            src = ./.;
-          };
+          crateGraph = pkgs.callPackage
+            (crate2nix.tools.${system}.generatedCargoNix {
+              name = "vesper";
+              src = ./.;
+            })
+            {
+              # Default nixpkgs overrides cover alsa-sys and libudev-sys.
+              # Bevy 0.20's system-font crate has a separate pkg-config
+              # dependency which nixpkgs does not currently provide.
+              defaultCrateOverrides = pkgs.defaultCrateOverrides // {
+                yeslogic-fontconfig-sys = attrs: {
+                  nativeBuildInputs = [ pkgs.pkg-config ];
+                  buildInputs = [ pkgs.fontconfig pkgs.freetype ];
+                };
+              };
+            };
 
           cli = crateGraph.workspaceMembers."vesper-cli".build;
           player = crateGraph.workspaceMembers."vesper-player".build;
