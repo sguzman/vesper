@@ -47,13 +47,14 @@ Rust code changes invalidate their own derivations and dependent crates, not unr
 `Cargo.lock` pins Rust dependency versions. `flake.lock` is committed alongside the flake, pinning nixpkgs, Crane and crate2nix inputs. The dedicated Nix CI workflow also preserves the resolved lockfile as the `vesper-nix-flake-lock` artifact. Changes to flake inputs must be reviewed and the lockfile updated in the same commit.
 
 ```fish
-nix flake check --no-build
+nix eval --raw .#packages.x86_64-linux.vesper-cli.drvPath
+nix eval --raw .#devShells.x86_64-linux.default.drvPath
 nom build .#vesper-cli
 ./result/bin/vesper check-game examples/una-tarde-en-el-barrio
 nom build .#per-crate-cli
 ./result/bin/vesper check-game examples/una-tarde-en-el-barrio
 ```
 
-Note: after a `nom build` of `per-crate-cli`, the `result` symlink refers to that build, so the validator runs in both cases. The workflow uses separate `result-per-crate` to compare them. `nix flake check` builds the basic CLI check; full native Bevy gameplay and physical Wayland review remain under their existing verification procedures.
+Note: after a `nom build` of `per-crate-cli`, the `result` symlink refers to that build, so the validator runs in both cases. The workflow uses separate `result-per-crate` to compare them. `nix flake check --no-build` is **not** a suitable short validation for this flake: enumerating the per-crate outputs triggers crate2nix's import-from-derivation even though builds are suppressed. The commands above validate the lightweight Crane path; the Nix CI workflow exercises both actual builds. Full native Bevy gameplay and physical Wayland review remain under their existing verification procedures.
 
 Nix can be consumed as a flake input by an external NixOS/Home Manager configuration, but Vesper does not own or modify any host-wide system configuration.
