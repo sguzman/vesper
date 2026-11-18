@@ -8,13 +8,13 @@ expected=(
   'elena = "Elena"'
   'rosa = "Rosa"'
   'mateo = "Mateo"'
-  'noticeboard = "el tablón de anuncios"'
-  'old_door = "la puerta antigua"'
-  'cat = "el gato"'
-  'ledger = "el cuaderno"'
-  'display = "el mostrador"'
-  'store = "la tienda"'
-  'street = "la calle"'
+  'noticeboard = "the noticeboard"'
+  'old_door = "the old door"'
+  'cat = "the cat"'
+  'ledger = "the account book"'
+  'display = "the display"'
+  'store = "the shop"'
+  'street = "the street"'
 )
 for line in "${expected[@]}"; do
   grep -Fqx -- "$line" "$manifest" || {
@@ -26,4 +26,4 @@ done
   echo 'ERROR: duplicate world target labels section' >&2
   exit 1
 }
-echo 'Original game authored Spanish world labels OK: 10 identities.'
+echo 'Original game authored English world labels OK: 10 identities.'
