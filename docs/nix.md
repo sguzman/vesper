@@ -20,11 +20,12 @@ nom build .#vesper-cli      # authoring CLI; crate2nix per-crate dependency grap
 
 nom build .#vesper-player   # same native Bevy player, using crate2nix
 nom build .#bundle          # player plus external games, images, audio, fonts
-nix run .#barrio            # original example without a Cargo build
-nix run .#lantern           # short example
+nix run .#barrio            # original example, normal host GPU
+nix run .#lantern           # short example, normal host GPU
+nix run .#barrio-software   # opt-in Mesa Lavapipe for headless/virtual displays
 ```
 
-`packages.default` is the full bundle. The bundle installs `bin/vesper` (default game), `bin/vesper-barrio` (original example), and `bin/vesper-lantern`. External story scripts and assets are copied to `share/vesper` rather than compiled into Rust. For another author-supplied game directory, build `vesper-player` and run `./result/bin/vesper-player path/to/game` in a suitable graphical environment. The packaged launchers set the runtime graphics library search path, including X11/XWayland and Wayland dependencies.
+`packages.default` is the full bundle. The bundle installs `bin/vesper` (default game), `bin/vesper-barrio` (original example), and `bin/vesper-lantern`. External story scripts and assets are copied to `share/vesper` rather than compiled into Rust. For another author-supplied game directory, build `vesper-player` and run `./result/bin/vesper-player path/to/game` in a suitable graphical environment. The packaged launchers set the runtime graphics library search path, including X11/XWayland and Wayland dependencies. The `barrio-software` launcher explicitly chooses the Nix-packaged Mesa Lavapipe Vulkan ICD; it exists only for CPU/headless display tests. The ordinary `barrio` and `vesper-barrio` launchers do **not** set a Vulkan driver override, so an NVIDIA/AMD/Intel host retains its actual GPU and drivers.
 
 ## Per-crate caching
 
