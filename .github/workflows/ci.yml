@@ -18,7 +18,7 @@ jobs:
           # canonical Ubuntu archive for repeatable authored-art validation.
           if [ -f /etc/apt/apt-mirrors.txt ]; then
             sudo sed -E -i \
-              's#http://([a-z0-9.-]+\\.)?archive\\.ubuntu\\.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
+              's#http://([a-z0-9.-]+\.)?archive\.ubuntu\.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
               /etc/apt/apt-mirrors.txt
           fi
           if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
