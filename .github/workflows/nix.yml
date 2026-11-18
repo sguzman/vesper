@@ -49,6 +49,19 @@ jobs:
           nix eval --raw .#packages.x86_64-linux.vesper-cli.drvPath
           nix eval --raw .#devShells.x86_64-linux.default.drvPath
 
+      - name: Verify development shell tooling is executable
+        run: |
+          nix develop -c bash -euo pipefail -c '
+            command -v cargo
+            command -v rustc
+            command -v cargo-clippy
+            command -v rustfmt
+            command -v rust-analyzer
+            command -v pkg-config
+            command -v nom
+            command -v nixfmt
+          '
+
       - name: Build CLI with crate2nix per-crate derivations
         run: nix build .#vesper-cli -L --out-link result-cli
 
@@ -76,6 +89,8 @@ jobs:
         run: |
           test -x result/bin/vesper-barrio
           test -x result/bin/vesper-lantern
+          nix eval --raw .#apps.x86_64-linux.barrio.program | grep -F '/bin/vesper-barrio'
+          nix eval --raw .#apps.x86_64-linux.lantern.program | grep -F '/bin/vesper-lantern'
           test -f result/share/vesper/examples/una-tarde-en-el-barrio/game.toml
           test -f result/share/vesper/examples/una-tarde-en-el-barrio/scripts/story.vn
 
