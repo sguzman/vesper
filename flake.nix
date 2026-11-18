@@ -3,13 +3,12 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    crane.url = "github:ipetkov/crane";
     crate2nix.url = "github:nix-community/crate2nix";
     crate2nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    { nixpkgs, crane, crate2nix, ... }:
+    { nixpkgs, crate2nix, ... }:
     let
       # Vesper currently targets Linux desktop graphics/audio.
       systems = [ "x86_64-linux" ];
@@ -20,8 +19,6 @@
         let
           pkgs = import nixpkgs { inherit system; };
           inherit (pkgs) lib;
-          craneLib = crane.mkLib pkgs;
-
           nativeLibraries = with pkgs; [
             alsa-lib
             udev
@@ -30,62 +27,24 @@
             fontconfig
             vulkan-loader
             libGL
+            # Winit loads these with dlopen at runtime on X11/XWayland.
+            xorg.libX11
+            xorg.libXcursor
+            xorg.libXi
+            xorg.libXrandr
+            xorg.libxcb
           ];
-          graphicsLibraries = with pkgs; [
-            libGL
-            vulkan-loader
-            wayland
-            libxkbcommon
-          ];
 
-          # Excludes artwork from Cargo compilation inputs. Games are copied
-          # separately into the Nix distribution, never embedded in the engine.
-          cargoSource = craneLib.cleanCargoSource ./.;
-          commonArgs = {
-            src = cargoSource;
-            strictDeps = true;
-            nativeBuildInputs = with pkgs; [ pkg-config ];
-            buildInputs = nativeLibraries;
-          };
-
-          # Separate Cargo artifact pools so a CLI-only Nix build never
-          # spends time compiling Bevy. These are per-package, not per-crate,
-          # derivations; crateGraph below provides true per-crate caching.
-          mkDeps =
-            package:
-            craneLib.buildDepsOnly (
-              commonArgs
-              // {
-                pname = "${package}-deps";
-                version = "0.1.0";
-                cargoExtraArgs = "-p ${package}";
-              }
-            );
-
-          mkBinary =
-            package: binary: deps:
-            craneLib.buildPackage (
-              commonArgs
-              // {
-                pname = package;
-                version = "0.1.0";
-                cargoArtifacts = deps;
-                cargoExtraArgs = "-p ${package} --bin ${binary}";
-                doCheck = false; # Existing full Cargo/Bevy CI owns runtime tests.
-              }
-            );
-
-          player = mkBinary "vesper-player" "vesper-player" (mkDeps "vesper-player");
-          cli = mkBinary "vesper-cli" "vesper" (mkDeps "vesper-cli");
-
-          # Per-crate cache graph, separate from Crane. crate2nix uses IFD to
-          # regenerate Cargo.nix from the *locked* Cargo workspace as needed.
-          # Kept as explicit opt-in outputs while native Bevy compatibility is
-          # certified; plain Cargo/mbx remains the local development fast path.
+          # crate2nix: each Cargo dependency is its own Nix derivation.
+          # The same generated workspace graph builds both binaries,
+          # with no separate aggregate dependency pool.
           crateGraph = crate2nix.tools.${system}.appliedCargoNix {
             name = "vesper";
             src = ./.;
           };
+
+          cli = crateGraph.workspaceMembers."vesper-cli".build;
+          player = crateGraph.workspaceMembers."vesper-player".build;
 
           bundle = pkgs.runCommand "vesper-with-games" {
             nativeBuildInputs = [ pkgs.makeWrapper ];
@@ -110,9 +69,6 @@
             inherit bundle;
             vesper-player = player;
             vesper-cli = cli;
-            # These two use distinct derivations for every transitive Rust crate.
-            per-crate-cli = crateGraph.workspaceMembers."vesper-cli".build;
-            per-crate-player = crateGraph.workspaceMembers."vesper-player".build;
           };
 
           devShells.default = pkgs.mkShell {
@@ -127,7 +83,7 @@
               nix-output-monitor
               nixfmt
             ] ++ nativeLibraries;
-            LD_LIBRARY_PATH = lib.makeLibraryPath graphicsLibraries;
+            LD_LIBRARY_PATH = lib.makeLibraryPath nativeLibraries;
           };
 
           checks = {
