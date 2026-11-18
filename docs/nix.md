@@ -1,60 +1,51 @@
-# Nix development and package builds
+# Vesper's crate2nix development and packaging
 
-Vesper's existing Cargo / `mbx` workflow remains the local incremental development path. This flake adds a reproducible Linux development shell and two **different** Nix caching strategies; it does not change the Rust crates, game manifests, save paths, or the normal GitHub CI.
+The Nix build path uses **crate2nix exclusively**: each third-party and workspace Rust crate is built as an individual Nix derivation. There is no parallel aggregate Rust build pipeline or dependency pool. Existing local Cargo/`mbx` incremental development remains available, but it is not Vesper's Nix packaging implementation.
 
-## Supported platform
+## Platform and tooling
 
-Initial target: `x86_64-linux` (including EndeavourOS/Hyprland). Native libraries for Bevy's ALSA, udev, Wayland/XKB, fontconfig, OpenGL and Vulkan are provided by the development shell. The Nix package is not evidence of actual NVIDIA/Hyprland audio, fullscreen or GPU acceptance; those remain separate QA gates.
-
-## Tooling and local development
-
-From a checked-out repository with flakes enabled:
+The initial Nix target is `x86_64-linux` (including EndeavourOS and Hyprland). The shell provides stable Rust, Cargo, rustfmt, Clippy, rust-analyzer, pkg-config, `nom`, `nixfmt`, and native Bevy development libraries.
 
 ```fish
 nix develop -c fish
-cargo build --locked --release -p vesper-player
-./target/release/vesper-player examples/una-tarde-en-el-barrio
 ```
 
-In established local workflows use `mbx` as the build coordinator, rather than running an additional independent Cargo build concurrently. The shell provides Rust stable, Cargo, rust-analyzer, Clippy, rustfmt, pkg-config, Nix formatter, `nom` and Bevy's native dependencies. The separate crate2nix flake input is invoked by Nix automatically for per-crate package outputs. Existing fish configuration and the user's own Cargo/mbx cache are not moved or deleted.
+Use the existing `mbx` build coordinator for local non-Nix Cargo work. Nix builds use `nom` to show a readable build log. They do not change the user's Cargo target, fish configuration, or host NixOS/Home Manager setup.
 
-## Nix package outputs
+## Packages and runnable examples
 
 ```fish
-nom build .#vesper-cli        # native authoring validator
-nom build .#vesper-player     # native game engine (pass an external game dir)
-nom build .#bundle           # player + external, separately stored game assets
-nom build .#per-crate-cli    # individual dependency-crate derivations
-nom build .#per-crate-player # experimental Bevy per-crate graph
+nom build .#vesper-cli      # authoring CLI; crate2nix per-crate dependency graph
+./result/bin/vesper check-game examples/una-tarde-en-el-barrio
+
+nom build .#vesper-player   # same native Bevy player, using crate2nix
+nom build .#bundle          # player plus external games, images, audio, fonts
+nix run .#barrio            # original example without a Cargo build
+nix run .#lantern           # short example
 ```
 
-`packages.default` points to `bundle`. The bundle installs `bin/vesper` (default game), `bin/vesper-barrio` (original example) and `bin/vesper-lantern` (short example); assets remain in `share/vesper`, not embedded into Rust. After building, run `./result/bin/vesper-barrio`, or directly `nix run .#barrio` (also available as the default `nix run`) and `nix run .#lantern`. To play an arbitrary external directory, use `./result/bin/vesper-player path/to/game` when building `vesper-player`.
+`packages.default` is the full bundle. The bundle installs `bin/vesper` (default game), `bin/vesper-barrio` (original example), and `bin/vesper-lantern`. External story scripts and assets are copied to `share/vesper` rather than compiled into Rust. For another author-supplied game directory, build `vesper-player` and run `./result/bin/vesper-player path/to/game` in a suitable graphical environment. The packaged launchers set the runtime graphics library search path, including X11/XWayland and Wayland dependencies.
 
-## What is really cached
+## Per-crate caching
 
-| Path | Cache granularity | Mechanism |
-| --- | --- | --- |
-| `cargo` / `mbx` | Rust compiler build artifacts | Existing mutable Cargo target/cache, outside Nix store |
-| `vesper-cli` and `vesper-player` | Separate dependency pools for each binary package | Crane's `buildDepsOnly` then `buildPackage` |
-| `per-crate-cli` and `per-crate-player` | **A separate Nix derivation per Rust dependency crate** | crate2nix's `workspaceMembers` graph |
+Both `vesper-cli` and `vesper-player` are built from the same `crate2nix.tools.${system}.appliedCargoNix` graph and resolved via `workspaceMembers`. Each Rust dependency is a distinct Nix store derivation; downstream rebuilds reuse unchanged cached crate outputs. A changed dependency version, compiler, feature set, or native library may require its dependent graph to rebuild.
 
-Crane is the conventional build path. Its dependency artifacts are **not** individual Nix derivations per transitive crate. For precise crate-level Nix store caching, use the separately exposed crate2nix outputs. They regenerate `Cargo.nix` from `Cargo.lock` via import-from-derivation (IFD), so no generated multi-thousand-line `Cargo.nix` is committed. IFD requires an initial evaluation-time build, can reduce evaluation parallelism, and may need native build overrides for Bevy/system crates. Treat the per-crate **player** as experimental until its whole dependency graph builds and runs successfully.
+crate2nix regenerates its `Cargo.nix` from the checked-in `Cargo.lock` by import-from-derivation (IFD). The generated graph is not hand-edited or checked into the repository. Initial evaluation may build a generator derivation. It is therefore more expensive than evaluating an ordinary static flake, and `nix flake check --no-build` is not a quick syntax-only check for all outputs.
 
-Rust code changes invalidate their own derivations and dependent crates, not unrelated per-crate outputs. Changes to compiler version, feature sets or native dependencies can still invalidate caches. Nix store artifacts are not transparently shared with `mbx`'s `target` directory: both mechanisms coexist. No global cache relocation is attempted.
+Nix store artifacts and the mutable local Cargo/`mbx` `target` directory are independent caches. No Rust package manager, alternative code generator, or host-wide cache migration is introduced.
 
-## Pinning and verification
+## Locking and verification
 
-`Cargo.lock` pins Rust dependency versions. `flake.lock` is committed alongside the flake, pinning nixpkgs, Crane and crate2nix inputs. The dedicated Nix CI workflow also preserves the resolved lockfile as the `vesper-nix-flake-lock` artifact. Changes to flake inputs must be reviewed and the lockfile updated in the same commit.
+`Cargo.lock` pins Rust dependencies. The checked-in `flake.lock` pins nixpkgs and crate2nix and its required transitive inputs.
 
 ```fish
+nix-instantiate --parse flake.nix
 nix eval --raw .#packages.x86_64-linux.vesper-cli.drvPath
-nix eval --raw .#devShells.x86_64-linux.default.drvPath
 nom build .#vesper-cli
 ./result/bin/vesper check-game examples/una-tarde-en-el-barrio
-nom build .#per-crate-cli
-./result/bin/vesper check-game examples/una-tarde-en-el-barrio
+nom build .#bundle
 ```
 
-Note: after a `nom build` of `per-crate-cli`, the `result` symlink refers to that build, so the validator runs in both cases. The workflow uses separate `result-per-crate` to compare them. `nix flake check --no-build` is **not** a suitable short validation for this flake: enumerating the per-crate outputs triggers crate2nix's import-from-derivation even though builds are suppressed. The commands above validate the lightweight Crane path; the Nix CI workflow exercises both actual builds. Full native Bevy gameplay and physical Wayland review remain under their existing verification procedures.
+The independent Nix CI workflow verifies the committed lockfile, builds the crate2nix CLI, validates the original external game, builds the native Bevy bundle, checks that game assets remain external, and boots the packaged example in an Xvfb/Mesa session. The regular Cargo/Bevy CI remains unchanged.
 
-Nix can be consumed as a flake input by an external NixOS/Home Manager configuration, but Vesper does not own or modify any host-wide system configuration.
+A green Linux virtual-display run does **not** replace owner acceptance on physical Hyprland/RTX 3090, or verify native audio balance, performance, fullscreen, visual polish, or the original story's final approval. Those gates remain in the narrative-adventure roadmap.
