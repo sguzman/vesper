@@ -84,10 +84,13 @@ jobs:
         run: |
           nix eval --raw .#packages.x86_64-linux.vesper-player.drvPath
           nix build .#bundle -L
+          nix build .#vesper-player -L --out-link result-player
 
       - name: Verify external game files remain in the bundle
         run: |
           test -x result/bin/vesper-barrio
+          test -x result-player/bin/vesper-player
+          grep -F 'LD_LIBRARY_PATH' result-player/bin/vesper-player
           test -x result/bin/vesper-barrio-software
           test -x result/bin/vesper-lantern
           nix eval --raw .#apps.x86_64-linux.barrio-software.program | grep -F '/bin/vesper-barrio-software'
