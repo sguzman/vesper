@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     crane.url = "github:ipetkov/crane";
-    crane.inputs.nixpkgs.follows = "nixpkgs";
     crate2nix.url = "github:nix-community/crate2nix";
     crate2nix.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -58,6 +57,7 @@
               commonArgs
               // {
                 pname = "${package}-deps";
+                version = "0.1.0";
                 cargoExtraArgs = "-p ${package}";
               }
             );
