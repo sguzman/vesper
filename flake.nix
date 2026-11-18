@@ -139,5 +139,25 @@
       packages = eachSystem (system: perSystem.${system}.packages);
       devShells = eachSystem (system: perSystem.${system}.devShells);
       checks = eachSystem (system: perSystem.${system}.checks);
+      apps = eachSystem (
+        system:
+        let
+          pkg = perSystem.${system}.packages;
+        in
+        {
+          default = {
+            type = "app";
+            program = "${pkg.bundle}/bin/vesper-barrio";
+          };
+          barrio = {
+            type = "app";
+            program = "${pkg.bundle}/bin/vesper-barrio";
+          };
+          lantern = {
+            type = "app";
+            program = "${pkg.bundle}/bin/vesper-lantern";
+          };
+        }
+      );
     };
 }
