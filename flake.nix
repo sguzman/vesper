@@ -141,6 +141,7 @@
       packages = eachSystem (system: perSystem.${system}.packages);
       devShells = eachSystem (system: perSystem.${system}.devShells);
       checks = eachSystem (system: perSystem.${system}.checks);
+      formatter = eachSystem (system: (import nixpkgs { inherit system; }).nixfmt);
       apps = eachSystem (
         system:
         let
