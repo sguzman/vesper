@@ -4,6 +4,10 @@ Vesper is a Rust + Bevy 0.20 visual novel runtime. The compiled engine will cont
 
 **Status:** scoped Vesper MVP verified complete (100/100 weighted roadmap points; GitHub Actions run 40571573177). Both demonstration branches, presentation, hot reload, sound asset decoding, save/load and compiler-free Linux packaging passed automated tests. Hardware audio output and exhaustive coverage of every possible Linux configuration were not directly tested.
 
+## Nix development and Linux packaging
+
+Vesper's Nix flake uses **crate2nix exclusively** for the Rust CLI, native Bevy player, and external-game bundle: each dependency is a separate Nix derivation. No alternate Nix Rust build pipeline is included. The existing local Cargo/`mbx` development workflow remains supported. See [Nix development, per-crate caching, and verification](docs/nix.md); Nix acceptance is tracked separately from the narrative-adventure milestones.
+
 ## Optional narrative adventures (in development)
 
 [Next-phase roadmap](docs/narrative-adventure-roadmap.md) · [54/100 verified roadmap ledger](docs/narrative-adventure-roadmap.json) · [NA08 Hyprland acceptance checklist](docs/na08-hyprland-acceptance.md) · [anime urban slice-of-life example brief](docs/urban-slice-of-life-brief.md).

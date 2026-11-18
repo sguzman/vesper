@@ -1,0 +1,129 @@
+name: Nix
+
+on:
+  # Pull requests own feature-branch validation; only merged main gets push CI.
+  # This prevents two cold crate2nix Bevy builds for every branch commit.
+  push:
+    branches:
+      - main
+    paths:
+      - 'flake.nix'
+      - 'flake.lock'
+      - '.github/workflows/nix.yml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'crates/**'
+      - 'docs/nix.md'
+  pull_request:
+    paths:
+      - 'flake.nix'
+      - 'flake.lock'
+      - '.github/workflows/nix.yml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'crates/**'
+      - 'docs/nix.md'
+  workflow_dispatch:
+
+concurrency:
+  group: nix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-nix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+
+      - name: Verify the committed flake lockfile
+        run: |
+          nix flake lock
+          git diff --exit-code -- flake.lock
+
+      - name: Parse flake and evaluate the crate2nix workspace
+        run: |
+          nix-instantiate --parse flake.nix > /dev/null
+          nix flake archive
+          nix eval --raw .#packages.x86_64-linux.vesper-cli.drvPath
+          nix eval --raw .#devShells.x86_64-linux.default.drvPath
+
+      - name: Verify development shell tooling is executable
+        run: |
+          nix develop -c bash -euo pipefail -c '
+            command -v cargo
+            command -v rustc
+            command -v cargo-clippy
+            command -v rustfmt
+            command -v rust-analyzer
+            command -v pkg-config
+            command -v nom
+            command -v nixfmt
+          '
+
+      - name: Build CLI with crate2nix per-crate derivations
+        run: nix build .#vesper-cli -L --out-link result-cli
+
+      - name: Validate original external game with crate2nix CLI
+        run: ./result-cli/bin/vesper check-game examples/una-tarde-en-el-barrio
+
+  linux-bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+
+      - name: Verify committed input locks
+        run: |
+          nix flake lock
+          git diff --exit-code -- flake.lock
+
+      - name: Build Bevy player and original-game distribution with crate2nix
+        run: |
+          nix eval --raw .#packages.x86_64-linux.vesper-player.drvPath
+          nix build .#bundle -L
+          nix build .#vesper-player -L --out-link result-player
+
+      - name: Verify external game files remain in the bundle
+        run: |
+          test -x result/bin/vesper-barrio
+          test -x result-player/bin/vesper-player
+          grep -F 'LD_LIBRARY_PATH' result-player/bin/vesper-player
+          test -x result/bin/vesper-barrio-software
+          test -x result/bin/vesper-lantern
+          nix eval --raw .#apps.x86_64-linux.barrio-software.program | grep -F '/bin/vesper-barrio-software'
+          nix eval --raw .#apps.x86_64-linux.barrio.program | grep -F '/bin/vesper-barrio'
+          nix eval --raw .#apps.x86_64-linux.lantern.program | grep -F '/bin/vesper-lantern'
+          test -f result/share/vesper/examples/una-tarde-en-el-barrio/game.toml
+          test -f result/share/vesper/examples/una-tarde-en-el-barrio/scripts/story.vn
+
+      - name: Install Xvfb display utilities (Vulkan ICD is supplied by Nix)
+        run: |
+          sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+          sudo timeout 600s apt-get install -y --no-install-recommends xvfb xauth
+
+      - name: Boot packaged original game with native Bevy
+        shell: bash
+        run: |
+          set +e
+          env LIBGL_ALWAYS_SOFTWARE=1 VESPER_TRACE_SCENES=1 \
+            timeout 30s xvfb-run -a -s '-screen 0 1280x720x24' \
+            ./result/bin/vesper-barrio-software > /tmp/vesper-nix-game.log 2>&1
+          code=$?
+          set -e
+          if [[ "$code" -ne 0 && "$code" -ne 124 ]]; then
+            cat /tmp/vesper-nix-game.log
+            exit "$code"
+          fi
+          grep -F 'Vesper scene dialogue: intro' /tmp/vesper-nix-game.log
+
+      - name: Preserve original-game Nix boot log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vesper-nix-game-boot
+          path: /tmp/vesper-nix-game.log
+          if-no-files-found: ignore
+          retention-days: 14
