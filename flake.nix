@@ -28,11 +28,11 @@
             vulkan-loader
             libGL
             # Winit loads these with dlopen at runtime on X11/XWayland.
-            xorg.libX11
-            xorg.libXcursor
-            xorg.libXi
-            xorg.libXrandr
-            xorg.libxcb
+            libx11
+            libxcursor
+            libxi
+            libxrandr
+            libxcb
           ];
 
           # crate2nix: each Cargo dependency is its own Nix derivation.
@@ -77,6 +77,12 @@
             makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper-lantern" \
               --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
               --add-flags "$out/share/vesper/examples/little-lantern"
+            # CI/headless only. Never force Lavapipe for normal GPU launchers:
+            # desktop users must retain their actual Vulkan adapter.
+            makeWrapper "${player}/bin/vesper-player" "$out/bin/vesper-barrio-software" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath (nativeLibraries ++ [ pkgs.mesa ])}" \
+              --set VK_DRIVER_FILES "${pkgs.mesa}/share/vulkan/icd.d/lvp_icd.x86_64.json" \
+              --add-flags "$out/share/vesper/examples/una-tarde-en-el-barrio"
           '';
         in
         {
@@ -131,6 +137,10 @@
           lantern = {
             type = "app";
             program = "${pkg.bundle}/bin/vesper-lantern";
+          };
+          barrio-software = {
+            type = "app";
+            program = "${pkg.bundle}/bin/vesper-barrio-software";
           };
         }
       );
