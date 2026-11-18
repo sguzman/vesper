@@ -87,6 +87,16 @@
             makeWrapper "${playerCrate}/bin/vesper-player" "$out/bin/vesper-lantern" \
               --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
               --add-flags "$out/share/vesper/examples/little-lantern"
+            # Explicit non-NixOS/Arch NVIDIA host-driver bridge. The owner
+            # verified these two variables on EndeavourOS with RTX 3090:
+            # host Vulkan ICD + host userspace libraries. Do not force this
+            # on normal launchers or other GPU vendors.
+            makeWrapper "$out/bin/vesper-barrio" "$out/bin/vesper-barrio-host-nvidia" \
+              --set VK_DRIVER_FILES /usr/share/vulkan/icd.d/nvidia_icd.json \
+              --prefix LD_LIBRARY_PATH : /usr/lib
+            makeWrapper "$out/bin/vesper-lantern" "$out/bin/vesper-lantern-host-nvidia" \
+              --set VK_DRIVER_FILES /usr/share/vulkan/icd.d/nvidia_icd.json \
+              --prefix LD_LIBRARY_PATH : /usr/lib
             # CI/headless only. Never force Lavapipe for normal GPU launchers:
             # desktop users must retain their actual Vulkan adapter.
             makeWrapper "${playerCrate}/bin/vesper-player" "$out/bin/vesper-barrio-software" \
@@ -147,6 +157,14 @@
           lantern = {
             type = "app";
             program = "${pkg.bundle}/bin/vesper-lantern";
+          };
+          barrio-host-nvidia = {
+            type = "app";
+            program = "${pkg.bundle}/bin/vesper-barrio-host-nvidia";
+          };
+          lantern-host-nvidia = {
+            type = "app";
+            program = "${pkg.bundle}/bin/vesper-lantern-host-nvidia";
           };
           barrio-software = {
             type = "app";
