@@ -40,7 +40,11 @@ nix run .#lantern-host-nvidia
 
 They set `VK_DRIVER_FILES=/usr/share/vulkan/icd.d/nvidia_icd.json` and add `/usr/lib` to `LD_LIBRARY_PATH` before invoking the existing Nix-wrapped player. The NVIDIA ICD and driver libraries must **already exist on the host**; nothing is installed or changed outside the Nix store. The game assets, executable and crate2nix cache are unchanged by choosing a launcher. Use these only for hosts with the Arch-style NVIDIA Vulkan location; they are not an automatic NVIDIA version detector and do not involve nixGL. The standard `barrio`, `lantern` and standalone player remain vendor-neutral, and `barrio-software` remains an explicit CI/headless test.
 
-This host-specific runtime route was verified manually with the equivalent environment variables. The new convenience wrappers still require a direct owner hardware test before being called hardware-verified. Native audio output and the ALSA-to-PipeWire plugin warnings are independently tracked; successfully decoding a sound asset does not prove it played through speakers.
+This host-specific runtime route was verified manually with the equivalent graphics environment variables. The convenience wrappers still require a direct owner hardware test before being called hardware-verified.
+
+### PipeWire-compatible ALSA plugins for the opt-in host launchers
+
+On a non-NixOS host, the host ALSA configuration may select the PipeWire PCM module while Nix-packaged `alsa-lib` looks only in its own empty plugin directory. The two host-NVIDIA launchers now set `ALSA_PLUGIN_DIR` **only when it is not already set**, pointing at the PipeWire ALSA PCM/control modules from the pinned Nix packages. The bundle build checks that both modules actually exist; Nix CI checks the resulting launcher wrappers. This does not change host PipeWire/ALSA settings, install another audio service, force a default device, or change the generic launchers. It may not eliminate warnings for unrelated optional ALSA modules. **Audible playback has not yet been verified on the owner's machine**, so issue #67 remains open pending that check. Decoding a sound asset alone does not demonstrate speaker output.
 
 ## Per-crate caching
 
