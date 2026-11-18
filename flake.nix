@@ -123,7 +123,6 @@
               pkg-config
               nix-output-monitor
               nixfmt
-              crate2nix
             ] ++ nativeLibraries;
             LD_LIBRARY_PATH = lib.makeLibraryPath graphicsLibraries;
           };
