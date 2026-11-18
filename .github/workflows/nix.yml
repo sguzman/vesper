@@ -43,10 +43,20 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Parse and evaluate the flake
+      - name: Show lockfile for deterministic review
+        run: |
+          echo 'BEGIN_VESPER_FLAKE_LOCK'
+          cat flake.lock
+          echo 'END_VESPER_FLAKE_LOCK'
+
+      - name: Parse and evaluate Crane flake outputs
         run: |
           nix-instantiate --parse flake.nix > /dev/null
-          nix flake check --no-build --show-trace
+          nix eval --raw .#packages.x86_64-linux.vesper-cli.drvPath
+          nix eval --raw .#devShells.x86_64-linux.default.drvPath
+
+      - name: Materialize flake inputs for per-crate generation
+        run: nix flake archive
 
       - name: Build Cargo-backed CLI in the Nix store
         run: nix build .#vesper-cli -L
