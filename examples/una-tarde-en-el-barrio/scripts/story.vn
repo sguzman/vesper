@@ -1,4 +1,4 @@
-# UNA TARDE EN EL BARRIO — provisional complete short-story flow.
+# AN AFTERNOON IN THE NEIGHBORHOOD — provisional complete short-story flow.
 # Original external game, not part of the narrative-engine test fixtures.
 # Three outcomes reflect authored choices and optional conversations.
 
@@ -18,185 +18,185 @@ set board_postponed = false
 set welcome = "returning"
 background street
 music golden_hour
-"El sol cae despacio sobre las tejas del barrio. Las calles parecen más pequeñas desde que te fuiste."
-"En la tienda de la esquina, la cortina está recogida. Detrás del mostrador reconoces una cara."
-"No has vuelto para arreglar la vida de nadie. Eso te repites mientras caminas hacia el tablón de anuncios."
-"La tienda está abierta. Puedes entrar y hablar con Mateo, volver a la calle o dejar tu respuesta en el tablón."
+"The sun sinks slowly over the neighborhood rooftops. The streets seem smaller than they did before you left."
+"The corner shop's shutter is raised. Behind the counter, you recognize a face."
+"You didn't come back to fix anyone's life. You repeat that to yourself as you walk toward the noticeboard."
+"The shop is open. You can go in and speak to Mateo, return to the street, or leave your answer on the board."
 explore street at home
 
 @scene elena_chat
 music golden_hour
 surface bubble
 if met_elena == true
-elena: "Ya volviste. Parece que los caminos de siempre todavía tienen algo que decir."
-"Elena se hace a un lado para dejar pasar una bicicleta. Esta vez no necesita preguntarte quién eres."
+elena: "You're back. Looks like these old streets still have something to say."
+"Elena steps aside to let a bicycle pass. This time she doesn't need to ask who you are."
 else
 set met_elena = true
-elena: "Mira nada más. ¿Todavía sabes cómo se llega a esta calle?"
-"Elena se acomoda la mochila y mira un instante hacia el árbol de jacarandá."
+elena: "Well, look at you. Do you still remember how to find this street?"
+"Elena adjusts her backpack and glances toward the jacaranda tree."
 end
-* "Me fui, pero nunca olvidé el camino." -> elena_welcome
-* "No sé si sigo perteneciendo aquí." -> elena_uncertain
-* "¿Qué pasó con la tienda de Mateo?" -> elena_news
+* "I left, but I never forgot the way." -> elena_welcome
+* "I don't know if I still belong here." -> elena_uncertain
+* "What happened to Mateo's shop?" -> elena_news
 
 @scene elena_welcome
 set heard_elena = true
-elena: "Entonces seguro recuerdas que nadie puede salir a la calle sin encontrarse a alguien."
-elena: "Hoy todos hablan de la tienda. El tablón tiene un aviso nuevo."
-"Sus ojos se quedan un momento en los papeles clavados al muro."
+elena: "Then you must remember you can't step outside without running into someone."
+elena: "Everyone's talking about the shop today. There's a new notice on the board."
+"Her eyes rest for a moment on the papers pinned to the wall."
 explore return
 
 @scene elena_uncertain
 set heard_elena = true
-elena: "Hay días que yo tampoco. No hace falta estar de acuerdo con una calle para quererla."
-elena: "La tienda podría cerrar. Quería que lo escucharas de alguien y no de un papel."
-"Te da espacio para responder; no lo haces. Tampoco parece necesitarlo."
+elena: "Some days I don't either. You don't have to agree with a street to love it."
+elena: "The shop might close. I wanted you to hear it from someone, not from a piece of paper."
+"She gives you room to answer; you don't. She doesn't seem to need you to."
 explore return
 
 @scene elena_news
 set heard_elena = true
-elena: "Le subieron la renta, y ahora hablan de vender el local. Ya sabes cómo empieza eso."
-elena: "Pero Mateo no quiere que lo conviertan en una causa sin preguntarle primero."
-"Elena se aparta un mechón de la frente. No parece enfadada: parece cansada."
+elena: "They raised his rent, and now they're talking about selling the place. You know how that starts."
+elena: "But Mateo doesn't want anyone turning him into a cause without asking him first."
+"Elena brushes a strand of hair from her face. She doesn't look angry. She looks tired."
 explore return
 
 @scene rosa_chat
 music golden_hour
 surface bubble
 if met_rosa == true
-rosa: "Hoy parece que nadie se pone de acuerdo ni con la hora de la reunión."
-"Rosa dobla una bolsa de papel entre las manos. Te reconoce y sigue hablando sin empezar de cero."
+rosa: "Seems nobody can even agree on what time to hold the meeting."
+"Rosa folds a paper bag between her hands. She recognizes you and continues without starting from the beginning."
 else
 set met_rosa = true
-rosa: "¿Tú también vienes por el aviso? Pensé que era el único chisme de la semana."
-"Rosa se alisa el delantal. Mira los carteles como si buscara la firma de alguien conocido."
-rosa: "Cada quien tiene una versión. La calle cambia aunque nadie se mueva."
+rosa: "Are you here about the notice too? I thought it was the only gossip in town this week."
+"Rosa smooths her apron and studies the posters as though looking for a familiar signature."
+rosa: "Everyone has their own version. The street changes even when nobody moves."
 end
-* "¿Qué dicen las personas que compran aquí?" -> rosa_people
-* "¿Y tú qué crees que debería hacerse?" -> rosa_opinion
-* "Apenas estoy poniéndome al día." -> rosa_later
+* "What are the customers saying?" -> rosa_people
+* "What do you think should be done?" -> rosa_opinion
+* "I'm still catching up." -> rosa_later
 
 @scene rosa_people
 set heard_rosa = true
-rosa: "Una señora quiere un local más grande. Un niño dice que Mateo le fía cuando falta dinero."
-rosa: "Todo eso puede ser cierto a la vez. Lo difícil es escucharlo sin elegir un bando antes de tiempo."
+rosa: "One woman wants a bigger shop. A boy says Mateo lets him buy on credit when he's short of money."
+rosa: "All of that can be true at once. The hard part is listening without choosing a side first."
 explore return
 
 @scene rosa_opinion
 set heard_rosa = true
-rosa: "No lo sé. Llevo años comprando aquí al caer la tarde. Esa no es una política pública."
-rosa: "Si vamos a reunir gente, al menos que Mateo esté ahí para decir lo suyo."
+rosa: "I don't know. I've been shopping here in the evenings for years. That isn't a public policy."
+rosa: "If we're getting people together, Mateo should at least be there to speak for himself."
 explore return
 
 @scene rosa_later
-rosa: "Pues todavía tienes tiempo. El sol no se ha escondido."
+rosa: "Well, you've still got time. The sun hasn't set yet."
 explore return
 
 @scene mateo_chat
 music shop_hush
 surface bubble
 if met_mateo == true
-mateo: "Sigues aquí. Al menos tú puedes escucharme más de una vez antes de decidir por mí."
-"Mateo aparta una caja para atender a quien acaba de entrar. Luego vuelve a mirarte."
+mateo: "You're still here. At least you can listen to me more than once before deciding for me."
+"Mateo moves a box aside to serve someone who just walked in, then turns back to you."
 else
 sound shop_bell
-"Suena la campanita de la entrada. Alguien ha venido a comprar pan para la cena."
+"The little bell above the door rings. Someone has come in to buy bread for dinner."
 set met_mateo = true
-mateo: "Apareciste justo cuando todo el mundo tiene opiniones sobre mi negocio. Qué suerte la mía."
+mateo: "You showed up just when everyone has an opinion about my business. Lucky me."
 end
 if saw_ledger == true
-"Te mira de reojo, hacia el cuaderno donde anotó la mercancía del último mes."
-mateo: "Si viniste por los números, no son toda la historia."
+"He glances toward the notebook where he recorded last month's stock."
+mateo: "If you came for the numbers, they aren't the whole story."
 end
 if respected_privacy == true
-mateo: "Gracias por no hurgar en mis cuentas. No todos lo entienden."
+mateo: "Thanks for not digging through my accounts. Not everyone understands that."
 end
-"Detrás de Mateo, la luz de la tarde queda atrapada en las botellas de vidrio."
-mateo: "Elena quiere convocar una reunión. La verdad, yo solo quiero una tarde sin cuentas pendientes."
-* "Podríamos escuchar lo que necesitas." -> mateo_help
-* "Cerrar también puede ser una decisión tuya." -> mateo_choice
-* "¿Te molesta que la gente quiera ayudarte?" -> mateo_anger
+"Behind Mateo, afternoon sunlight catches in the glass bottles."
+mateo: "Elena wants to call a meeting. To be honest, I just want one afternoon without outstanding bills."
+* "We could listen to what you need." -> mateo_help
+* "Closing can be your decision too." -> mateo_choice
+* "Does it bother you that people want to help?" -> mateo_anger
 
 @scene mateo_help
 set mateo_wants_help = true
-mateo: "Tal vez. Si alguien se ofrece a escuchar antes de colgar un cartel bonito, tal vez."
-"Acomoda un paquete de arroz en el estante y deja la mano apoyada allí."
-mateo: "Me gustaría llegar a una decisión sin sentir que le debo un final feliz a todos."
+mateo: "Maybe. If somebody offers to listen before putting up a pretty poster, maybe."
+"He straightens a packet of rice on the shelf and rests his hand there."
+mateo: "I'd like to make a decision without feeling that I owe everyone a happy ending."
 explore return
 
 @scene mateo_choice
 set mateo_wants_help = false
-mateo: "Gracias. Hasta ahora todos hablan de la tienda. Nadie pregunta por mí."
-"El zumbido del refrigerador llena un silencio que no resulta incómodo."
-mateo: "No estoy diciendo que no a la reunión. Solo quiero que siga siendo mi decisión."
+mateo: "Thank you. So far everyone talks about the shop. Nobody asks about me."
+"The refrigerator hum fills a silence that doesn't feel uncomfortable."
+mateo: "I'm not saying no to the meeting. I just want it to remain my decision."
 explore return
 
 @scene mateo_anger
 set mateo_wants_help = false
-mateo: "No. Me molesta que den por hecho que quedarse es la única forma de querer este lugar."
-mateo: "Mi padre abrió esta tienda con un préstamo. Yo crecí aquí. Eso no significa que tenga que morir aquí."
-"Fuera, suena la campana de una bicicleta."
+mateo: "No. What bothers me is everyone assuming that staying is the only way to love this place."
+mateo: "My father opened this shop with a loan. I grew up here. That doesn't mean I have to die here."
+"Outside, a bicycle bell rings."
 explore return
 
 @scene shop_cat
 music shop_hush
 surface bubble
 if stroked_cat == true
-"El gato esta vez abre ambos ojos al escuchar tus pasos. No se levanta, pero te deja acercarte sin fingir que sigues siendo un extraño."
+"This time the cat opens both eyes when it hears your footsteps. It doesn't get up, but it lets you approach without pretending you're still a stranger."
 else
-"Un gato blanco con manchas de café duerme junto a los periódicos viejos. Parece conocer el negocio mejor que cualquiera."
-"Abre un ojo cuando te acercas y vuelve a cerrarlo con toda la paciencia del mundo."
+"A white cat with brown patches sleeps beside the old newspapers. It seems to know the business better than anyone."
+"It opens one eye as you approach, then closes it again with all the patience in the world."
 end
-* "Acariciarle la cabeza con cuidado." -> shop_cat_pet
-* "Dejarlo dormir y seguir explorando." -> shop_cat_sleep
+* "Gently pet its head." -> shop_cat_pet
+* "Let it sleep and keep exploring." -> shop_cat_sleep
 
 @scene shop_cat_pet
 set stroked_cat = true
-"El gato te permite una caricia, luego acomoda la cabeza sobre tus dedos como si hubiera tomado una decisión importante."
-"Te quedas allí un instante. Hay tardes que no exigen una respuesta inmediata."
+"The cat allows one stroke, then settles its head against your fingers as if it has made an important decision."
+"You stay there for a moment. Some afternoons don't demand an immediate answer."
 explore return
 
 @scene shop_cat_sleep
-"No interrumpes su siesta. Bajo la luz de la lámpara, la tienda parece estar respirando muy despacio."
+"You don't interrupt its nap. Under the lamplight, the shop seems to be breathing very slowly."
 explore return
 
 @scene shop_display
 music shop_hush
 surface bubble
 if read_display == true
-"Las etiquetas siguen en su sitio. La caja te recuerda el caramelo que Mateo te regaló; esta vez reconoces también su letra en los precios."
+"The price tags are still in place. The box reminds you of the candy Mateo once gave you; now you recognize his handwriting on the prices."
 else
-"Los anaqueles están llenos de cosas que una persona compra sin pensar: velas, jabón, latas de atún."
-"En la repisa más baja hay una pequeña caja con etiquetas viejas de precios, escritas a mano."
+"The shelves are full of things people buy without thinking: candles, soap, cans of tuna."
+"On the lowest shelf sits a little box of old price labels, handwritten."
 end
-* "Recordar las compras de otros días." -> shop_display_remember
-* "Volver a lo que ibas a hacer." -> shop_display_leave
+* "Remember shopping here long ago." -> shop_display_remember
+* "Get back to what you were doing." -> shop_display_leave
 
 @scene shop_display_remember
 set read_display = true
-"Cuando eras más joven, Mateo te regaló un caramelo porque olvidaste traer cambio."
-"Recuerdas mejor la vergüenza de entonces que el sabor del caramelo."
+"When you were younger, Mateo gave you a piece of candy because you'd forgotten to bring change."
+"You remember the embarrassment better than the taste of the candy."
 explore return
 
 @scene shop_display_leave
-"El refrigerador zumba. No todo objeto necesita convertirse en un recuerdo."
+"The refrigerator hums. Not every object has to become a memory."
 explore return
 
 @scene shop_ledger
 music shop_hush
 surface panel
-"El cuaderno de cuentas descansa junto a la caja. Alguien ha dejado un lápiz entre las últimas páginas."
-"Podrías mirar las deudas, pero Mateo no te ha dado permiso de hacerlo."
-* "Dejarlo cerrado y preguntarle a Mateo directamente." -> shop_ledger_respect
-* "Echar un vistazo a las cuentas." -> shop_ledger_read
-* "Dejarlo tal como está." -> shop_ledger_leave
+"The account book rests beside the register. Someone has left a pencil between its last pages."
+"You could look at the debts, but Mateo hasn't given you permission."
+* "Leave it closed and ask Mateo directly." -> shop_ledger_respect
+* "Take a look at the accounts." -> shop_ledger_read
+* "Leave it as it is." -> shop_ledger_leave
 
 @scene shop_ledger_respect
 if saw_ledger == true
-"Esta vez lo dejas cerrado. Haber visto esas cuentas antes no te daba permiso para hacerlo."
+"This time you leave it closed. Having seen those accounts before didn't give you permission."
 else
 set respected_privacy = true
-"No abres el cuaderno. Si quieres saber qué necesita Mateo, tendrás que preguntárselo a él."
+"You don't open the notebook. If you want to know what Mateo needs, you'll have to ask him."
 end
 explore return
 
@@ -204,71 +204,71 @@ explore return
 set saw_ledger = true
 set respected_privacy = false
 sound paper_rustle
-"No entiendes cada cifra. Solo ves que las cuentas de algunos vecinos llevan meses abiertas."
-"El cuaderno tampoco dice a quién pertenecen las decisiones de Mateo."
+"You can't make sense of every figure. You can only see that some neighbors' accounts have been open for months."
+"The notebook doesn't tell you who gets to make Mateo's decisions, either."
 explore return
 
 @scene shop_ledger_leave
-"No hay nada urgente en esas páginas que deba resolver alguien que acaba de volver."
+"There's nothing urgent in those pages for someone who has only just returned to solve."
 explore return
 
 @scene threshold_memory
 music golden_hour
 surface panel
 if remembered_door == true
-"Los raspones siguen allí, aunque ya has recordado quién te abrió una tarde. No hace falta llamar otra vez para saber que sucedió."
+"The scratches are still there, even though you've remembered who opened the door for you one afternoon. You don't have to knock again to know it happened."
 else
-"La puerta de madera conserva los raspones del año en que aprendiste a montar en bicicleta. Alguien ha pintado alrededor de ellos, nunca encima."
-"Detrás de una ventana escuchas platos y una radio. No reconoces la canción, pero sí el sonido de alguien preparando la cena."
+"The wooden door still bears the scratches from the year you learned to ride a bicycle. Someone has painted around them, never over them."
+"Through a window you hear dishes and a radio. You don't recognize the song, but you know the sound of someone making dinner."
 end
-* "Recordar una tarde antes de irte." -> threshold_remember
-* "Seguir andando. No todo necesita convertirse en recuerdo." -> threshold_walk
+* "Remember an afternoon before you left." -> threshold_remember
+* "Keep walking. Not everything needs to become a memory." -> threshold_walk
 
 @scene threshold_remember
 set remembered_door = true
-"Te ves de niño, parado aquí con una bolsa de pan y el temor absurdo de tocar una puerta equivocada."
-"El barrio no te perteneció entonces. Aun así alguien abrió y te dejó entrar."
+"You see yourself as a child, standing here with a bag of bread and the absurd fear of knocking on the wrong door."
+"The neighborhood wasn't yours then. Still, someone opened the door and let you in."
 explore return
 
 @scene threshold_walk
-"Dejas la mano lejos del picaporte. Esa casa tiene su propia tarde, y no necesitas entrar en ella."
+"You keep your hand away from the doorknob. That house has its own afternoon, and you don't need to enter it."
 explore return
 
 @scene board_read
 music golden_hour
 surface panel
 if board_postponed == true
-"Vuelves al tablón. El lápiz sigue atado a la misma cuerda, pero ahora sabes que no tenías que contestar en tu primera visita."
-"El aviso sigue ahí. Has vuelto, pero eso no significa que tengas que decidir por Mateo."
+"You return to the noticeboard. The pencil is still tied to the same string, but now you know you didn't have to answer on your first visit."
+"The notice is still there. You've returned, but that doesn't mean you have to decide for Mateo."
 else
-"EL TABLÓN DE LA PLAZA. Un cuarto en renta, clases de guitarra, una bicicleta extraviada y tres anuncios con la misma letra."
-"Una hoja nueva propone una reunión vecinal antes de decidir el futuro del local. Abajo hay espacio para dejar una respuesta."
+"THE SQUARE NOTICEBOARD. A room for rent, guitar lessons, a missing bicycle, and three notices in the same handwriting."
+"A new sheet proposes a neighborhood meeting before anyone decides the shop's future. There's space below for a reply."
 end
 if met_elena == true
-"Recuerdas a Elena, que habló de la calle como si también necesitara que alguien la escuchara."
+"You remember Elena, who spoke of the street as though it needed someone to listen to it too."
 end
 if met_rosa == true
-"Rosa te recordó que las historias de los vecinos nunca caben enteras en un solo anuncio."
+"Rosa reminded you that neighbors' stories never fit completely on a single notice."
 end
 if met_mateo == true
-"Mateo preferiría que no lo pusieran a representar las nostalgias de todo el barrio."
+"Mateo would rather not be made to represent the entire neighborhood's nostalgia."
 end
 if saw_ledger == true
-"Sabes que las cifras que viste en la tienda no explican por sí solas quién debe tomar la decisión."
+"You know the figures you saw in the shop don't explain who should make the decision."
 end
 if respected_privacy == true
-"Decidiste no leer las cuentas sin permiso. El aviso debería respetar esa misma frontera."
+"You chose not to read the accounts without permission. The notice should respect that same boundary."
 end
-"El lápiz atado al tablón está gastado, pero todavía escribe."
-* "Invitar a escuchar a todas las personas, empezando por Mateo." -> ending_listen
-* "Ofrecer un plan concreto para ayudar a mantener la tienda." -> ending_open
-* "Guardar el lápiz y dejar que otros tomen la iniciativa." -> ending_quiet
-* "Necesito hablar con alguien antes de contestar." -> board_return
+"The pencil tied to the board is worn down, but it still writes."
+* "Invite everyone to listen, starting with Mateo." -> ending_listen
+* "Offer a concrete plan to help keep the shop open." -> ending_open
+* "Put down the pencil and let others take the initiative." -> ending_quiet
+* "I need to talk to someone before I answer." -> board_return
 
 @scene board_return
 set board_postponed = true
-"Dejas el lápiz sobre la cuerda. No tienes que decidirlo ahora, y el tablón seguirá aquí cuando vuelvas."
-"Escuchas un timbre desde la tienda y los pasos de alguien bajando las escaleras."
+"You set the pencil down against its string. You don't have to decide now, and the board will still be here when you return."
+"You hear a bell from the shop and footsteps coming down the stairs."
 explore return
 
 @scene ending_listen
@@ -276,98 +276,98 @@ mode visual_novel
 background street_evening
 surface panel
 if board_postponed == true
-"Esta vez no escribes de inmediato. Haber dejado el lápiz un rato te recordó que una conversación merece algo más que una respuesta rápida."
+"This time you don't write immediately. Setting the pencil down for a while reminded you that a conversation deserves more than a quick reply."
 end
 if remembered_door == true
-"Piensas en la vieja puerta donde alguien te hizo sitio sin pedirte una explicación. Quizá escuchar sea una forma parecida de abrir."
+"You think of the old doorway where someone made room for you without demanding an explanation. Perhaps listening is a similar way of opening a door."
 end
 if stroked_cat == true
-"En el borde de la hoja de firmas, dibujas sin querer un gato dormido. Te hace sonreír."
+"At the edge of the sign-up sheet, you absentmindedly draw a sleeping cat. It makes you smile."
 end
 if read_display == true
-"Recuerdas las pequeñas compras de tantos años. Por un instante, el papel parece más pesado."
+"You remember all those little purchases over the years. For a moment, the paper feels heavier."
 end
 if met_elena == true
 show elena calm at left
 end
 if heard_elena == true
-"Elena se detiene junto al tablón. Ve el lápiz suspendido en tu mano y se queda un instante a tu lado."
+"Elena stops beside the noticeboard. She sees the pencil hovering in your hand and stands with you for a moment."
 surface bubble
-elena: "No escribas por Mateo. Escúchalo primero."
+elena: "Don't write on Mateo's behalf. Listen to him first."
 surface panel
 end
-"Escribes: 'Antes de decidir qué conservar, preguntémonos qué necesita quien vive y trabaja aquí.'"
+"You write: 'Before deciding what to preserve, let's ask what the people who live and work here need.'"
 if met_mateo == true
-"Mateo lo lee antes que nadie. No sonríe, pero al día siguiente hay una silla más frente a la tienda."
+"Mateo reads it before anyone else. He doesn't smile, but the next day there's one more chair outside the shop."
 else
-"Una nota aparece bajo la tuya: 'Ojalá se lo pregunten primero al dueño.' Firmada solo con una M."
+"A note appears beneath yours: 'I hope they ask the owner first.' Signed with only an M."
 end
 if heard_rosa == true
-"Rosa deja una bolsa de vasos de papel. Dice que traerá café si alguien se ocupa de las sillas."
+"Rosa leaves a bag of paper cups. She says she'll bring coffee if someone else handles the chairs."
 end
-"A la mañana siguiente hay cinco respuestas. Ninguna está completamente de acuerdo con las otras."
-"La persiana se levanta lo suficiente para que entre la luz. Nadie promete que la tienda seguirá abierta."
-"Pero durante una tarde, al menos, las personas dejan de hablar por los demás."
-"FIN — Una invitación."
+"By the next morning there are five replies. None agrees entirely with the others."
+"The shutter rises just far enough to let the light in. Nobody promises the shop will stay open."
+"But for one afternoon, at least, people stop speaking for each other."
+"THE END — An invitation."
 
 @scene ending_open
 mode visual_novel
 background street_evening
 surface panel
 if board_postponed == true
-"La primera vez que viste el aviso no sabías qué proponer. Regresar después no te vuelve experto, pero te obliga a ser más cuidadoso con el plan."
+"The first time you saw the notice, you didn't know what to propose. Coming back doesn't make you an expert, but it makes you more careful with your plan."
 end
 if remembered_door == true
-"Recuerdas el portal de madera y decides que una propuesta sirve más cuando deja entrar a quien tendrá que vivir con ella."
+"You remember the wooden doorway and decide a proposal works better when it makes room for the person who must live with it."
 end
 if respected_privacy == true
-"Antes de escribir el plan, tachas cualquier propuesta que exponga las cuentas privadas de Mateo."
+"Before writing the plan, you cross out anything that would expose Mateo's private accounts."
 end
-"Escribes turnos de apoyo, una pequeña rifa y un fondo comunitario. Lees el plan dos veces antes de colgarlo."
+"You write down volunteer shifts, a small raffle, and a community fund. You read the plan twice before posting it."
 if mateo_wants_help == true
-"Mateo aparece con un bolígrafo azul. Pregunta dónde se apuntan los que quieran echar una mano."
+"Mateo appears with a blue pen. He asks where people can sign up to lend a hand."
 else
-"Mateo lo lee en silencio. Le dices que el papel es solo una propuesta: puede decir que no."
+"Mateo reads it in silence. You tell him the paper is only a proposal: he can say no."
 end
 if saw_ledger == true
-"Te acuerdas de las cuentas que miraste sin permiso. No las has escrito en la propuesta, pero eso no borra que las viste."
+"You remember the accounts you looked at without permission. You haven't mentioned them in the proposal, but that doesn't undo what you saw."
 end
 if heard_rosa == true
-"Rosa añade que una reunión no será una reunión si la gente que compra allí no puede hablar. Dejas un espacio para sus nombres."
+"Rosa adds that a meeting isn't a meeting if the people who shop there can't speak. You leave space for their names."
 end
 if heard_elena == true
-"Elena corrige la fecha de la reunión y añade: 'Sin compromisos hasta que hablemos todos'."
+"Elena corrects the meeting date and adds: 'No commitments until we've all talked.'"
 end
-"La persiana sigue abierta esa tarde. Nadie sabe cuánto durará; nadie lo finge."
-"El barrio no se salva con una hoja de papel. A veces, sin embargo, una hoja sirve para empezar."
-"FIN — Una posibilidad."
+"The shutter stays open that afternoon. Nobody knows for how long; nobody pretends to."
+"A piece of paper can't save a neighborhood. Sometimes, though, it can get things started."
+"THE END — A possibility."
 
 @scene ending_quiet
 mode visual_novel
 background street_evening
 surface panel
 if board_postponed == true
-"Regresaste a leer el aviso y sigues sin querer poner tu nombre bajo una decisión que no te corresponde. Haber vuelto no te obliga a escribir."
+"You came back to read the notice, and you still don't want to put your name under a decision that isn't yours. Returning doesn't oblige you to write."
 end
 if remembered_door == true
-"La puerta antigua sigue tras de ti. Has entendido que recordar un sitio no te da derecho a decidir su futuro."
+"The old doorway is still behind you. You've understood that remembering a place doesn't give you the right to decide its future."
 end
 if stroked_cat == true
-"Recuerdas al gato de la tienda. No tuvo que decidir el futuro de nadie para ofrecer un momento de calma."
+"You remember the shop's cat. It didn't have to decide anyone's future to offer a moment of peace."
 end
 if saw_ledger == true
-"Las cifras que viste en la tienda no salen de tu cabeza; no son tuyas para explicarlas."
+"The figures you saw in the shop won't leave your mind; they aren't yours to explain."
 end
-"Dejas el lápiz en su sitio. No escribes una respuesta: todavía no sabes cuál sería la tuya."
+"You put the pencil back. You don't write an answer: you still don't know what yours would be."
 if met_elena == true
-"Elena no pregunta qué decidiste. Camina contigo un rato en silencio bajo las flores violetas."
+"Elena doesn't ask what you decided. She walks beside you in silence for a while beneath the purple blossoms."
 else
-"A tu espalda, alguien vuelve a colocar el aviso que se había soltado del tablón."
+"Behind you, someone pins up the notice that had come loose."
 end
 if met_mateo == true
-"Recuerdas lo que dijo Mateo: cerrar también puede ser una decisión propia. Lo que no escribiste no le quita esa posibilidad."
+"You remember what Mateo said: closing can be a decision of his own. Your silence doesn't take that possibility away."
 end
-"La calle sigue siendo hermosa, aunque las cosas cambien sin pedir permiso."
-"Al llegar a la esquina, ves a Mateo apagar una luz. La de afuera queda encendida."
-"No has resuelto nada esta tarde. Mañana todavía puedes volver."
-"FIN — Una puerta abierta."
+"The street is still beautiful, even as things change without asking permission."
+"When you reach the corner, you see Mateo turn off a light. The one outside stays on."
+"You haven't solved anything this afternoon. Tomorrow you can still come back."
+"THE END — An open door."
