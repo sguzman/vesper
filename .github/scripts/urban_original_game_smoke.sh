@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Exercise the real, unchanged Bevy player with the original Una Tarde game.
+# Exercise the real, unchanged Bevy player with the original urban example.
 # This is native CI evidence (Xvfb/software Mesa), not physical Hyprland QA.
 set -euo pipefail
 
@@ -64,7 +64,7 @@ wait_increment() {
 }
 window=''
 for ((try=0;try<180;try++)); do
-  window=$(xdotool search --onlyvisible --name 'Una Tarde en el Barrio' 2>/dev/null | head -n 1 || :)
+  window=$(xdotool search --onlyvisible --name 'An Afternoon in the Neighborhood' 2>/dev/null | head -n 1 || :)
   [[ -n $window ]] && break
   alive
   sleep .25
