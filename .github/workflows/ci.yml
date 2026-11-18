@@ -13,8 +13,18 @@ jobs:
       - name: Install pinned ImageMagick 7 and FFmpeg for source provenance
         shell: bash
         run: |
-          sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
-          sudo timeout 600s apt-get install -y --no-install-recommends ffmpeg
+          # The hosted runner's regional EC2 Ubuntu mirror repeatedly
+          # timed out during FFmpeg installation (CI exit 124). Prefer the
+          # canonical Ubuntu archive for repeatable authored-art validation.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            sudo sed -E -i \
+              's#http://([a-z0-9.-]+\.)?archive\.ubuntu\.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
+              /etc/apt/apt-mirrors.txt
+          fi
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
+            sudo timeout 600s apt-get install -y --no-install-recommends ffmpeg
+          fi
           # The authored sprites were exported using ImageMagick 7. Its
           # alpha-channel and pixel operations must not be silently replaced
           # by Ubuntu 24.04's older ImageMagick 6 behavior.

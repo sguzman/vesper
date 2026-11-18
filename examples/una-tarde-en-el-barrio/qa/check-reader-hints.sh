@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Current authored game expects five Spanish states supported by PR #31.
+# Current authored game expects five English states supported by PR #31.
 set -euo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 awk '
@@ -17,6 +17,6 @@ END {
   split("narration choices ending conversation conversation_choices", keys, " ")
   for(i in keys) if(!seen[keys[i]]) {print "ERROR missing "keys[i] > "/dev/stderr"; failures++}
   if(!found) {print "ERROR missing [reader_hints]" > "/dev/stderr"; failures++}
-  if(!failures) print "Spanish reader hint fields OK: five distinct author-owned labels."
+  if(!failures) print "English reader hint fields OK: five distinct author-owned labels."
   exit failures ? 1 : 0
 }' "$root/styles/urban.toml"

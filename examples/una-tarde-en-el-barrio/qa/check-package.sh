@@ -50,7 +50,7 @@ function error(message) {print "ERROR: " message > "/dev/stderr"; errors++}
 function finish_scene() {
   if (scene == "") return
   if (scene ~ /^ending_/) {
-    if (!terminal[scene]) error("ending has no FIN text: " scene)
+    if (!terminal[scene]) error("ending has no THE END text: " scene)
     if (!visual[scene]) error("ending does not enter visual_novel: " scene)
   } else if (!has_choice[scene] && !has_return[scene]) {
     error("scene has no choices or authored exploration return: " scene)
@@ -69,7 +69,7 @@ function finish_scene() {
 }
 /^explore[[:space:]]/ {has_return[scene]=1; next}
 /^mode[[:space:]]+visual_novel/ {visual[scene]=1; next}
-/^"FIN[[:space:]]/ {terminal[scene]=1; next}
+/^"THE END[[:space:]]/ {terminal[scene]=1; next}
 /^set[[:space:]]+/ {defined[$2]=1; next}
 /^if[[:space:]]+/ {
   if (!($2 in defined)) error("undefined condition " $2 " in " scene)

@@ -20,8 +20,8 @@ nom build .#vesper-cli      # authoring CLI; crate2nix per-crate dependency grap
 
 nom build .#vesper-player   # same native Bevy player, using crate2nix
 nom build .#bundle          # player plus external games, images, audio, fonts
-nix run .#barrio            # original example, normal host GPU
-nix run .#lantern           # short example, normal host GPU
+nix run .#barrio            # English original urban example, normal host GPU
+nix run .#lantern           # short English example, normal host GPU
 nix run .#barrio-host-nvidia    # explicitly use Arch host NVIDIA Vulkan stack
 nix run .#lantern-host-nvidia   # short English example with host NVIDIA
 nix run .#barrio-software   # opt-in Mesa Lavapipe for headless/virtual displays
