@@ -33,49 +33,23 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
 
-      # Until the generated lockfile is committed, retain it as evidence.
-      # Once committed, nix flake lock becomes a no-op on unchanged inputs.
-      - name: Resolve pinned flake inputs
-        run: nix flake lock
-
-      - name: Preserve input lockfile for review
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: vesper-nix-flake-lock
-          path: flake.lock
-          if-no-files-found: ignore
-          retention-days: 14
-
-      - name: Show lockfile for deterministic review
+      - name: Verify the committed flake lockfile
         run: |
-          echo 'BEGIN_VESPER_FLAKE_LOCK'
-          cat flake.lock
-          echo 'END_VESPER_FLAKE_LOCK'
+          nix flake lock
+          git diff --exit-code -- flake.lock
 
-      - name: Parse and evaluate Crane flake outputs
+      - name: Parse flake and evaluate the crate2nix workspace
         run: |
           nix-instantiate --parse flake.nix > /dev/null
+          nix flake archive
           nix eval --raw .#packages.x86_64-linux.vesper-cli.drvPath
           nix eval --raw .#devShells.x86_64-linux.default.drvPath
 
-      - name: Materialize flake inputs for per-crate generation
-        run: nix flake archive
+      - name: Build CLI with crate2nix per-crate derivations
+        run: nix build .#vesper-cli -L --out-link result-cli
 
-      - name: Build Cargo-backed CLI in the Nix store
-        run: nix build .#vesper-cli -L
-
-      - name: Verify Nix CLI against the real external game
-        run: ./result/bin/vesper check-game examples/una-tarde-en-el-barrio
-
-      - name: Evaluate separate per-crate Nix derivations
-        run: nix eval --raw .#packages.x86_64-linux.per-crate-cli.drvPath
-
-      - name: Build the per-crate CLI graph
-        run: nix build .#per-crate-cli -L --out-link result-per-crate
-
-      - name: Verify per-crate CLI against the original game
-        run: ./result-per-crate/bin/vesper check-game examples/una-tarde-en-el-barrio
+      - name: Validate original external game with crate2nix CLI
+        run: ./result-cli/bin/vesper check-game examples/una-tarde-en-el-barrio
 
   linux-bundle:
     runs-on: ubuntu-24.04
@@ -89,9 +63,9 @@ jobs:
           nix flake lock
           git diff --exit-code -- flake.lock
 
-      - name: Evaluate and build the original-game distribution
+      - name: Build Bevy player and original-game distribution with crate2nix
         run: |
-          nix eval --raw .#packages.x86_64-linux.bundle.drvPath
+          nix eval --raw .#packages.x86_64-linux.vesper-player.drvPath
           nix build .#bundle -L
 
       - name: Verify external game files remain in the bundle
