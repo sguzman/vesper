@@ -16,7 +16,7 @@ cargo build --locked --release -p vesper-player
 ./target/release/vesper-player examples/una-tarde-en-el-barrio
 ```
 
-In established local workflows use `mbx` as the build coordinator, rather than running an additional independent Cargo build concurrently. The shell provides Rust stable, Cargo, rust-analyzer, Clippy, rustfmt, pkg-config, Nix formatter, `nom`, crate2nix and Bevy's native dependencies. Existing fish configuration and the user's own Cargo/mbx cache are not moved or deleted.
+In established local workflows use `mbx` as the build coordinator, rather than running an additional independent Cargo build concurrently. The shell provides Rust stable, Cargo, rust-analyzer, Clippy, rustfmt, pkg-config, Nix formatter, `nom` and Bevy's native dependencies. The separate crate2nix flake input is invoked by Nix automatically for per-crate package outputs. Existing fish configuration and the user's own Cargo/mbx cache are not moved or deleted.
 
 ## Nix package outputs
 
@@ -44,7 +44,7 @@ Rust code changes invalidate their own derivations and dependent crates, not unr
 
 ## Pinning and verification
 
-`Cargo.lock` pins Rust dependency versions. `flake.lock` must additionally be committed to pin nixpkgs/Crane/crate2nix inputs. The dedicated Nix CI workflow resolves this lockfile and preserves it as the `vesper-nix-flake-lock` artifact so it can be reviewed and committed. Do not claim fully reproducible flake inputs while `flake.lock` is absent.
+`Cargo.lock` pins Rust dependency versions. `flake.lock` is committed alongside the flake, pinning nixpkgs, Crane and crate2nix inputs. The dedicated Nix CI workflow also preserves the resolved lockfile as the `vesper-nix-flake-lock` artifact. Changes to flake inputs must be reviewed and the lockfile updated in the same commit.
 
 ```fish
 nix flake check --no-build
