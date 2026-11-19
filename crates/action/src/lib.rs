@@ -23,6 +23,8 @@ const GATE_POS: Vec2 = Vec2::new(270.0, 59.0);
 const HERO_SPEED: f32 = 133.0;
 const DODGE_SPEED: f32 = 315.0;
 const DRONE_SPEED: f32 = 66.0;
+// Keep the starting tile safe; the hostile drone engages only when approached.
+const DRONE_AGGRO_DISTANCE: f32 = 168.0;
 
 #[derive(Resource)]
 pub struct DemoRoot(pub PathBuf);
@@ -62,6 +64,39 @@ struct Encounter {
     step_clock: f32,
     terminal_on: bool,
     notice: &'static str,
+}
+
+impl Encounter {
+    fn hit_drone(&mut self) -> bool {
+        self.drone_hp = self.drone_hp.saturating_sub(1);
+        if self.drone_hp == 0 {
+            self.notice = "Drone disabled. Restore the power terminal (E).";
+            true
+        } else {
+            self.notice = "Direct hit. Strike again!";
+            false
+        }
+    }
+
+    fn activate_terminal(&mut self) -> bool {
+        if self.drone_hp > 0 {
+            self.notice = "Power console locked by the security drone.";
+            return false;
+        }
+        self.terminal_on = true;
+        self.notice = "Power restored. Reach the illuminated exit (E).";
+        true
+    }
+
+    fn try_exit(&mut self) -> bool {
+        if !self.terminal_on {
+            self.notice = "Door is locked. Restore the power first.";
+            return false;
+        }
+        self.outcome = Outcome::Won;
+        self.notice = "DEVELOPMENT ROOM CLEARED. Press R to replay.";
+        true
+    }
 }
 
 impl Default for Encounter {
@@ -365,7 +400,7 @@ fn strike(
             transform.translation.truncate(),
         )
     {
-        encounter.drone_hp -= 1;
+        let drone_defeated = encounter.hit_drone();
         encounter.drone_stagger = 0.24;
         encounter.drone_windup = 0.0;
         let next = slide_move(
@@ -377,11 +412,9 @@ fn strike(
         transform.translation.x = next.x;
         transform.translation.y = next.y;
         sprite.color = Color::srgb(1.0, 0.86, 0.72);
-        if encounter.drone_hp == 0 {
+        if drone_defeated {
+            info!("Vesper action: drone disabled");
             *visibility = Visibility::Hidden;
-            encounter.notice = "Drone disabled. Restore the power terminal (E).";
-        } else {
-            encounter.notice = "Direct hit. Strike again!";
         }
     }
 }
@@ -428,7 +461,7 @@ fn move_drone(
     if distance < 52.0 && encounter.drone_cooldown <= 0.0 {
         encounter.drone_windup = 0.45;
         encounter.drone_cooldown = 1.20;
-    } else if distance > 47.0 && distance < 232.0 {
+    } else if distance > 47.0 && distance < DRONE_AGGRO_DISTANCE {
         let velocity = offset.normalize_or_zero() * DRONE_SPEED * dt;
         let next = slide_move(transform.translation.truncate(), velocity, 11.0, &room_solids());
         transform.translation.x = next.x;
@@ -454,25 +487,18 @@ fn interact(
     if let Ok((console_transform, mut console_sprite)) = console.single_mut()
         && point.distance(console_transform.translation.truncate()) < 65.0
     {
-        if encounter.drone_hp > 0 {
-            encounter.notice = "Power console locked by the security drone.";
+        if !encounter.activate_terminal() {
             return;
         }
-        encounter.terminal_on = true;
+        info!("Vesper action: power restored");
         console_sprite.image = art.console_on.clone();
         if let Ok(mut gate_sprite) = gate.single_mut() {
             gate_sprite.image = art.gate_open.clone();
         }
-        encounter.notice = "Power restored. Reach the illuminated exit (E).";
         return;
     }
-    if point.distance(GATE_POS) < 59.0 {
-        if encounter.terminal_on {
-            encounter.outcome = Outcome::Won;
-            encounter.notice = "DEVELOPMENT ROOM CLEARED. Press R to replay.";
-        } else {
-            encounter.notice = "Door is locked. Restore the power first.";
-        }
+    if point.distance(GATE_POS) < 59.0 && encounter.try_exit() {
+        info!("Vesper action: room cleared");
     }
 }
 
@@ -547,6 +573,51 @@ mod tests {
         assert_eq!(facing_from_axis(Vec2::ZERO, -Vec2::X), -Vec2::X);
         assert_eq!(facing_from_axis(Vec2::new(0.2, 1.0), Vec2::X), Vec2::Y);
         assert_eq!(facing_from_axis(Vec2::new(-1.0, 0.2), Vec2::Y), -Vec2::X);
+    }
+
+    #[test]
+    fn first_seconds_are_safe_until_the_player_approaches_the_drone() {
+        let initial_distance = HERO_START.distance(DRONE_START);
+        assert!(initial_distance > DRONE_AGGRO_DISTANCE);
+        assert!(initial_distance - 30.0 < DRONE_AGGRO_DISTANCE);
+    }
+
+    #[test]
+    fn three_hits_power_unlock_and_exit_form_one_complete_room_loop() {
+        let mut encounter = Encounter::default();
+        assert!(!encounter.activate_terminal());
+        assert!(!encounter.try_exit());
+        assert_eq!(encounter.outcome, Outcome::Playing);
+        assert!(!encounter.hit_drone());
+        assert_eq!(encounter.drone_hp, 2);
+        assert!(!encounter.hit_drone());
+        assert_eq!(encounter.drone_hp, 1);
+        assert!(encounter.hit_drone());
+        assert_eq!(encounter.drone_hp, 0);
+        assert!(encounter.activate_terminal());
+        assert!(encounter.try_exit());
+        assert_eq!(encounter.outcome, Outcome::Won);
+        let replay = Encounter::default();
+        assert_eq!(replay.outcome, Outcome::Playing);
+        assert_eq!(replay.drone_hp, 3);
+        assert!(!replay.terminal_on);
+    }
+
+    #[test]
+    fn physical_room_route_reaches_the_terminal_and_exit_around_colliders() {
+        let mut pos = HERO_START;
+        let walls = room_solids();
+        for _ in 0..100 {
+            pos = slide_move(pos, Vec2::new(3.2, 0.0), HERO_RADIUS, &walls);
+        }
+        assert!(pos.distance(CONSOLE_POS) < 65.0, "terminal unreachable: {pos:?}");
+        for _ in 0..13 {
+            pos = slide_move(pos, Vec2::new(3.2, 0.0), HERO_RADIUS, &walls);
+        }
+        for _ in 0..33 {
+            pos = slide_move(pos, Vec2::new(0.0, 3.2), HERO_RADIUS, &walls);
+        }
+        assert!(pos.distance(GATE_POS) < 59.0, "exit unreachable: {pos:?}");
     }
 
     #[test]
