@@ -1,8 +1,16 @@
 # Vesper engineering contract
 
-This project is stewarded toward a **verified, shippable Rust/Bevy visual novel runtime**. The owner retains final authority. Repository state, tests and architecture decisions are primary evidence. A request to **"continue"** means autonomously select, implement, test, commit and push the highest-priority in-scope work, not merely discuss a plan.
+This project is stewarded as a **reusable Rust/Bevy 2D workspace**. The owner retains final authority. On 2026-11-18 the owner retired **visual novels as the active genre** after rejecting the original game's presentation; existing visual-novel code and history must remain intact, but no more visual-novel polishing, showcases or feature work should be initiated without renewed authorization. **The active direction is a separate, action-first, top-down adventure inspired by Eastward's mechanics and environmental density, without copying its art, plot or characters.** The first objective is one enjoyable combat room, not a giant roadmap or generic UI demo. Repository state, tests and architecture decisions are primary evidence. A request to **"continue"** means autonomously select, implement, test, commit and push the highest-priority in-scope work, not merely discuss a plan.
 
-## Architectural commitments
+## Active action-adventure boundaries (owner authorized 2026-11-18)
+
+- New gameplay belongs to separate `vesper-action` / `vesper-action-demo` crates; preserve the four legacy workspace crates and existing saves, examples, tests and packaging.
+- First gate: a **real playable** room with directional melee combat, one readable enemy, dodge, a simple mechanical goal, authored editable art, collision, repeatable start-to-exit and real screenshots. No dialogue required; do not load the VN player or repurpose old VN audio.
+- Do not expand into inventory, procedural generation, talent trees, companion AI or extended worldbuilding until actual gameplay feels good and the owner accepts the vertical slice.
+- CI confirms mechanics/builds, not fun, visual polish, art approval, physical performance or sound. Report all of those separately, and do not invent percentages for this phase.
+- All authored player-facing text remains English by default. The abandoned transit depot and protagonist are **provisional** working material, not owner-approved story canon.
+
+## Preserved visual-novel architectural commitments
 
 - Rust stable, Bevy **0.20.x**, idiomatic ECS, native rendering, UI, typography, input, assets and audio when appropriate.
 - Custom Ink-inspired .vn narrative language in Rust. No Lua, general-purpose embedded scripting or runtime generative AI.
