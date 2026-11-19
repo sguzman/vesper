@@ -33,7 +33,7 @@ jobs:
           sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
           sudo timeout 600s apt-get install -y --no-install-recommends \
             libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev \
-            libfontconfig1-dev xvfb xauth xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
+            libfontconfig1-dev libxkbcommon-x11-0 xvfb xauth xdotool imagemagick libgl1-mesa-dri mesa-vulkan-drivers
       - name: Verify isolated action mechanics and source-art parser
         run: cargo test --locked -p vesper-action --lib
       - name: Verify standalone action executable
