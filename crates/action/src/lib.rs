@@ -544,6 +544,7 @@ fn restart(
         return;
     }
     *encounter = Encounter::default();
+    info!("Vesper action: room restarted");
     if let Ok((mut transform, mut sprite)) = hero.single_mut() {
         transform.translation = HERO_START.extend(8.0);
         sprite.image = art.hero_idle.clone();
