@@ -61,6 +61,7 @@
 
           cli = crateGraph.workspaceMembers."vesper-cli".build;
           playerCrate = crateGraph.workspaceMembers."vesper-player".build;
+          actionCrate = crateGraph.workspaceMembers."vesper-action-demo".build;
 
           # A standalone player must be able to load Winit's X11/Wayland
           # libraries without being launched through a game-bundle wrapper.
@@ -70,6 +71,20 @@
             mkdir -p "$out/bin"
             makeWrapper "${playerCrate}/bin/vesper-player" "$out/bin/vesper-player" \
               --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}"
+          '';
+
+          # New genre: an entirely separate executable with external source art.
+          actionDemo = pkgs.runCommand "vesper-action-demo" {
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+          } ''
+            mkdir -p "$out/bin" "$out/share/vesper"
+            cp -r ${./examples/action-adventure} "$out/share/vesper/action-adventure"
+            makeWrapper "${actionCrate}/bin/vesper-action-demo" "$out/bin/vesper-action-demo" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath nativeLibraries}" \
+              --add-flags "$out/share/vesper/action-adventure"
+            makeWrapper "$out/bin/vesper-action-demo" "$out/bin/vesper-action-demo-host-nvidia" \
+              --set VK_DRIVER_FILES /usr/share/vulkan/icd.d/nvidia_icd.json \
+              --prefix LD_LIBRARY_PATH : /usr/lib
           '';
 
           bundle = pkgs.runCommand "vesper-with-games" {
@@ -119,6 +134,7 @@
             inherit bundle;
             vesper-player = player;
             vesper-cli = cli;
+            action-demo = actionDemo;
           };
 
           devShells.default = pkgs.mkShell {
@@ -173,6 +189,14 @@
           lantern-host-nvidia = {
             type = "app";
             program = "${pkg.bundle}/bin/vesper-lantern-host-nvidia";
+          };
+          action-demo = {
+            type = "app";
+            program = "${pkg.action-demo}/bin/vesper-action-demo";
+          };
+          action-demo-host-nvidia = {
+            type = "app";
+            program = "${pkg.action-demo}/bin/vesper-action-demo-host-nvidia";
           };
           barrio-software = {
             type = "app";

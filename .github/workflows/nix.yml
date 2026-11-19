@@ -85,9 +85,16 @@ jobs:
           nix eval --raw .#packages.x86_64-linux.vesper-player.drvPath
           nix build .#bundle -L
           nix build .#vesper-player -L --out-link result-player
+          nix build .#action-demo -L --out-link result-action
 
       - name: Verify external game files remain in the bundle
         run: |
+          test -x result-action/bin/vesper-action-demo
+          test -x result-action/bin/vesper-action-demo-host-nvidia
+          grep -F 'VK_DRIVER_FILES' result-action/bin/vesper-action-demo-host-nvidia
+          grep -F 'LD_LIBRARY_PATH' result-action/bin/vesper-action-demo
+          test -f result-action/share/vesper/action-adventure/art/room.px
+          nix eval --raw .#apps.x86_64-linux.action-demo.program | grep -F '/bin/vesper-action-demo'
           test -x result/bin/vesper-barrio
           test -x result-player/bin/vesper-player
           grep -F 'LD_LIBRARY_PATH' result-player/bin/vesper-player
