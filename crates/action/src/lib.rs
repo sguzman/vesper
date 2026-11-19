@@ -217,17 +217,22 @@ fn setup(mut commands: Commands, root: Res<DemoRoot>, mut images: ResMut<Assets<
     commands.spawn((
         Text::new(""),
         TextFont {
-            font_size: FontSize::Px(17.0),
+            font_size: FontSize::Px(16.0),
             ..default()
         },
         TextColor(Color::srgb(0.93, 0.92, 0.83)),
         Node {
             position_type: PositionType::Absolute,
-            left: px(18),
-            top: px(14),
-            width: percent(92.0),
+            left: px(12),
+            top: px(12),
+            width: px(338),
+            max_width: percent(93.0),
+            padding: UiRect::all(px(9)),
+            border: UiRect::all(px(1)),
             ..default()
         },
+        BackgroundColor(Color::srgba(0.045, 0.070, 0.080, 0.96)),
+        BorderColor::all(Color::srgb(0.57, 0.67, 0.59)),
         StatusHud,
     ));
     commands.spawn((
@@ -239,11 +244,15 @@ fn setup(mut commands: Commands, root: Res<DemoRoot>, mut images: ResMut<Assets<
         TextColor(Color::srgb(0.78, 0.81, 0.77)),
         Node {
             position_type: PositionType::Absolute,
-            left: px(18),
+            left: px(12),
             bottom: px(12),
-            width: percent(92.0),
+            width: percent(94.0),
+            padding: UiRect::all(px(8)),
+            border: UiRect::all(px(1)),
             ..default()
         },
+        BackgroundColor(Color::srgba(0.045, 0.070, 0.080, 0.96)),
+        BorderColor::all(Color::srgb(0.42, 0.56, 0.52)),
     ));
     info!("Vesper action room ready; original external pixel sources loaded.");
 }
@@ -491,7 +500,7 @@ fn update_hud(encounter: Res<Encounter>, mut text: Query<&mut Text, With<StatusH
         Outcome::Won => "ROOM CLEARED. Press R to play again.",
     };
     text.0 = format!(
-        "SIGNAL DEPOT   |   HEALTH {}/5   |   DRONE {}/3\n{}",
+        "HEALTH {}/5   |   DRONE {}/3\n{}",
         encounter.hp, encounter.drone_hp, objective
     );
 }
