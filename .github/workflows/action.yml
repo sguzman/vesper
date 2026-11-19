@@ -34,7 +34,7 @@ jobs:
           # Match the already-validated Vesper CI canonical archive fallback.
           if [ -f /etc/apt/apt-mirrors.txt ]; then
             sudo sed -E -i \
-              's#http://([a-z0-9.-]+\\.)?archive\\.ubuntu\\.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
+              's#http://([a-z0-9.-]+\.)?archive\.ubuntu\.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
               /etc/apt/apt-mirrors.txt
           fi
           sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
