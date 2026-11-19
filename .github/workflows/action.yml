@@ -30,6 +30,13 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install native Bevy and visual-smoke libraries
         run: |
+          # GitHub-hosted runners sometimes use stalled regional EC2 mirrors.
+          # Match the already-validated Vesper CI canonical archive fallback.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            sudo sed -E -i \
+              's#http://([a-z0-9.-]+\\.)?archive\\.ubuntu\\.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' \
+              /etc/apt/apt-mirrors.txt
+          fi
           sudo timeout 600s apt-get update -o Acquire::Retries=1 -o Acquire::http::Timeout=20
           sudo timeout 600s apt-get install -y --no-install-recommends \
             libasound2-dev libudev-dev pkg-config libwayland-dev libxkbcommon-dev \
