@@ -45,7 +45,8 @@ xvfb-run -a -s '-screen 0 1600x1200x24' bash -euo pipefail -c '
     | grep -F "640x900"
 
   # Real keyboard input into the live Bevy player, not a pure parser fixture.
-  xdotool windowactivate --sync "$window"
+  # Xvfb has no EWMH window manager; set X11 input focus directly.
+  xdotool windowfocus --sync "$window"
   xdotool key --clearmodifiers Right
   xdotool key --clearmodifiers j
   xdotool key --clearmodifiers space
