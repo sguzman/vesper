@@ -4,7 +4,7 @@
 pub mod mechanics;
 pub mod pixels;
 
-use std::{f32::consts::PI, path::PathBuf};
+use std::path::PathBuf;
 
 use bevy::{
     asset::RenderAssetUsages,
@@ -225,12 +225,13 @@ fn setup(mut commands: Commands, root: Res<DemoRoot>, mut images: ResMut<Assets<
             position_type: PositionType::Absolute,
             left: px(18),
             top: px(14),
+            width: percent(92.0),
             ..default()
         },
         StatusHud,
     ));
     commands.spawn((
-        Text::new("WASD / ARROWS  MOVE     J / ENTER  STRIKE     SPACE  DODGE     E  INTERACT"),
+        Text::new("WASD/ARROWS  MOVE  |  J/ENTER  STRIKE  |  SPACE  DODGE\nE  INTERACT  |  R  RETRY"),
         TextFont {
             font_size: FontSize::Px(14.0),
             ..default()
@@ -240,6 +241,7 @@ fn setup(mut commands: Commands, root: Res<DemoRoot>, mut images: ResMut<Assets<
             position_type: PositionType::Absolute,
             left: px(18),
             bottom: px(12),
+            width: percent(92.0),
             ..default()
         },
     ));
@@ -529,6 +531,7 @@ fn restart(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::f32::consts::PI;
 
     #[test]
     fn idle_facing_is_stable_and_diagonal_is_cardinalized() {
