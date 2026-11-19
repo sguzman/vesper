@@ -217,7 +217,7 @@ fn setup(mut commands: Commands, root: Res<DemoRoot>, mut images: ResMut<Assets<
     commands.spawn((
         Text::new(""),
         TextFont {
-            font_size: 17.0,
+            font_size: FontSize::Px(17.0),
             ..default()
         },
         TextColor(Color::srgb(0.93, 0.92, 0.83)),
@@ -232,7 +232,7 @@ fn setup(mut commands: Commands, root: Res<DemoRoot>, mut images: ResMut<Assets<
     commands.spawn((
         Text::new("WASD / ARROWS  MOVE     J / ENTER  STRIKE     SPACE  DODGE     E  INTERACT"),
         TextFont {
-            font_size: 14.0,
+            font_size: FontSize::Px(14.0),
             ..default()
         },
         TextColor(Color::srgb(0.78, 0.81, 0.77)),
